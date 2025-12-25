@@ -4,5 +4,5 @@
 ```python
 from transformers import AutoModel, AutoTokenizer
 
-model = AutoModel.from_pretrained("your-username/Transformer")
-tokenizer = AutoTokenizer.from_pretrained("your-username/Transformer")
+model = AutoModel.from_pretrained("komorebi-Lee/Transformer")
+tokenizer = AutoTokenizer.from_pretrained("komorebi-Lee/Transformer")
