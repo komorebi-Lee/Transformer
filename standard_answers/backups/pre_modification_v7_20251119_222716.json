@@ -1,0 +1,62 @@
+{
+  "metadata": {
+    "version": "v7_20251119_222716",
+    "description": "初始标准答案",
+    "created_time": "2025-11-19 22:27:16",
+    "source": "manual_coding",
+    "code_statistics": {
+      "third_level_codes": 2,
+      "second_level_codes": 3,
+      "first_level_codes": 4,
+      "total_codes": 4
+    },
+    "total_codes": 4
+  },
+  "structured_codes": {
+    "组织管理": {
+      "团队职责": [
+        "我们团队负责软件质量检测",
+        "确保产品交付质量"
+      ],
+      "领导决策": [
+        "领导负责资源分配"
+      ]
+    },
+    "技术研发": {
+      "创新方法": [
+        "开发自动化测试框架"
+      ]
+    }
+  },
+  "training_data": [
+    {
+      "text": "我们团队负责软件质量检测",
+      "third_category": "组织管理",
+      "second_category": "团队职责",
+      "full_category": "组织管理 > 团队职责"
+    },
+    {
+      "text": "确保产品交付质量",
+      "third_category": "组织管理",
+      "second_category": "团队职责",
+      "full_category": "组织管理 > 团队职责"
+    },
+    {
+      "text": "领导负责资源分配",
+      "third_category": "组织管理",
+      "second_category": "领导决策",
+      "full_category": "组织管理 > 领导决策"
+    },
+    {
+      "text": "开发自动化测试框架",
+      "third_category": "技术研发",
+      "second_category": "创新方法",
+      "full_category": "技术研发 > 创新方法"
+    }
+  ],
+  "export_formats": {
+    "json": true,
+    "excel": true,
+    "word": false
+  }
+}

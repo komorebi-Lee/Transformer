@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "version": "v9_20251121_054154",
+    "description": "hand1",
+    "created_time": "2025-11-21 05:41:54",
+    "source": "manual_coding",
+    "code_statistics": {
+      "third_level_codes": 1,
+      "second_level_codes": 1,
+      "first_level_codes": 1,
+      "total_codes": 1
+    },
+    "total_codes": 1
+  },
+  "structured_codes": {
+    "创新": {
+      "创新探索路径": [
+        "些员工私下开展一些创新探索"
+      ]
+    }
+  },
+  "training_data": [
+    {
+      "text": "些员工私下开展一些创新探索",
+      "third_category": "创新",
+      "second_category": "创新探索路径",
+      "full_category": "创新 > 创新探索路径"
+    }
+  ],
+  "export_formats": {
+    "json": true,
+    "excel": true,
+    "word": false
+  }
+}

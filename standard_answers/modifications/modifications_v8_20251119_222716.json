@@ -1,0 +1,78 @@
+{
+  "added": {
+    "团队氛围": {
+      "心理感受": [
+        "团队氛围很好"
+      ]
+    }
+  },
+  "modified": {
+    "组织管理": {
+      "added": {
+        "团队协作": [
+          "团队成员互相支持"
+        ]
+      },
+      "modified": {
+        "团队职责": {
+          "added": [
+            "确保产品高质量交付"
+          ],
+          "modified": [],
+          "deleted": [
+            "确保产品交付质量"
+          ],
+          "summary": {
+            "added_codes": 1,
+            "modified_codes": 0,
+            "deleted_codes": 1
+          },
+          "has_changes": true
+        }
+      },
+      "deleted": {
+        "领导决策": [
+          "领导负责资源分配"
+        ]
+      },
+      "summary": {
+        "added_codes": 2,
+        "modified_codes": 0,
+        "deleted_codes": 2
+      },
+      "has_changes": true
+    },
+    "技术研发": {
+      "added": {},
+      "modified": {
+        "创新方法": {
+          "added": [
+            "提高测试效率"
+          ],
+          "modified": [],
+          "deleted": [],
+          "summary": {
+            "added_codes": 1,
+            "modified_codes": 0,
+            "deleted_codes": 0
+          },
+          "has_changes": true
+        }
+      },
+      "deleted": {},
+      "summary": {
+        "added_codes": 1,
+        "modified_codes": 0,
+        "deleted_codes": 0
+      },
+      "has_changes": true
+    }
+  },
+  "deleted": {},
+  "summary": {
+    "added_codes": 4,
+    "modified_codes": 0,
+    "deleted_codes": 2
+  },
+  "has_changes": true
+}

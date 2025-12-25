@@ -1,0 +1,58 @@
+{
+  "metadata": {
+    "version": "v2_20251119_211620",
+    "description": "测试标准答案",
+    "created_time": "2025-11-19 21:16:20",
+    "source": "manual_coding",
+    "code_statistics": {
+      "third_level_codes": 2,
+      "second_level_codes": 2,
+      "first_level_codes": 4,
+      "total_codes": 4
+    }
+  },
+  "structured_codes": {
+    "组织管理与架构设计": {
+      "团队职责与架构": [
+        "受访者：我们团队主要负责软件质量检测和测试工作，确保产品交付...",
+        "受访者：团队氛围很好，大家互相支持，有很强的归属感"
+      ],
+      "质量管理与控制": [
+        "受访者：我们开发了一套新的自动化测试框架，大大提高了测试效率",
+        "受访者：最大的挑战是技术更新快，需要不断学习新的测试方法"
+      ]
+    },
+    "技术研发与创新应用": {}
+  },
+  "training_data": [
+    {
+      "text": "受访者：我们团队主要负责软件质量检测和测试工作，确保产品交付...",
+      "third_category": "A 组织管理与架构设计",
+      "second_category": "A1 团队职责与架构",
+      "full_category": "A 组织管理与架构设计 > A1 团队职责与架构"
+    },
+    {
+      "text": "受访者：团队氛围很好，大家互相支持，有很强的归属感",
+      "third_category": "A 组织管理与架构设计",
+      "second_category": "A1 团队职责与架构",
+      "full_category": "A 组织管理与架构设计 > A1 团队职责与架构"
+    },
+    {
+      "text": "受访者：我们开发了一套新的自动化测试框架，大大提高了测试效率",
+      "third_category": "A 组织管理与架构设计",
+      "second_category": "A2 质量管理与控制",
+      "full_category": "A 组织管理与架构设计 > A2 质量管理与控制"
+    },
+    {
+      "text": "受访者：最大的挑战是技术更新快，需要不断学习新的测试方法",
+      "third_category": "A 组织管理与架构设计",
+      "second_category": "A2 质量管理与控制",
+      "full_category": "A 组织管理与架构设计 > A2 质量管理与控制"
+    }
+  ],
+  "export_formats": {
+    "json": true,
+    "excel": true,
+    "word": false
+  }
+}

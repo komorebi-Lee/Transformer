@@ -1,0 +1,163 @@
+{
+  "metadata": {
+    "version": "v8_20251119_222716",
+    "description": "人工修正",
+    "created_time": "2025-11-19 22:27:16",
+    "source": "incremental_update",
+    "code_statistics": {
+      "third_level_codes": 3,
+      "second_level_codes": 4,
+      "first_level_codes": 6,
+      "total_codes": 6
+    },
+    "total_codes": 6,
+    "modification_summary": {
+      "added_codes": 4,
+      "modified_codes": 0,
+      "deleted_codes": 2
+    }
+  },
+  "structured_codes": {
+    "组织管理": {
+      "团队职责": [
+        "我们团队负责软件质量检测",
+        "确保产品高质量交付"
+      ],
+      "团队协作": [
+        "团队成员互相支持"
+      ]
+    },
+    "技术研发": {
+      "创新方法": [
+        "开发自动化测试框架",
+        "提高测试效率"
+      ]
+    },
+    "团队氛围": {
+      "心理感受": [
+        "团队氛围很好"
+      ]
+    }
+  },
+  "training_data": [
+    {
+      "text": "我们团队负责软件质量检测",
+      "third_category": "组织管理",
+      "second_category": "团队职责",
+      "full_category": "组织管理 > 团队职责"
+    },
+    {
+      "text": "确保产品高质量交付",
+      "third_category": "组织管理",
+      "second_category": "团队职责",
+      "full_category": "组织管理 > 团队职责"
+    },
+    {
+      "text": "团队成员互相支持",
+      "third_category": "组织管理",
+      "second_category": "团队协作",
+      "full_category": "组织管理 > 团队协作"
+    },
+    {
+      "text": "开发自动化测试框架",
+      "third_category": "技术研发",
+      "second_category": "创新方法",
+      "full_category": "技术研发 > 创新方法"
+    },
+    {
+      "text": "提高测试效率",
+      "third_category": "技术研发",
+      "second_category": "创新方法",
+      "full_category": "技术研发 > 创新方法"
+    },
+    {
+      "text": "团队氛围很好",
+      "third_category": "团队氛围",
+      "second_category": "心理感受",
+      "full_category": "团队氛围 > 心理感受"
+    }
+  ],
+  "modification_details": {
+    "added": {
+      "团队氛围": {
+        "心理感受": [
+          "团队氛围很好"
+        ]
+      }
+    },
+    "modified": {
+      "组织管理": {
+        "added": {
+          "团队协作": [
+            "团队成员互相支持"
+          ]
+        },
+        "modified": {
+          "团队职责": {
+            "added": [
+              "确保产品高质量交付"
+            ],
+            "modified": [],
+            "deleted": [
+              "确保产品交付质量"
+            ],
+            "summary": {
+              "added_codes": 1,
+              "modified_codes": 0,
+              "deleted_codes": 1
+            },
+            "has_changes": true
+          }
+        },
+        "deleted": {
+          "领导决策": [
+            "领导负责资源分配"
+          ]
+        },
+        "summary": {
+          "added_codes": 2,
+          "modified_codes": 0,
+          "deleted_codes": 2
+        },
+        "has_changes": true
+      },
+      "技术研发": {
+        "added": {},
+        "modified": {
+          "创新方法": {
+            "added": [
+              "提高测试效率"
+            ],
+            "modified": [],
+            "deleted": [],
+            "summary": {
+              "added_codes": 1,
+              "modified_codes": 0,
+              "deleted_codes": 0
+            },
+            "has_changes": true
+          }
+        },
+        "deleted": {},
+        "summary": {
+          "added_codes": 1,
+          "modified_codes": 0,
+          "deleted_codes": 0
+        },
+        "has_changes": true
+      }
+    },
+    "deleted": {},
+    "summary": {
+      "added_codes": 4,
+      "modified_codes": 0,
+      "deleted_codes": 2
+    },
+    "has_changes": true
+  },
+  "export_formats": {
+    "json": true,
+    "excel": true,
+    "word": false
+  }
+}

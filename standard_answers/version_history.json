@@ -1,0 +1,40 @@
+[
+  {
+    "version": "v2_20251119_211620",
+    "description": "测试标准答案",
+    "timestamp": "2025-11-19 21:16:20",
+    "file_path": "standard_answers\\v2_20251119_211620.json"
+  },
+  {
+    "version": "v4_20251119_221915",
+    "description": "修改部分编码",
+    "timestamp": "2025-11-19 22:19:15",
+    "file_path": "standard_answers\\v4_20251119_221915.json"
+  },
+  {
+    "version": "v7_20251119_222716",
+    "description": "初始标准答案",
+    "timestamp": "2025-11-19 22:27:16",
+    "file_path": "standard_answers\\v7_20251119_222716.json",
+    "type": "full"
+  },
+  {
+    "version": "v8_20251119_222716",
+    "description": "人工修正",
+    "timestamp": "2025-11-19 22:27:16",
+    "file_path": "standard_answers\\v8_20251119_222716.json",
+    "type": "incremental",
+    "modification_summary": {
+      "added_codes": 4,
+      "modified_codes": 0,
+      "deleted_codes": 2
+    }
+  },
+  {
+    "version": "v9_20251121_054154",
+    "description": "hand1",
+    "timestamp": "2025-11-21 05:41:54",
+    "file_path": "standard_answers\\v9_20251121_054154.json",
+    "type": "full"
+  }
+]

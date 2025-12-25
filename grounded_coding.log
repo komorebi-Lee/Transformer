@@ -1,0 +1,481 @@
+2025-11-21 05:55:45,153 - root - INFO - 确保目录存在: E:\PythonProject\zthree2\local_models
+2025-11-21 05:55:45,153 - root - INFO - 确保目录存在: E:\PythonProject\zthree2\trained_models
+2025-11-21 05:55:45,153 - root - INFO - 确保目录存在: E:\PythonProject\zthree2\standard_answers
+2025-11-21 05:55:45,153 - root - INFO - 确保目录存在: E:\PythonProject\zthree2\data
+2025-11-21 05:55:45,153 - __main__ - INFO - 环境初始化成功
+2025-11-21 05:55:49,731 - numexpr.utils - INFO - NumExpr defaulting to 14 threads.
+2025-11-21 05:55:50,267 - root - WARNING - scikit-learn 导入异常: name 'logger' is not defined
+2025-11-21 05:55:50,850 - model_manager - INFO - 使用设备: cpu
+2025-11-21 05:55:50,873 - standard_answer_manager - INFO - 标准答案已加载: v9_20251121_054154.json
+2025-11-21 05:55:51,008 - model_manager - INFO - 加载本地BERT模型
+2025-11-21 05:55:51,263 - model_manager - INFO - 模型初始化成功
+2025-11-21 05:55:51,263 - main_window - INFO - 模型初始化成功
+2025-11-21 05:55:51,993 - __main__ - INFO - 扎根理论编码分析系统启动成功，主窗口已显示
+2025-11-21 05:55:52,593 - model_manager - INFO - 加载本地BERT模型
+2025-11-21 05:55:52,654 - model_manager - INFO - 模型初始化成功
+2025-11-21 05:55:52,654 - main_window - INFO - 模型初始化成功
+2025-11-21 05:56:05,597 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈1（蒋风情）.docx
+2025-11-21 05:56:05,597 - main_window - INFO - 成功导入文件: 康圣访谈1（蒋风情）.docx
+2025-11-21 05:56:14,605 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈1（蒋风情）.docx
+2025-11-21 05:56:14,615 - data_processor - INFO - 处理文件 康圣访谈1（蒋风情）.docx: 识别 26 个段落，提取 63 个受访人句子
+2025-11-21 05:56:14,619 - enhanced_coding_generator - INFO - 生成 62 个一阶编码
+2025-11-21 05:56:14,621 - enhanced_coding_generator - INFO - 开始二阶编码分类，共 62 个一阶编码
+2025-11-21 05:56:14,622 - enhanced_coding_generator - INFO - 二阶编码完成: 共 7 个类别
+2025-11-21 05:56:14,622 - enhanced_coding_generator - INFO - 生成 5 个二阶编码
+2025-11-21 05:56:14,624 - enhanced_coding_generator - INFO - 开始三阶编码抽象，共 5 个二阶编码
+2025-11-21 05:56:14,624 - enhanced_coding_generator - INFO - 生成 3 个三阶编码
+2025-11-21 05:56:14,624 - enhanced_coding_generator - INFO - 生成 3 个三阶编码
+2025-11-21 05:56:14,625 - grounded_theory_coder - INFO - 开始构建编码结构: 一阶62, 二阶5, 三阶3
+2025-11-21 05:56:14,625 - grounded_theory_coder - INFO - 自动编号完成: 共3个三阶编码
+2025-11-21 05:56:14,625 - grounded_theory_coder - INFO - 构建了扎根理论编码结构: 3个三阶编码
+2025-11-21 05:57:00,120 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈2（张思婷）.docx
+2025-11-21 05:57:00,120 - main_window - INFO - 成功导入文件: 康圣访谈2（张思婷）.docx
+2025-11-21 05:57:00,137 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈3（谢文英）.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:00,137 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈3（谢文英）.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:01,519 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈5翟圣.docx
+2025-11-21 05:57:01,519 - main_window - INFO - 成功导入文件: 康圣访谈5翟圣.docx
+2025-11-21 05:57:01,542 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈6黄军涛.docx
+2025-11-21 05:57:01,543 - main_window - INFO - 成功导入文件: 康圣访谈6黄军涛.docx
+2025-11-21 05:57:01,564 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈7吴天.docx
+2025-11-21 05:57:01,564 - main_window - INFO - 成功导入文件: 康圣访谈7吴天.docx
+2025-11-21 05:57:01,595 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈8任作非.docx
+2025-11-21 05:57:01,595 - main_window - INFO - 成功导入文件: 康圣访谈8任作非.docx
+2025-11-21 05:57:01,596 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈10（黄志利）.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:01,597 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈10（黄志利）.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:02,192 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈11秦园.docx
+2025-11-21 05:57:02,192 - main_window - INFO - 成功导入文件: 康圣访谈11秦园.docx
+2025-11-21 05:57:02,220 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈12余桂俊.docx
+2025-11-21 05:57:02,220 - main_window - INFO - 成功导入文件: 康圣访谈12余桂俊.docx
+2025-11-21 05:57:02,220 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈14（李续图）.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:02,221 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈14（李续图）.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:02,711 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈15（陈进科）.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:02,711 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈15（陈进科）.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:03,146 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈16.（李妮）.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:03,147 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈16.（李妮）.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:03,355 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈17.（贾梦思）.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:03,356 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈17.（贾梦思）.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:03,517 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈18.（杨伟红）.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:03,517 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈18.（杨伟红）.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:03,665 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈19.（吴妍）.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:03,665 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈19.（吴妍）.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:03,813 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈20.（王珮鑫）.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:03,814 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈20.（王珮鑫）.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:03,991 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈21.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:03,991 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈21.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:04,661 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈22.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:04,661 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈22.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:05,276 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈23.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:05,276 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈23.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:05,774 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈24.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:05,774 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈24.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:06,177 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈25.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:06,177 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈25.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:06,352 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈26.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:06,352 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈26.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:06,522 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈27.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:06,522 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈27.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:06,989 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈28.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:06,990 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈28.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:07,428 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈29.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:07,428 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈29.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:07,596 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈30.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:07,597 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈30.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:07,740 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈31.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:07,740 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈31.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:07,896 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈32.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:07,896 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈32.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:08,063 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈33.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:08,064 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈33.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:08,200 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈34.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:08,200 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈34.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:08,363 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈35.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:08,363 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈35.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:08,508 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈36.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:08,508 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈36.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:08,660 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈37.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:08,661 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈37.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:08,813 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈38.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:08,813 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈38.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:09,473 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈39.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:09,473 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈39.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:09,683 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈40.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:09,683 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈40.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:10,038 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈41.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:10,038 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈41.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:10,224 - data_processor - ERROR - 读取文本文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈42.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:10,224 - main_window - ERROR - 导入文件失败 C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈42.doc: 'utf-8' codec can't decode byte 0xd0 in position 0: invalid continuation byte
+2025-11-21 05:57:19,794 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈1（蒋风情）.docx
+2025-11-21 05:57:19,801 - data_processor - INFO - 处理文件 康圣访谈1（蒋风情）.docx: 识别 26 个段落，提取 63 个受访人句子
+2025-11-21 05:57:19,825 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈2（张思婷）.docx
+2025-11-21 05:57:19,835 - data_processor - INFO - 处理文件 康圣访谈2（张思婷）.docx: 识别 18 个段落，提取 82 个受访人句子
+2025-11-21 05:57:19,862 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈5翟圣.docx
+2025-11-21 05:57:19,866 - data_processor - INFO - 处理文件 康圣访谈5翟圣.docx: 识别 24 个段落，提取 86 个受访人句子
+2025-11-21 05:57:19,890 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈6黄军涛.docx
+2025-11-21 05:57:19,894 - data_processor - INFO - 处理文件 康圣访谈6黄军涛.docx: 识别 18 个段落，提取 113 个受访人句子
+2025-11-21 05:57:19,915 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈7吴天.docx
+2025-11-21 05:57:19,919 - data_processor - INFO - 处理文件 康圣访谈7吴天.docx: 识别 28 个段落，提取 80 个受访人句子
+2025-11-21 05:57:19,938 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈8任作非.docx
+2025-11-21 05:57:19,941 - data_processor - INFO - 处理文件 康圣访谈8任作非.docx: 识别 28 个段落，提取 72 个受访人句子
+2025-11-21 05:57:19,978 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈11秦园.docx
+2025-11-21 05:57:19,984 - data_processor - INFO - 处理文件 康圣访谈11秦园.docx: 识别 41 个段落，提取 90 个受访人句子
+2025-11-21 05:57:20,016 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈12余桂俊.docx
+2025-11-21 05:57:20,026 - data_processor - INFO - 处理文件 康圣访谈12余桂俊.docx: 识别 30 个段落，提取 62 个受访人句子
+2025-11-21 05:57:20,030 - enhanced_coding_generator - INFO - 生成 640 个一阶编码
+2025-11-21 05:57:20,031 - enhanced_coding_generator - INFO - 开始二阶编码分类，共 640 个一阶编码
+2025-11-21 05:57:20,037 - enhanced_coding_generator - INFO - 二阶编码完成: 共 7 个类别
+2025-11-21 05:57:20,037 - enhanced_coding_generator - INFO - 生成 6 个二阶编码
+2025-11-21 05:57:20,038 - enhanced_coding_generator - INFO - 开始三阶编码抽象，共 6 个二阶编码
+2025-11-21 05:57:20,038 - enhanced_coding_generator - INFO - 生成 3 个三阶编码
+2025-11-21 05:57:20,038 - enhanced_coding_generator - INFO - 生成 3 个三阶编码
+2025-11-21 05:57:20,039 - grounded_theory_coder - INFO - 开始构建编码结构: 一阶640, 二阶6, 三阶3
+2025-11-21 05:57:20,042 - grounded_theory_coder - INFO - 自动编号完成: 共3个三阶编码
+2025-11-21 05:57:20,042 - grounded_theory_coder - INFO - 构建了扎根理论编码结构: 3个三阶编码
+2025-11-21 05:57:50,817 - main_window - ERROR - 启动手动编码失败: setText(self, column: int, atext: Optional[str]): argument 2 has unexpected type 'dict'
+2025-11-21 05:58:55,930 - main_window - ERROR - 启动手动编码失败: setText(self, column: int, atext: Optional[str]): argument 2 has unexpected type 'dict'
+2025-11-21 05:59:05,749 - manual_coding_dialog - INFO - 选择了文件: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈7吴天.docx
+2025-11-21 05:59:05,749 - manual_coding_dialog - INFO - 文件内容长度: 4508
+2025-11-21 05:59:05,770 - manual_coding_dialog - INFO - 文本内容显示成功
+2025-11-21 05:59:22,754 - manual_coding_dialog - INFO - 选择了文本: 一是产品的技术资料的整理，再就是渠道销售，外面客户的话，我们会出去对这个产品进行宣讲，告诉他们产品的...
+2025-11-21 05:59:22,757 - manual_coding_dialog - INFO - 文本已复制到一阶编码输入框
+2025-11-21 05:59:55,218 - __main__ - INFO - 应用程序正常退出
+2025-11-25 04:39:01,852 - root - INFO - 确保目录存在: E:\PythonProject\zthree2\local_models
+2025-11-25 04:39:01,852 - root - INFO - 确保目录存在: E:\PythonProject\zthree2\trained_models
+2025-11-25 04:39:01,852 - root - INFO - 确保目录存在: E:\PythonProject\zthree2\standard_answers
+2025-11-25 04:39:01,852 - root - INFO - 确保目录存在: E:\PythonProject\zthree2\data
+2025-11-25 04:39:01,855 - __main__ - INFO - 环境初始化成功
+2025-11-25 04:39:08,272 - numexpr.utils - INFO - NumExpr defaulting to 14 threads.
+2025-11-25 04:39:09,407 - training_manager - INFO - scikit-learn 版本: 1.7.2
+2025-11-25 04:39:10,682 - model_manager - INFO - 使用设备: cpu
+2025-11-25 04:39:10,684 - standard_answer_manager - INFO - 标准答案已加载: v9_20251121_054154.json
+2025-11-25 04:39:10,831 - model_manager - INFO - 加载本地BERT模型
+2025-11-25 04:39:11,360 - model_manager - INFO - 模型初始化成功
+2025-11-25 04:39:11,360 - main_window - INFO - 模型初始化成功
+2025-11-25 04:39:11,769 - __main__ - INFO - 扎根理论编码分析系统启动成功，主窗口已显示
+2025-11-25 04:39:12,370 - model_manager - INFO - 加载本地BERT模型
+2025-11-25 04:39:12,493 - model_manager - INFO - 模型初始化成功
+2025-11-25 04:39:12,495 - main_window - INFO - 模型初始化成功
+2025-11-25 04:39:52,399 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈1（蒋风情）.docx
+2025-11-25 04:39:52,399 - main_window - INFO - 成功导入文件: 康圣访谈1（蒋风情）.docx
+2025-11-25 04:40:08,648 - manual_coding_dialog - INFO - 选择了文件: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈1（蒋风情）.docx
+2025-11-25 04:40:08,648 - manual_coding_dialog - INFO - 文件内容长度: 4021
+2025-11-25 04:40:08,657 - manual_coding_dialog - INFO - 文本内容显示成功
+2025-11-25 04:41:58,580 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈1（蒋风情）.docx
+2025-11-25 04:41:58,589 - data_processor - INFO - 处理文件 康圣访谈1（蒋风情）.docx: 识别 26 个段落，提取 63 个受访人句子
+2025-11-25 04:41:58,591 - enhanced_coding_generator - INFO - 生成 62 个一阶编码
+2025-11-25 04:41:58,591 - enhanced_coding_generator - INFO - 开始二阶编码分类，共 62 个一阶编码
+2025-11-25 04:41:58,592 - enhanced_coding_generator - INFO - 二阶编码完成: 共 7 个类别
+2025-11-25 04:41:58,592 - enhanced_coding_generator - INFO - 生成 5 个二阶编码
+2025-11-25 04:41:58,592 - enhanced_coding_generator - INFO - 开始三阶编码抽象，共 5 个二阶编码
+2025-11-25 04:41:58,592 - enhanced_coding_generator - INFO - 生成 3 个三阶编码
+2025-11-25 04:41:58,592 - enhanced_coding_generator - INFO - 生成 3 个三阶编码
+2025-11-25 04:41:58,593 - grounded_theory_coder - INFO - 开始构建编码结构: 一阶62, 二阶5, 三阶3
+2025-11-25 04:41:58,594 - grounded_theory_coder - INFO - 自动编号完成: 共3个三阶编码
+2025-11-25 04:41:58,594 - grounded_theory_coder - INFO - 构建了扎根理论编码结构: 3个三阶编码
+2025-11-25 04:44:40,306 - main_window - ERROR - 启动手动编码失败: setText(self, column: int, atext: Optional[str]): argument 2 has unexpected type 'dict'
+2025-11-25 04:45:53,801 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈1（蒋风情）.docx
+2025-11-25 04:45:53,804 - data_processor - INFO - 处理文件 康圣访谈1（蒋风情）.docx: 识别 26 个段落，提取 63 个受访人句子
+2025-11-25 04:45:53,805 - enhanced_coding_generator - INFO - 生成 62 个一阶编码
+2025-11-25 04:45:53,805 - enhanced_coding_generator - INFO - 开始二阶编码分类，共 62 个一阶编码
+2025-11-25 04:45:53,806 - enhanced_coding_generator - INFO - 二阶编码完成: 共 7 个类别
+2025-11-25 04:45:53,806 - enhanced_coding_generator - INFO - 生成 5 个二阶编码
+2025-11-25 04:45:53,806 - enhanced_coding_generator - INFO - 开始三阶编码抽象，共 5 个二阶编码
+2025-11-25 04:45:53,806 - enhanced_coding_generator - INFO - 生成 3 个三阶编码
+2025-11-25 04:45:53,806 - enhanced_coding_generator - INFO - 生成 3 个三阶编码
+2025-11-25 04:45:53,806 - grounded_theory_coder - INFO - 开始构建编码结构: 一阶62, 二阶5, 三阶3
+2025-11-25 04:45:53,807 - grounded_theory_coder - INFO - 自动编号完成: 共3个三阶编码
+2025-11-25 04:45:53,807 - grounded_theory_coder - INFO - 构建了扎根理论编码结构: 3个三阶编码
+2025-11-25 05:00:28,087 - model_manager - INFO - 训练模型已加载: trained_model
+2025-11-25 05:00:33,970 - standard_answer_manager - ERROR - 加载标准答案失败: [Errno 2] No such file or directory: 'standard_answers\\v2_20251119_211620'
+2025-11-25 05:00:37,427 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈1（蒋风情）.docx
+2025-11-25 05:00:37,431 - data_processor - INFO - 处理文件 康圣访谈1（蒋风情）.docx: 识别 26 个段落，提取 63 个受访人句子
+2025-11-25 05:00:40,166 - model_manager - ERROR - 预测类别失败: 训练模型中缺少分类器
+2025-11-25 05:00:40,166 - enhanced_coding_generator - ERROR - 使用训练模型生成编码失败: 训练模型中缺少分类器
+2025-11-25 05:00:40,167 - grounded_theory_coder - INFO - 开始构建编码结构: 一阶1, 二阶1, 三阶1
+2025-11-25 05:00:40,168 - grounded_theory_coder - INFO - 自动编号完成: 共1个三阶编码
+2025-11-25 05:00:40,168 - grounded_theory_coder - INFO - 构建了扎根理论编码结构: 1个三阶编码
+2025-11-25 05:00:43,934 - __main__ - INFO - 应用程序正常退出
+2025-11-27 02:17:23,241 - root - INFO - 确保目录存在: E:\PythonProject\zthree2\local_models
+2025-11-27 02:17:23,241 - root - INFO - 确保目录存在: E:\PythonProject\zthree2\trained_models
+2025-11-27 02:17:23,241 - root - INFO - 确保目录存在: E:\PythonProject\zthree2\standard_answers
+2025-11-27 02:17:23,241 - root - INFO - 确保目录存在: E:\PythonProject\zthree2\data
+2025-11-27 02:17:23,241 - __main__ - INFO - 环境初始化成功
+2025-11-27 02:17:27,471 - numexpr.utils - INFO - NumExpr defaulting to 14 threads.
+2025-11-27 02:17:27,989 - training_manager - INFO - scikit-learn 版本: 1.7.2
+2025-11-27 02:17:28,566 - model_manager - INFO - 使用设备: cpu
+2025-11-27 02:17:28,566 - standard_answer_manager - INFO - 标准答案已加载: v9_20251121_054154.json
+2025-11-27 02:17:28,698 - model_manager - INFO - 加载本地BERT模型
+2025-11-27 02:17:28,903 - model_manager - INFO - 模型初始化成功
+2025-11-27 02:17:28,903 - main_window - INFO - 模型初始化成功
+2025-11-27 02:17:29,647 - __main__ - INFO - 扎根理论编码分析系统启动成功，主窗口已显示
+2025-11-27 02:17:30,249 - model_manager - INFO - 加载本地BERT模型
+2025-11-27 02:17:30,296 - model_manager - INFO - 模型初始化成功
+2025-11-27 02:17:30,296 - main_window - INFO - 模型初始化成功
+2025-11-27 02:17:56,491 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈1（蒋风情）.docx
+2025-11-27 02:17:56,491 - main_window - INFO - 成功导入文件: 康圣访谈1（蒋风情）.docx
+2025-11-27 02:18:12,491 - manual_coding_dialog - INFO - 选择了文件: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈1（蒋风情）.docx
+2025-11-27 02:18:12,507 - manual_coding_dialog - INFO - 文件内容长度: 4021
+2025-11-27 02:18:12,513 - manual_coding_dialog - INFO - 文本内容显示成功
+2025-11-27 02:18:41,299 - manual_coding_dialog - INFO - 选择了文本: 会不停的给人家进行培训。...
+2025-11-27 02:18:41,300 - manual_coding_dialog - INFO - 文本已复制到一阶编码输入框
+2025-11-27 02:19:22,252 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈1（蒋风情）.docx
+2025-11-27 02:19:22,264 - data_processor - INFO - 处理文件 康圣访谈1（蒋风情）.docx: 识别 26 个段落，提取 63 个受访人句子
+2025-11-27 02:19:22,265 - enhanced_coding_generator - INFO - 生成 62 个一阶编码
+2025-11-27 02:19:22,266 - enhanced_coding_generator - INFO - 开始二阶编码分类，共 62 个一阶编码
+2025-11-27 02:19:22,266 - enhanced_coding_generator - INFO - 二阶编码完成: 共 7 个类别
+2025-11-27 02:19:22,266 - enhanced_coding_generator - INFO - 生成 5 个二阶编码
+2025-11-27 02:19:22,267 - enhanced_coding_generator - INFO - 开始三阶编码抽象，共 5 个二阶编码
+2025-11-27 02:19:22,267 - enhanced_coding_generator - INFO - 生成 3 个三阶编码
+2025-11-27 02:19:22,267 - enhanced_coding_generator - INFO - 生成 3 个三阶编码
+2025-11-27 02:19:22,267 - grounded_theory_coder - INFO - 开始构建编码结构: 一阶62, 二阶5, 三阶3
+2025-11-27 02:19:22,268 - grounded_theory_coder - INFO - 自动编号完成: 共3个三阶编码
+2025-11-27 02:19:22,268 - grounded_theory_coder - INFO - 构建了扎根理论编码结构: 3个三阶编码
+2025-11-27 02:21:31,141 - main_window - ERROR - 启动手动编码失败: setText(self, column: int, atext: Optional[str]): argument 2 has unexpected type 'dict'
+2025-11-27 02:22:15,269 - model_manager - INFO - 训练模型已加载: trained_model
+2025-11-27 02:22:19,819 - standard_answer_manager - ERROR - 加载标准答案失败: [Errno 2] No such file or directory: 'standard_answers\\v2_20251119_211620'
+2025-11-27 02:26:02,996 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈1（蒋风情）.docx
+2025-11-27 02:26:02,999 - data_processor - INFO - 处理文件 康圣访谈1（蒋风情）.docx: 识别 26 个段落，提取 63 个受访人句子
+2025-11-27 02:26:02,999 - enhanced_coding_generator - INFO - 生成 62 个一阶编码
+2025-11-27 02:26:03,000 - enhanced_coding_generator - INFO - 开始二阶编码分类，共 62 个一阶编码
+2025-11-27 02:26:03,000 - enhanced_coding_generator - INFO - 二阶编码完成: 共 7 个类别
+2025-11-27 02:26:03,000 - enhanced_coding_generator - INFO - 生成 5 个二阶编码
+2025-11-27 02:26:03,000 - enhanced_coding_generator - INFO - 开始三阶编码抽象，共 5 个二阶编码
+2025-11-27 02:26:03,000 - enhanced_coding_generator - INFO - 生成 3 个三阶编码
+2025-11-27 02:26:03,000 - enhanced_coding_generator - INFO - 生成 3 个三阶编码
+2025-11-27 02:26:03,001 - grounded_theory_coder - INFO - 开始构建编码结构: 一阶62, 二阶5, 三阶3
+2025-11-27 02:26:03,001 - grounded_theory_coder - INFO - 自动编号完成: 共3个三阶编码
+2025-11-27 02:26:03,001 - grounded_theory_coder - INFO - 构建了扎根理论编码结构: 3个三阶编码
+2025-11-27 02:27:51,880 - manual_coding_dialog - INFO - 选择了文件: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈1（蒋风情）.docx
+2025-11-27 02:27:51,880 - manual_coding_dialog - INFO - 文件内容长度: 4021
+2025-11-27 02:27:51,897 - manual_coding_dialog - INFO - 文本内容显示成功
+2025-11-27 02:28:31,813 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈2（张思婷）.docx
+2025-11-27 02:28:31,813 - main_window - INFO - 成功导入文件: 康圣访谈2（张思婷）.docx
+2025-11-27 02:28:31,844 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈5翟圣.docx
+2025-11-27 02:28:31,844 - main_window - INFO - 成功导入文件: 康圣访谈5翟圣.docx
+2025-11-27 02:28:31,860 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈6黄军涛.docx
+2025-11-27 02:28:31,860 - main_window - INFO - 成功导入文件: 康圣访谈6黄军涛.docx
+2025-11-27 02:28:31,892 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈7吴天.docx
+2025-11-27 02:28:31,892 - main_window - INFO - 成功导入文件: 康圣访谈7吴天.docx
+2025-11-27 02:28:31,912 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈8任作非.docx
+2025-11-27 02:28:31,914 - main_window - INFO - 成功导入文件: 康圣访谈8任作非.docx
+2025-11-27 02:28:44,846 - manual_coding_dialog - INFO - 选择了文件: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈1（蒋风情）.docx
+2025-11-27 02:28:44,846 - manual_coding_dialog - INFO - 文件内容长度: 4021
+2025-11-27 02:28:44,855 - manual_coding_dialog - INFO - 文本内容显示成功
+2025-11-27 02:28:45,697 - manual_coding_dialog - INFO - 选择了文件: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈2（张思婷）.docx
+2025-11-27 02:28:45,697 - manual_coding_dialog - INFO - 文件内容长度: 4932
+2025-11-27 02:28:45,702 - manual_coding_dialog - INFO - 文本内容显示成功
+2025-11-27 02:28:47,969 - manual_coding_dialog - INFO - 选择了文件: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈5翟圣.docx
+2025-11-27 02:28:47,969 - manual_coding_dialog - INFO - 文件内容长度: 6546
+2025-11-27 02:28:47,975 - manual_coding_dialog - INFO - 文本内容显示成功
+2025-11-27 02:28:49,234 - manual_coding_dialog - INFO - 选择了文件: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈6黄军涛.docx
+2025-11-27 02:28:49,234 - manual_coding_dialog - INFO - 文件内容长度: 7302
+2025-11-27 02:28:49,244 - manual_coding_dialog - INFO - 文本内容显示成功
+2025-11-27 02:29:03,056 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈1（蒋风情）.docx
+2025-11-27 02:29:03,059 - data_processor - INFO - 处理文件 康圣访谈1（蒋风情）.docx: 识别 26 个段落，提取 63 个受访人句子
+2025-11-27 02:29:03,068 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈2（张思婷）.docx
+2025-11-27 02:29:03,072 - data_processor - INFO - 处理文件 康圣访谈2（张思婷）.docx: 识别 18 个段落，提取 82 个受访人句子
+2025-11-27 02:29:03,098 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈5翟圣.docx
+2025-11-27 02:29:03,102 - data_processor - INFO - 处理文件 康圣访谈5翟圣.docx: 识别 24 个段落，提取 86 个受访人句子
+2025-11-27 02:29:03,126 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈6黄军涛.docx
+2025-11-27 02:29:03,131 - data_processor - INFO - 处理文件 康圣访谈6黄军涛.docx: 识别 18 个段落，提取 113 个受访人句子
+2025-11-27 02:29:03,151 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈7吴天.docx
+2025-11-27 02:29:03,156 - data_processor - INFO - 处理文件 康圣访谈7吴天.docx: 识别 28 个段落，提取 80 个受访人句子
+2025-11-27 02:29:03,176 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈8任作非.docx
+2025-11-27 02:29:03,180 - data_processor - INFO - 处理文件 康圣访谈8任作非.docx: 识别 28 个段落，提取 72 个受访人句子
+2025-11-27 02:29:03,181 - enhanced_coding_generator - INFO - 生成 489 个一阶编码
+2025-11-27 02:29:03,181 - enhanced_coding_generator - INFO - 开始二阶编码分类，共 489 个一阶编码
+2025-11-27 02:29:03,182 - enhanced_coding_generator - INFO - 二阶编码完成: 共 7 个类别
+2025-11-27 02:29:03,184 - enhanced_coding_generator - INFO - 生成 6 个二阶编码
+2025-11-27 02:29:03,184 - enhanced_coding_generator - INFO - 开始三阶编码抽象，共 6 个二阶编码
+2025-11-27 02:29:03,184 - enhanced_coding_generator - INFO - 生成 3 个三阶编码
+2025-11-27 02:29:03,184 - enhanced_coding_generator - INFO - 生成 3 个三阶编码
+2025-11-27 02:29:03,184 - grounded_theory_coder - INFO - 开始构建编码结构: 一阶489, 二阶6, 三阶3
+2025-11-27 02:29:03,186 - grounded_theory_coder - INFO - 自动编号完成: 共3个三阶编码
+2025-11-27 02:29:03,186 - grounded_theory_coder - INFO - 构建了扎根理论编码结构: 3个三阶编码
+2025-11-27 02:36:03,629 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈1（蒋风情）.docx
+2025-11-27 02:36:03,633 - data_processor - INFO - 处理文件 康圣访谈1（蒋风情）.docx: 识别 26 个段落，提取 63 个受访人句子
+2025-11-27 02:36:03,643 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈2（张思婷）.docx
+2025-11-27 02:36:03,647 - data_processor - INFO - 处理文件 康圣访谈2（张思婷）.docx: 识别 18 个段落，提取 82 个受访人句子
+2025-11-27 02:36:03,672 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈5翟圣.docx
+2025-11-27 02:36:03,676 - data_processor - INFO - 处理文件 康圣访谈5翟圣.docx: 识别 24 个段落，提取 86 个受访人句子
+2025-11-27 02:36:03,699 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈6黄军涛.docx
+2025-11-27 02:36:03,704 - data_processor - INFO - 处理文件 康圣访谈6黄军涛.docx: 识别 18 个段落，提取 113 个受访人句子
+2025-11-27 02:36:03,724 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈7吴天.docx
+2025-11-27 02:36:03,728 - data_processor - INFO - 处理文件 康圣访谈7吴天.docx: 识别 28 个段落，提取 80 个受访人句子
+2025-11-27 02:36:03,746 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈8任作非.docx
+2025-11-27 02:36:03,749 - data_processor - INFO - 处理文件 康圣访谈8任作非.docx: 识别 28 个段落，提取 72 个受访人句子
+2025-11-27 02:36:03,750 - enhanced_coding_generator - INFO - 生成 489 个一阶编码
+2025-11-27 02:36:03,750 - enhanced_coding_generator - INFO - 开始二阶编码分类，共 489 个一阶编码
+2025-11-27 02:36:03,754 - enhanced_coding_generator - INFO - 二阶编码完成: 共 7 个类别
+2025-11-27 02:36:03,754 - enhanced_coding_generator - INFO - 生成 6 个二阶编码
+2025-11-27 02:36:03,755 - enhanced_coding_generator - INFO - 开始三阶编码抽象，共 6 个二阶编码
+2025-11-27 02:36:03,755 - enhanced_coding_generator - INFO - 生成 3 个三阶编码
+2025-11-27 02:36:03,755 - enhanced_coding_generator - INFO - 生成 3 个三阶编码
+2025-11-27 02:36:03,756 - grounded_theory_coder - INFO - 开始构建编码结构: 一阶489, 二阶6, 三阶3
+2025-11-27 02:36:03,760 - grounded_theory_coder - INFO - 自动编号完成: 共3个三阶编码
+2025-11-27 02:36:03,760 - grounded_theory_coder - INFO - 构建了扎根理论编码结构: 3个三阶编码
+2025-12-06 21:12:07,479 - __main__ - INFO - 应用程序正常退出
+2025-12-10 06:15:34,028 - root - INFO - 确保目录存在: E:\PythonProject\zthree2\local_models
+2025-12-10 06:15:34,028 - root - INFO - 确保目录存在: E:\PythonProject\zthree2\trained_models
+2025-12-10 06:15:34,028 - root - INFO - 确保目录存在: E:\PythonProject\zthree2\standard_answers
+2025-12-10 06:15:34,028 - root - INFO - 确保目录存在: E:\PythonProject\zthree2\data
+2025-12-10 06:15:34,028 - __main__ - INFO - 环境初始化成功
+2025-12-10 06:16:33,756 - root - INFO - 确保目录存在: E:\PythonProject\zthree2\local_models
+2025-12-10 06:16:33,756 - root - INFO - 确保目录存在: E:\PythonProject\zthree2\trained_models
+2025-12-10 06:16:33,758 - root - INFO - 确保目录存在: E:\PythonProject\zthree2\standard_answers
+2025-12-10 06:16:33,758 - root - INFO - 确保目录存在: E:\PythonProject\zthree2\data
+2025-12-10 06:16:33,758 - __main__ - INFO - 环境初始化成功
+2025-12-10 06:16:40,379 - numexpr.utils - INFO - NumExpr defaulting to 14 threads.
+2025-12-10 06:16:47,423 - training_manager - INFO - scikit-learn 版本: 1.7.2
+2025-12-10 06:16:52,083 - model_manager - INFO - 使用设备: cpu
+2025-12-10 06:16:52,083 - standard_answer_manager - INFO - 标准答案已加载: v9_20251121_054154.json
+2025-12-10 06:16:52,824 - model_manager - INFO - 加载本地BERT模型
+2025-12-10 06:16:53,244 - model_manager - INFO - 模型初始化成功
+2025-12-10 06:16:53,244 - main_window - INFO - 模型初始化成功
+2025-12-10 06:16:53,762 - __main__ - INFO - 扎根理论编码分析系统启动成功，主窗口已显示
+2025-12-10 06:16:54,363 - model_manager - INFO - 加载本地BERT模型
+2025-12-10 06:16:54,426 - model_manager - INFO - 模型初始化成功
+2025-12-10 06:16:54,426 - main_window - INFO - 模型初始化成功
+2025-12-10 06:18:22,197 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈1（蒋风情）.docx
+2025-12-10 06:18:22,197 - main_window - INFO - 成功导入文件: 康圣访谈1（蒋风情）.docx
+2025-12-10 06:18:46,180 - manual_coding_dialog - INFO - 选择了文件: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈1（蒋风情）.docx
+2025-12-10 06:18:46,180 - manual_coding_dialog - INFO - 文件内容长度: 4021
+2025-12-10 06:18:46,193 - manual_coding_dialog - INFO - 文本内容显示成功
+2025-12-10 06:18:55,067 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈1（蒋风情）.docx
+2025-12-10 06:18:55,077 - data_processor - INFO - 处理文件 康圣访谈1（蒋风情）.docx: 识别 26 个段落，提取 63 个受访人句子
+2025-12-10 06:18:55,078 - enhanced_coding_generator - INFO - 生成 62 个一阶编码
+2025-12-10 06:18:55,079 - enhanced_coding_generator - INFO - 开始二阶编码分类，共 62 个一阶编码
+2025-12-10 06:18:55,079 - enhanced_coding_generator - INFO - 二阶编码完成: 共 7 个类别
+2025-12-10 06:18:55,079 - enhanced_coding_generator - INFO - 生成 5 个二阶编码
+2025-12-10 06:18:55,080 - enhanced_coding_generator - INFO - 开始三阶编码抽象，共 5 个二阶编码
+2025-12-10 06:18:55,080 - enhanced_coding_generator - INFO - 生成 3 个三阶编码
+2025-12-10 06:18:55,080 - enhanced_coding_generator - INFO - 生成 3 个三阶编码
+2025-12-10 06:18:55,081 - grounded_theory_coder - INFO - 开始构建编码结构: 一阶62, 二阶5, 三阶3
+2025-12-10 06:18:55,081 - grounded_theory_coder - INFO - 自动编号完成: 共3个三阶编码
+2025-12-10 06:18:55,082 - grounded_theory_coder - INFO - 构建了扎根理论编码结构: 3个三阶编码
+2025-12-10 06:20:12,829 - main_window - ERROR - 启动手动编码失败: setText(self, column: int, atext: Optional[str]): argument 2 has unexpected type 'dict'
+2025-12-10 06:20:36,054 - main_window - ERROR - 启动手动编码失败: setText(self, column: int, atext: Optional[str]): argument 2 has unexpected type 'dict'
+2025-12-10 06:20:43,347 - manual_coding_dialog - INFO - 选择了文件: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈1（蒋风情）.docx
+2025-12-10 06:20:43,347 - manual_coding_dialog - INFO - 文件内容长度: 4021
+2025-12-10 06:20:43,360 - manual_coding_dialog - INFO - 文本内容显示成功
+2025-12-10 06:24:32,752 - manual_coding_dialog - INFO - 选择了文件: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈1（蒋风情）.docx
+2025-12-10 06:24:32,767 - manual_coding_dialog - INFO - 文件内容长度: 4021
+2025-12-10 06:24:32,777 - manual_coding_dialog - INFO - 文本内容显示成功
+2025-12-10 06:26:02,635 - manual_coding_dialog - INFO - 选择了文本: 我这边的话主要做人员管理、实验安排、新项目引进以及人员培训这一些。...
+2025-12-10 06:26:02,637 - manual_coding_dialog - INFO - 文本已复制到一阶编码输入框
+2025-12-10 06:29:35,967 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈1（蒋风情）.docx
+2025-12-10 06:29:35,972 - data_processor - INFO - 处理文件 康圣访谈1（蒋风情）.docx: 识别 26 个段落，提取 63 个受访人句子
+2025-12-10 06:29:35,973 - enhanced_coding_generator - INFO - 生成 62 个一阶编码
+2025-12-10 06:29:35,973 - enhanced_coding_generator - INFO - 开始二阶编码分类，共 62 个一阶编码
+2025-12-10 06:29:35,974 - enhanced_coding_generator - INFO - 二阶编码完成: 共 7 个类别
+2025-12-10 06:29:35,974 - enhanced_coding_generator - INFO - 生成 5 个二阶编码
+2025-12-10 06:29:35,974 - enhanced_coding_generator - INFO - 开始三阶编码抽象，共 5 个二阶编码
+2025-12-10 06:29:35,975 - enhanced_coding_generator - INFO - 生成 3 个三阶编码
+2025-12-10 06:29:35,975 - enhanced_coding_generator - INFO - 生成 3 个三阶编码
+2025-12-10 06:29:35,975 - grounded_theory_coder - INFO - 开始构建编码结构: 一阶62, 二阶5, 三阶3
+2025-12-10 06:29:35,975 - grounded_theory_coder - INFO - 自动编号完成: 共3个三阶编码
+2025-12-10 06:29:35,975 - grounded_theory_coder - INFO - 构建了扎根理论编码结构: 3个三阶编码
+2025-12-10 06:39:08,604 - data_processor - INFO - 成功读取Word文档: C:/Users/XChen/OneDrive - CGIAR/Desktop/录音转录/康圣访谈1（蒋风情）.docx
+2025-12-10 06:39:08,613 - data_processor - INFO - 处理文件 康圣访谈1（蒋风情）.docx: 识别 26 个段落，提取 63 个受访人句子
+2025-12-10 06:39:08,616 - enhanced_coding_generator - INFO - 生成 62 个一阶编码
+2025-12-10 06:39:08,617 - enhanced_coding_generator - INFO - 开始二阶编码分类，共 62 个一阶编码
+2025-12-10 06:39:08,618 - enhanced_coding_generator - INFO - 二阶编码完成: 共 7 个类别
+2025-12-10 06:39:08,618 - enhanced_coding_generator - INFO - 生成 5 个二阶编码
+2025-12-10 06:39:08,618 - enhanced_coding_generator - INFO - 开始三阶编码抽象，共 5 个二阶编码
+2025-12-10 06:39:08,618 - enhanced_coding_generator - INFO - 生成 3 个三阶编码
+2025-12-10 06:39:08,618 - enhanced_coding_generator - INFO - 生成 3 个三阶编码
+2025-12-10 06:39:08,619 - grounded_theory_coder - INFO - 开始构建编码结构: 一阶62, 二阶5, 三阶3
+2025-12-10 06:39:08,620 - grounded_theory_coder - INFO - 自动编号完成: 共3个三阶编码
+2025-12-10 06:39:08,620 - grounded_theory_coder - INFO - 构建了扎根理论编码结构: 3个三阶编码
+2025-12-10 07:11:14,212 - __main__ - INFO - 应用程序正常退出
+2025-12-24 09:39:46,046 - root - INFO - 确保目录存在: D:\zthree2\local_models
+2025-12-24 09:39:46,047 - root - INFO - 确保目录存在: D:\zthree2\trained_models
+2025-12-24 09:39:46,047 - root - INFO - 确保目录存在: D:\zthree2\standard_answers
+2025-12-24 09:39:46,048 - root - INFO - 确保目录存在: D:\zthree2\data
+2025-12-24 09:39:46,048 - __main__ - INFO - 环境初始化成功
+2025-12-24 09:39:52,527 - training_manager - INFO - scikit-learn 版本: 1.7.2
+2025-12-24 09:39:52,750 - model_manager - INFO - 使用设备: cpu
+2025-12-24 09:39:52,750 - standard_answer_manager - INFO - 标准答案已加载: v9_20251121_054154.json
+2025-12-24 09:39:52,909 - model_manager - INFO - 加载本地BERT模型
+2025-12-24 09:39:53,058 - model_manager - INFO - 模型初始化成功
+2025-12-24 09:39:53,058 - main_window - INFO - 模型初始化成功
+2025-12-24 09:39:53,853 - __main__ - INFO - 扎根理论编码分析系统启动成功，主窗口已显示
+2025-12-24 09:39:54,452 - model_manager - INFO - 加载本地BERT模型
+2025-12-24 09:39:54,483 - model_manager - INFO - 模型初始化成功
+2025-12-24 09:39:54,483 - main_window - INFO - 模型初始化成功
+2025-12-24 09:40:34,223 - data_processor - ERROR - 读取文本文件失败 C:/Users/33288/Desktop/中国纹样视频制作总结报告.txt: 'utf-8' codec can't decode byte 0x87 in position 10: invalid start byte
+2025-12-24 09:40:34,223 - main_window - ERROR - 导入文件失败 C:/Users/33288/Desktop/中国纹样视频制作总结报告.txt: 'utf-8' codec can't decode byte 0x87 in position 10: invalid start byte
+2025-12-24 09:43:03,847 - data_processor - INFO - 成功读取Word文档: C:/Users/33288/Desktop/中国纹样视频制作总结报告.docx
+2025-12-24 09:43:03,849 - main_window - INFO - 成功导入文件: 中国纹样视频制作总结报告.docx
+2025-12-24 09:43:11,019 - data_processor - INFO - 成功读取Word文档: C:/Users/33288/Desktop/中国纹样视频制作总结报告.docx
+2025-12-24 09:43:11,032 - data_processor - INFO - 处理文件 中国纹样视频制作总结报告.docx: 识别 5 个段落，提取 21 个受访人句子
+2025-12-24 09:43:11,034 - enhanced_coding_generator - INFO - 生成 21 个一阶编码
+2025-12-24 09:43:11,036 - enhanced_coding_generator - INFO - 开始二阶编码分类，共 21 个一阶编码
+2025-12-24 09:43:11,036 - enhanced_coding_generator - INFO - 二阶编码完成: 共 7 个类别
+2025-12-24 09:43:11,036 - enhanced_coding_generator - INFO - 生成 5 个二阶编码
+2025-12-24 09:43:11,036 - enhanced_coding_generator - INFO - 开始三阶编码抽象，共 5 个二阶编码
+2025-12-24 09:43:11,036 - enhanced_coding_generator - INFO - 生成 4 个三阶编码
+2025-12-24 09:43:11,036 - enhanced_coding_generator - INFO - 生成 4 个三阶编码
+2025-12-24 09:43:11,037 - grounded_theory_coder - INFO - 开始构建编码结构: 一阶21, 二阶5, 三阶4
+2025-12-24 09:43:11,037 - grounded_theory_coder - INFO - 自动编号完成: 共4个三阶编码
+2025-12-24 09:43:11,038 - grounded_theory_coder - INFO - 构建了扎根理论编码结构: 4个三阶编码
+2025-12-24 09:44:09,332 - __main__ - INFO - 应用程序正常退出
+2025-12-24 09:44:41,741 - root - INFO - 确保目录存在: D:\zthree2\local_models
+2025-12-24 09:44:41,742 - root - INFO - 确保目录存在: D:\zthree2\trained_models
+2025-12-24 09:44:41,742 - root - INFO - 确保目录存在: D:\zthree2\standard_answers
+2025-12-24 09:44:41,742 - root - INFO - 确保目录存在: D:\zthree2\data
+2025-12-24 09:44:41,743 - app_launcher - INFO - 环境初始化成功
+2025-12-24 09:44:46,427 - training_manager - INFO - scikit-learn 版本: 1.7.2
+2025-12-24 09:44:46,591 - model_manager - INFO - 使用设备: cpu
+2025-12-24 09:44:46,592 - standard_answer_manager - INFO - 标准答案已加载: v9_20251121_054154.json
+2025-12-24 09:44:46,708 - model_manager - INFO - 加载本地BERT模型
+2025-12-24 09:44:46,785 - model_manager - INFO - 模型初始化成功
+2025-12-24 09:44:46,785 - main_window - INFO - 模型初始化成功
+2025-12-24 09:44:47,632 - app_launcher - INFO - 扎根理论编码分析系统启动成功，主窗口已显示
+2025-12-24 09:44:48,232 - model_manager - INFO - 加载本地BERT模型
+2025-12-24 09:44:48,278 - model_manager - INFO - 模型初始化成功
+2025-12-24 09:44:48,278 - main_window - INFO - 模型初始化成功
+2025-12-24 09:44:57,867 - app_launcher - INFO - 应用程序正常退出
+2025-12-24 09:45:05,503 - root - INFO - 确保目录存在: D:\zthree2\local_models
+2025-12-24 09:45:05,503 - root - INFO - 确保目录存在: D:\zthree2\trained_models
+2025-12-24 09:45:05,503 - root - INFO - 确保目录存在: D:\zthree2\standard_answers
+2025-12-24 09:45:05,503 - root - INFO - 确保目录存在: D:\zthree2\data
+2025-12-24 09:45:05,504 - __main__ - INFO - 环境初始化成功
+2025-12-24 09:45:10,179 - training_manager - INFO - scikit-learn 版本: 1.7.2
+2025-12-24 09:45:10,346 - model_manager - INFO - 使用设备: cpu
+2025-12-24 09:45:10,346 - standard_answer_manager - INFO - 标准答案已加载: v9_20251121_054154.json
+2025-12-24 09:45:10,463 - model_manager - INFO - 加载本地BERT模型
+2025-12-24 09:45:10,542 - model_manager - INFO - 模型初始化成功
+2025-12-24 09:45:10,542 - main_window - INFO - 模型初始化成功
+2025-12-24 09:45:11,397 - __main__ - INFO - 扎根理论编码分析系统启动成功，主窗口已显示
+2025-12-24 09:45:11,997 - model_manager - INFO - 加载本地BERT模型
+2025-12-24 09:45:12,041 - model_manager - INFO - 模型初始化成功
+2025-12-24 09:45:12,042 - main_window - INFO - 模型初始化成功
+2025-12-24 09:45:25,398 - data_processor - INFO - 成功读取Word文档: C:/Users/33288/Desktop/中国纹样视频制作总结报告.docx
+2025-12-24 09:45:25,399 - main_window - INFO - 成功导入文件: 中国纹样视频制作总结报告.docx
+2025-12-24 09:45:28,304 - data_processor - INFO - 成功读取Word文档: C:/Users/33288/Desktop/中国纹样视频制作总结报告.docx
+2025-12-24 09:45:28,312 - data_processor - INFO - 处理文件 中国纹样视频制作总结报告.docx: 识别 5 个段落，提取 21 个受访人句子
+2025-12-24 09:45:28,313 - enhanced_coding_generator - INFO - 生成 21 个一阶编码
+2025-12-24 09:45:28,314 - enhanced_coding_generator - INFO - 开始二阶编码分类，共 21 个一阶编码
+2025-12-24 09:45:28,314 - enhanced_coding_generator - INFO - 二阶编码完成: 共 7 个类别
+2025-12-24 09:45:28,314 - enhanced_coding_generator - INFO - 生成 5 个二阶编码
+2025-12-24 09:45:28,315 - enhanced_coding_generator - INFO - 开始三阶编码抽象，共 5 个二阶编码
+2025-12-24 09:45:28,315 - enhanced_coding_generator - INFO - 生成 4 个三阶编码
+2025-12-24 09:45:28,315 - enhanced_coding_generator - INFO - 生成 4 个三阶编码
+2025-12-24 09:45:28,316 - grounded_theory_coder - INFO - 开始构建编码结构: 一阶21, 二阶5, 三阶4
+2025-12-24 09:45:28,316 - grounded_theory_coder - INFO - 自动编号完成: 共4个三阶编码
+2025-12-24 09:45:28,316 - grounded_theory_coder - INFO - 构建了扎根理论编码结构: 4个三阶编码
+2025-12-24 09:45:57,093 - data_processor - INFO - 成功读取Word文档: C:/Users/33288/Desktop/尚硅谷大模型技术之NLP1.0.3.docx
+2025-12-24 09:45:57,094 - main_window - INFO - 成功导入文件: 尚硅谷大模型技术之NLP1.0.3.docx
+2025-12-24 09:46:03,835 - data_processor - INFO - 成功读取Word文档: C:/Users/33288/Desktop/尚硅谷大模型技术之NLP1.0.3.docx
+2025-12-24 09:46:03,963 - data_processor - INFO - 处理文件 尚硅谷大模型技术之NLP1.0.3.docx: 识别 33 个段落，提取 846 个受访人句子
+2025-12-24 09:46:03,964 - enhanced_coding_generator - INFO - 生成 845 个一阶编码
+2025-12-24 09:46:03,964 - enhanced_coding_generator - INFO - 开始二阶编码分类，共 845 个一阶编码
+2025-12-24 09:46:03,968 - enhanced_coding_generator - INFO - 二阶编码完成: 共 7 个类别
+2025-12-24 09:46:03,968 - enhanced_coding_generator - INFO - 生成 6 个二阶编码
+2025-12-24 09:46:03,969 - enhanced_coding_generator - INFO - 开始三阶编码抽象，共 6 个二阶编码
+2025-12-24 09:46:03,969 - enhanced_coding_generator - INFO - 生成 3 个三阶编码
+2025-12-24 09:46:03,969 - enhanced_coding_generator - INFO - 生成 3 个三阶编码
+2025-12-24 09:46:03,969 - grounded_theory_coder - INFO - 开始构建编码结构: 一阶845, 二阶6, 三阶3
+2025-12-24 09:46:03,971 - grounded_theory_coder - INFO - 自动编号完成: 共3个三阶编码
+2025-12-24 09:46:03,971 - grounded_theory_coder - INFO - 构建了扎根理论编码结构: 3个三阶编码
+2025-12-24 17:41:33,510 - __main__ - INFO - 应用程序正常退出
