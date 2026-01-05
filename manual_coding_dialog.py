@@ -175,8 +175,16 @@ class ManualCodingDialog(QDialog):
         structure_layout = QVBoxLayout(structure_group)
 
         self.coding_tree = QTreeWidget()
-        self.coding_tree.setHeaderLabels(["编码内容", "类型", "数量"])
+        self.coding_tree.setHeaderLabels(["编码内容", "类型", "数量", "文件来源数", "句子来源数", "关联编号"])
+        self.coding_tree.setColumnWidth(0, 300)
+        self.coding_tree.setColumnWidth(1, 80)
+        self.coding_tree.setColumnWidth(2, 60)
+        self.coding_tree.setColumnWidth(3, 80)
+        self.coding_tree.setColumnWidth(4, 80)
+        self.coding_tree.setColumnWidth(5, 120)
         self.coding_tree.itemDoubleClicked.connect(self.on_tree_item_double_clicked)
+        # 启用多选模式
+        self.coding_tree.setSelectionMode(QTreeWidget.ExtendedSelection)
         structure_layout.addWidget(self.coding_tree)
 
         # 树形控件操作按钮
@@ -187,9 +195,13 @@ class ManualCodingDialog(QDialog):
 
         delete_btn = QPushButton("删除选中")
         delete_btn.clicked.connect(self.delete_selected_code)
+        
+        create_parent_btn = QPushButton("创建父级")
+        create_parent_btn.clicked.connect(self.create_parent_node)
 
         tree_buttons_layout.addWidget(edit_btn)
         tree_buttons_layout.addWidget(delete_btn)
+        tree_buttons_layout.addWidget(create_parent_btn)
 
         structure_layout.addLayout(tree_buttons_layout)
 
@@ -238,6 +250,39 @@ class ManualCodingDialog(QDialog):
     def on_second_category_changed(self, second_category):
         """二阶编码改变事件"""
         pass  # 可以在这里添加相关逻辑
+
+    def generate_code_number(self, prefix, existing_codes):
+        """生成编码编号，例如A01, A02, B01, B02, C01, C02等"""
+        # 从现有编码中提取已使用的编号
+        used_numbers = []
+        for code in existing_codes:
+            # 如果code是完整的一阶编码（包含内容和编号），需要先提取编号部分
+            if ' ' in code:  # 如果包含空格，说明是"内容 编号"格式
+                parts = code.split()
+                if len(parts) >= 2:
+                    actual_code = parts[-1]  # 编号在最后
+                else:
+                    actual_code = code
+            else:
+                actual_code = code
+            
+            # 检查是否是目标前缀的编号
+            if actual_code.startswith(prefix) and len(actual_code) > len(prefix):
+                try:
+                    # 提取编号部分，例如从"A01"中提取"01"
+                    number_part = actual_code[len(prefix):]
+                    if number_part.isdigit():
+                        used_numbers.append(int(number_part))
+                except:
+                    continue
+        
+        # 找到下一个可用编号
+        next_number = 1
+        while next_number in used_numbers:
+            next_number += 1
+        
+        # 格式化编号，保持两位数格式
+        return f"{prefix}{next_number:02d}"
 
     def on_file_selected(self, item):
         """文件选择事件 - 修复版本"""
@@ -301,10 +346,24 @@ class ManualCodingDialog(QDialog):
         """添加三阶编码"""
         name, ok = QInputDialog.getText(self, "添加三阶编码", "请输入三阶编码名称:")
         if ok and name.strip():
-            if name.strip() not in self.current_codes:
-                self.current_codes[name.strip()] = {}
+            # 生成三阶编码编号（C开头）
+            existing_codes = []
+            for third_cat, second_cats in self.current_codes.items():
+                if third_cat.startswith("C") and len(third_cat) > 1 and third_cat[1:].isdigit():
+                    existing_codes.append(third_cat)
+            
+            if name.strip().startswith("C"):
+                # 如果用户输入了C开头的编号，直接使用
+                third_code = name.strip()
+            else:
+                # 自动生成C开头的编号
+                third_code = self.generate_code_number("C", existing_codes)
+                name = f"{name.strip()} {third_code}"
+            
+            if name not in self.current_codes:
+                self.current_codes[name] = {}
                 self.update_category_combos()
-                self.third_category_combo.setCurrentText(name.strip())
+                self.third_category_combo.setCurrentText(name)
                 self.update_coding_tree()
 
     def add_second_category(self):
@@ -316,29 +375,47 @@ class ManualCodingDialog(QDialog):
 
         name, ok = QInputDialog.getText(self, "添加二阶编码", "请输入二阶编码名称:")
         if ok and name.strip():
-            if name.strip() not in self.current_codes[current_third]:
-                self.current_codes[current_third][name.strip()] = []
+            # 生成二阶编码编号（B开头）
+            existing_codes = []
+            for second_cat, first_contents in self.current_codes[current_third].items():
+                if second_cat.startswith("B") and len(second_cat) > 1 and second_cat[1:].isdigit():
+                    existing_codes.append(second_cat)
+            
+            if name.strip().startswith("B"):
+                # 如果用户输入了B开头的编号，直接使用
+                second_code = name.strip()
+            else:
+                # 自动生成B开头的编号
+                second_code = self.generate_code_number("B", existing_codes)
+                name = f"{name.strip()} {second_code}"
+            
+            if name not in self.current_codes[current_third]:
+                self.current_codes[current_third][name] = []
                 self.update_category_combos()
-                self.second_category_combo.setCurrentText(name.strip())
+                self.second_category_combo.setCurrentText(name)
                 self.update_coding_tree()
 
     def add_manual_code(self):
-        """添加手动编码"""
+        """添加手动编码 - 支持直接添加一阶编码"""
         third_category = self.third_category_combo.currentText().strip()
         second_category = self.second_category_combo.currentText().strip()
         first_content = self.first_content_edit.toPlainText().strip()
 
-        if not third_category:
-            QMessageBox.warning(self, "警告", "请输入三阶编码")
-            return
-
-        if not second_category:
-            QMessageBox.warning(self, "警告", "请输入二阶编码")
-            return
-
         if not first_content:
             QMessageBox.warning(self, "警告", "请输入一阶编码内容")
             return
+
+        # 如果没有三阶编码，创建一个默认的
+        if not third_category:
+            third_category = "未分类三阶"
+            if third_category not in self.current_codes:
+                self.current_codes[third_category] = {}
+
+        # 如果没有二阶编码，创建一个默认的
+        if not second_category:
+            second_category = "未分类二阶"
+            if second_category not in self.current_codes[third_category]:
+                self.current_codes[third_category][second_category] = []
 
         # 确保三阶编码存在
         if third_category not in self.current_codes:
@@ -348,12 +425,16 @@ class ManualCodingDialog(QDialog):
         if second_category not in self.current_codes[third_category]:
             self.current_codes[third_category][second_category] = []
 
+        # 生成一阶编码编号（A开头）
+        first_code = self.generate_code_number("A", self.current_codes[third_category][second_category])
+        first_content_with_code = f"{first_content} {first_code}"
+
         # 添加一阶编码
-        if first_content not in self.current_codes[third_category][second_category]:
-            self.current_codes[third_category][second_category].append(first_content)
+        if first_content_with_code not in self.current_codes[third_category][second_category]:
+            self.current_codes[third_category][second_category].append(first_content_with_code)
             self.first_content_edit.clear()
             self.update_coding_tree()
-            QMessageBox.information(self, "成功", "编码已添加")
+            QMessageBox.information(self, "成功", f"编码已添加: {first_code}")
         else:
             QMessageBox.warning(self, "警告", "该编码内容已存在")
 
@@ -362,24 +443,66 @@ class ManualCodingDialog(QDialog):
         self.coding_tree.clear()
 
         for third_cat, second_cats in self.current_codes.items():
+            # 计算三阶编码的累加数据
+            total_files = 0
+            total_sentences = 0
+            all_codes = []
+            
+            for second_cat, first_contents in second_cats.items():
+                total_sentences += len(first_contents)
+                # 假设每个一阶编码来自一个文件（实际中可能需要根据具体文件信息计算）
+                total_files += 1  # 每个二阶编码至少包含一个文件
+                
+                for content in first_contents:
+                    # 提取编号（假设编号在内容末尾，以空格分隔）
+                    parts = content.split()
+                    if len(parts) >= 2 and (parts[-1].startswith('A') or parts[-1].startswith('B') or parts[-1].startswith('C')) and parts[-1][1:].isdigit():
+                        all_codes.append(parts[-1])
+
             third_item = QTreeWidgetItem(self.coding_tree)
             third_item.setText(0, third_cat)
             third_item.setText(1, "三阶编码")
             third_item.setText(2, str(len(second_cats)))
+            third_item.setText(3, str(total_files))  # 文件来源数
+            third_item.setText(4, str(total_sentences))  # 句子来源数
+            third_item.setText(5, ", ".join(all_codes))  # 关联编号
             third_item.setData(0, Qt.UserRole, {"type": "third", "name": third_cat})
 
             for second_cat, first_contents in second_cats.items():
+                # 计算二阶编码的累加数据
+                second_total_sentences = len(first_contents)
+                second_total_files = 1  # 每个二阶编码至少来自一个文件
+                second_codes = []
+                
+                for content in first_contents:
+                    # 提取编号（假设编号在内容末尾，以空格分隔）
+                    parts = content.split()
+                    if len(parts) >= 2 and (parts[-1].startswith('A') or parts[-1].startswith('B') or parts[-1].startswith('C')) and parts[-1][1:].isdigit():
+                        second_codes.append(parts[-1])
+
                 second_item = QTreeWidgetItem(third_item)
                 second_item.setText(0, second_cat)
                 second_item.setText(1, "二阶编码")
                 second_item.setText(2, str(len(first_contents)))
+                second_item.setText(3, "")  # 二阶的文件来源数不显示
+                second_item.setText(4, str(second_total_sentences))  # 句子来源数
+                second_item.setText(5, ", ".join(second_codes))  # 关联编号
                 second_item.setData(0, Qt.UserRole, {"type": "second", "name": second_cat, "parent": third_cat})
 
                 for content in first_contents:
+                    # 提取一阶编码的编号
+                    code = ""
+                    parts = content.split()
+                    if len(parts) >= 2 and (parts[-1].startswith('A') or parts[-1].startswith('B') or parts[-1].startswith('C')) and parts[-1][1:].isdigit():
+                        code = parts[-1]
+
                     first_item = QTreeWidgetItem(second_item)
                     first_item.setText(0, content)
                     first_item.setText(1, "一阶编码")
                     first_item.setText(2, "1")
+                    first_item.setText(3, "1")  # 文件来源数
+                    first_item.setText(4, "1")  # 句子来源数
+                    first_item.setText(5, code)  # 关联编号
                     first_item.setData(0, Qt.UserRole, {"type": "first", "content": content, "parent": second_cat})
 
         self.coding_tree.expandAll()
@@ -622,6 +745,200 @@ class ManualCodingDialog(QDialog):
                     self.accept()
                 else:
                     QMessageBox.critical(self, "错误", "导出失败")
+
+    def create_parent_node(self):
+        """创建父级节点 - 支持选中一阶编码创建二阶父节点，选中二阶编码创建三阶父节点，支持多选"""
+        # 获取所有选中的项目
+        selected_items = self.coding_tree.selectedItems()
+        if not selected_items:
+            QMessageBox.warning(self, "警告", "请先选择一个或多个编码节点")
+            return
+
+        # 检查选中的项目是否都是同一种类型
+        item_types = set()
+        for item in selected_items:
+            item_data = item.data(0, Qt.UserRole)
+            if item_data:
+                item_types.add(item_data.get("type", ""))
+        
+        if len(item_types) > 1:
+            QMessageBox.warning(self, "警告", "请选择相同类型的编码节点")
+            return
+        
+        if len(item_types) == 0:
+            return
+
+        item_type = list(item_types)[0]
+        
+        if item_type == "first":
+            # 选中一阶编码，创建二阶父节点
+            parent_name, ok = QInputDialog.getText(self, "创建二阶编码", "请输入二阶编码名称:")
+            if ok and parent_name.strip():
+                parent_name = parent_name.strip()
+                
+                # 生成二阶编码编号（B开头）
+                third_names = set()
+                for item in selected_items:
+                    item_data = item.data(0, Qt.UserRole)
+                    if item_data:
+                        grand_parent_item = item.parent()
+                        if grand_parent_item:
+                            grand_parent_data = grand_parent_item.data(0, Qt.UserRole)
+                            if grand_parent_data and grand_parent_data.get("type") == "second":
+                                third_names.add(grand_parent_data.get("name"))
+                
+                # 为所有相关的三阶编码收集现有的二阶编码
+                existing_codes = []
+                for third_name in third_names:
+                    if third_name in self.current_codes:
+                        for second_cat in self.current_codes[third_name].keys():
+                            if second_cat.startswith("B") and len(second_cat) > 1 and second_cat[1:].isdigit():
+                                existing_codes.append(second_cat)
+                
+                if parent_name.startswith("B"):
+                    # 如果用户输入了B开头的编号，直接使用
+                    second_code = parent_name
+                else:
+                    # 自动生成B开头的编号
+                    second_code = self.generate_code_number("B", existing_codes)
+                    parent_name = f"{parent_name} {second_code}"
+                
+                # 如果选中的编码来自不同的三阶编码，需要确认操作
+                if len(third_names) > 1:
+                    reply = QMessageBox.question(self, "确认操作", 
+                        f"选中的编码来自{len(third_names)}个不同的三阶编码，确定要将它们都移动到新的二阶编码 '{parent_name}' 下吗？",
+                        QMessageBox.Yes | QMessageBox.No)
+                    if reply != QMessageBox.Yes:
+                        return
+                
+                # 检查二阶编码是否已存在（在所有相关的三阶编码中）
+                all_third_names = list(third_names)
+                can_create = True
+                for third_name in all_third_names:
+                    if parent_name in self.current_codes.get(third_name, {}):
+                        QMessageBox.warning(self, "警告", f"二阶编码 '{parent_name}' 在三阶编码 '{third_name}' 下已存在")
+                        can_create = False
+                        break
+                
+                if not can_create:
+                    return
+                
+                # 创建新的二阶编码并移动所有选中的一阶编码
+                for third_name in all_third_names:
+                    if third_name not in self.current_codes:
+                        self.current_codes[third_name] = {}
+                    
+                    if parent_name not in self.current_codes[third_name]:
+                        self.current_codes[third_name][parent_name] = []
+                
+                # 移动选中的一阶编码
+                for item in selected_items:
+                    item_data = item.data(0, Qt.UserRole)
+                    if item_data:
+                        # 获取当前一阶编码的详细信息
+                        first_content = item_data.get("content", "")
+                        
+                        # 获取当前一阶编码的父级（二阶）和祖父级（三阶）
+                        parent_item = item.parent()
+                        grand_parent_item = parent_item.parent() if parent_item else None
+                        
+                        if parent_item:
+                            parent_data = parent_item.data(0, Qt.UserRole)
+                            if parent_data and parent_data.get("type") == "second":
+                                original_second_name = parent_data.get("name", "")
+                                
+                                if grand_parent_item:
+                                    grand_parent_data = grand_parent_item.data(0, Qt.UserRole)
+                                    if grand_parent_data and grand_parent_data.get("type") == "third":
+                                        original_third_name = grand_parent_data.get("name", "")
+                                        
+                                        # 确保目标二阶编码存在
+                                        if parent_name not in self.current_codes[original_third_name]:
+                                            self.current_codes[original_third_name][parent_name] = []
+                                        # 添加一阶编码到新的二阶编码
+                                        self.current_codes[original_third_name][parent_name].append(first_content)
+                                        
+                                        # 从原二阶编码中删除该一阶编码
+                                        if (original_third_name in self.current_codes and 
+                                            original_second_name in self.current_codes[original_third_name] and
+                                            first_content in self.current_codes[original_third_name][original_second_name]):
+                                            self.current_codes[original_third_name][original_second_name].remove(first_content)
+                                            
+                                            # 如果原二阶编码下没有其他项目了，删除该二阶编码
+                                            if len(self.current_codes[original_third_name][original_second_name]) == 0:
+                                                del self.current_codes[original_third_name][original_second_name]
+                
+                self.update_category_combos()
+                self.update_coding_tree()
+                QMessageBox.information(self, "成功", f"已创建二阶编码 '{parent_name}' 并将{len(selected_items)}个一阶编码移入")
+        
+        elif item_type == "second":
+            # 选中二阶编码，创建三阶父节点
+            parent_name, ok = QInputDialog.getText(self, "创建三阶编码", "请输入三阶编码名称:")
+            if ok and parent_name.strip():
+                parent_name = parent_name.strip()
+                
+                # 生成三阶编码编号（C开头）
+                existing_codes = []
+                for third_cat, second_cats in self.current_codes.items():
+                    if third_cat.startswith("C") and len(third_cat) > 1 and third_cat[1:].isdigit():
+                        existing_codes.append(third_cat)
+                
+                if parent_name.startswith("C"):
+                    # 如果用户输入了C开头的编号，直接使用
+                    third_code = parent_name
+                else:
+                    # 自动生成C开头的编号
+                    third_code = self.generate_code_number("C", existing_codes)
+                    parent_name = f"{parent_name} {third_code}"
+                
+                # 获取当前二阶编码的三阶父级
+                original_third_names = set()
+                for item in selected_items:
+                    item_data = item.data(0, Qt.UserRole)
+                    if item_data:
+                        parent_item = item.parent()
+                        if parent_item:
+                            parent_data = parent_item.data(0, Qt.UserRole)
+                            if parent_data and parent_data.get("type") == "third":
+                                original_third_names.add(parent_data.get("name"))
+                
+                # 检查三阶编码是否已存在
+                if parent_name in self.current_codes:
+                    QMessageBox.warning(self, "警告", f"三阶编码 '{parent_name}' 已存在")
+                    return
+                
+                # 创建新的三阶编码结构
+                if parent_name not in self.current_codes:
+                    self.current_codes[parent_name] = {}
+                
+                # 将所有选中的二阶编码移动到新的三阶编码下
+                for item in selected_items:
+                    item_data = item.data(0, Qt.UserRole)
+                    if item_data:
+                        second_name = item_data.get("name", "")
+                        
+                        # 获取当前二阶编码的父级（三阶）
+                        parent_item = item.parent()
+                        if parent_item:
+                            parent_data = parent_item.data(0, Qt.UserRole)
+                            if parent_data and parent_data.get("type") == "third":
+                                original_third_name = parent_data.get("name", "")
+                                
+                                # 将当前二阶编码移动到新的三阶编码下
+                                if second_name in self.current_codes[original_third_name]:
+                                    self.current_codes[parent_name][second_name] = self.current_codes[original_third_name][second_name]
+                                    
+                                    # 从原三阶编码中删除该二阶编码
+                                    del self.current_codes[original_third_name][second_name]
+                                    
+                                    # 如果原三阶编码下没有其他二阶编码了，删除该三阶编码
+                                    if original_third_name in self.current_codes and len(self.current_codes[original_third_name]) == 0:
+                                        del self.current_codes[original_third_name]
+                
+                self.update_category_combos()
+                self.update_coding_tree()
+                QMessageBox.information(self, "成功", f"已创建三阶编码 '{parent_name}' 并将{len(selected_items)}个二阶编码移入")
 
     def get_coding_result(self):
         """获取编码结果"""

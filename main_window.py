@@ -252,10 +252,13 @@ class MainWindow(QMainWindow):
         coding_layout = QVBoxLayout(coding_structure_group)
 
         self.coding_tree = QTreeWidget()
-        self.coding_tree.setHeaderLabels(["编码内容", "类型", "数量"])
+        self.coding_tree.setHeaderLabels(["编码内容", "类型", "数量", "文件来源数", "句子来源数", "关联编号"])
         self.coding_tree.setColumnWidth(0, 300)
         self.coding_tree.setColumnWidth(1, 80)
         self.coding_tree.setColumnWidth(2, 60)
+        self.coding_tree.setColumnWidth(3, 80)
+        self.coding_tree.setColumnWidth(4, 80)
+        self.coding_tree.setColumnWidth(5, 120)
         self.coding_tree.itemClicked.connect(self.on_tree_item_clicked)
 
         # 设置上下文菜单
@@ -489,7 +492,7 @@ class MainWindow(QMainWindow):
         """导入文件"""
         file_paths, _ = QFileDialog.getOpenFileNames(
             self, "选择文本文件", "",
-            "文本文件 (*.txt);;Word文档 (*.docx);;所有文件 (*)"
+            "文本文件 (*.txt);;Word文档 (*.docx *.doc);;所有文件 (*)"
         )
 
         if not file_paths:
@@ -498,7 +501,8 @@ class MainWindow(QMainWindow):
         for file_path in file_paths:
             try:
                 # 读取文件
-                if file_path.endswith('.docx'):
+                file_lower = file_path.lower()
+                if file_lower.endswith('.docx') or file_lower.endswith('.doc'):
                     content = self.data_processor.read_word_file(file_path)
                 else:
                     content = self.data_processor.read_text_file(file_path)
@@ -510,7 +514,7 @@ class MainWindow(QMainWindow):
                     'filename': filename,
                     'file_path': file_path,
                     'content': content,
-                    'file_type': 'docx' if file_path.endswith('.docx') else 'txt'
+                    'file_type': 'docx' if file_path.lower().endswith('.docx') else 'doc' if file_path.lower().endswith('.doc') else 'txt'
                 }
 
                 # 添加到文件列表
@@ -583,7 +587,8 @@ class MainWindow(QMainWindow):
                     else:
                         # 如果都没有，重新读取文件
                         try:
-                            if file_path.endswith('.docx'):
+                            file_lower = file_path.lower()
+                            if file_lower.endswith('.docx') or file_lower.endswith('.doc'):
                                 content = self.data_processor.read_word_file(file_path)
                             else:
                                 content = self.data_processor.read_text_file(file_path)
@@ -661,7 +666,7 @@ class MainWindow(QMainWindow):
         self.progress_bar.setValue(value)
 
     def update_coding_tree(self):
-        """更新编码树 - 修复版本，显示完整编号"""
+        """更新编码树 - 修复版本，显示完整编号和统计信息"""
         self.coding_tree.clear()
 
         if not self.structured_codes:
@@ -671,15 +676,85 @@ class MainWindow(QMainWindow):
             third_item = QTreeWidgetItem(self.coding_tree)
             third_item.setText(0, third_cat)
             third_item.setText(1, "三阶编码")
-            third_item.setData(0, Qt.UserRole, {"level": 3, "name": third_cat})
+            
+            # 计算三阶编码的统计数据
+            third_first_count = 0
+            third_file_sources = set()
+            third_sentence_sources = set()
+            third_code_ids = []
+            
+            for second_cat, first_contents in second_cats.items():
+                for content_data in first_contents:
+                    third_first_count += 1
+                    
+                    if isinstance(content_data, dict):
+                        code_id = content_data.get('code_id', '')
+                        sentence_details = content_data.get('sentence_details', [])
+                        
+                        # 添加编码ID
+                        if code_id:
+                            third_code_ids.append(code_id)
+                        
+                        # 添加文件来源和句子来源
+                        for sentence in sentence_details:
+                            if isinstance(sentence, dict):
+                                file_path = sentence.get('file_path', '')
+                                sentence_id = sentence.get('sentence_id', '')
+                                
+                                if file_path:
+                                    third_file_sources.add(file_path)
+                                if sentence_id:
+                                    third_sentence_sources.add(str(sentence_id))
+                    else:
+                        # 处理非字典格式的内容
+                        third_code_ids.append("")
 
-            second_count = 0
-            first_count = 0
+            # 设置三阶编码的统计信息
+            third_item.setText(2, str(len(second_cats)))  # 二阶编码数量
+            third_item.setText(3, str(len(third_file_sources)))  # 文件来源数
+            third_item.setText(4, str(len(third_sentence_sources)))  # 句子来源数
+            third_item.setText(5, ", ".join(third_code_ids[:5]) + ("..." if len(third_code_ids) > 5 else ""))  # 关联编号，限制显示
+            third_item.setData(0, Qt.UserRole, {"level": 3, "name": third_cat})
 
             for second_cat, first_contents in second_cats.items():
                 second_item = QTreeWidgetItem(third_item)
                 second_item.setText(0, second_cat)
                 second_item.setText(1, "二阶编码")
+                
+                # 计算二阶编码的统计数据
+                second_first_count = len(first_contents)
+                second_file_sources = set()
+                second_sentence_sources = set()
+                second_code_ids = []
+                
+                for content_data in first_contents:
+                    if isinstance(content_data, dict):
+                        code_id = content_data.get('code_id', '')
+                        sentence_details = content_data.get('sentence_details', [])
+                        
+                        # 添加编码ID
+                        if code_id:
+                            second_code_ids.append(code_id)
+                        
+                        # 添加文件来源和句子来源
+                        for sentence in sentence_details:
+                            if isinstance(sentence, dict):
+                                file_path = sentence.get('file_path', '')
+                                sentence_id = sentence.get('sentence_id', '')
+                                
+                                if file_path:
+                                    second_file_sources.add(file_path)
+                                if sentence_id:
+                                    second_sentence_sources.add(str(sentence_id))
+                    else:
+                        # 处理非字典格式的内容
+                        second_code_ids.append("")
+
+                # 设置二阶编码的统计信息
+                second_item.setText(2, str(second_first_count))  # 一阶编码数量
+                second_item.setText(3, "")  # 二阶编码不显示文件来源数
+                second_item.setText(4, str(len(second_sentence_sources)))  # 句子来源数
+                second_item.setText(5, ", ".join(second_code_ids[:5]) + ("..." if len(second_code_ids) > 5 else ""))  # 关联编号，限制显示
                 second_item.setData(0, Qt.UserRole, {"level": 2, "name": second_cat, "parent": third_cat})
 
                 for content_data in first_contents:
@@ -690,15 +765,34 @@ class MainWindow(QMainWindow):
                         numbered_content = content_data.get('numbered_content', '')
                         content = content_data.get('content', '')
                         code_id = content_data.get('code_id', '')
+                        sentence_details = content_data.get('sentence_details', [])
                     else:
                         numbered_content = str(content_data)
                         content = str(content_data)
                         code_id = ""
+                        sentence_details = []
+
+                    # 计算一阶编码的统计数据
+                    first_file_sources = set()
+                    first_sentence_sources = set()
+                    
+                    for sentence in sentence_details:
+                        if isinstance(sentence, dict):
+                            file_path = sentence.get('file_path', '')
+                            sentence_id = sentence.get('sentence_id', '')
+                            
+                            if file_path:
+                                first_file_sources.add(file_path)
+                            if sentence_id:
+                                first_sentence_sources.add(str(sentence_id))
 
                     # 在树中显示带编号的内容
                     first_item.setText(0, numbered_content)
                     first_item.setText(1, "一阶编码")
                     first_item.setText(2, "1")
+                    first_item.setText(3, str(len(first_file_sources)))  # 文件来源数
+                    first_item.setText(4, str(len(first_sentence_sources)))  # 句子来源数
+                    first_item.setText(5, code_id)  # 关联编号
                     first_item.setData(0, Qt.UserRole, {
                         "level": 1,
                         "content": content,  # 原始内容，用于搜索
@@ -706,15 +800,10 @@ class MainWindow(QMainWindow):
                         "code_id": code_id,  # 编码ID
                         "category": second_cat,
                         "core_category": third_cat,
-                        "sentence_details": content_data.get('sentence_details', []) if isinstance(content_data,
-                                                                                                   dict) else []
+                        "sentence_details": sentence_details
                     })
 
-                    first_count += 1
-
-                second_count += 1
-
-            third_item.setText(2, str(second_count))
+            third_item.setText(2, str(len(second_cats)))  # 二阶编码数量
 
         self.coding_tree.expandAll()
 

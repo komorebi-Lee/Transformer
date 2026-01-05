@@ -1,0 +1,22 @@
+pandas>=1.5.0    # Data processing
+numpy>=1.24.0,<2.0    # Numerical computing (限制为1.x版本以避免兼容性问题)
+openpyxl         # Excel read/write
+requests         # HTTP requests
+matplotlib       # Plotting
+xlwings          # Excel interaction
+jieba
+seaborn
+PyQt5
+torch==2.3.1
+torchvision==0.18.1
+torchaudio==2.3.1
+python-docx      # Word document processing
+pypandoc         # Word document conversion (optional)
+pywin32          # Windows COM components (optional)
+transformers>=4.35.0      # Natural language processing library
+scikit-learn      # Machine learning library
+sentence-transformers      # Sentence transformer library
+docxtpl            # Word template processing
+huggingface_hub>=0.20.0   # Hugging Face Hub library
+tokenizers>=0.14.0        # Tokenizer library
+accelerate>=0.20.0        # Acceleration library
