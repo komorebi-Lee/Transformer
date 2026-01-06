@@ -2,7 +2,7 @@ import os
 import json
 import logging
 from PyQt5.QtWidgets import (QMainWindow, QVBoxLayout, QHBoxLayout, QWidget,
-                             QPushButton, QTextEdit, QLabel, QMessageBox,QRadioButton,
+                             QPushButton, QTextEdit, QLabel, QMessageBox, QRadioButton,
                              QProgressBar, QFileDialog, QListWidget,
                              QListWidgetItem, QToolBar, QStatusBar, QAction,
                              QTreeWidget, QTreeWidgetItem, QInputDialog,
@@ -26,6 +26,7 @@ from model_downloader import ModelDownloader
 from manual_coding_dialog import ManualCodingDialog
 from config import Config
 import re
+
 logger = logging.getLogger(__name__)
 
 
@@ -110,8 +111,6 @@ class MainWindow(QMainWindow):
         self.structured_codes = {}
         self.current_model_type = "offline"
         self.model_initialized = False
-
-
 
     def create_left_panel(self):
         """创建左侧面板"""
@@ -514,7 +513,8 @@ class MainWindow(QMainWindow):
                     'filename': filename,
                     'file_path': file_path,
                     'content': content,
-                    'file_type': 'docx' if file_path.lower().endswith('.docx') else 'doc' if file_path.lower().endswith('.doc') else 'txt'
+                    'file_type': 'docx' if file_path.lower().endswith('.docx') else 'doc' if file_path.lower().endswith(
+                        '.doc') else 'txt'
                 }
 
                 # 添加到文件列表
@@ -676,31 +676,31 @@ class MainWindow(QMainWindow):
             third_item = QTreeWidgetItem(self.coding_tree)
             third_item.setText(0, third_cat)
             third_item.setText(1, "三阶编码")
-            
+
             # 计算三阶编码的统计数据
             third_first_count = 0
             third_file_sources = set()
             third_sentence_sources = set()
             third_code_ids = []
-            
+
             for second_cat, first_contents in second_cats.items():
                 for content_data in first_contents:
                     third_first_count += 1
-                    
+
                     if isinstance(content_data, dict):
                         code_id = content_data.get('code_id', '')
                         sentence_details = content_data.get('sentence_details', [])
-                        
+
                         # 添加编码ID
                         if code_id:
                             third_code_ids.append(code_id)
-                        
+
                         # 添加文件来源和句子来源
                         for sentence in sentence_details:
                             if isinstance(sentence, dict):
                                 file_path = sentence.get('file_path', '')
                                 sentence_id = sentence.get('sentence_id', '')
-                                
+
                                 if file_path:
                                     third_file_sources.add(file_path)
                                 if sentence_id:
@@ -713,35 +713,36 @@ class MainWindow(QMainWindow):
             third_item.setText(2, str(len(second_cats)))  # 二阶编码数量
             third_item.setText(3, str(len(third_file_sources)))  # 文件来源数
             third_item.setText(4, str(len(third_sentence_sources)))  # 句子来源数
-            third_item.setText(5, ", ".join(third_code_ids[:5]) + ("..." if len(third_code_ids) > 5 else ""))  # 关联编号，限制显示
+            third_item.setText(5,
+                               ", ".join(third_code_ids[:5]) + ("..." if len(third_code_ids) > 5 else ""))  # 关联编号，限制显示
             third_item.setData(0, Qt.UserRole, {"level": 3, "name": third_cat})
 
             for second_cat, first_contents in second_cats.items():
                 second_item = QTreeWidgetItem(third_item)
                 second_item.setText(0, second_cat)
                 second_item.setText(1, "二阶编码")
-                
+
                 # 计算二阶编码的统计数据
                 second_first_count = len(first_contents)
                 second_file_sources = set()
                 second_sentence_sources = set()
                 second_code_ids = []
-                
+
                 for content_data in first_contents:
                     if isinstance(content_data, dict):
                         code_id = content_data.get('code_id', '')
                         sentence_details = content_data.get('sentence_details', [])
-                        
+
                         # 添加编码ID
                         if code_id:
                             second_code_ids.append(code_id)
-                        
+
                         # 添加文件来源和句子来源
                         for sentence in sentence_details:
                             if isinstance(sentence, dict):
                                 file_path = sentence.get('file_path', '')
                                 sentence_id = sentence.get('sentence_id', '')
-                                
+
                                 if file_path:
                                     second_file_sources.add(file_path)
                                 if sentence_id:
@@ -754,7 +755,8 @@ class MainWindow(QMainWindow):
                 second_item.setText(2, str(second_first_count))  # 一阶编码数量
                 second_item.setText(3, "")  # 二阶编码不显示文件来源数
                 second_item.setText(4, str(len(second_sentence_sources)))  # 句子来源数
-                second_item.setText(5, ", ".join(second_code_ids[:5]) + ("..." if len(second_code_ids) > 5 else ""))  # 关联编号，限制显示
+                second_item.setText(5, ", ".join(second_code_ids[:5]) + (
+                    "..." if len(second_code_ids) > 5 else ""))  # 关联编号，限制显示
                 second_item.setData(0, Qt.UserRole, {"level": 2, "name": second_cat, "parent": third_cat})
 
                 for content_data in first_contents:
@@ -775,12 +777,12 @@ class MainWindow(QMainWindow):
                     # 计算一阶编码的统计数据
                     first_file_sources = set()
                     first_sentence_sources = set()
-                    
+
                     for sentence in sentence_details:
                         if isinstance(sentence, dict):
                             file_path = sentence.get('file_path', '')
                             sentence_id = sentence.get('sentence_id', '')
-                            
+
                             if file_path:
                                 first_file_sources.add(file_path)
                             if sentence_id:
@@ -930,28 +932,61 @@ class MainWindow(QMainWindow):
         search_cursor = self.text_display.textCursor()
         search_cursor.movePosition(cursor.Start)
 
-        while True:
+        # 使用while循环查找所有匹配项，但添加安全计数器防止无限循环
+        search_count = 0
+        max_searches = 100  # 设置最大搜索次数防止无限循环
+
+        # 编码标记保持默认样式，不进行高亮
+        # 查找编码标记但不应用任何高亮格式
+        while search_count < max_searches:
             # 查找编码标记
             search_cursor = self.text_document.find(pattern, search_cursor)
             if search_cursor.isNull():
                 break
 
-            # 设置高亮格式
-            highlight_format = search_cursor.charFormat()
-            highlight_format.setBackground(QColor(255, 255, 0))  # 黄色背景
-            highlight_format.setForeground(QColor(255, 0, 0))  # 红色文字
-
-            # 应用高亮
-            search_cursor.mergeCharFormat(highlight_format)
+            # 编码标记保持默认样式，不进行任何高亮
             found = True
 
-            # 如果是第一个匹配项，滚动到该位置
-            if not found:
+            # 记录第一个匹配项的位置
+            if search_count == 0:  # 第一次匹配
                 self.text_display.setTextCursor(search_cursor)
-                found = True
+
+            # 移动光标到找到的内容之后，防止重复匹配
+            search_cursor.movePosition(search_cursor.Right, search_cursor.MoveAnchor, len(pattern))
+            search_count += 1
+
+        # 然后高亮与编码ID相关的一阶编码内容
+        # 遍历树形结构，找到对应编码ID的一阶编码内容
+        content_to_highlight = self.get_content_by_code_id(code_id)
+        if content_to_highlight:
+            # 清理内容，移除可能存在的标记
+            clean_content = re.sub(r'\s*\[[A-Z]\d+\]', '', content_to_highlight).strip()
+            if clean_content:
+                content_cursor = self.text_display.textCursor()
+                content_cursor.movePosition(content_cursor.Start)
+
+                content_search_count = 0
+                while content_search_count < max_searches:
+                    content_cursor = self.text_document.find(clean_content, content_cursor)
+                    if content_cursor.isNull():
+                        break
+
+                    # 检查是否与编码标记重叠，避免重复高亮
+                    # 设置高亮格式（使用不同颜色区分）
+                    content_highlight_format = content_cursor.charFormat()
+                    content_highlight_format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
+                    content_highlight_format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
+
+                    # 应用高亮
+                    content_cursor.mergeCharFormat(content_highlight_format)
+
+                    # 移动光标到找到的内容之后，防止重复匹配
+                    content_cursor.movePosition(content_cursor.Right, content_cursor.MoveAnchor, len(clean_content))
+                    content_search_count += 1
 
         if found:
-            self.statusBar().showMessage(f"已高亮编码 {code_id}")
+            self.text_display.ensureCursorVisible()  # 确保光标位置可见
+            self.statusBar().showMessage(f"已高亮编码 {code_id} 及其对应内容")
         else:
             self.statusBar().showMessage(f"未找到编码 {code_id} 的标记")
 
@@ -988,9 +1023,9 @@ class MainWindow(QMainWindow):
 
             # 设置高亮格式
             highlight_format = search_cursor.charFormat()
-            highlight_format.setBackground(QColor(255, 255, 0))  # 黄色背景
-            highlight_format.setForeground(QColor(255, 0, 0))  # 红色文字
-
+            highlight_format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
+            highlight_format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
+            
             # 应用高亮
             search_cursor.mergeCharFormat(highlight_format)
             found = True
@@ -1024,6 +1059,46 @@ class MainWindow(QMainWindow):
 
         except Exception as e:
             logger.error(f"清除高亮失败: {e}")
+
+    def get_content_by_code_id(self, code_id: str) -> str:
+        """根据编码ID获取对应的一阶编码内容"""
+        try:
+            # 遍历树形结构查找匹配的编码ID
+            def search_tree_item(item):
+                for i in range(item.childCount()):
+                    child = item.child(i)
+                    child_data = child.data(0, Qt.UserRole)
+
+                    if child_data:
+                        # 检查当前节点是否匹配
+                        if child_data.get("code_id") == code_id:
+                            return child_data.get("content", "")
+
+                        # 递归搜索子节点
+                        result = search_tree_item(child)
+                        if result:
+                            return result
+
+                return ""
+
+            # 遍历顶层项目
+            for i in range(self.coding_tree.topLevelItemCount()):
+                top_item = self.coding_tree.topLevelItem(i)
+                result = search_tree_item(top_item)
+                if result:
+                    return result
+
+            # 如果在层级结构中没找到，检查顶层未分类的一阶编码
+            for i in range(self.coding_tree.topLevelItemCount()):
+                top_item = self.coding_tree.topLevelItem(i)
+                top_data = top_item.data(0, Qt.UserRole)
+                if top_data and top_data.get("level") == 1 and top_data.get("code_id") == code_id:
+                    return top_data.get("content", "")
+
+            return ""
+        except Exception as e:
+            logger.error(f"获取编码内容时出错: {e}")
+            return ""
 
     # 在 init_ui 方法中添加文本文档引用
     def init_ui(self):
@@ -1087,7 +1162,7 @@ class MainWindow(QMainWindow):
         if not content or len(content) < 5:
             return
 
-        # 简单的文本高亮
+        # 文本高亮 - 使用浅蓝色背景和深蓝色文字
         cursor = self.text_display.textCursor()
         self.text_display.moveCursor(QTextCursor.Start)
 
@@ -1096,7 +1171,8 @@ class MainWindow(QMainWindow):
             # 设置高亮格式
             cursor = self.text_display.textCursor()
             format = cursor.charFormat()
-            format.setBackground(QColor(255, 255, 0))  # 黄色背景
+            format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
+            format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
             cursor.mergeCharFormat(format)
 
     def show_tree_context_menu(self, position):
