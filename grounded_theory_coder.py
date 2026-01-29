@@ -93,7 +93,7 @@ class GroundedTheoryCoder:
             third_letter = 'C'  # 三阶编码使用C开头
             third_number = third_index + 1
             third_code = f"{third_letter}{third_number}"  # C1, C2, C3...
-            
+
             # 清理三阶编码名称
             clean_third = self.clean_category_name(third_category)
             numbered_third_category = f"{third_code} {clean_third}"

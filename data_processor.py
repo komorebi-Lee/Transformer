@@ -14,15 +14,132 @@ logger = logging.getLogger(__name__)
 # 尝试导入可选依赖
 try:
     import win32com.client as win32
+
     WIN32COM_AVAILABLE = True
 except ImportError:
     WIN32COM_AVAILABLE = False
 
 try:
     import pypandoc
+
     PYPANDOC_AVAILABLE = True
 except ImportError:
     PYPANDOC_AVAILABLE = False
+
+
+class TextNumberingManager:
+    """高效的文本句子编号管理器"""
+
+    def __init__(self):
+        # 使用多个缓存提高效率
+        self._sentence_cache = {}  # 缓存已编号的句子 {sentence: number}
+        self._file_sentences = defaultdict(list)  # 文件到句子列表的映射
+        self._number_sentence = {}  # 编号到句子的反向映射
+        self._next_number = 1  # 下一个可用的编号
+
+        # 预编译正则表达式，提高效率
+        self._sentence_split_pattern = re.compile(r'[。！？!?]')
+
+    def reset(self):
+        """重置编号管理器"""
+        self._sentence_cache.clear()
+        self._file_sentences.clear()
+        self._number_sentence.clear()
+        self._next_number = 1
+
+    def number_text(self, text: str, filename: str = "") -> Tuple[str, Dict[int, str]]:
+        """
+        为文本中的句子编号
+
+        返回: (编号后的文本, 编号到句子的映射)
+        """
+        if not text:
+            return "", {}
+
+        # 快速分割句子
+        sentences = self._fast_split_sentences(text)
+        if not sentences:
+            return text, {}
+
+        numbered_text_parts = []
+        number_mapping = {}
+
+        for i, sentence in enumerate(sentences):
+            if not sentence.strip():
+                continue
+
+            # 分配新编号，使用全局下一个编号，确保编号连续
+            number = self._next_number
+            self._next_number += 1
+
+            # 更新缓存 - 现在每个句子都获得新编号，但仍然记录缓存以便后续识别重复
+            if sentence not in self._sentence_cache:
+                self._sentence_cache[sentence] = number
+            self._number_sentence[number] = sentence
+
+            if filename and filename != "default":  # 只有在filename非空时才记录
+                self._file_sentences[filename].append((number, sentence))
+
+            # 构建映射
+            number_mapping[number] = sentence
+
+            # 添加编号标记（在句子后添加编号）
+            if i < len(sentences) - 1:
+                # 不是最后一个句子
+                numbered_text_parts.append(f"{sentence} [{number}]")
+            else:
+                # 最后一个句子
+                numbered_text_parts.append(f"{sentence} [{number}]")
+
+        numbered_text = "\n".join(numbered_text_parts)
+        return numbered_text, number_mapping
+
+    def _fast_split_sentences(self, text: str) -> List[str]:
+        """快速分割句子 - 优化版本"""
+        # 移除多余空白
+        text = re.sub(r'\s+', ' ', text.strip())
+
+        # 使用预编译的正则表达式分割
+        parts = self._sentence_split_pattern.split(text)
+
+        # 过滤空字符串和短句子
+        sentences = []
+        for part in parts:
+            clean_part = part.strip()
+            if clean_part and len(clean_part) >= 3:  # 过滤太短的"句子"
+                sentences.append(clean_part)
+
+        return sentences
+
+    def get_sentence_by_number(self, number: int) -> str:
+        """根据编号获取句子"""
+        return self._number_sentence.get(number, "")
+
+    def get_number_by_sentence(self, sentence: str) -> int:
+        """根据句子获取编号"""
+        return self._sentence_cache.get(sentence, 0)
+
+    def get_file_sentences(self, filename: str) -> List[Tuple[int, str]]:
+        """获取文件中所有已编号的句子"""
+        return self._file_sentences.get(filename, [])
+
+    def get_all_numbered_sentences(self) -> Dict[int, str]:
+        """获取所有已编号的句子"""
+        return dict(self._number_sentence)
+
+    def batch_number_texts(self, texts: Dict[str, str]) -> Dict[str, Tuple[str, Dict[int, str]]]:
+        """批量处理多个文本，提高效率"""
+        results = {}
+
+        for filename, text in texts.items():
+            try:
+                numbered_text, mapping = self.number_text(text, filename)
+                results[filename] = (numbered_text, mapping)
+            except Exception as e:
+                logger.error(f"为文件 {filename} 编号失败: {e}")
+                results[filename] = (text, {})
+
+        return results
 
 
 class DataProcessor:
@@ -32,6 +149,25 @@ class DataProcessor:
         self.sentence_counter = 0
         self.file_sentence_mapping = {}
 
+        # 初始化模块级别的变量
+        try:
+            import win32com.client as win32
+            self.WIN32COM_AVAILABLE = True
+        except ImportError:
+            self.WIN32COM_AVAILABLE = False
+
+        try:
+            import pypandoc
+            self.PYPANDOC_AVAILABLE = True
+        except ImportError:
+            self.PYPANDOC_AVAILABLE = False
+
+        # 添加句子编号管理器
+        self.numbering_manager = TextNumberingManager()
+        self._all_numbered_texts = {}  # 缓存所有编号后的文本
+
+    # ========== 文件读取相关方法 ==========
+
     def read_doc_file(self, file_path: str) -> str:
         """读取.doc文件，使用多种备选方法"""
         # 方法1: 尝试使用win32com（仅Windows）
@@ -40,14 +176,14 @@ class DataProcessor:
                 return self._read_doc_with_win32com(file_path)
             except Exception as e:
                 logger.warning(f"win32com读取失败，尝试其他方法: {e}")
-        
+
         # 方法2: 尝试使用pypandoc
         if PYPANDOC_AVAILABLE:
             try:
                 return self._read_doc_with_pypandoc(file_path)
             except Exception as e:
                 logger.warning(f"pypandoc读取失败，尝试其他方法: {e}")
-        
+
         # 方法3: 尝试使用pypandoc或win32com作为降级方案
         try:
             if PYPANDOC_AVAILABLE:
@@ -56,84 +192,96 @@ class DataProcessor:
                 return self._read_doc_with_win32com(file_path)
         except Exception as e:
             logger.warning(f"降级方法读取失败: {e}")
-        
+
         # 如果所有方法都失败，抛出异常
         raise Exception("无法读取.doc文件，请安装win32com或pypandoc")
 
     def _read_doc_with_win32com(self, file_path: str) -> str:
         """使用win32com读取.doc文件"""
-        word_app = win32.Dispatch('Word.Application')
-        word_app.Visible = False  # 不显示Word界面
+        if not WIN32COM_AVAILABLE:
+            raise Exception("win32com不可用")
         
-        # 打开文档
-        doc = word_app.Documents.Open(os.path.abspath(file_path))
-        
-        # 提取文本内容
-        content = doc.Content.Text
-        
-        # 关闭文档和Word应用程序
-        doc.Close()
-        word_app.Quit()
-        
-        logger.info(f"成功使用win32com读取Word文档(.doc): {file_path}")
-        return content.strip()
+        import win32com.client as win32
+        word_app = None
+        doc = None
+        try:
+            word_app = win32.Dispatch('Word.Application')
+            word_app.Visible = False  # 不显示Word界面
+            word_app.DisplayAlerts = 0  # 不显示警告
+
+            # 打开文档
+            doc = word_app.Documents.Open(os.path.abspath(file_path))
+
+            # 提取文本内容
+            content = doc.Content.Text
+
+            logger.info(f"成功使用win32com读取Word文档(.doc): {file_path}")
+            return content.strip()
+        except Exception as e:
+            logger.error(f"win32com读取文档失败: {e}")
+            raise
+        finally:
+            # 确保资源被正确释放
+            if doc is not None:
+                try:
+                    doc.Close()
+                except:
+                    pass
+            if word_app is not None:
+                try:
+                    word_app.Quit()
+                except:
+                    pass
 
     def _read_doc_with_pypandoc(self, file_path: str) -> str:
         """使用pypandoc读取.doc文件"""
+        if not PYPANDOC_AVAILABLE:
+            raise Exception("pypandoc不可用")
+        
+        import pypandoc
         # 将.doc文件转换为文本
         content = pypandoc.convert_file(file_path, 'plain')
         logger.info(f"成功使用pypandoc读取Word文档(.doc): {file_path}")
         return content.strip()
 
     def _read_doc_with_antiword(self, file_path: str) -> str:
-        """使用antiword命令行工具读取.doc文件"""
-        import subprocess
-        # 使用text-from-docx库处理.doc文件
-        # 首先尝试将.doc转换为.docx临时文件，然后读取
+        """使用pypandoc作为备用方案读取.doc文件"""
+        if not PYPANDOC_AVAILABLE:
+            raise Exception("pypandoc不可用")
+        
+        import pypandoc
+        import zipfile
+        import tempfile
+        import os
+        from docx import Document
+        
+        # 创建一个临时的docx文件，将doc内容转换
+        temp_docx_path = None
         try:
-            import zipfile
-            import tempfile
+            # 创建临时文件
+            with tempfile.NamedTemporaryFile(suffix='.docx', delete=False) as temp_file:
+                temp_docx_path = temp_file.name
             
-            # 创建一个临时的docx文件，将doc内容转换
-            # 这里使用pypandoc作为备选方案，如果可用
-            if PYPANDOC_AVAILABLE:
-                import tempfile
-                import os
-                
-                # 创建临时文件
-                temp_docx_path = None
-                try:
-                    with tempfile.NamedTemporaryFile(suffix='.docx', delete=False) as temp_file:
-                        temp_docx_path = temp_file.name
-                    
-                    # 尝试使用pypandoc转换.doc到.docx
-                    pypandoc.convert_file(file_path, 'docx', outputfile=temp_docx_path)
-                    
-                    # 读取转换后的.docx文件
-                    doc = Document(temp_docx_path)
-                    content = ""
-                    for paragraph in doc.paragraphs:
-                        if paragraph.text.strip():
-                            content += paragraph.text + "\n"
-                    
-                    logger.info(f"成功使用pypandoc转换并读取.doc文件: {file_path}")
-                    return content.strip()
-                except Exception as e:
-                    logger.warning(f"pypandoc转换.doc失败: {e}")
-                    # 如果转换失败，尝试其他方法
-                    if temp_docx_path and os.path.exists(temp_docx_path):
-                        try:
-                            os.unlink(temp_docx_path)
-                        except:
-                            pass
-                    raise e
-            else:
-                # 如果pypandoc不可用，尝试使用win32com作为降级方案
-                if WIN32COM_AVAILABLE:
-                    return self._read_doc_with_win32com(file_path)
-                else:
-                    raise Exception("缺少必要的依赖来读取.doc文件")
+            # 尝试使用pypandoc转换.doc到.docx
+            pypandoc.convert_file(file_path, 'docx', outputfile=temp_docx_path)
+            
+            # 读取转换后的.docx文件
+            doc = Document(temp_docx_path)
+            content = ""
+            for paragraph in doc.paragraphs:
+                if paragraph.text.strip():
+                    content += paragraph.text + "\n"
+            
+            logger.info(f"成功使用pypandoc转换并读取.doc文件: {file_path}")
+            return content.strip()
         except Exception as e:
+            logger.warning(f"pypandoc转换.doc失败: {e}")
+            # 如果转换失败，尝试其他方法
+            if temp_docx_path and os.path.exists(temp_docx_path):
+                try:
+                    os.unlink(temp_docx_path)
+                except:
+                    pass
             raise e
 
     def read_text_file(self, file_path: str) -> str:
@@ -161,14 +309,18 @@ class DataProcessor:
                 logger.info(f"成功读取Word文档: {file_path}")
                 return content.strip()
             elif file_path.lower().endswith('.doc'):
-                # 使用win32com读取.doc文件
+                # 使用专门的.doc文件读取方法
                 return self.read_doc_file(file_path)
             else:
                 raise ValueError(f"不支持的文件格式: {file_path}")
         except Exception as e:
             logger.error(f"读取Word文档失败 {file_path}: {e}")
-            # 降级到文本读取
-            return self.read_text_file(file_path)
+            # 对于.doc文件，不应该降级到文本读取，因为它们是二进制格式
+            if file_path.lower().endswith('.doc'):
+                raise Exception(f"无法读取.doc文件 {file_path}: {str(e)}")
+            else:
+                # 其他情况可以尝试文本读取
+                return self.read_text_file(file_path)
 
     def read_file(self, file_path: str) -> str:
         """读取文件（自动判断类型）"""
@@ -178,39 +330,66 @@ class DataProcessor:
         else:
             return self.read_text_file(file_path)
 
+    # ========== 主要处理方法 ==========
+
     def process_multiple_files(self, file_paths: List[str]) -> Dict[str, Any]:
-        """处理多个文件，返回统一的文本和文件映射"""
+        """处理多个文件，返回统一的文本和文件映射 - 增强版（带句子编号）"""
+        # 先读取所有文件内容
+        file_contents = {}
+        for file_path in file_paths:
+            try:
+                content = self.read_file(file_path)
+                filename = os.path.basename(file_path)
+                file_contents[filename] = content
+                logger.info(f"成功读取文件: {filename}")
+            except Exception as e:
+                logger.error(f"读取文件失败 {file_path}: {e}")
+                continue
+
+        if not file_contents:
+            logger.error("没有成功读取任何文件")
+            return {
+                'combined_text': "",
+                'file_sentence_mapping': {},
+                'total_files': 0,
+                'total_sentences': 0,
+                'numbering_manager': self.numbering_manager
+            }
+
+        # 为所有文件内容批量编号
+        numbered_results = self.numbering_manager.batch_number_texts(file_contents)
+
         all_texts = []
         file_sentence_mapping = {}
 
-        for file_path in file_paths:
-            try:
-                # 读取文件
-                content = self.read_file(file_path)
-                filename = os.path.basename(file_path)
+        for filename, (numbered_text, number_mapping) in numbered_results.items():
+            original_content = file_contents[filename]
 
-                # 智能识别段落（区分采访人和受访人）
-                paragraphs = self.identify_interview_paragraphs(content, filename)
+            # 智能识别段落（区分采访人和受访人）
+            paragraphs = self.identify_interview_paragraphs(original_content, filename)
 
-                # 提取受访人有意义的句子
-                respondent_sentences = self.extract_respondent_sentences(paragraphs, filename)
+            # 提取受访人有意义的句子（带编号信息）
+            respondent_sentences = self.extract_respondent_sentences_with_numbers(
+                paragraphs, filename, number_mapping
+            )
 
-                # 建立文件到句子的映射
-                file_sentence_mapping[filename] = {
-                    'file_path': file_path,
-                    'sentences': respondent_sentences,
-                    'original_content': content,
-                    'paragraphs': paragraphs
-                }
+            # 建立文件到句子的映射
+            file_sentence_mapping[filename] = {
+                'file_path': next((fp for fp in file_paths if os.path.basename(fp) == filename), ''),
+                'sentences': respondent_sentences,
+                'original_content': original_content,
+                'numbered_content': numbered_text,  # 添加编号后的文本
+                'paragraphs': paragraphs,
+                'number_mapping': number_mapping  # 添加编号映射
+            }
 
-                # 合并文本（用于编码生成）
-                all_texts.append(content)
+            # 合并文本（用于编码生成）
+            all_texts.append(original_content)
 
-                logger.info(f"处理文件 {filename}: 识别 {len(paragraphs)} 个段落，提取 {len(respondent_sentences)} 个受访人句子")
+            # 缓存编号后的文本
+            self._all_numbered_texts[filename] = numbered_text
 
-            except Exception as e:
-                logger.error(f"处理文件 {file_path} 失败: {e}")
-                continue
+            logger.info(f"处理文件 {filename}: 识别 {len(paragraphs)} 个段落，提取 {len(respondent_sentences)} 个受访人句子")
 
         # 合并所有文本
         combined_text = "\n\n".join(all_texts)
@@ -219,8 +398,92 @@ class DataProcessor:
             'combined_text': combined_text,
             'file_sentence_mapping': file_sentence_mapping,
             'total_files': len(file_paths),
-            'total_sentences': sum(len(data['sentences']) for data in file_sentence_mapping.values())
+            'total_sentences': sum(len(data['sentences']) for data in file_sentence_mapping.values()),
+            'numbering_manager': self.numbering_manager  # 返回编号管理器
         }
+
+    # ========== 句子编号相关方法 ==========
+
+    def extract_respondent_sentences_with_numbers(self, paragraphs: List[Dict[str, Any]],
+                                                  filename: str,
+                                                  number_mapping: Dict[int, str]) -> List[Dict[str, Any]]:
+        """从受访人段落中提取有意义的句子（带编号信息）"""
+        respondent_sentences = []
+
+        for paragraph in paragraphs:
+            if paragraph['speaker'] == 'respondent':
+                content = paragraph['content']
+                sentences = self.split_into_sentences(content)
+
+                for sentence in sentences:
+                    if self.is_meaningful_sentence(sentence):
+                        # 查找这个句子的编号
+                        sentence_number = 0
+                        clean_sentence = sentence.strip()
+
+                        # 在编号映射中查找
+                        for num, sent in number_mapping.items():
+                            if sent.strip() == clean_sentence:
+                                sentence_number = num
+                                break
+
+                        respondent_sentences.append({
+                            'content': sentence,
+                            'original_content': sentence,
+                            'numbered_content': f"({sentence_number}) {sentence}" if sentence_number else sentence,
+                            'sentence_number': sentence_number,
+                            'paragraph_content': content[:100] + '...' if len(content) > 100 else content,
+                            'filename': filename,
+                            'speaker': 'respondent',
+                            'start_position': 0,
+                            'end_position': len(sentence)
+                        })
+
+        return respondent_sentences
+
+    def export_numbered_sentences_to_file(self, file_path: str) -> bool:
+        """导出所有编号句子到文件"""
+        try:
+            # 获取所有编号句子
+            all_sentences = self.numbering_manager.get_all_numbered_sentences()
+
+            # 构建文件关联信息
+            sentence_files = defaultdict(list)
+            for filename in self._all_numbered_texts.keys():
+                file_sentences = self.numbering_manager.get_file_sentences(filename)
+                for number, _ in file_sentences:
+                    sentence_files[number].append(filename)
+
+            # 准备表格数据
+            table_data = []
+            for number, sentence in sorted(all_sentences.items()):
+                table_data.append({
+                    '句子编号': number,
+                    '句子内容': sentence,
+                    '出现文件': '; '.join(sentence_files.get(number, []))
+                })
+
+            # 创建DataFrame
+            df = pd.DataFrame(table_data)
+
+            # 根据文件扩展名选择导出格式
+            if file_path.endswith('.xlsx'):
+                df.to_excel(file_path, index=False, engine='openpyxl')
+            elif file_path.endswith('.csv'):
+                df.to_csv(file_path, index=False, encoding='utf-8-sig')
+            else:
+                # 默认导出为Excel
+                file_path = file_path.replace('.json', '.xlsx')
+                df.to_excel(file_path, index=False, engine='openpyxl')
+
+            logger.info(f"已导出 {len(table_data)} 个编号句子到 {file_path}")
+            return True
+
+        except Exception as e:
+            logger.error(f"导出编号句子失败: {e}")
+            return False
+
+    # ========== 文本处理核心方法 ==========
 
     def identify_interview_paragraphs(self, content: str, filename: str) -> List[Dict[str, Any]]:
         """智能识别采访段落，区分采访人和受访人"""
@@ -378,6 +641,7 @@ class DataProcessor:
                         })
 
         return respondent_sentences
+
     def split_into_sentences(self, text: str) -> List[str]:
         """将文本分割成句子"""
         # 使用中文句号、问号、感叹号分割
@@ -412,6 +676,8 @@ class DataProcessor:
         ]
 
         return any(keyword in sentence for keyword in meaningful_keywords) or len(sentence) >= 15
+
+    # ========== 文本清理方法 ==========
 
     def clean_text(self, text: str) -> str:
         """清洗文本 - 增强版，过滤录音转录信息"""
@@ -489,70 +755,7 @@ class DataProcessor:
                 return True
         return False
 
-    def identify_interview_paragraphs(self, content: str, filename: str) -> List[Dict[str, Any]]:
-        """智能识别采访段落，区分采访人和受访人 - 增强版"""
-        paragraphs = []
-        lines = content.split('\n')
-
-        current_paragraph = []
-        current_speaker = None
-        paragraph_start_line = 0
-
-        for i, line in enumerate(lines):
-            line = line.strip()
-            if not line:
-                if current_paragraph and current_speaker:
-                    # 保存当前段落
-                    paragraph_text = '\n'.join(current_paragraph)
-                    paragraphs.append({
-                        'speaker': current_speaker,
-                        'content': paragraph_text,
-                        'start_line': paragraph_start_line,
-                        'end_line': i,
-                        'filename': filename
-                    })
-                    current_paragraph = []
-                    current_speaker = None
-                continue
-
-            # 跳过说话人时间标记
-            if self.is_speaker_time_mark(line):
-                continue
-
-            # 检测说话人
-            speaker = self.detect_speaker_enhanced(line)
-
-            if speaker and current_speaker != speaker:
-                # 保存上一个段落
-                if current_paragraph and current_speaker:
-                    paragraph_text = '\n'.join(current_paragraph)
-                    paragraphs.append({
-                        'speaker': current_speaker,
-                        'content': paragraph_text,
-                        'start_line': paragraph_start_line,
-                        'end_line': i,
-                        'filename': filename
-                    })
-
-                # 开始新段落
-                current_paragraph = [line]
-                current_speaker = speaker
-                paragraph_start_line = i
-            else:
-                current_paragraph.append(line)
-
-        # 添加最后一个段落
-        if current_paragraph and current_speaker:
-            paragraph_text = '\n'.join(current_paragraph)
-            paragraphs.append({
-                'speaker': current_speaker,
-                'content': paragraph_text,
-                'start_line': paragraph_start_line,
-                'end_line': len(lines),
-                'filename': filename
-            })
-
-        return paragraphs
+    # ========== 增强的说话人检测方法 ==========
 
     def detect_speaker_enhanced(self, line: str) -> Optional[str]:
         """增强的说话人检测 - 过滤录音转录信息"""
@@ -641,6 +844,8 @@ class DataProcessor:
 
         return len(line) > 35  # 较长的内容很可能是受访人
 
+    # ========== 编码数据处理方法 ==========
+
     def merge_coding_data(self, standard_answers: Dict[str, Any], current_codes: Dict[str, Any]) -> Dict[str, Any]:
         """合并标准答案和当前编码数据"""
         try:
@@ -711,6 +916,8 @@ class DataProcessor:
         """清理一阶编码内容，移除编号前缀"""
         cleaned = re.sub(r'^[A-Z]\d+\s*', '', content.strip())
         return cleaned
+
+    # ========== 导出方法 ==========
 
     def export_structured_codes_to_table(self, file_path: str, structured_codes: Dict[str, Any]) -> bool:
         """导出编码结构为表格格式"""
@@ -799,3 +1006,42 @@ class DataProcessor:
     def get_timestamp(self) -> str:
         """获取时间戳"""
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+# 测试代码
+if __name__ == "__main__":
+    # 配置日志
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+
+    # 创建处理器
+    processor = DataProcessor()
+
+    print("数据处理器已初始化")
+    print("=" * 50)
+
+    # 测试句子编号功能
+    test_text = "我们团队采用民主式管理方式。强调团队合作和沟通。定期召开项目会议。"
+
+    print("测试文本:")
+    print(test_text)
+    print("=" * 50)
+
+    # 使用编号管理器
+    numbered_text, mapping = processor.numbering_manager.number_text(test_text, "测试文件")
+
+    print("编号后的文本:")
+    print(numbered_text)
+    print("=" * 50)
+
+    print("编号映射:")
+    for number, sentence in mapping.items():
+        print(f"  {number}: {sentence}")
+
+    # 测试查找功能
+    print("=" * 50)
+    print("查找测试:")
+    print(f"编号1的句子: {processor.numbering_manager.get_sentence_by_number(1)}")
+    print(f"句子'我们团队采用民主式管理方式'的编号: {processor.numbering_manager.get_number_by_sentence('我们团队采用民主式管理方式')}")

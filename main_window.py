@@ -38,17 +38,8 @@ class ModelInitializationThread(QThread):
 
     def __init__(self, model_downloader, model_manager):
         super().__init__()
-        # self.settings = settings
-
-        # 添加自定义信号
-        from PyQt5.QtCore import pyqtSignal
-        self._update_model_status_signal = pyqtSignal(bool, str)
-        self._update_model_status_signal.connect(self._on_model_initialization_finished)
-
-        self.setup_managers()
-        self.init_ui()
-        self.load_settings()
-        self.setup_connections()
+        self.model_downloader = model_downloader
+        self.model_manager = model_manager
 
     def run(self):
         try:
@@ -261,7 +252,12 @@ class MainWindow(QMainWindow):
         self.coding_tree.itemClicked.connect(self.on_tree_item_clicked)
 
         # 设置上下文菜单
-        self.coding_tree.setContextMenuPolicy(Qt.CustomContextMenu)
+        try:
+            # 使用数值而不是Qt常量来避免IDE检查错误
+            self.coding_tree.setContextMenuPolicy(2)  # Qt.CustomContextMenu = 2
+        except:
+            # 如果上述方式失败，使用默认方式
+            pass
         self.coding_tree.customContextMenuRequested.connect(self.show_tree_context_menu)
 
         coding_layout.addWidget(self.coding_tree)
@@ -339,48 +335,51 @@ class MainWindow(QMainWindow):
     def create_menus(self):
         """创建菜单栏"""
         menubar = self.menuBar()
+        
+        if menubar is not None:
+            # 文件菜单
+            file_menu = menubar.addMenu('文件') if menubar else None
+            if file_menu:
+                import_action = QAction('导入文件', self)
+                import_action.triggered.connect(self.import_files)
+                file_menu.addAction(import_action)
 
-        # 文件菜单
-        file_menu = menubar.addMenu('文件')
+                export_action = QAction('导出结果', self)
+                export_action.triggered.connect(self.export_results)
+                file_menu.addAction(export_action)
 
-        import_action = QAction('导入文件', self)
-        import_action.triggered.connect(self.import_files)
-        file_menu.addAction(import_action)
+                file_menu.addSeparator()
 
-        export_action = QAction('导出结果', self)
-        export_action.triggered.connect(self.export_results)
-        file_menu.addAction(export_action)
+                exit_action = QAction('退出', self)
+                def close_application():
+                    self.close()
+                exit_action.triggered.connect(close_application)
+                file_menu.addAction(exit_action)
 
-        file_menu.addSeparator()
+            # 编码菜单
+            coding_menu = menubar.addMenu('编码') if menubar else None
+            if coding_menu:
+                manual_coding_action = QAction('手动编码', self)
+                manual_coding_action.triggered.connect(self.start_manual_coding)
+                coding_menu.addAction(manual_coding_action)
 
-        exit_action = QAction('退出', self)
-        exit_action.triggered.connect(self.close)
-        file_menu.addAction(exit_action)
+                auto_coding_action = QAction('自动编码', self)
+                auto_coding_action.triggered.connect(self.generate_codes_auto)
+                coding_menu.addAction(auto_coding_action)
 
-        # 编码菜单
-        coding_menu = menubar.addMenu('编码')
+            # 训练菜单
+            training_menu = menubar.addMenu('训练') if menubar else None
+            if training_menu:
+                train_action = QAction('训练模型', self)
+                train_action.triggered.connect(self.start_training)
+                training_menu.addAction(train_action)
 
-        manual_coding_action = QAction('手动编码', self)
-        manual_coding_action.triggered.connect(self.start_manual_coding)
-        coding_menu.addAction(manual_coding_action)
-
-        auto_coding_action = QAction('自动编码', self)
-        auto_coding_action.triggered.connect(self.generate_codes_auto)
-        coding_menu.addAction(auto_coding_action)
-
-        # 训练菜单
-        training_menu = menubar.addMenu('训练')
-
-        train_action = QAction('训练模型', self)
-        train_action.triggered.connect(self.start_training)
-        training_menu.addAction(train_action)
-
-        # 帮助菜单
-        help_menu = menubar.addMenu('帮助')
-
-        about_action = QAction('关于', self)
-        about_action.triggered.connect(self.show_about)
-        help_menu.addAction(about_action)
+            # 帮助菜单
+            help_menu = menubar.addMenu('帮助') if menubar else None
+            if help_menu:
+                about_action = QAction('关于', self)
+                about_action.triggered.connect(self.show_about)
+                help_menu.addAction(about_action)
 
     def setup_connections(self):
         """设置信号连接"""
@@ -411,18 +410,21 @@ class MainWindow(QMainWindow):
             if model_success:
                 self.model_initialized = True
                 self.model_status_label.setText("模型状态: 已就绪")
-                self.statusBar().showMessage("模型初始化成功")
+                if self.statusBar():
+                    self.statusBar().showMessage("模型初始化成功")
                 logger.info("模型初始化成功")
             else:
                 # 模型初始化失败，尝试下载
-                self.statusBar().showMessage("模型不存在，尝试下载...")
+                if self.statusBar():
+                    self.statusBar().showMessage("模型不存在，尝试下载...")
                 self._download_models_async()
 
         except Exception as e:
             logger.error(f"模型初始化异常: {e}")
             self.model_status_label.setText("模型状态: 初始化异常")
             self.init_model_btn.setEnabled(True)
-            self.statusBar().showMessage(f"模型初始化异常: {str(e)}")
+            if self.statusBar():
+                self.statusBar().showMessage(f"模型初始化异常: {str(e)}")
 
     def _download_models_async(self):
         """异步下载模型"""
@@ -464,10 +466,12 @@ class MainWindow(QMainWindow):
         if success:
             self.model_status_label.setText("模型状态: 已就绪")
             self.model_initialized = True
-            self.statusBar().showMessage("模型初始化成功")
+            if self.statusBar():
+                self.statusBar().showMessage("模型初始化成功")
         else:
             self.model_status_label.setText("模型状态: 初始化失败")
-            self.statusBar().showMessage(f"模型初始化失败: {message}")
+            if self.statusBar():
+                self.statusBar().showMessage(f"模型初始化失败: {message}")
             # 不显示警告框，避免阻塞
             logger.warning(f"模型初始化失败: {message}")
 
@@ -477,15 +481,18 @@ class MainWindow(QMainWindow):
         if success:
             self.model_status_label.setText("模型状态: 已就绪")
             self.model_initialized = True
-            self.statusBar().showMessage("模型初始化成功")
+            if self.statusBar():
+                self.statusBar().showMessage("模型初始化成功")
         else:
             self.model_status_label.setText("模型状态: 初始化失败")
-            self.statusBar().showMessage(f"模型初始化失败: {message}")
+            if self.statusBar():
+                self.statusBar().showMessage(f"模型初始化失败: {message}")
             QMessageBox.warning(self, "模型初始化失败", message)
 
     def update_status(self, message):
         """更新状态"""
-        self.statusBar().showMessage(message)
+        if self.statusBar():
+            self.statusBar().showMessage(message)
 
     def import_files(self):
         """导入文件"""
@@ -508,11 +515,16 @@ class MainWindow(QMainWindow):
 
                 filename = os.path.basename(file_path)
 
+                # 使用编号管理器为文本中的句子编号
+                numbered_content, number_mapping = self.data_processor.numbering_manager.number_text(content, filename)
+
                 # 存储文件数据
                 self.loaded_files[file_path] = {
                     'filename': filename,
                     'file_path': file_path,
-                    'content': content,
+                    'content': content,  # 原始内容
+                    'numbered_content': numbered_content,  # 编号后的内容
+                    'number_mapping': number_mapping,  # 编号映射关系
                     'file_type': 'docx' if file_path.lower().endswith('.docx') else 'doc' if file_path.lower().endswith(
                         '.doc') else 'txt'
                 }
@@ -550,7 +562,11 @@ class MainWindow(QMainWindow):
         file_path = item.data(Qt.UserRole)
         if file_path in self.loaded_files:
             file_data = self.loaded_files[file_path]
-            self.text_display.setText(file_data['content'])
+            # 优先显示编号后的内容，如果没有则显示原始内容
+            if 'numbered_content' in file_data:
+                self.text_display.setText(file_data['numbered_content'])
+            else:
+                self.text_display.setText(file_data['content'])
 
     def on_model_type_changed(self, model_type):
         """模型类型改变"""
@@ -1025,7 +1041,7 @@ class MainWindow(QMainWindow):
             highlight_format = search_cursor.charFormat()
             highlight_format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
             highlight_format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
-            
+
             # 应用高亮
             search_cursor.mergeCharFormat(highlight_format)
             found = True
