@@ -25,6 +25,7 @@ from word_exporter import WordExporter
 from model_downloader import ModelDownloader
 from manual_coding_dialog import ManualCodingDialog
 from config import Config
+from project_manager import ProjectManager
 import re
 
 logger = logging.getLogger(__name__)
@@ -38,8 +39,17 @@ class ModelInitializationThread(QThread):
 
     def __init__(self, model_downloader, model_manager):
         super().__init__()
-        self.model_downloader = model_downloader
-        self.model_manager = model_manager
+        # self.settings = settings
+
+        # 添加自定义信号
+        from PyQt5.QtCore import pyqtSignal
+        self._update_model_status_signal = pyqtSignal(bool, str)
+        self._update_model_status_signal.connect(self._on_model_initialization_finished)
+
+        self.setup_managers()
+        self.init_ui()
+        self.load_settings()
+        self.setup_connections()
 
     def run(self):
         try:
@@ -96,6 +106,9 @@ class MainWindow(QMainWindow):
 
         # 设置训练管理器的标准答案管理器
         self.enhanced_training_manager.set_standard_answer_manager(self.standard_answer_manager)
+        
+        # 初始化项目管理器
+        self.project_manager = ProjectManager()
 
         # 数据存储
         self.loaded_files = {}
@@ -219,14 +232,36 @@ class MainWindow(QMainWindow):
         self.auto_coding_btn = QPushButton("自动生成编码")
         self.auto_coding_btn.clicked.connect(self.generate_codes_auto)
 
+        self.number_all_text_btn = QPushButton("给所有文本编号")
+        self.number_all_text_btn.clicked.connect(self.number_all_imported_text)
+
         self.clear_coding_btn = QPushButton("清空编码")
         self.clear_coding_btn.clicked.connect(self.clear_codes)
 
         coding_buttons_layout.addWidget(self.manual_coding_btn)
         coding_buttons_layout.addWidget(self.auto_coding_btn)
+        coding_buttons_layout.addWidget(self.number_all_text_btn)
         coding_buttons_layout.addWidget(self.clear_coding_btn)
 
         coding_layout.addLayout(coding_buttons_layout)
+        
+        # 项目管理按钮
+        project_buttons_layout = QHBoxLayout()
+        
+        self.save_project_btn = QPushButton("保存项目")
+        self.save_project_btn.clicked.connect(self.save_project)
+        
+        self.load_project_btn = QPushButton("加载项目")
+        self.load_project_btn.clicked.connect(self.load_project)
+        
+        self.import_coding_tree_btn = QPushButton("导入编码树")
+        self.import_coding_tree_btn.clicked.connect(self.import_coding_tree)
+        
+        project_buttons_layout.addWidget(self.save_project_btn)
+        project_buttons_layout.addWidget(self.load_project_btn)
+        project_buttons_layout.addWidget(self.import_coding_tree_btn)
+        
+        coding_layout.addLayout(project_buttons_layout)
 
         layout.addWidget(coding_group)
 
@@ -252,12 +287,7 @@ class MainWindow(QMainWindow):
         self.coding_tree.itemClicked.connect(self.on_tree_item_clicked)
 
         # 设置上下文菜单
-        try:
-            # 使用数值而不是Qt常量来避免IDE检查错误
-            self.coding_tree.setContextMenuPolicy(2)  # Qt.CustomContextMenu = 2
-        except:
-            # 如果上述方式失败，使用默认方式
-            pass
+        self.coding_tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.coding_tree.customContextMenuRequested.connect(self.show_tree_context_menu)
 
         coding_layout.addWidget(self.coding_tree)
@@ -335,51 +365,48 @@ class MainWindow(QMainWindow):
     def create_menus(self):
         """创建菜单栏"""
         menubar = self.menuBar()
-        
-        if menubar is not None:
-            # 文件菜单
-            file_menu = menubar.addMenu('文件') if menubar else None
-            if file_menu:
-                import_action = QAction('导入文件', self)
-                import_action.triggered.connect(self.import_files)
-                file_menu.addAction(import_action)
 
-                export_action = QAction('导出结果', self)
-                export_action.triggered.connect(self.export_results)
-                file_menu.addAction(export_action)
+        # 文件菜单
+        file_menu = menubar.addMenu('文件')
 
-                file_menu.addSeparator()
+        import_action = QAction('导入文件', self)
+        import_action.triggered.connect(self.import_files)
+        file_menu.addAction(import_action)
 
-                exit_action = QAction('退出', self)
-                def close_application():
-                    self.close()
-                exit_action.triggered.connect(close_application)
-                file_menu.addAction(exit_action)
+        export_action = QAction('导出结果', self)
+        export_action.triggered.connect(self.export_results)
+        file_menu.addAction(export_action)
 
-            # 编码菜单
-            coding_menu = menubar.addMenu('编码') if menubar else None
-            if coding_menu:
-                manual_coding_action = QAction('手动编码', self)
-                manual_coding_action.triggered.connect(self.start_manual_coding)
-                coding_menu.addAction(manual_coding_action)
+        file_menu.addSeparator()
 
-                auto_coding_action = QAction('自动编码', self)
-                auto_coding_action.triggered.connect(self.generate_codes_auto)
-                coding_menu.addAction(auto_coding_action)
+        exit_action = QAction('退出', self)
+        exit_action.triggered.connect(self.close)
+        file_menu.addAction(exit_action)
 
-            # 训练菜单
-            training_menu = menubar.addMenu('训练') if menubar else None
-            if training_menu:
-                train_action = QAction('训练模型', self)
-                train_action.triggered.connect(self.start_training)
-                training_menu.addAction(train_action)
+        # 编码菜单
+        coding_menu = menubar.addMenu('编码')
 
-            # 帮助菜单
-            help_menu = menubar.addMenu('帮助') if menubar else None
-            if help_menu:
-                about_action = QAction('关于', self)
-                about_action.triggered.connect(self.show_about)
-                help_menu.addAction(about_action)
+        manual_coding_action = QAction('手动编码', self)
+        manual_coding_action.triggered.connect(self.start_manual_coding)
+        coding_menu.addAction(manual_coding_action)
+
+        auto_coding_action = QAction('自动编码', self)
+        auto_coding_action.triggered.connect(self.generate_codes_auto)
+        coding_menu.addAction(auto_coding_action)
+
+        # 训练菜单
+        training_menu = menubar.addMenu('训练')
+
+        train_action = QAction('训练模型', self)
+        train_action.triggered.connect(self.start_training)
+        training_menu.addAction(train_action)
+
+        # 帮助菜单
+        help_menu = menubar.addMenu('帮助')
+
+        about_action = QAction('关于', self)
+        about_action.triggered.connect(self.show_about)
+        help_menu.addAction(about_action)
 
     def setup_connections(self):
         """设置信号连接"""
@@ -410,21 +437,18 @@ class MainWindow(QMainWindow):
             if model_success:
                 self.model_initialized = True
                 self.model_status_label.setText("模型状态: 已就绪")
-                if self.statusBar():
-                    self.statusBar().showMessage("模型初始化成功")
+                self.statusBar().showMessage("模型初始化成功")
                 logger.info("模型初始化成功")
             else:
                 # 模型初始化失败，尝试下载
-                if self.statusBar():
-                    self.statusBar().showMessage("模型不存在，尝试下载...")
+                self.statusBar().showMessage("模型不存在，尝试下载...")
                 self._download_models_async()
 
         except Exception as e:
             logger.error(f"模型初始化异常: {e}")
             self.model_status_label.setText("模型状态: 初始化异常")
             self.init_model_btn.setEnabled(True)
-            if self.statusBar():
-                self.statusBar().showMessage(f"模型初始化异常: {str(e)}")
+            self.statusBar().showMessage(f"模型初始化异常: {str(e)}")
 
     def _download_models_async(self):
         """异步下载模型"""
@@ -466,12 +490,10 @@ class MainWindow(QMainWindow):
         if success:
             self.model_status_label.setText("模型状态: 已就绪")
             self.model_initialized = True
-            if self.statusBar():
-                self.statusBar().showMessage("模型初始化成功")
+            self.statusBar().showMessage("模型初始化成功")
         else:
             self.model_status_label.setText("模型状态: 初始化失败")
-            if self.statusBar():
-                self.statusBar().showMessage(f"模型初始化失败: {message}")
+            self.statusBar().showMessage(f"模型初始化失败: {message}")
             # 不显示警告框，避免阻塞
             logger.warning(f"模型初始化失败: {message}")
 
@@ -481,18 +503,15 @@ class MainWindow(QMainWindow):
         if success:
             self.model_status_label.setText("模型状态: 已就绪")
             self.model_initialized = True
-            if self.statusBar():
-                self.statusBar().showMessage("模型初始化成功")
+            self.statusBar().showMessage("模型初始化成功")
         else:
             self.model_status_label.setText("模型状态: 初始化失败")
-            if self.statusBar():
-                self.statusBar().showMessage(f"模型初始化失败: {message}")
+            self.statusBar().showMessage(f"模型初始化失败: {message}")
             QMessageBox.warning(self, "模型初始化失败", message)
 
     def update_status(self, message):
         """更新状态"""
-        if self.statusBar():
-            self.statusBar().showMessage(message)
+        self.statusBar().showMessage(message)
 
     def import_files(self):
         """导入文件"""
@@ -515,16 +534,11 @@ class MainWindow(QMainWindow):
 
                 filename = os.path.basename(file_path)
 
-                # 使用编号管理器为文本中的句子编号
-                numbered_content, number_mapping = self.data_processor.numbering_manager.number_text(content, filename)
-
                 # 存储文件数据
                 self.loaded_files[file_path] = {
                     'filename': filename,
                     'file_path': file_path,
-                    'content': content,  # 原始内容
-                    'numbered_content': numbered_content,  # 编号后的内容
-                    'number_mapping': number_mapping,  # 编号映射关系
+                    'content': content,
                     'file_type': 'docx' if file_path.lower().endswith('.docx') else 'doc' if file_path.lower().endswith(
                         '.doc') else 'txt'
                 }
@@ -562,8 +576,8 @@ class MainWindow(QMainWindow):
         file_path = item.data(Qt.UserRole)
         if file_path in self.loaded_files:
             file_data = self.loaded_files[file_path]
-            # 优先显示编号后的内容，如果没有则显示原始内容
-            if 'numbered_content' in file_data:
+            # 优先显示编号内容，如果存在的话
+            if 'numbered_content' in file_data and file_data['numbered_content']:
                 self.text_display.setText(file_data['numbered_content'])
             else:
                 self.text_display.setText(file_data['content'])
@@ -952,15 +966,20 @@ class MainWindow(QMainWindow):
         search_count = 0
         max_searches = 100  # 设置最大搜索次数防止无限循环
 
-        # 编码标记保持默认样式，不进行高亮
-        # 查找编码标记但不应用任何高亮格式
+        # 首先高亮编码标记
         while search_count < max_searches:
             # 查找编码标记
             search_cursor = self.text_document.find(pattern, search_cursor)
             if search_cursor.isNull():
                 break
 
-            # 编码标记保持默认样式，不进行任何高亮
+            # 设置高亮格式
+            highlight_format = search_cursor.charFormat()
+            highlight_format.setBackground(QColor(255, 255, 0))  # 黄色背景
+            highlight_format.setForeground(QColor(255, 0, 0))  # 红色文字
+
+            # 应用高亮
+            search_cursor.mergeCharFormat(highlight_format)
             found = True
 
             # 记录第一个匹配项的位置
@@ -1039,8 +1058,8 @@ class MainWindow(QMainWindow):
 
             # 设置高亮格式
             highlight_format = search_cursor.charFormat()
-            highlight_format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
-            highlight_format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
+            highlight_format.setBackground(QColor(255, 255, 0))  # 黄色背景
+            highlight_format.setForeground(QColor(255, 0, 0))  # 红色文字
 
             # 应用高亮
             search_cursor.mergeCharFormat(highlight_format)
@@ -1178,7 +1197,7 @@ class MainWindow(QMainWindow):
         if not content or len(content) < 5:
             return
 
-        # 文本高亮 - 使用浅蓝色背景和深蓝色文字
+        # 简单的文本高亮
         cursor = self.text_display.textCursor()
         self.text_display.moveCursor(QTextCursor.Start)
 
@@ -1187,8 +1206,7 @@ class MainWindow(QMainWindow):
             # 设置高亮格式
             cursor = self.text_display.textCursor()
             format = cursor.charFormat()
-            format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
-            format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
+            format.setBackground(QColor(255, 255, 0))  # 黄色背景
             cursor.mergeCharFormat(format)
 
     def show_tree_context_menu(self, position):
@@ -1707,6 +1725,43 @@ class MainWindow(QMainWindow):
             combined_text += file_data['content']
         return combined_text
 
+    def number_all_imported_text(self):
+        """给所有导入的文本进行编号"""
+        if not self.loaded_files:
+            QMessageBox.warning(self, "警告", "请先导入文本文件")
+            return
+        
+        try:
+            # 重置编号管理器以确保编号从1开始
+            self.data_processor.numbering_manager.reset()
+            
+            # 遍历所有已加载的文件并为它们编号
+            for file_path, file_data in self.loaded_files.items():
+                content = file_data.get('content', '')
+                if content:
+                    # 使用DataProcessor的编号管理器为文本编号
+                    numbered_content, number_mapping = self.data_processor.numbering_manager.number_text(content, os.path.basename(file_path))
+                    
+                    # 更新文件数据中的编号内容
+                    file_data['numbered_content'] = numbered_content
+                    file_data['numbered_mapping'] = number_mapping
+            
+            # 如果当前有选中的文件，更新显示
+            current_items = self.file_list.selectedItems()
+            if current_items:
+                current_item = current_items[0]
+                file_path = current_item.data(Qt.UserRole)
+                if file_path in self.loaded_files:
+                    file_data = self.loaded_files[file_path]
+                    if 'numbered_content' in file_data:
+                        self.text_display.setText(file_data['numbered_content'])
+            
+            self.statusBar().showMessage(f"已为 {len(self.loaded_files)} 个文件的文本进行编号")
+            
+        except Exception as e:
+            logger.error(f"编号所有文本失败: {e}")
+            QMessageBox.critical(self, "错误", f"编号所有文本失败: {str(e)}")
+
     def clear_codes(self):
         """清空编码"""
         reply = QMessageBox.question(
@@ -1719,6 +1774,120 @@ class MainWindow(QMainWindow):
             self.structured_codes = {}
             self.coding_tree.clear()
             self.statusBar().showMessage("编码已清空")
+
+    def save_project(self):
+        """保存项目"""
+        if not self.loaded_files:
+            QMessageBox.warning(self, "警告", "没有可保存的文件")
+            return
+        
+        # 弹出对话框获取项目名称
+        project_name, ok = QInputDialog.getText(self, "保存项目", "请输入项目名称:")
+        
+        if ok and project_name.strip():
+            try:
+                success = self.project_manager.save_project(project_name.strip(), self.loaded_files, self.structured_codes)
+                if success:
+                    QMessageBox.information(self, "成功", f"项目 '{project_name}' 已保存")
+                    self.statusBar().showMessage(f"项目已保存: {project_name}")
+                else:
+                    QMessageBox.critical(self, "错误", "项目保存失败")
+            except Exception as e:
+                logger.error(f"保存项目失败: {e}")
+                QMessageBox.critical(self, "错误", f"项目保存失败: {str(e)}")
+        
+    def load_project(self):
+        """加载项目"""
+        try:
+            projects = self.project_manager.get_projects_list()
+            
+            if not projects:
+                QMessageBox.information(self, "提示", "没有可加载的项目")
+                return
+            
+            # 创建项目选择对话框
+            project_names = [proj["name"] for proj in projects]
+            project_name, ok = QInputDialog.getItem(self, "加载项目", "请选择要加载的项目:", project_names, 0, False)
+            
+            if ok and project_name:
+                loaded_files, structured_codes = self.project_manager.load_project(project_name)
+                
+                if loaded_files is not None and structured_codes is not None:
+                    # 清空当前数据
+                    self.loaded_files = loaded_files
+                    self.structured_codes = structured_codes
+                    
+                    # 更新文件列表
+                    self.file_list.clear()
+                    for file_path, file_data in self.loaded_files.items():
+                        filename = file_data.get('filename', os.path.basename(file_path))
+                        item = QListWidgetItem(filename)
+                        item.setData(Qt.UserRole, file_path)
+                        self.file_list.addItem(item)
+                    
+                    # 更新编码树
+                    self.update_coding_tree()
+                    
+                    # 如果有选中的文件，显示其内容
+                    if self.file_list.count() > 0:
+                        first_item = self.file_list.item(0)
+                        self.on_file_selected(first_item)
+                    
+                    QMessageBox.information(self, "成功", f"项目 '{project_name}' 已加载")
+                    self.statusBar().showMessage(f"项目已加载: {project_name}")
+                else:
+                    QMessageBox.critical(self, "错误", "项目加载失败")
+            
+        except Exception as e:
+            logger.error(f"加载项目失败: {e}")
+            QMessageBox.critical(self, "错误", f"项目加载失败: {str(e)}")
+
+    def import_coding_tree(self):
+        """导入编码树 - 从项目文件中导入完整的编码结构"""
+        try:
+            projects = self.project_manager.get_projects_list()
+            
+            if not projects:
+                QMessageBox.information(self, "提示", "没有可导入编码树的项目")
+                return
+            
+            # 创建项目选择对话框
+            project_names = [proj["name"] for proj in projects]
+            project_name, ok = QInputDialog.getItem(self, "导入编码树", "请选择要导入编码树的项目:", project_names, 0, False)
+            
+            if ok and project_name:
+                # 只加载项目的编码结构，不覆盖文件数据
+                _, structured_codes = self.project_manager.load_project(project_name)
+                
+                if structured_codes is not None:
+                    # 询问用户是否确认导入编码树
+                    reply = QMessageBox.question(
+                        self, "确认导入", 
+                        f"确定要导入项目 '{project_name}' 的编码树吗？这将替换当前的编码结构。",
+                        QMessageBox.Yes | QMessageBox.No
+                    )
+                    
+                    if reply == QMessageBox.Yes:
+                        # 保存当前文件数据
+                        current_loaded_files = self.loaded_files
+                        
+                        # 更新编码结构
+                        self.structured_codes = structured_codes
+                        
+                        # 恢复文件数据
+                        self.loaded_files = current_loaded_files
+                        
+                        # 更新编码树界面
+                        self.update_coding_tree()
+                        
+                        QMessageBox.information(self, "成功", f"编码树已从项目 '{project_name}' 导入")
+                        self.statusBar().showMessage(f"编码树已导入: {project_name}")
+                else:
+                    QMessageBox.critical(self, "错误", "编码树导入失败")
+            
+        except Exception as e:
+            logger.error(f"导入编码树失败: {e}")
+            QMessageBox.critical(self, "错误", f"导入编码树失败: {str(e)}")
 
     def show_about(self):
         """显示关于信息"""
