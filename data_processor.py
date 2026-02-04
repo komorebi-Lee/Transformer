@@ -11,6 +11,26 @@ from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
+# 尝试导入可选依赖
+try:
+    import win32com.client as win32
+    WIN32COM_AVAILABLE = True
+except ImportError:
+    WIN32COM_AVAILABLE = False
+
+try:
+    import pypandoc
+    PYPANDOC_AVAILABLE = True
+except ImportError:
+    PYPANDOC_AVAILABLE = False
+
+try:
+    from text_numbering import TextNumberingManager
+    TEXT_NUMBERING_AVAILABLE = True
+except ImportError:
+    TEXT_NUMBERING_AVAILABLE = False
+    TextNumberingManager = None
+
 
 class DataProcessor:
     """数据处理器 - 支持多文件处理和Word文档"""
@@ -18,6 +38,123 @@ class DataProcessor:
     def __init__(self):
         self.sentence_counter = 0
         self.file_sentence_mapping = {}
+        
+        # 初始化文本编号管理器
+        if TEXT_NUMBERING_AVAILABLE and TextNumberingManager:
+            self.numbering_manager = TextNumberingManager()
+        else:
+            self.numbering_manager = None
+
+    def read_doc_file(self, file_path: str) -> str:
+        """读取.doc文件，使用多种备选方法"""
+        # 方法1: 尝试使用win32com（仅Windows）
+        if WIN32COM_AVAILABLE:
+            try:
+                return self._read_doc_with_win32com(file_path)
+            except Exception as e:
+                logger.warning(f"win32com读取失败，尝试其他方法: {e}")
+        
+        # 方法2: 尝试使用pypandoc
+        if PYPANDOC_AVAILABLE:
+            try:
+                import pypandoc
+                return self._read_doc_with_pypandoc(file_path)
+            except Exception as e:
+                logger.warning(f"pypandoc读取失败，尝试其他方法: {e}")
+        
+        # 方法3: 尝试使用pypandoc或win32com作为降级方案
+        try:
+            if PYPANDOC_AVAILABLE:
+                return self._read_doc_with_antiword(file_path)  # 使用更新后的函数
+            elif WIN32COM_AVAILABLE:
+                return self._read_doc_with_win32com(file_path)
+        except Exception as e:
+            logger.warning(f"降级方法读取失败: {e}")
+        
+        # 如果所有方法都失败，抛出异常
+        raise Exception("无法读取.doc文件，请安装win32com或pypandoc")
+
+    def _read_doc_with_win32com(self, file_path: str) -> str:
+        """使用win32com读取.doc文件"""
+        if not WIN32COM_AVAILABLE:
+            raise Exception("win32com不可用")
+        word_app = win32.Dispatch('Word.Application')
+        word_app.Visible = False  # 不显示Word界面
+        
+        # 打开文档
+        doc = word_app.Documents.Open(os.path.abspath(file_path))
+        
+        # 提取文本内容
+        content = doc.Content.Text
+        
+        # 关闭文档和Word应用程序
+        doc.Close()
+        word_app.Quit()
+        
+        logger.info(f"成功使用win32com读取Word文档(.doc): {file_path}")
+        return content.strip()
+
+    def _read_doc_with_pypandoc(self, file_path: str) -> str:
+        """使用pypandoc读取.doc文件"""
+        # 将.doc文件转换为文本
+        if not PYPANDOC_AVAILABLE:
+            raise Exception("pypandoc不可用")
+        content = pypandoc.convert_file(file_path, 'plain')
+        logger.info(f"成功使用pypandoc读取Word文档(.doc): {file_path}")
+        return content.strip()
+
+    def _read_doc_with_antiword(self, file_path: str) -> str:
+        """使用antiword命令行工具读取.doc文件"""
+        import subprocess
+        # 使用text-from-docx库处理.doc文件
+        # 首先尝试将.doc转换为.docx临时文件，然后读取
+        try:
+            import zipfile
+            import tempfile
+            
+            # 创建一个临时的docx文件，将doc内容转换
+            # 这里使用pypandoc作为备选方案，如果可用
+            if PYPANDOC_AVAILABLE:
+                import tempfile
+                import os
+                
+                # 创建临时文件
+                temp_docx_path = None
+                try:
+                    with tempfile.NamedTemporaryFile(suffix='.docx', delete=False) as temp_file:
+                        temp_docx_path = temp_file.name
+                    
+                    # 尝试使用pypandoc转换.doc到.docx
+                    if not PYPANDOC_AVAILABLE:
+                        raise Exception("pypandoc不可用")
+                    pypandoc.convert_file(file_path, 'docx', outputfile=temp_docx_path)
+                    
+                    # 读取转换后的.docx文件
+                    doc = Document(temp_docx_path)
+                    content = ""
+                    for paragraph in doc.paragraphs:
+                        if paragraph.text.strip():
+                            content += paragraph.text + "\n"
+                    
+                    logger.info(f"成功使用pypandoc转换并读取.doc文件: {file_path}")
+                    return content.strip()
+                except Exception as e:
+                    logger.warning(f"pypandoc转换.doc失败: {e}")
+                    # 如果转换失败，尝试其他方法
+                    if temp_docx_path and os.path.exists(temp_docx_path):
+                        try:
+                            os.unlink(temp_docx_path)
+                        except:
+                            pass
+                    raise e
+            else:
+                # 如果pypandoc不可用，尝试使用win32com作为降级方案
+                if WIN32COM_AVAILABLE:
+                    return self._read_doc_with_win32com(file_path)
+                else:
+                    raise Exception("缺少必要的依赖来读取.doc文件")
+        except Exception as e:
+            raise e
 
     def read_text_file(self, file_path: str) -> str:
         """读取文本文件"""
@@ -31,15 +168,23 @@ class DataProcessor:
             raise
 
     def read_word_file(self, file_path: str) -> str:
-        """读取Word文档"""
+        """读取Word文档，支持.doc和.docx格式"""
         try:
-            doc = Document(file_path)
-            content = ""
-            for paragraph in doc.paragraphs:
-                if paragraph.text.strip():
-                    content += paragraph.text + "\n"
-            logger.info(f"成功读取Word文档: {file_path}")
-            return content.strip()
+            # 根据文件扩展名选择适当的读取方法
+            if file_path.lower().endswith('.docx'):
+                # 使用python-docx读取.docx文件
+                doc = Document(file_path)
+                content = ""
+                for paragraph in doc.paragraphs:
+                    if paragraph.text.strip():
+                        content += paragraph.text + "\n"
+                logger.info(f"成功读取Word文档: {file_path}")
+                return content.strip()
+            elif file_path.lower().endswith('.doc'):
+                # 使用win32com读取.doc文件
+                return self.read_doc_file(file_path)
+            else:
+                raise ValueError(f"不支持的文件格式: {file_path}")
         except Exception as e:
             logger.error(f"读取Word文档失败 {file_path}: {e}")
             # 降级到文本读取
@@ -47,7 +192,8 @@ class DataProcessor:
 
     def read_file(self, file_path: str) -> str:
         """读取文件（自动判断类型）"""
-        if file_path.endswith('.docx'):
+        file_lower = file_path.lower()
+        if file_lower.endswith('.docx') or file_lower.endswith('.doc'):
             return self.read_word_file(file_path)
         else:
             return self.read_text_file(file_path)
@@ -363,70 +509,7 @@ class DataProcessor:
                 return True
         return False
 
-    def identify_interview_paragraphs(self, content: str, filename: str) -> List[Dict[str, Any]]:
-        """智能识别采访段落，区分采访人和受访人 - 增强版"""
-        paragraphs = []
-        lines = content.split('\n')
 
-        current_paragraph = []
-        current_speaker = None
-        paragraph_start_line = 0
-
-        for i, line in enumerate(lines):
-            line = line.strip()
-            if not line:
-                if current_paragraph and current_speaker:
-                    # 保存当前段落
-                    paragraph_text = '\n'.join(current_paragraph)
-                    paragraphs.append({
-                        'speaker': current_speaker,
-                        'content': paragraph_text,
-                        'start_line': paragraph_start_line,
-                        'end_line': i,
-                        'filename': filename
-                    })
-                    current_paragraph = []
-                    current_speaker = None
-                continue
-
-            # 跳过说话人时间标记
-            if self.is_speaker_time_mark(line):
-                continue
-
-            # 检测说话人
-            speaker = self.detect_speaker_enhanced(line)
-
-            if speaker and current_speaker != speaker:
-                # 保存上一个段落
-                if current_paragraph and current_speaker:
-                    paragraph_text = '\n'.join(current_paragraph)
-                    paragraphs.append({
-                        'speaker': current_speaker,
-                        'content': paragraph_text,
-                        'start_line': paragraph_start_line,
-                        'end_line': i,
-                        'filename': filename
-                    })
-
-                # 开始新段落
-                current_paragraph = [line]
-                current_speaker = speaker
-                paragraph_start_line = i
-            else:
-                current_paragraph.append(line)
-
-        # 添加最后一个段落
-        if current_paragraph and current_speaker:
-            paragraph_text = '\n'.join(current_paragraph)
-            paragraphs.append({
-                'speaker': current_speaker,
-                'content': paragraph_text,
-                'start_line': paragraph_start_line,
-                'end_line': len(lines),
-                'filename': filename
-            })
-
-        return paragraphs
 
     def detect_speaker_enhanced(self, line: str) -> Optional[str]:
         """增强的说话人检测 - 过滤录音转录信息"""

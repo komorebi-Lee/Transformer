@@ -84,37 +84,35 @@ class GroundedTheoryCoder:
             return {"错误": {"构建失败": [{"content": f"构建失败: {str(e)}", "original_sentence": "", "original_key": "error"}]}}
 
     def add_coding_numbers_new_format(self, structured_codes: Dict[str, Any]) -> Dict[str, Any]:
-        """为编码结构添加新的自动编号格式：A, A1, A11, B, B1, B11等"""
+        """为编码结构添加新的自动编号格式：A开头一阶，B开头二阶，C开头三阶"""
         numbered_codes = {}
 
-        # 三阶编码编号：A, B, C, D...
-        third_letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-                         'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
-
+        # 三阶编码编号：C1, C2, C3... (C开头表示三阶)
         third_index = 0
         for third_category, second_categories in structured_codes.items():
-            if third_index < len(third_letters):
-                third_letter = third_letters[third_index]
-            else:
-                # 如果超过26个，使用A1, A2等格式
-                third_letter = f"A{third_index - 25}"
+            third_letter = 'C'  # 三阶编码使用C开头
+            third_number = third_index + 1
+            third_code = f"{third_letter}{third_number}"  # C1, C2, C3...
 
             # 清理三阶编码名称
             clean_third = self.clean_category_name(third_category)
-            numbered_third_category = f"{third_letter} {clean_third}"
+            numbered_third_category = f"{third_code} {clean_third}"
             numbered_codes[numbered_third_category] = {}
 
-            # 二阶编码编号：A1, A2, A3...
+            # 二阶编码编号：B1, B2, B3... (B开头表示二阶)
             second_categories_list = list(second_categories.items())
             for j, (second_category, first_contents) in enumerate(second_categories_list):
+                second_letter = 'B'  # 二阶编码使用B开头
                 second_number = j + 1
-                numbered_second_category = f"{third_letter}{second_number} {self.clean_category_name(second_category)}"
+                second_code = f"{second_letter}{second_number}"  # B1, B2, B3...
+                numbered_second_category = f"{second_code} {self.clean_category_name(second_category)}"
                 numbered_codes[numbered_third_category][numbered_second_category] = []
 
-                # 一阶编码编号：A11, A12, A13...
+                # 一阶编码编号：A1, A2, A3... (A开头表示一阶)
                 for k, first_content in enumerate(first_contents):
+                    first_letter = 'A'  # 一阶编码使用A开头
                     first_number = k + 1
-                    code_id = f"{third_letter}{second_number}{first_number}"
+                    code_id = f"{first_letter}{first_number}"  # A1, A2, A3...
 
                     if isinstance(first_content, dict) and 'content' in first_content:
                         # 获取原始内容（不简化）
