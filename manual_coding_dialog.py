@@ -13,7 +13,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 class DragDropTreeWidget(QTreeWidget):
     """支持拖放功能的树形控件"""
 
@@ -41,7 +40,6 @@ class DragDropTreeWidget(QTreeWidget):
             self.dialog.handle_drop_on_tree(event)
         else:
             event.ignore()
-
 
 class ManualCodingDialog(QDialog):
     """手动编码对话框 - 修复文件选择显示问题"""
@@ -94,10 +92,10 @@ class ManualCodingDialog(QDialog):
 
         export_btn = QPushButton("导出为标准答案")
         export_btn.clicked.connect(self.export_to_standard)
-        
+
         save_tree_btn = QPushButton("保存编码树")
         save_tree_btn.clicked.connect(self.save_coding_tree)
-        
+
         import_tree_btn = QPushButton("导入编码树")
         import_tree_btn.clicked.connect(self.import_coding_tree)
 
@@ -343,7 +341,7 @@ class ManualCodingDialog(QDialog):
 
                 # 检查是否有预先编号的内容
                 numbered_content = file_data.get('numbered_content', '')
-                
+
                 if numbered_content:
                     # 如果已有编号内容，直接使用
                     display_content = numbered_content
@@ -1048,7 +1046,7 @@ class ManualCodingDialog(QDialog):
 
                 # 显示所有关联句子的详细信息
                 self.show_sentence_details_dialog(sentence_details, content, code_id)
-                
+
                 # 优先使用编码ID进行导航
                 if code_id:
                     self.highlight_text_by_code_id(code_id)
@@ -1096,11 +1094,11 @@ class ManualCodingDialog(QDialog):
                     break
 
                 # 设置高亮格式 - 编码标记保持默认样式，不进行高亮
-                # highlight_format = search_cursor.charFormat()
-                # highlight_format.setBackground(QColor(255, 255, 255))  # 白色背景
-                # highlight_format.setForeground(QColor(0, 0, 0))  # 黑色文字
-                # search_cursor.mergeCharFormat(highlight_format)
-
+                highlight_format = search_cursor.charFormat()
+                highlight_format.setBackground(QColor(255, 255, 255))  # 白色背景
+                highlight_format.setForeground(QColor(0, 0, 0))  # 黑色文字
+                search_cursor.mergeCharFormat(highlight_format)
+                #
                 # 保持编码标记的默认样式，不进行任何高亮
                 found = True
 
@@ -1362,65 +1360,66 @@ class ManualCodingDialog(QDialog):
     def get_coding_result(self):
         """获取编码结果"""
         return self.current_codes
-    
+
     def build_tree_data(self):
         """构建完整的树形结构数据用于保存"""
         # 先更新内部数据结构以确保是最新的
         self.update_structured_codes_from_tree()
-        
+
         tree_data = {
             "current_codes": self.current_codes,
             "unclassified_first_codes": self.unclassified_first_codes,
             "tree_structure": self.capture_tree_state()
         }
         return tree_data
-    
+
     def extract_tree_data(self):
         """从树形控件提取完整数据结构"""
         # 为了向后兼容，调用新方法
         return self.build_tree_data()
-    
+
     def capture_tree_state(self):
         """捕获当前树的状态"""
+
         def capture_item(item):
             item_data = item.data(0, Qt.UserRole)
             children = []
-            
+
             for i in range(item.childCount()):
                 child = item.child(i)
                 children.append(capture_item(child))
-            
+
             # 返回包含文本、数据和子项的完整信息
             return {
                 "texts": [item.text(col) for col in range(min(item.columnCount(), 6))],  # 只保留前6列
                 "data": item_data,
                 "children": children
             }
-        
+
         root_items = []
         for i in range(self.coding_tree.topLevelItemCount()):
             item = self.coding_tree.topLevelItem(i)
             root_items.append(capture_item(item))
-        
+
         return root_items
-    
+
     def serialize_tree(self):
         """序列化树形结构"""
         # 为了向后兼容，调用新方法
         return self.capture_tree_state()
-    
+
     def rebuild_tree_from_data(self, tree_data):
         """从数据重建树形结构"""
         try:
             # 清空当前树
             self.coding_tree.clear()
-            
+
             # 恢复数据
             if "current_codes" in tree_data:
                 self.current_codes = tree_data["current_codes"]
             if "unclassified_first_codes" in tree_data:
                 self.unclassified_first_codes = tree_data["unclassified_first_codes"]
-            
+
             # 从序列化的树结构重建树
             if "tree_structure" in tree_data:
                 tree_structure = tree_data["tree_structure"]
@@ -1428,100 +1427,101 @@ class ManualCodingDialog(QDialog):
             else:
                 # 如果没有树结构数据，使用旧方法更新
                 self.update_coding_tree()
-                
+
         except Exception as e:
             logger.error(f"重建树形结构失败: {e}")
             import traceback
             traceback.print_exc()
             # 回退到使用update_coding_tree方法
             self.update_coding_tree()
-    
+
     def restore_tree_state(self, tree_structure):
         """恢复树的状态"""
+
         def restore_item(item_dict):
             item = QTreeWidgetItem()
-            
+
             # 设置列文本
             for col_idx, text in enumerate(item_dict["texts"]):
                 item.setText(col_idx, text)
-            
+
             # 设置数据
             item.setData(0, Qt.UserRole, item_dict["data"])
-            
+
             # 递归添加子项
             for child_dict in item_dict["children"]:
                 child_item = restore_item(child_dict)
                 item.addChild(child_item)
-            
+
             return item
-        
+
         # 清空树并重建根项
         for item_dict in tree_structure:
             root_item = restore_item(item_dict)
             self.coding_tree.addTopLevelItem(root_item)
-    
+
     def deserialize_tree(self, tree_structure):
         """反序列化树形结构"""
         # 为了向后兼容，调用新方法
         self.restore_tree_state(tree_structure)
-    
+
     def update_coding_tree(self):
         """更新编码结构树"""
-    
+
     def save_coding_tree(self):
         """保存当前编码树到文件 - 保存完整的树形结构"""
         try:
             from PyQt5.QtWidgets import QFileDialog
-            
+
             # 获取保存路径
             file_path, _ = QFileDialog.getSaveFileName(
                 self, "保存编码树", "", "JSON文件 (*.json);;所有文件 (*)"
             )
-            
+
             if file_path:
                 # 从树形控件构建完整的数据结构
                 tree_data = self.extract_tree_data()
-                
+
                 # 保存完整的编码结构
                 with open(file_path, 'w', encoding='utf-8') as f:
                     json.dump(tree_data, f, ensure_ascii=False, indent=2)
-                
+
                 QMessageBox.information(self, "成功", f"编码树已保存到: {file_path}")
                 logger.info(f"编码树已保存: {file_path}")
-            
+
         except Exception as e:
             logger.error(f"保存编码树失败: {e}")
             QMessageBox.critical(self, "错误", f"保存编码树失败: {str(e)}")
-    
+
     def import_coding_tree(self):
         """从文件导入编码树 - 恢复完整的树形结构"""
         try:
             from PyQt5.QtWidgets import QFileDialog
-            
+
             # 获取导入路径
             file_path, _ = QFileDialog.getOpenFileName(
                 self, "导入编码树", "", "JSON文件 (*.json);;所有文件 (*)"
             )
-            
+
             if file_path:
                 # 读取编码结构
                 with open(file_path, 'r', encoding='utf-8') as f:
                     imported_tree_data = json.load(f)
-                
+
                 # 询问用户是否确认导入编码树
                 reply = QMessageBox.question(
-                    self, "确认导入", 
+                    self, "确认导入",
                     "确定要导入编码树吗？这将替换当前的编码结构。",
                     QMessageBox.Yes | QMessageBox.No
                 )
-                
+
                 if reply == QMessageBox.Yes:
                     # 使用导入的数据重建树形结构
                     self.rebuild_tree_from_data(imported_tree_data)
-                    
+
                     QMessageBox.information(self, "成功", f"编码树已从 {file_path} 导入")
                     logger.info(f"编码树已导入: {file_path}")
-            
+
         except Exception as e:
             logger.error(f"导入编码树失败: {e}")
             QMessageBox.critical(self, "错误", f"导入编码树失败: {str(e)}")
@@ -1535,7 +1535,8 @@ class ManualCodingDialog(QDialog):
 
             # 创建对话框
             dialog = QDialog(self)
-            dialog.setWindowTitle(f"句子详情 - {code_id}: {content[:30]}..." if len(content) > 30 else f"句子详情 - {code_id}: {content}")
+            dialog.setWindowTitle(
+                f"句子详情 - {code_id}: {content[:30]}..." if len(content) > 30 else f"句子详情 - {code_id}: {content}")
             dialog.resize(800, 600)
 
             layout = QVBoxLayout(dialog)
@@ -1543,47 +1544,61 @@ class ManualCodingDialog(QDialog):
             # 创建文本显示区域
             text_display = QTextEdit()
             text_display.setReadOnly(True)
-            
+
             # 构建显示内容
             display_text = f"一阶编码: {code_id}: {content}\n"
             display_text += "=" * 50 + "\n\n"
-            
+
             for i, detail in enumerate(sentence_details, 1):
                 if isinstance(detail, dict):
                     text = detail.get('text', '')
                     detail_code_id = detail.get('code_id', '')
                     file_path = detail.get('file_path', '')
                     sentence_id = detail.get('sentence_id', '')
-                    
+
                     display_text += f"句子 {i}:\n"
                     if detail_code_id:
-                        display_text += f"  编号: {detail_code_id}\n"
+                        # 从文本中提取所有句子编号（例如 [2018][2028] 格式)
+                        sentence_number_matches = re.findall(r"\[(\d+)\]", text)
+                        if sentence_number_matches:
+                            # 如果有多个编号，显示所有编号
+                            all_numbers = ", ".join(sentence_number_matches)
+                            display_text += f"  编号: {all_numbers}\n"
+                        else:
+                            # 如果没有找到编号，使用原来的sentence_id
+                            display_text += f"  编号: {sentence_id}\n"
+                    else:
+                        display_text += f"  编号: {sentence_id}\n"
                     if file_path:
                         display_text += f"  文件: {file_path}\n"
                     if sentence_id:
                         display_text += f"  句子ID: {sentence_id}\n"
-                    display_text += f"  内容: {text}\n\n"
+                    # 清理内容显示，去除多余引号和格式化
+                    clean_text = str(text).strip().strip("'").strip('"')
+                    # 将换行符替换为可视化的分隔符
+                    clean_text = clean_text.replace('\n', ' | ')
+                    display_text += f"  内容: {clean_text}\n\n"
                 else:
                     # 如果是字符串或其他格式
                     display_text += f"句子 {i}:\n"
                     display_text += f"  内容: {detail}\n\n"
-            
+
             text_display.setPlainText(display_text)
             layout.addWidget(text_display)
 
             # 添加按钮
             button_layout = QHBoxLayout()
             button_layout.addStretch()
-            
+
             close_btn = QPushButton("关闭")
             close_btn.clicked.connect(dialog.close)
             button_layout.addWidget(close_btn)
-            
+
             layout.addLayout(button_layout)
 
             # 显示对话框（非模态）
             dialog.show()
-            
+
         except Exception as e:
             logger.error(f"显示句子详情对话框时出错: {e}")
             QMessageBox.warning(self, "错误", f"显示句子详情时发生错误: {str(e)}")
@@ -2026,7 +2041,7 @@ class ManualCodingDialog(QDialog):
                         else:
                             content_sentence_count = 1
                         total_sentence_count += content_sentence_count
-                    
+
                     second_item.setText(4, str(total_sentence_count))  # 句子来源数
                     second_item.setText(5, ", ".join(second_code_ids) if second_code_ids else "")  # 关联编号
                     second_count += 1
@@ -2045,7 +2060,7 @@ class ManualCodingDialog(QDialog):
                         else:
                             content_sentence_count = 1
                         total_third_sentence_count += content_sentence_count
-                
+
                 third_item.setText(4, str(total_third_sentence_count))  # 句子来源数
                 third_item.setText(5, ", ".join(third_code_ids) if third_code_ids else "")  # 关联编号
 
