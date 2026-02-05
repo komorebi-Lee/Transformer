@@ -1136,6 +1136,7 @@ class MainWindow(QMainWindow):
             logger.error(f"获取编码内容时出错: {e}")
             return ""
 
+
     # 在 init_ui 方法中添加文本文档引用
     def init_ui(self):
         """初始化用户界面"""

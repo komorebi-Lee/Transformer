@@ -37,7 +37,28 @@ class DragDropTreeWidget(QTreeWidget):
     def dropEvent(self, event):
         """拖放释放事件"""
         if self.dialog:
+            # 明确设置为复制操作，防止源文本被删除
+            event.setDropAction(Qt.CopyAction)
             self.dialog.handle_drop_on_tree(event)
+            event.accept()
+        else:
+            event.ignore()
+
+    def dragEnterEvent(self, event):
+        """处理拖拽进入事件，明确接受复制操作"""
+        if event.mimeData().hasText():
+            # 接受复制操作，不接受移动操作
+            event.setDropAction(Qt.CopyAction)
+            event.accept()
+        else:
+            event.ignore()
+
+    def dragMoveEvent(self, event):
+        """处理拖拽移动事件，确保操作类型正确"""
+        if event.mimeData().hasText():
+            # 确保是复制操作
+            event.setDropAction(Qt.CopyAction)
+            event.accept()
         else:
             event.ignore()
 
@@ -46,6 +67,7 @@ class ManualCodingDialog(QDialog):
 
     def __init__(self, parent=None, loaded_files=None, existing_codes=None):
         super().__init__(parent)
+        self.parent_window = parent  # 保存父窗口引用，用于访问data_processor
         self.loaded_files = loaded_files or {}
         self.existing_codes = existing_codes or {}
         self.current_codes = {}
@@ -143,6 +165,8 @@ class ManualCodingDialog(QDialog):
         self.text_display.setPlaceholderText("选择文件查看文本内容...")
         font = QFont("SimSun", 10)
         self.text_display.setFont(font)
+        # 设置拖放模式为拖拽（DragDrop），确保拖拽操作为复制模式，不删除原文本
+        self.text_display.setAcceptDrops(False)  # 不接受拖放，但允许拖出
         text_layout.addWidget(self.text_display)
 
         # 文本选择按钮
@@ -1558,12 +1582,26 @@ class ManualCodingDialog(QDialog):
 
                     display_text += f"句子 {i}:\n"
                     if detail_code_id:
-                        display_text += f"  编号: {detail_code_id}\n"
+                        # 从文本中提取所有句子编号（例如 [2018][2028] 格式)
+                        sentence_number_matches = re.findall(r"\[(\d+)\]", text)
+                        if sentence_number_matches:
+                            # 如果有多个编号，显示所有编号
+                            all_numbers = ", ".join(sentence_number_matches)
+                            display_text += f"  编号: {all_numbers}\n"
+                        else:
+                            # 如果没有找到编号，使用原来的sentence_id
+                            display_text += f"  编号: {sentence_id}\n"
+                    else:
+                        display_text += f"  编号: {sentence_id}\n"
                     if file_path:
                         display_text += f"  文件: {file_path}\n"
                     if sentence_id:
                         display_text += f"  句子ID: {sentence_id}\n"
-                    display_text += f"  内容: {text}\n\n"
+                    # 清理内容显示，去除多余引号和格式化
+                    clean_text = str(text).strip().strip("'").strip('"')
+                    # 将换行符替换为可视化的分隔符
+                    clean_text = clean_text.replace('\n', ' | ')
+                    display_text += f"  内容: {clean_text}\n\n"
                 else:
                     # 如果是字符串或其他格式
                     display_text += f"句子 {i}:\n"
@@ -2239,7 +2277,21 @@ class ManualCodingDialog(QDialog):
             item.setText(2, "1")
             item.setText(3, "1")  # 文件来源数
             item.setText(4, "1")  # 句子来源数
-            item.setText(5, code_id)  # 关联编号
+            # 检查当前文本是否有选中的内容，并尝试从中提取TextNumberingManager的编号
+            cursor = self.text_display.textCursor()
+            selected_text = ""
+            if cursor.hasSelection():
+                selected_text = cursor.selectedText().strip()
+            
+            import re
+            number_matches = re.findall(r'\[(\d+)\]', selected_text)
+            if number_matches:
+                # 使用最后一个匹配的数字编号作为来自TextNumberingManager的编号
+                tmng_number = number_matches[-1]
+                item.setText(5, tmng_number)  # 关联编号设置为来自TextNumberingManager的编号
+            else:
+                # 如果没有选中内容或没有找到TextNumberingManager编号，则使用code_id
+                item.setText(5, code_id)  # 关联编号
             item.setData(0, Qt.UserRole, {
                 "level": 1,
                 "content": clean_content,
@@ -2257,13 +2309,14 @@ class ManualCodingDialog(QDialog):
                     # 添加编码标记到选中文本
                     self.add_code_marker_to_text(selected_text, code_id)
 
-                    # 更新句子详情
-                    item_data = item.data(0, Qt.UserRole)
-                    item_data["sentence_details"].append({
-                        "text": selected_text,
-                        "code_id": code_id
-                    })
-                    item.setData(0, Qt.UserRole, item_data)
+            # 如果需要记录句子详情，可以从其他途径获取，而不是依赖选中的文本
+            # 这里保持句子详情为空列表，因为我们不再从选中文本获取内容
+            # item_data = item.data(0, Qt.UserRole)
+            # item_data["sentence_details"].append({
+            #     "text": selected_text,
+            #     "code_id": code_id
+            # })
+            # item.setData(0, Qt.UserRole, item_data)
 
             self.first_content_edit.clear()
 
@@ -2587,182 +2640,116 @@ class ManualCodingDialog(QDialog):
             level = item_data.get("level")
 
             if level == 1:
-                # 如果拖到一阶编码上，将文本添加为新的同级一阶编码
-                parent = item.parent()
-                if parent:
-                    # 获取目标项的二阶和三阶信息
-                    second_name = parent.text(0)
-                    grandparent = parent.parent()
-                    third_name = grandparent.text(0) if grandparent else ""
-
-                    # 验证拖放的文本
-                    is_valid, clean_content, error_msg = self.validate_category_name(dropped_text, "first")
-                    if not is_valid:
-                        QMessageBox.warning(self, "验证错误", error_msg)
-                        event.ignore()
-                        return
-
-                    # 检查是否已存在
-                    if self.is_content_exists(clean_content):
-                        QMessageBox.warning(self, "警告", "该一阶编码已存在")
-                        event.ignore()
-                        return
-
-                    # 创建新的同级一阶节点
-                    new_item = QTreeWidgetItem(parent)
-                    # 生成新的编号
-                    new_code_id = self.generate_first_code_id()
-
-                    # 在内容前加上编号
-                    new_item.setText(0, f"{new_code_id}: {clean_content}")
-                    new_item.setText(1, "一阶编码")
-                    new_item.setText(2, "1")
-                    new_item.setText(3, "1")  # 文件来源数
-                    new_item.setText(4, "1")  # 句子来源数
-                    new_item.setText(5, new_code_id)  # 关联编号
-
-                    new_item.setData(0, Qt.UserRole, {
-                        "level": 1,
-                        "content": clean_content,
-                        "numbered_content": f"{new_code_id}: {clean_content}",
-                        "category": second_name,
-                        "core_category": third_name,
-                        "classified": True,
-                        "code_id": new_code_id,
-                        "sentence_details": [{"text": dropped_text, "code_id": new_code_id}]  # 添加拖拽的句子详情
-                    })
-
-                    # 添加编码标记到文本
-                    self.add_code_marker_to_text(dropped_text, new_code_id)
-
-                    # 更新拖放目标一阶编码的文本来源数据，添加这次拖放的文本和新编码的编号
-                    # 获取目标项的当前数据
-                    target_item_data = item.data(0, Qt.UserRole)
-                    if target_item_data is None:
-                        target_item_data = {}
-
-                    target_sentence_details = target_item_data.get("sentence_details", [])
-                    # 添加这次拖放的文本和新编码的编号到目标编码的文本来源数据中
-                    target_sentence_details.append({
-                        "text": dropped_text,  # 添加拖放的文本
-                        "code_id": new_code_id  # 添加新编码的编号
-                    })
-                    target_item_data["sentence_details"] = target_sentence_details
-
-                    # 更新目标项的句子来源数（第4列）
-                    current_sentence_count = int(item.text(4)) if item.text(4).isdigit() else 0
-                    item.setText(4, str(current_sentence_count + 1))
-                    # 同时更新数据结构中的句子数
-                    target_item_data["sentence_count"] = current_sentence_count + 1
-
-                    # 更新目标项的关联编号（第5列）
-                    current_code_ids = item.text(5)
-                    if current_code_ids:
-                        # 如果已有关联编号，添加新的编号
-                        updated_code_ids = f"{current_code_ids}, {new_code_id}"
+                # 如果拖到一阶编码上，不再创建新的同级一阶编码，
+                # 而是将目标一阶编码与拖拽句子的编号进行关联
+                
+                # 处理可能的多句拖拽：按换行符分割文本
+                sentences = [s.strip() for s in dropped_text.split('\n') if s.strip()]
+                if not sentences:
+                    sentences = [dropped_text.strip()]  # 如果没有换行符，当作单句处理
+                
+                # 为每句话提取对应的TextNumberingManager编号
+                associated_code_ids = []
+                
+                # 从父窗口获取data_processor和numbering_manager
+                if self.parent_window and hasattr(self.parent_window, 'data_processor'):
+                    numbering_manager = self.parent_window.data_processor.numbering_manager
+                    if numbering_manager:
+                        # 为每个句子提取编号
+                        for sentence in sentences:
+                            import re
+                            number_match = re.search(r'\[(\d+)\]$', sentence.strip())
+                            if number_match:
+                                sentence_number = number_match.group(1)
+                                associated_code_ids.append(sentence_number)
+                            else:
+                                # 如果没有找到编号，使用当前编号计数器的值
+                                associated_code_ids.append(str(numbering_manager.get_current_number()))
                     else:
-                        # 如果没有关联编号，直接设置新编号
-                        updated_code_ids = new_code_id
-                    item.setText(5, updated_code_ids)
-
-                    # 更新目标项的数据
-                    item.setData(0, Qt.UserRole, target_item_data)
-
-                    # 更新父节点计数
-                    parent.setText(2, str(parent.childCount()))
-
-                    # 更新祖父节点计数
-                    if grandparent:
-                        grandparent.setText(2, str(grandparent.childCount()))
-
-                    self.update_structured_codes_from_tree()
-
-                    logger.info(f"通过拖放添加一阶编码: {clean_content}，并更新目标编码文本来源")
-                    self.statusBar().showMessage(f"通过拖放添加一阶编码: {clean_content}，并更新目标编码文本来源") if hasattr(self,
-                                                                                                        'statusBar') else None
-
-                    event.acceptProposedAction()
+                        # 如果没有numbering_manager，使用默认编号
+                        for sentence in sentences:
+                            default_id = f"SN{self.generate_first_code_id()[1:] if self.generate_first_code_id().startswith('A') else '01'}"
+                            associated_code_ids.append(default_id)
                 else:
-                    # 如果是根节点的一阶编码（未分类）
-                    is_valid, clean_content, error_msg = self.validate_category_name(dropped_text, "first")
-                    if not is_valid:
-                        QMessageBox.warning(self, "验证错误", error_msg)
-                        event.ignore()
-                        return
+                    # 如果没有父窗口的data_processor，使用默认编号
+                    for sentence in sentences:
+                        associated_code_ids.append("SN01")
 
-                    # 检查是否已存在
-                    if self.is_content_exists(clean_content):
-                        QMessageBox.warning(self, "警告", "该一阶编码已存在")
-                        event.ignore()
-                        return
+                # 获取目标项的当前数据
+                target_item_data = item.data(0, Qt.UserRole)
+                if target_item_data is None:
+                    target_item_data = {}
 
-                    # 添加到根部
-                    # 生成新的编号
-                    new_code_id = self.generate_first_code_id()
-
-                    new_item = QTreeWidgetItem(self.coding_tree)
-                    # 在内容前加上编号
-                    new_item.setText(0, f"{new_code_id}: {clean_content}")
-                    new_item.setText(1, "一阶编码")
-                    new_item.setText(2, "1")
-                    new_item.setText(3, "1")  # 文件来源数
-                    new_item.setText(4, "1")  # 句子来源数
-                    new_item.setText(5, new_code_id)  # 关联编号
-
-                    new_item.setData(0, Qt.UserRole, {
-                        "level": 1,
-                        "content": clean_content,
-                        "numbered_content": f"{new_code_id}: {clean_content}",
-                        "classified": False,
-                        "code_id": new_code_id,
-                        "sentence_details": [{"text": dropped_text, "code_id": new_code_id}]  # 添加拖拽的句子详情
-                    })
-
-                    # 添加编码标记到文本
-                    self.add_code_marker_to_text(dropped_text, new_code_id)
-
-                    # 即使是未分类的一阶编码，也需要更新目标编码的统计信息
-                    # 获取目标项的当前数据
-                    target_item_data = item.data(0, Qt.UserRole)
-                    if target_item_data is None:
-                        target_item_data = {}
-
-                    target_sentence_details = target_item_data.get("sentence_details", [])
-                    # 添加这次拖放的文本和新编码的编号到目标编码的文本来源数据中
+                # 更新目标项的句子详情，添加拖拽的文本和编号
+                target_sentence_details = target_item_data.get("sentence_details", [])
+                # 为每个句子添加详情
+                for i, sentence in enumerate(sentences):
+                    code_id = associated_code_ids[i] if i < len(associated_code_ids) else "SN01"
                     target_sentence_details.append({
-                        "text": dropped_text,  # 添加拖放的文本
-                        "code_id": new_code_id  # 添加新编码的编号
+                        "text": sentence,
+                        "code_id": code_id  # 使用TextNumberingManager生成的编号
                     })
-                    target_item_data["sentence_details"] = target_sentence_details
+                target_item_data["sentence_details"] = target_sentence_details
 
-                    # 更新目标项的句子来源数（第4列）
-                    current_sentence_count = int(item.text(4)) if item.text(4).isdigit() else 0
-                    item.setText(4, str(current_sentence_count + 1))
-                    # 同时更新数据结构中的句子数
-                    target_item_data["sentence_count"] = current_sentence_count + 1
+                # 更新目标项的句子来源数（第4列）
+                current_sentence_count = int(item.text(4)) if item.text(4).isdigit() else 0
+                item.setText(4, str(current_sentence_count + len(sentences)))
+                # 同时更新数据结构中的句子数
+                target_item_data["sentence_count"] = current_sentence_count + len(sentences)
 
-                    # 更新目标项的关联编号（第5列）
-                    current_code_ids = item.text(5)
-                    if current_code_ids:
-                        # 如果已有关联编号，添加新的编号
-                        updated_code_ids = f"{current_code_ids}, {new_code_id}"
-                    else:
-                        # 如果没有关联编号，直接设置新编号
-                        updated_code_ids = new_code_id
-                    item.setText(5, updated_code_ids)
+                # 更新目标项的关联编号（第5列）
+                # 包含一阶编码自身的来自TextNumberingManager的编号和拖拽文本的自动编号
+                current_code_ids = item.text(5)
+                
+                # 获取一阶编码自身的来自TextNumberingManager的编号
+                # 这应该从一阶编码的code_id中获取，如果它是来自TextNumberingManager的编号
+                self_tmng_id = None
+                item_code_id = item_data.get("code_id", "")
+                if item_code_id.isdigit():  # 如果code_id是纯数字，表示它来自TextNumberingManager
+                    self_tmng_id = item_code_id
+                else:
+                    # 如果不是纯数字，尝试从文本中提取可能的TextNumberingManager编号
+                    item_text = item.text(0)
+                    # 尝试从文本中查找[数字]格式的编号，这可能表示TextNumberingManager编号
+                    import re
+                    matches = re.findall(r'\[(\d+)\]', item_text)
+                    if matches:
+                        self_tmng_id = matches[-1]  # 使用最后一个匹配的编号
+                
+                # 解析当前关联编号，保留所有编号
+                all_ids = []
+                if current_code_ids:
+                    ids = [id.strip() for id in current_code_ids.split(',')]
+                    for id in ids:
+                        if id and id not in all_ids:
+                            all_ids.append(id)
+                
+                # 添加一阶编码自身的来自TextNumberingManager的编号
+                if self_tmng_id and self_tmng_id not in all_ids:
+                    all_ids.append(self_tmng_id)
+                
+                # 添加所有拖拽句子的自动编号（来自TextNumberingManager的纯数字编号）
+                for code_id in associated_code_ids:
+                    if code_id.isdigit() and code_id not in all_ids:
+                        all_ids.append(code_id)
+                
+                updated_code_ids = ", ".join(all_ids) if all_ids else associated_code_id
+                item.setText(5, updated_code_ids)
 
-                    # 更新目标项的数据
-                    item.setData(0, Qt.UserRole, target_item_data)
+                # 更新目标项的数据
+                item.setData(0, Qt.UserRole, target_item_data)
 
-                    self.update_structured_codes_from_tree()
+                self.update_structured_codes_from_tree()
 
-                    logger.info(f"通过拖放添加未分类一阶编码: {clean_content}")
-                    self.statusBar().showMessage(f"通过拖放添加未分类一阶编码: {clean_content}") if hasattr(self,
-                                                                                               'statusBar') else None
+                logger.info(f"通过拖放将{len(sentences)}个句子关联到一阶编码: {item.text(0)}，关联编号: {', '.join(associated_code_ids)}")
+                self.statusBar().showMessage(f"通过拖放将{len(sentences)}个句子关联到一阶编码，关联编号: {', '.join(associated_code_ids)}") if hasattr(self,
+                                                                                                    'statusBar') else None
 
-                    event.acceptProposedAction()
+                # 明确设置为复制操作并接受，确保不删除源文本
+                event.setDropAction(Qt.CopyAction)
+                event.accept()
             else:
-                # 如果拖到二阶或三阶编码上，可以考虑创建新的子项
+                # 如果拖到二阶或三阶编码上，创建新的子项
                 if level == 2:
                     # 拖到二阶编码上，添加为一阶子项
                     second_name = item.text(0)
@@ -2792,7 +2779,16 @@ class ManualCodingDialog(QDialog):
                     new_item.setText(2, "1")
                     new_item.setText(3, "1")  # 文件来源数
                     new_item.setText(4, "1")  # 句子来源数
-                    new_item.setText(5, new_code_id)  # 关联编号
+                    # 从dropped_text中尝试提取TextNumberingManager的编号
+                    import re
+                    number_matches = re.findall(r'\[(\d+)\]', dropped_text)
+                    if number_matches:
+                        # 使用最后一个匹配的数字编号作为来自TextNumberingManager的编号
+                        tmng_number = number_matches[-1]
+                        new_item.setText(5, tmng_number)  # 关联编号设置为来自TextNumberingManager的编号
+                    else:
+                        # 如果没有找到TextNumberingManager编号，则使用new_code_id
+                        new_item.setText(5, new_code_id)  # 关联编号
 
                     new_item.setData(0, Qt.UserRole, {
                         "level": 1,
@@ -2805,8 +2801,8 @@ class ManualCodingDialog(QDialog):
                         "sentence_details": [{"text": dropped_text, "code_id": new_code_id}]  # 添加拖拽的句子详情
                     })
 
-                    # 添加编码标记到文本
-                    self.add_code_marker_to_text(dropped_text, new_code_id)
+                    # 不再向文本中添加编码标记，保持原始文本不变
+                    # self.add_code_marker_to_text(dropped_text, new_code_id)
 
                     # 更新父节点计数
                     item.setText(2, str(item.childCount()))
@@ -2821,6 +2817,53 @@ class ManualCodingDialog(QDialog):
                     self.statusBar().showMessage(f"通过拖放添加一阶编码到二阶'{second_name}': {clean_content}") if hasattr(self,
                                                                                                               'statusBar') else None
 
+                    event.acceptProposedAction()
+                elif level == 3:
+                    # 拖到三阶编码上，添加为二阶子项
+                    third_name = item.text(0)
+                    
+                    is_valid, clean_content, error_msg = self.validate_category_name(dropped_text, "second")
+                    if not is_valid:
+                        QMessageBox.warning(self, "验证错误", error_msg)
+                        event.ignore()
+                        return
+                    
+                    # 生成二阶编码ID
+                    new_code_id = self.generate_second_code_id()
+                    numbered_content = f"{new_code_id} {clean_content}"
+                    
+                    # 检查是否已存在
+                    if self.is_second_content_exists(clean_content, item):
+                        QMessageBox.warning(self, "警告", "该二阶编码在此三阶编码下已存在")
+                        event.ignore()
+                        return
+                    
+                    # 添加为三阶的子项（二阶编码）
+                    new_item = QTreeWidgetItem(item)
+                    new_item.setText(0, numbered_content)
+                    new_item.setText(1, "二阶编码")
+                    new_item.setText(2, "0")  # 初始子项数
+                    new_item.setText(3, "")  # 二阶编码不显示文件来源数
+                    new_item.setText(4, "0")  # 句子来源数
+                    new_item.setText(5, new_code_id)  # 关联编号
+
+                    new_item.setData(0, Qt.UserRole, {
+                        "level": 2,
+                        "name": clean_content,
+                        "code_id": new_code_id,
+                        "parent": third_name,
+                        "sentence_details": []
+                    })
+                    
+                    # 更新父节点计数
+                    item.setText(2, str(item.childCount()))
+                    
+                    self.update_structured_codes_from_tree()
+                    
+                    logger.info(f"通过拖放添加二阶编码到三阶'{third_name}': {clean_content}")
+                    self.statusBar().showMessage(f"通过拖放添加二阶编码到三阶'{third_name}': {clean_content}") if hasattr(self,
+                                                                                                          'statusBar') else None
+                    
                     event.acceptProposedAction()
                 else:
                     # 其他情况，忽略
