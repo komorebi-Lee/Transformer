@@ -32,11 +32,12 @@ class GroundedTheoryTrainingThread(QThread):
     progress_updated = pyqtSignal(int)
     training_finished = pyqtSignal(bool, str)
 
-    def __init__(self, training_data: Dict[str, Any], model_manager, standard_answers: Dict[str, Any]):
+    def __init__(self, training_data: Dict[str, Any], model_manager, standard_answers: Dict[str, Any], model_type: str = 'bert'):
         super().__init__()
         self.training_data = training_data
         self.model_manager = model_manager
         self.standard_answers = standard_answers
+        self.model_type = model_type
         self.trained_model_data = None
 
     def run(self):
@@ -55,7 +56,7 @@ class GroundedTheoryTrainingThread(QThread):
             self.progress_updated.emit(30)
 
             # 生成嵌入向量
-            embeddings = self.model_manager.get_embeddings(texts)
+            embeddings = self.model_manager.get_embeddings(texts, model_type=self.model_type)
             if embeddings is None or len(embeddings) == 0:
                 self.training_finished.emit(False, "生成嵌入向量失败")
                 return
@@ -81,7 +82,8 @@ class GroundedTheoryTrainingThread(QThread):
                 "sample_count": len(texts),
                 "class_count": len(label_mapping),
                 "accuracy": accuracy,
-                "model_type": "grounded_theory_coder"
+                "model_type": "grounded_theory_coder",
+                "embedding_model": self.model_type
             }
 
             # 保存模型
@@ -232,7 +234,8 @@ class EnhancedTrainingManager:
 
     def train_grounded_theory_model(self, training_data: Dict[str, Any], model_manager,
                                     progress_callback: Optional[Callable] = None,
-                                    finished_callback: Optional[Callable] = None):
+                                    finished_callback: Optional[Callable] = None,
+                                    model_type: str = 'bert'):
         """训练扎根理论模型"""
         if self.standard_answer_manager is None:
             if finished_callback:
@@ -251,7 +254,7 @@ class EnhancedTrainingManager:
             self.training_thread.wait()
 
         self.training_thread = GroundedTheoryTrainingThread(
-            training_data, model_manager, standard_answers
+            training_data, model_manager, standard_answers, model_type
         )
 
         if progress_callback:
@@ -264,6 +267,7 @@ class EnhancedTrainingManager:
         training_record = {
             'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             'sample_count': self.standard_answer_manager.get_training_sample_count(),
+            'model_type': model_type,
             'status': 'started'
         }
         self.training_history.append(training_record)

@@ -183,17 +183,26 @@ class EnhancedCodingGenerator:
             }
 
     def generate_first_level_codes(self, sentences: List[Dict[str, Any]]) -> Dict[str, List[Any]]:
-        """生成一阶编码"""
+        """生成一阶编码 - 增强版，更好地抽象提炼受访者语句"""
         first_level_codes = {}
 
         for i, sentence in enumerate(sentences):
             try:
                 content = sentence.get('content', '')
+                speaker = sentence.get('speaker', '')
+                
+                # 只处理受访者的内容
+                if speaker != 'respondent':
+                    continue
+                
                 if content and len(content.strip()) > 10:
+                    # 抽象提炼内容
+                    abstracted_content = self.abstract_sentence(content)
+                    
                     code_key = f"FL_{i + 1:04d}"
 
                     first_level_codes[code_key] = [
-                        content,
+                        abstracted_content,
                         [sentence],  # source_sentences
                         1,  # file_count
                         1,  # sentence_count
@@ -204,6 +213,50 @@ class EnhancedCodingGenerator:
                 logger.warning(f"处理句子失败 {i}: {e}")
 
         return first_level_codes
+    
+    def abstract_sentence(self, sentence: str) -> str:
+        """抽象提炼句子内容"""
+        # 移除口语化表达
+        oral_expressions = ['我觉得', '我认为', '我感觉', '我想', '就是说', '然后',
+                          '那个', '这个', '就是', '就是說', '嗯', '啊', '对不对']
+        
+        abstracted = sentence
+        for expr in oral_expressions:
+            abstracted = abstracted.replace(expr, '')
+        
+        # 移除重复的词语
+        abstracted = re.sub(r'(\w)\1{2,}', r'\1', abstracted)
+        
+        # 移除多余的空格
+        abstracted = re.sub(r'\s+', ' ', abstracted).strip()
+        
+        # 提取核心内容
+        if len(abstracted) > 50:
+            # 尝试提取句子的核心部分
+            # 查找关键动词
+            core_verbs = ['负责', '管理', '开发', '设计', '实现', '解决', '处理',
+                        '优化', '改进', '创新', '合作', '协调', '沟通',
+                        '规划', '执行', '监控', '评估', '分析', '研究']
+            
+            for verb in core_verbs:
+                if verb in abstracted:
+                    # 以关键动词为中心提取核心内容
+                    verb_index = abstracted.find(verb)
+                    start = max(0, abstracted.rfind('，', 0, verb_index))
+                    end = abstracted.find('，', verb_index + len(verb))
+                    if end == -1:
+                        end = len(abstracted)
+                    
+                    core_content = abstracted[start:end].strip()
+                    if core_content:
+                        abstracted = core_content
+                    break
+        
+        # 确保内容长度合理
+        if len(abstracted) > 80:
+            abstracted = abstracted[:80] + '...'
+        
+        return abstracted
 
     def generate_second_level_codes_improved(self, first_level_codes: Dict[str, List[str]]) -> Dict[str, List[str]]:
         """生成二阶编码"""

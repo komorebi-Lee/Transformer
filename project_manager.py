@@ -22,12 +22,12 @@ class ProjectManager:
         # 创建项目目录结构
         self.project_base_dir = os.path.join(os.getcwd(), self.PROJECT_DIR_NAME)
         os.makedirs(self.project_base_dir, exist_ok=True)
-        
+
         # 创建分类文件夹
         self.main_projects_dir = os.path.join(self.project_base_dir, "主界面项目保存")
         self.manual_coding_dir = os.path.join(self.project_base_dir, "手动编码保存编码")
         self.coding_tree_dir = os.path.join(self.project_base_dir, "手动编码编码树保存")
-        
+
         os.makedirs(self.main_projects_dir, exist_ok=True)
         os.makedirs(self.manual_coding_dir, exist_ok=True)
         os.makedirs(self.coding_tree_dir, exist_ok=True)

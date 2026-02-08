@@ -40,11 +40,25 @@ class EnhancedModelManager:
                 self.tokenizers['bert'] = AutoTokenizer.from_pretrained(bert_path)
                 self.models['bert'] = AutoModel.from_pretrained(bert_path).to(self.device)
                 self.is_model_loaded = True
-                logger.info("模型初始化成功")
-                return True
+                logger.info("BERT模型初始化成功")
             else:
                 logger.error("BERT模型不存在，请先运行 download_models.py")
                 return False
+
+            # 加载sentence-transformer模型
+            sentence_model_path = os.path.join(self.local_model_dir, "sentence-transformer")
+            if os.path.exists(sentence_model_path):
+                try:
+                      from sentence_transformers import SentenceTransformer
+                      logger.info("加载本地sentence-transformer模型")
+                      self.models['sentence'] = SentenceTransformer(sentence_model_path).to(self.device)
+                      self.is_model_loaded = True
+                      logger.info("sentence-transformer初始化成功")
+                except Exception as e:
+                     logger.warning(f"sentence-transformer模型加载失败: {e}")
+
+            logger.info("模型初始化完成")
+            return True
 
         except Exception as e:
             logger.error(f"模型初始化失败: {e}")
@@ -53,6 +67,13 @@ class EnhancedModelManager:
     def get_embeddings(self, texts: List[str], model_type: str = 'bert') -> np.ndarray:
         """获取文本嵌入"""
         try:
+            if model_type == 'sentence' and 'sentence' in self.models:
+                # 使用sentence-transformer模型，无需加载tokenizer
+                model = self.models['sentence']
+                embeddings = model.encode(texts, show_progress_bar=False)
+                return embeddings
+
+            # 默认使用BERT模型
             if not self.is_model_loaded:
                 logger.warning("模型未加载，使用降级模式")
                 return self.get_simple_embeddings(texts)

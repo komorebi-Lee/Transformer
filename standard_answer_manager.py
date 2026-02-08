@@ -469,15 +469,25 @@ class StandardAnswerManager:
 
     def load_latest_answers(self):
         """加载最新的标准答案"""
-        answer_files = [f for f in os.listdir(self.standard_answers_dir) if
-                        f.endswith('.json') and not f.startswith('.')]
-        if answer_files:
-            # 排除历史文件
-            answer_files = [f for f in answer_files if f not in ['version_history.json', 'merge_history.json']]
+        try:
+            answer_files = [f for f in os.listdir(self.standard_answers_dir) if
+                            f.endswith('.json') and not f.startswith('.')]
             if answer_files:
-                answer_files.sort(reverse=True)
-                latest_file = answer_files[0]
-                self.load_answers(latest_file)
+                # 排除历史文件
+                answer_files = [f for f in answer_files if f not in ['version_history.json', 'merge_history.json']]
+                if answer_files:
+                    answer_files.sort(reverse=True)
+                    
+                    # 尝试加载最新的文件，如果失败则尝试下一个
+                    for file_name in answer_files:
+                        if self.load_answers(file_name):
+                            logger.info(f"成功加载最新的标准答案: {file_name}")
+                            break
+                    else:
+                        logger.warning("没有找到可加载的标准答案文件")
+
+        except Exception as e:
+            logger.error(f"加载最新标准答案失败: {e}")
 
         # 加载版本历史
         self._load_version_history()
@@ -492,11 +502,65 @@ class StandardAnswerManager:
     def load_answers(self, filename: str) -> bool:
         """加载指定标准答案"""
         try:
+            # 检查是否需要添加 .json 扩展名
+            if not filename.endswith('.json'):
+                filename_json = filename + '.json'
+                file_path_json = os.path.join(self.standard_answers_dir, filename_json)
+                if os.path.exists(file_path_json):
+                    filename = filename_json
+            
             file_path = os.path.join(self.standard_answers_dir, filename)
-            with open(file_path, 'r', encoding='utf-8') as f:
-                self.current_answers = json.load(f)
-            logger.info(f"标准答案已加载: {filename}")
-            return True
+            
+            # 打印路径信息用于调试
+            print(f"StandardAnswerManager 检查文件路径: {file_path}")
+            print(f"文件是否存在: {os.path.exists(file_path)}")
+            
+            # 检查文件是否存在
+            if not os.path.exists(file_path):
+                logger.error(f"标准答案文件不存在: {file_path}")
+                return False
+            
+            # 检查文件大小
+            if os.path.getsize(file_path) == 0:
+                logger.error(f"标准答案文件为空: {file_path}")
+                return False
+            
+            # 尝试打开和解析文件
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    
+                # 检查文件内容是否为空
+                if not content.strip():
+                    logger.error(f"标准答案文件内容为空: {file_path}")
+                    return False
+                
+                # 解析JSON
+                self.current_answers = json.loads(content)
+                
+                # 验证数据结构
+                if not isinstance(self.current_answers, dict):
+                    logger.error(f"标准答案文件格式错误: 不是有效的JSON对象")
+                    return False
+                
+                # 验证必要的字段
+                if "structured_codes" not in self.current_answers:
+                    logger.warning(f"标准答案文件缺少 structured_codes 字段")
+                    # 不返回False，因为可能是旧版本的文件
+                
+                logger.info(f"标准答案已加载: {filename}")
+                return True
+                
+            except UnicodeDecodeError:
+                logger.error(f"标准答案文件编码错误: 不是UTF-8编码")
+                return False
+            except json.JSONDecodeError as e:
+                logger.error(f"标准答案文件JSON格式错误: {e}")
+                return False
+            except Exception as e:
+                logger.error(f"加载标准答案文件失败: {e}")
+                return False
+                
         except Exception as e:
             logger.error(f"加载标准答案失败: {e}")
             return False
@@ -521,6 +585,20 @@ class StandardAnswerManager:
                 count += len(first_contents)
 
         return count
+    
+    def export_for_training(self) -> Dict[str, Any]:
+        """导出用于训练的数据"""
+        if not self.current_answers:
+            return {}
+        
+        # 返回当前标准答案中的训练相关数据
+        training_data = {
+            "structured_codes": self.current_answers.get("structured_codes", {}),
+            "metadata": self.current_answers.get("metadata", {}),
+            "training_data": self.current_answers.get("training_data", {})
+        }
+        
+        return training_data
 
     def get_timestamp(self):
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")

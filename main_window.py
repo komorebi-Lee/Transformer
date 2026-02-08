@@ -637,9 +637,45 @@ class MainWindow(QMainWindow):
             if dialog.exec_() == QDialog.Accepted:
                 coding_result = dialog.get_coding_result()
                 if coding_result:
-                    self.structured_codes = coding_result
-                    self.update_coding_tree()
-                    QMessageBox.information(self, "成功", "手动编码已完成")
+                    # 比较手动编码结果与自动编码结构的差异
+                    if self.structured_codes:
+                        # 有自动编码结构，提供选择性保存选项
+                        auto_codes_count = self._count_codes(self.structured_codes)
+                        manual_codes_count = self._count_codes(coding_result)
+                        
+                        # 显示差异比较信息
+                        msg = f"自动编码: {auto_codes_count['third']}三阶, {auto_codes_count['second']}二阶, {auto_codes_count['first']}一阶\n"
+                        msg += f"手动编辑: {manual_codes_count['third']}三阶, {manual_codes_count['second']}二阶, {manual_codes_count['first']}一阶\n\n"
+                        msg += "选择保存方式:" 
+                        
+                        # 提供保存选项
+                        from PyQt5.QtWidgets import QMessageBox
+                        reply = QMessageBox.question(
+                            self, "保存编码结果", msg,
+                            QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel,
+                            QMessageBox.Yes
+                        )
+                        
+                        if reply == QMessageBox.Yes:
+                            # 完全替换自动编码
+                            self.structured_codes = coding_result
+                            self.update_coding_tree()
+                            QMessageBox.information(self, "成功", "手动编码已完全替换自动编码")
+                        elif reply == QMessageBox.No:
+                            # 合并编码结果（保留自动编码，添加手动编码）
+                            merged_codes = self._merge_coding_results(self.structured_codes, coding_result)
+                            self.structured_codes = merged_codes
+                            self.update_coding_tree()
+                            QMessageBox.information(self, "成功", "手动编码已与自动编码合并")
+                        else:
+                            # 取消保存
+                            QMessageBox.information(self, "取消", "编码结果未保存")
+                            return
+                    else:
+                        # 没有自动编码结构，直接保存
+                        self.structured_codes = coding_result
+                        self.update_coding_tree()
+                        QMessageBox.information(self, "成功", "手动编码已完成")
 
         except Exception as e:
             logger.error(f"启动手动编码失败: {e}")
@@ -695,6 +731,52 @@ class MainWindow(QMainWindow):
         """更新进度"""
         self.progress_bar.setValue(value)
 
+    def _count_codes(self, coding_structure):
+        """统计编码结构中的三阶、二阶和一阶编码数量"""
+        count = {
+            'third': 0,
+            'second': 0,
+            'first': 0
+        }
+        
+        if coding_structure:
+            count['third'] = len(coding_structure)
+            for third_cat, second_cats in coding_structure.items():
+                count['second'] += len(second_cats)
+                for second_cat, first_contents in second_cats.items():
+                    count['first'] += len(first_contents)
+        
+        return count
+    
+    def _merge_coding_results(self, auto_codes, manual_codes):
+        """合并手动编码结果和自动编码结构，保留自动编码，添加手动编码"""
+        merged_codes = auto_codes.copy()
+        
+        # 遍历手动编码结果，添加到自动编码结构中
+        for third_cat, second_cats in manual_codes.items():
+            if third_cat not in merged_codes:
+                merged_codes[third_cat] = {}
+            
+            for second_cat, first_contents in second_cats.items():
+                if second_cat not in merged_codes[third_cat]:
+                    merged_codes[third_cat][second_cat] = []
+                
+                # 添加新的一阶编码，避免重复
+                existing_contents = [content.get('content', '') for content in merged_codes[third_cat][second_cat] if isinstance(content, dict)]
+                for first_content in first_contents:
+                    if isinstance(first_content, dict):
+                        content_str = first_content.get('content', '')
+                        if content_str not in existing_contents:
+                            merged_codes[third_cat][second_cat].append(first_content)
+                            existing_contents.append(content_str)
+                    else:
+                        # 处理非字典格式的内容
+                        if first_content not in existing_contents:
+                            merged_codes[third_cat][second_cat].append(first_content)
+                            existing_contents.append(first_content)
+        
+        return merged_codes
+    
     def update_coding_tree(self):
         """更新编码树 - 修复版本，显示完整编号和统计信息"""
         self.coding_tree.clear()
@@ -1429,6 +1511,65 @@ class MainWindow(QMainWindow):
             return
 
         try:
+            # 模型选择对话框
+            dialog = QDialog(self)
+            dialog.setWindowTitle("选择训练模型")
+            dialog.resize(400, 200)
+
+            layout = QVBoxLayout(dialog)
+
+            # 添加说明
+            label = QLabel("请选择用于训练的嵌入模型:")
+            layout.addWidget(label)
+
+            # 模型选择
+            model_group = QGroupBox("模型选择")
+            model_layout = QVBoxLayout(model_group)
+
+            bert_radio = QRadioButton("BERT 模型 (默认)")
+            sentence_radio = QRadioButton("Sentence-Transformer 模型")
+            bert_radio.setChecked(True)
+
+            # 检查 Sentence-Transformer 模型是否可用
+            sentence_available = 'sentence' in self.model_manager.models
+            if not sentence_available:
+                sentence_radio.setEnabled(False)
+                sentence_radio.setToolTip("Sentence-Transformer 模型未加载")
+
+            model_layout.addWidget(bert_radio)
+            model_layout.addWidget(sentence_radio)
+            layout.addWidget(model_group)
+
+            # 按钮
+            button_layout = QHBoxLayout()
+            ok_button = QPushButton("确定")
+            cancel_button = QPushButton("取消")
+
+            button_layout.addWidget(ok_button)
+            button_layout.addWidget(cancel_button)
+            layout.addLayout(button_layout)
+
+            # 连接信号
+            selected_model = 'bert'  # 默认值
+
+            def on_ok():
+                nonlocal selected_model
+                if bert_radio.isChecked():
+                    selected_model = 'bert'
+                elif sentence_radio.isChecked():
+                    selected_model = 'sentence'
+                dialog.accept()
+
+            def on_cancel():
+                dialog.reject()
+
+            ok_button.clicked.connect(on_ok)
+            cancel_button.clicked.connect(on_cancel)
+
+            # 显示对话框
+            if dialog.exec_() != QDialog.Accepted:
+                return
+
             self.training_progress.setVisible(True)
             self.train_model_btn.setEnabled(False)
 
@@ -1440,10 +1581,11 @@ class MainWindow(QMainWindow):
                 training_data,
                 self.model_manager,
                 progress_callback=self.update_training_progress,
-                finished_callback=self.on_training_finished
+                finished_callback=self.on_training_finished,
+                model_type=selected_model
             )
 
-            self.statusBar().showMessage("开始训练模型...")
+            self.statusBar().showMessage(f"开始训练模型... 使用 {selected_model} 模型")
 
         except Exception as e:
             logger.error(f"开始训练失败: {e}")
@@ -1613,19 +1755,52 @@ class MainWindow(QMainWindow):
         )
 
         if ok and version:
-            success = self.standard_answer_manager.load_answers(version)
+            # 检查文件是否存在
+            import os
+            
+            # 获取绝对路径
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            file_path = os.path.join(base_dir, "standard_answers", version)
+            
+            # 检查是否需要添加 .json 扩展名
+            if not file_path.endswith('.json'):
+                file_path_json = file_path + '.json'
+                if os.path.exists(file_path_json):
+                    file_path = file_path_json
+            
+            # 打印路径信息用于调试
+            print(f"检查文件路径: {file_path}")
+            print(f"文件是否存在: {os.path.exists(file_path)}")
+            
+            if not os.path.exists(file_path):
+                # 列出目录内容用于调试
+                dir_path = os.path.join(base_dir, "standard_answers")
+                if os.path.exists(dir_path):
+                    files = os.listdir(dir_path)
+                    print(f"目录内容: {files}")
+                
+                QMessageBox.critical(self, "错误", f"标准答案文件不存在: {version}\n检查路径: {file_path}\n请检查 standard_answers 目录")
+                return
+            
+            if os.path.getsize(file_path) == 0:
+                QMessageBox.critical(self, "错误", f"标准答案文件为空: {version}")
+                return
+            
+            # 使用正确的文件名（包含 .json 扩展名）
+            actual_filename = os.path.basename(file_path)
+            success = self.standard_answer_manager.load_answers(actual_filename)
             if success:
                 current_answers = self.standard_answer_manager.get_current_answers()
                 if current_answers and "structured_codes" in current_answers:
                     self.structured_codes = current_answers["structured_codes"]
                     self.update_coding_tree()
-                    self.answer_status_label.setText(f"标准答案: {version}")
+                    self.answer_status_label.setText(f"标准答案: {actual_filename}")
                     self.update_training_data_label()
-                    self.statusBar().showMessage(f"已加载标准答案: {version}")
+                    self.statusBar().showMessage(f"已加载标准答案: {actual_filename}")
                 else:
-                    QMessageBox.warning(self, "警告", "标准答案数据格式错误")
+                    QMessageBox.warning(self, "警告", "标准答案数据格式不完整，缺少 structured_codes 字段")
             else:
-                QMessageBox.critical(self, "错误", "加载标准答案失败")
+                QMessageBox.critical(self, "错误", f"加载标准答案失败: {actual_filename}\n可能的原因:\n1. 文件格式错误\n2. 文件编码错误\n3. 文件内容损坏")
 
     def load_trained_model(self):
         """加载训练模型"""
@@ -1937,13 +2112,13 @@ class MainWindow(QMainWindow):
         """根据编码ID获取对应的句子详情列表"""
         try:
             sentences = []
-            
+
             # 遍历编码树查找匹配的编码ID
             def search_tree_for_sentences(item):
                 for i in range(item.childCount()):
                     child = item.child(i)
                     child_data = child.data(0, Qt.UserRole)
-                    
+
                     if child_data and child_data.get("level") == 1:  # 一阶编码
                         if child_data.get("code_id") == code_id:
                             # 找到匹配的编码，返回其句子详情
@@ -1955,14 +2130,14 @@ class MainWindow(QMainWindow):
                                 content = child_data.get("content", "")
                                 if content:
                                     return [{"text": content, "code_id": code_id}]
-                    
+
                     # 递归搜索子节点
                     result = search_tree_for_sentences(child)
                     if result:
                         return result
-                
+
                 return []
-            
+
             # 遍历顶层项目
             for i in range(self.coding_tree.topLevelItemCount()):
                 top_item = self.coding_tree.topLevelItem(i)
@@ -1970,7 +2145,7 @@ class MainWindow(QMainWindow):
                 if result:
                     sentences.extend(result)
                     break
-            
+
             # 如果在层级结构中没找到，检查顶层未分类的一阶编码
             if not sentences:
                 for i in range(self.coding_tree.topLevelItemCount()):
@@ -1981,10 +2156,10 @@ class MainWindow(QMainWindow):
                         if content:
                             sentences.append({"text": content, "code_id": code_id})
                         break
-            
+
             logger.info(f"编码 {code_id} 找到 {len(sentences)} 个句子")
             return sentences
-            
+
         except Exception as e:
             logger.error(f"获取句子详情失败: {e}")
             return []
@@ -2010,7 +2185,7 @@ class MainWindow(QMainWindow):
 
             # 获取编码对应的精确句子内容
             sentences_to_highlight = self.get_sentences_by_code_id(code_id)
-            
+
             if not sentences_to_highlight:
                 self.statusBar().showMessage(f"未找到编码 {code_id} 的句子详情")
                 return
@@ -2018,27 +2193,27 @@ class MainWindow(QMainWindow):
             # 精确高亮每个句子（简化版本）
             found_count = 0
             first_match_position = None  # 记录第一个匹配项的位置
-            
+
             for sentence_info in sentences_to_highlight:
                 sentence_content = sentence_info.get('text', '').strip()
                 if not sentence_content:
                     continue
-                    
+
                 # 在文本中查找并高亮这个精确句子
                 search_cursor = self.text_display.textCursor()
                 search_cursor.movePosition(cursor.Start)
-                
+
                 # 使用文本查找
                 found_cursor = self.text_document.find(sentence_content, search_cursor)
                 if not found_cursor.isNull():
                     # 设置浅蓝色高亮格式
                     highlight_format = found_cursor.charFormat()
                     highlight_format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
-                    highlight_format.setForeground(QColor(0, 0, 139))      # 深蓝色文字
+                    highlight_format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
                     found_cursor.mergeCharFormat(highlight_format)
-                    
+
                     found_count += 1
-                    
+
                     # 记录第一个匹配项的位置用于滚动（使用selectionStart更准确）
                     if first_match_position is None:
                         first_match_position = found_cursor.selectionStart()
@@ -2048,11 +2223,11 @@ class MainWindow(QMainWindow):
                 # 创建新的光标并定位到第一个匹配项的位置
                 new_cursor = self.text_display.textCursor()
                 new_cursor.setPosition(first_match_position)
-                
+
                 # 设置光标并确保可见
                 self.text_display.setTextCursor(new_cursor)
                 self.text_display.ensureCursorVisible()
-                
+
                 logger.info(f"已定位到位置: {first_match_position}")
                 self.statusBar().showMessage(f"已高亮编码 {code_id} 的 {found_count} 个句子，定位到位置 {first_match_position}")
             else:
