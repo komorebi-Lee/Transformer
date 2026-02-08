@@ -106,7 +106,7 @@ class MainWindow(QMainWindow):
 
         # 设置训练管理器的标准答案管理器
         self.enhanced_training_manager.set_standard_answer_manager(self.standard_answer_manager)
-        
+
         # 初始化项目管理器
         self.project_manager = ProjectManager()
 
@@ -244,23 +244,23 @@ class MainWindow(QMainWindow):
         coding_buttons_layout.addWidget(self.clear_coding_btn)
 
         coding_layout.addLayout(coding_buttons_layout)
-        
+
         # 项目管理按钮
         project_buttons_layout = QHBoxLayout()
-        
+
         self.save_project_btn = QPushButton("保存项目")
         self.save_project_btn.clicked.connect(self.save_project)
-        
+
         self.load_project_btn = QPushButton("加载项目")
         self.load_project_btn.clicked.connect(self.load_project)
-        
+
         self.import_coding_tree_btn = QPushButton("导入编码树")
         self.import_coding_tree_btn.clicked.connect(self.import_coding_tree)
-        
+
         project_buttons_layout.addWidget(self.save_project_btn)
         project_buttons_layout.addWidget(self.load_project_btn)
         project_buttons_layout.addWidget(self.import_coding_tree_btn)
-        
+
         coding_layout.addLayout(project_buttons_layout)
 
         layout.addWidget(coding_group)
@@ -919,7 +919,7 @@ class MainWindow(QMainWindow):
             logger.error(f"更新文本显示失败: {e}")
 
     def on_tree_item_clicked(self, item, column):
-        """树形项目点击事件 - 修复导航定位"""
+        """树形项目点击事件 - 使用精确高亮功能"""
         item_data = item.data(0, Qt.UserRole)
         if not item_data:
             return
@@ -930,9 +930,9 @@ class MainWindow(QMainWindow):
             code_id = item_data.get("code_id", "")
             sentence_details = item_data.get("sentence_details", [])
 
-            # 优先使用编码ID进行导航
+            # 使用精确高亮功能
             if code_id:
-                self.highlight_text_by_code_id(code_id)
+                self.highlight_text_by_code_id_precise(code_id)
             elif content:
                 self.highlight_text_content(content)
 
@@ -1114,7 +1114,6 @@ class MainWindow(QMainWindow):
                         if result:
                             return result
 
-
                 return ""
 
             # 遍历顶层项目
@@ -1135,7 +1134,6 @@ class MainWindow(QMainWindow):
         except Exception as e:
             logger.error(f"获取编码内容时出错: {e}")
             return ""
-
 
     # 在 init_ui 方法中添加文本文档引用
     def init_ui(self):
@@ -1184,7 +1182,7 @@ class MainWindow(QMainWindow):
         self.text_document = self.text_display.document()
 
     def on_tree_item_clicked(self, item, column):
-        """树形项目点击事件"""
+        """树形项目点击事件 - 使用精确高亮功能"""
         item_data = item.data(0, Qt.UserRole)
         if not item_data:
             return
@@ -1192,7 +1190,14 @@ class MainWindow(QMainWindow):
         level = item_data.get("level")
         if level == 1:  # 一阶编码
             content = item_data.get("content", "")
-            self.highlight_text_content(content)
+            code_id = item_data.get("code_id", "")
+            sentence_details = item_data.get("sentence_details", [])
+
+            # 使用精确高亮功能
+            if code_id:
+                self.highlight_text_by_code_id_precise(code_id)
+            elif content:
+                self.highlight_text_content(content)
 
     def highlight_text_content(self, content):
         """在文本中高亮内容"""
@@ -1732,22 +1737,24 @@ class MainWindow(QMainWindow):
         if not self.loaded_files:
             QMessageBox.warning(self, "警告", "请先导入文本文件")
             return
-        
+
         try:
             # 重置编号管理器以确保编号从1开始
             self.data_processor.numbering_manager.reset()
-            
+
             # 遍历所有已加载的文件并为它们编号
             for file_path, file_data in self.loaded_files.items():
                 content = file_data.get('content', '')
                 if content:
                     # 使用DataProcessor的编号管理器为文本编号
-                    numbered_content, number_mapping = self.data_processor.numbering_manager.number_text(content, os.path.basename(file_path))
-                    
+                    numbered_content, number_mapping = self.data_processor.numbering_manager.number_text(content,
+                                                                                                         os.path.basename(
+                                                                                                             file_path))
+
                     # 更新文件数据中的编号内容
                     file_data['numbered_content'] = numbered_content
                     file_data['numbered_mapping'] = number_mapping
-            
+
             # 如果当前有选中的文件，更新显示
             current_items = self.file_list.selectedItems()
             if current_items:
@@ -1757,9 +1764,9 @@ class MainWindow(QMainWindow):
                     file_data = self.loaded_files[file_path]
                     if 'numbered_content' in file_data:
                         self.text_display.setText(file_data['numbered_content'])
-            
+
             self.statusBar().showMessage(f"已为 {len(self.loaded_files)} 个文件的文本进行编号")
-            
+
         except Exception as e:
             logger.error(f"编号所有文本失败: {e}")
             QMessageBox.critical(self, "错误", f"编号所有文本失败: {str(e)}")
@@ -1782,13 +1789,14 @@ class MainWindow(QMainWindow):
         if not self.loaded_files:
             QMessageBox.warning(self, "警告", "没有可保存的文件")
             return
-        
+
         # 弹出对话框获取项目名称
         project_name, ok = QInputDialog.getText(self, "保存项目", "请输入项目名称:")
-        
+
         if ok and project_name.strip():
             try:
-                success = self.project_manager.save_project(project_name.strip(), self.loaded_files, self.structured_codes)
+                success = self.project_manager.save_project(project_name.strip(), self.loaded_files,
+                                                            self.structured_codes)
                 if success:
                     QMessageBox.information(self, "成功", f"项目 '{project_name}' 已保存")
                     self.statusBar().showMessage(f"项目已保存: {project_name}")
@@ -1797,28 +1805,28 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 logger.error(f"保存项目失败: {e}")
                 QMessageBox.critical(self, "错误", f"项目保存失败: {str(e)}")
-        
+
     def load_project(self):
         """加载项目"""
         try:
             projects = self.project_manager.get_projects_list()
-            
+
             if not projects:
                 QMessageBox.information(self, "提示", "没有可加载的项目")
                 return
-            
+
             # 创建项目选择对话框
             project_names = [proj["name"] for proj in projects]
             project_name, ok = QInputDialog.getItem(self, "加载项目", "请选择要加载的项目:", project_names, 0, False)
-            
+
             if ok and project_name:
                 loaded_files, structured_codes = self.project_manager.load_project(project_name)
-                
+
                 if loaded_files is not None and structured_codes is not None:
                     # 清空当前数据
                     self.loaded_files = loaded_files
                     self.structured_codes = structured_codes
-                    
+
                     # 更新文件列表
                     self.file_list.clear()
                     for file_path, file_data in self.loaded_files.items():
@@ -1826,20 +1834,20 @@ class MainWindow(QMainWindow):
                         item = QListWidgetItem(filename)
                         item.setData(Qt.UserRole, file_path)
                         self.file_list.addItem(item)
-                    
+
                     # 更新编码树
                     self.update_coding_tree()
-                    
+
                     # 如果有选中的文件，显示其内容
                     if self.file_list.count() > 0:
                         first_item = self.file_list.item(0)
                         self.on_file_selected(first_item)
-                    
+
                     QMessageBox.information(self, "成功", f"项目 '{project_name}' 已加载")
                     self.statusBar().showMessage(f"项目已加载: {project_name}")
                 else:
                     QMessageBox.critical(self, "错误", "项目加载失败")
-            
+
         except Exception as e:
             logger.error(f"加载项目失败: {e}")
             QMessageBox.critical(self, "错误", f"项目加载失败: {str(e)}")
@@ -1848,45 +1856,45 @@ class MainWindow(QMainWindow):
         """导入编码树 - 从项目文件中导入完整的编码结构"""
         try:
             projects = self.project_manager.get_projects_list()
-            
+
             if not projects:
                 QMessageBox.information(self, "提示", "没有可导入编码树的项目")
                 return
-            
+
             # 创建项目选择对话框
             project_names = [proj["name"] for proj in projects]
             project_name, ok = QInputDialog.getItem(self, "导入编码树", "请选择要导入编码树的项目:", project_names, 0, False)
-            
+
             if ok and project_name:
                 # 只加载项目的编码结构，不覆盖文件数据
                 _, structured_codes = self.project_manager.load_project(project_name)
-                
+
                 if structured_codes is not None:
                     # 询问用户是否确认导入编码树
                     reply = QMessageBox.question(
-                        self, "确认导入", 
+                        self, "确认导入",
                         f"确定要导入项目 '{project_name}' 的编码树吗？这将替换当前的编码结构。",
                         QMessageBox.Yes | QMessageBox.No
                     )
-                    
+
                     if reply == QMessageBox.Yes:
                         # 保存当前文件数据
                         current_loaded_files = self.loaded_files
-                        
+
                         # 更新编码结构
                         self.structured_codes = structured_codes
-                        
+
                         # 恢复文件数据
                         self.loaded_files = current_loaded_files
-                        
+
                         # 更新编码树界面
                         self.update_coding_tree()
-                        
+
                         QMessageBox.information(self, "成功", f"编码树已从项目 '{project_name}' 导入")
                         self.statusBar().showMessage(f"编码树已导入: {project_name}")
                 else:
                     QMessageBox.critical(self, "错误", "编码树导入失败")
-            
+
         except Exception as e:
             logger.error(f"导入编码树失败: {e}")
             QMessageBox.critical(self, "错误", f"导入编码树失败: {str(e)}")
@@ -1924,3 +1932,132 @@ class MainWindow(QMainWindow):
         except:
             pass
         event.accept()
+
+    def get_sentences_by_code_id(self, code_id: str) -> list:
+        """根据编码ID获取对应的句子详情列表"""
+        try:
+            sentences = []
+            
+            # 遍历编码树查找匹配的编码ID
+            def search_tree_for_sentences(item):
+                for i in range(item.childCount()):
+                    child = item.child(i)
+                    child_data = child.data(0, Qt.UserRole)
+                    
+                    if child_data and child_data.get("level") == 1:  # 一阶编码
+                        if child_data.get("code_id") == code_id:
+                            # 找到匹配的编码，返回其句子详情
+                            sentence_details = child_data.get("sentence_details", [])
+                            if sentence_details:
+                                return sentence_details
+                            else:
+                                # 如果没有sentence_details，使用内容创建基本结构
+                                content = child_data.get("content", "")
+                                if content:
+                                    return [{"text": content, "code_id": code_id}]
+                    
+                    # 递归搜索子节点
+                    result = search_tree_for_sentences(child)
+                    if result:
+                        return result
+                
+                return []
+            
+            # 遍历顶层项目
+            for i in range(self.coding_tree.topLevelItemCount()):
+                top_item = self.coding_tree.topLevelItem(i)
+                result = search_tree_for_sentences(top_item)
+                if result:
+                    sentences.extend(result)
+                    break
+            
+            # 如果在层级结构中没找到，检查顶层未分类的一阶编码
+            if not sentences:
+                for i in range(self.coding_tree.topLevelItemCount()):
+                    top_item = self.coding_tree.topLevelItem(i)
+                    top_data = top_item.data(0, Qt.UserRole)
+                    if top_data and top_data.get("level") == 1 and top_data.get("code_id") == code_id:
+                        content = top_data.get("content", "")
+                        if content:
+                            sentences.append({"text": content, "code_id": code_id})
+                        break
+            
+            logger.info(f"编码 {code_id} 找到 {len(sentences)} 个句子")
+            return sentences
+            
+        except Exception as e:
+            logger.error(f"获取句子详情失败: {e}")
+            return []
+
+    def highlight_text_by_code_id_precise(self, code_id: str):
+        """通过编码ID精确高亮文本和对应内容（基于sentence_details）"""
+        try:
+            if not code_id:
+                return
+
+            # 获取当前显示的文本
+            current_text = self.text_display.toPlainText()
+            if not current_text:
+                return
+
+            # 移动光标到文本开始
+            cursor = self.text_display.textCursor()
+            cursor.movePosition(cursor.Start)
+            self.text_display.setTextCursor(cursor)
+
+            # 清除之前的高亮
+            self.clear_text_highlights()
+
+            # 获取编码对应的精确句子内容
+            sentences_to_highlight = self.get_sentences_by_code_id(code_id)
+            
+            if not sentences_to_highlight:
+                self.statusBar().showMessage(f"未找到编码 {code_id} 的句子详情")
+                return
+
+            # 精确高亮每个句子（简化版本）
+            found_count = 0
+            first_match_position = None  # 记录第一个匹配项的位置
+            
+            for sentence_info in sentences_to_highlight:
+                sentence_content = sentence_info.get('text', '').strip()
+                if not sentence_content:
+                    continue
+                    
+                # 在文本中查找并高亮这个精确句子
+                search_cursor = self.text_display.textCursor()
+                search_cursor.movePosition(cursor.Start)
+                
+                # 使用文本查找
+                found_cursor = self.text_document.find(sentence_content, search_cursor)
+                if not found_cursor.isNull():
+                    # 设置浅蓝色高亮格式
+                    highlight_format = found_cursor.charFormat()
+                    highlight_format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
+                    highlight_format.setForeground(QColor(0, 0, 139))      # 深蓝色文字
+                    found_cursor.mergeCharFormat(highlight_format)
+                    
+                    found_count += 1
+                    
+                    # 记录第一个匹配项的位置用于滚动（使用selectionStart更准确）
+                    if first_match_position is None:
+                        first_match_position = found_cursor.selectionStart()
+                        logger.info(f"记录第一个匹配位置: {first_match_position}")
+
+            if found_count > 0 and first_match_position is not None:
+                # 创建新的光标并定位到第一个匹配项的位置
+                new_cursor = self.text_display.textCursor()
+                new_cursor.setPosition(first_match_position)
+                
+                # 设置光标并确保可见
+                self.text_display.setTextCursor(new_cursor)
+                self.text_display.ensureCursorVisible()
+                
+                logger.info(f"已定位到位置: {first_match_position}")
+                self.statusBar().showMessage(f"已高亮编码 {code_id} 的 {found_count} 个句子，定位到位置 {first_match_position}")
+            else:
+                logger.warning(f"未找到编码 {code_id} 对应的句子内容")
+                self.statusBar().showMessage(f"未找到编码 {code_id} 对应的句子内容")
+
+        except Exception as e:
+            logger.error(f"精确高亮文本失败: {e}")
