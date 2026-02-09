@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import re
 from PyQt5.QtWidgets import (QMainWindow, QVBoxLayout, QHBoxLayout, QWidget,
                              QPushButton, QTextEdit, QLabel, QMessageBox, QRadioButton,
                              QProgressBar, QFileDialog, QListWidget,
@@ -9,7 +10,7 @@ from PyQt5.QtWidgets import (QMainWindow, QVBoxLayout, QHBoxLayout, QWidget,
                              QGroupBox, QSplitter, QMenu, QDialog, QDialogButtonBox,
                              QLineEdit, QFormLayout, QComboBox, QCheckBox, QTabWidget,
                              QApplication)
-from PyQt5.QtCore import Qt, QSettings, QThread, pyqtSignal, QTimer
+from PyQt5.QtCore import Qt, QSettings, QThread, pyqtSignal, QTimer, QRegularExpression
 from PyQt5.QtGui import QFont, QColor, QTextCursor, QIcon
 from typing import Dict, List, Any, Optional
 import traceback
@@ -695,7 +696,19 @@ class MainWindow(QMainWindow):
             self.progress_bar.setVisible(True)
             self.progress_bar.setValue(0)
 
-            # 处理文件数据
+            # 第一步：为所有导入的文件进行编号
+            self.data_processor.numbering_manager.reset()
+            for file_path, file_data in self.loaded_files.items():
+                content = file_data.get('content', '')
+                if content:
+                    filename = file_data.get('filename', os.path.basename(file_path))
+                    numbered_content, number_mapping = self.data_processor.numbering_manager.number_text(content, filename)
+                    file_data['numbered_content'] = numbered_content
+                    file_data['numbered_mapping'] = number_mapping
+
+            self.progress_bar.setValue(10)
+
+            # 第二步：处理文件数据
             file_paths = list(self.loaded_files.keys())
             processed_data = self.data_processor.process_multiple_files(file_paths)
 
@@ -826,8 +839,12 @@ class MainWindow(QMainWindow):
             third_item.setText(2, str(len(second_cats)))  # 二阶编码数量
             third_item.setText(3, str(len(third_file_sources)))  # 文件来源数
             third_item.setText(4, str(len(third_sentence_sources)))  # 句子来源数
-            third_item.setText(5,
-                               ", ".join(third_code_ids[:5]) + ("..." if len(third_code_ids) > 5 else ""))  # 关联编号，限制显示
+            
+            # Extracts ID like "C01" from "C01 Category"
+            third_id_match = re.match(r'^[A-Z]\d+', third_cat)
+            third_id_display = third_id_match.group(0) if third_id_match else ""
+            third_item.setText(5, third_id_display)  # 关联编号显示自身编号
+
             third_item.setData(0, Qt.UserRole, {"level": 3, "name": third_cat})
 
             for second_cat, first_contents in second_cats.items():
@@ -868,8 +885,12 @@ class MainWindow(QMainWindow):
                 second_item.setText(2, str(second_first_count))  # 一阶编码数量
                 second_item.setText(3, "")  # 二阶编码不显示文件来源数
                 second_item.setText(4, str(len(second_sentence_sources)))  # 句子来源数
-                second_item.setText(5, ", ".join(second_code_ids[:5]) + (
-                    "..." if len(second_code_ids) > 5 else ""))  # 关联编号，限制显示
+                
+                # Extracts ID like "B01" from "B01 Category"
+                second_id_match = re.match(r'^[A-Z]\d+', second_cat)
+                second_id_display = second_id_match.group(0) if second_id_match else ""
+                second_item.setText(5, second_id_display)  # 关联编号显示自身编号
+                
                 second_item.setData(0, Qt.UserRole, {"level": 2, "name": second_cat, "parent": third_cat})
 
                 for content_data in first_contents:
@@ -904,10 +925,22 @@ class MainWindow(QMainWindow):
                     # 修复：将句子编号替换为所属一阶编码的编号
                     if code_id and numbered_content:
                         # 提取原始内容（去除编号前缀）
-                        if ': ' in numbered_content:
-                            original_content = numbered_content.split(': ', 1)[1]
+                        content_text = numbered_content
+                        # 移除现有的 Code ID 前缀
+                        if content_text.startswith(code_id + ': '):
+                            original_content = content_text[len(code_id + ': '):]
+                        elif content_text.startswith(code_id + ' '):
+                            original_content = content_text[len(code_id + ' '):]
                         else:
-                            original_content = numbered_content
+                            original_content = content_text
+
+                        # 移除可能的类似 A1, A01 的前缀
+                        original_content = re.sub(r'^[A-Z]\d+\s+', '', original_content)
+                        # 移除 "1, 58 " 这种格式 (文件索引, 句子索引)
+                        original_content = re.sub(r'^\d+\s*,\s*\d+\s*', '', original_content)
+                        # 移除 "68 " 或 "[68] " 或 "1 " 这种格式
+                        original_content = re.sub(r'^(?:\[\d+\]|\d+)\s+', '', original_content)
+
                         # 使用一阶编码编号作为前缀
                         display_content = f"{code_id} {original_content}"
                     else:
@@ -917,9 +950,108 @@ class MainWindow(QMainWindow):
                     first_item.setText(0, display_content)
                     first_item.setText(1, "一阶编码")
                     first_item.setText(2, "1")
-                    first_item.setText(3, str(len(first_file_sources)))  # 文件来源数
-                    first_item.setText(4, str(len(first_sentence_sources)))  # 句子来源数
-                    first_item.setText(5, code_id)  # 关联编号
+                    
+                    # 提取句子编号用于关联编号列
+                    extracted_sentence_ids = []
+                    
+                    # 方法1：从sentence_details的原始内容提取
+                    for sentence in sentence_details:
+                        if isinstance(sentence, dict):
+                            # 尝试从各个字段获取内容
+                            sent_content = sentence.get('original_content', '') or sentence.get('content', '')
+                            if not sent_content:
+                                continue
+                            
+                            # 清理内容：移除所有标记，只保留纯文本
+                            sent_content_clean = re.sub(r'\s*\[[A-Z]\d+\]', '', sent_content)
+                            sent_content_clean = re.sub(r'\s*\[\d+\]', '', sent_content_clean)
+                            sent_content_clean = sent_content_clean.strip()
+                            
+                            # 如果清理后的内容太短，跳过
+                            if len(sent_content_clean) < 5:
+                                continue
+                            
+                            # 在所有已加载文件的numbered_content中查找
+                            for file_path_iter, file_data_iter in self.loaded_files.items():
+                                file_numbered = file_data_iter.get('numbered_content', '')
+                                if not file_numbered:
+                                    continue
+                                
+                                # 尝试查找句子内容
+                                # 方法1：直接查找
+                                pos = file_numbered.find(sent_content_clean)
+                                
+                                # 方法2：如果方法1失败，尝试查找前50个字符
+                                if pos < 0 and len(sent_content_clean) > 50:
+                                    pos = file_numbered.find(sent_content_clean[:50])
+                                
+                                # 方法3：如果还失败，尝试去除所有空白后查找
+                                if pos < 0:
+                                    sent_no_space = re.sub(r'\s+', '', sent_content_clean)
+                                    file_no_space = re.sub(r'\s+', '', file_numbered)
+                                    pos_no_space = file_no_space.find(sent_no_space)
+                                    if pos_no_space >= 0:
+                                        # 找到了，但需要转换回原始位置
+                                        # 简化处理：直接在原文中用正则匹配
+                                        pattern = re.escape(sent_content_clean[:min(30, len(sent_content_clean))])
+                                        match = re.search(pattern, file_numbered)
+                                        if match:
+                                            pos = match.start()
+                                
+                                if pos >= 0:
+                                    # 向后查找紧跟在句子后的编号 [N]
+                                    text_after_start = pos + len(sent_content_clean)
+                                    text_after = file_numbered[text_after_start:text_after_start + 100]
+                                    
+                                    # 查找紧跟的第一个 [数字]
+                                    # 允许中间有标点符号
+                                    match = re.search(r'^[。！？!?]?\s*\[(\d+)\]', text_after)
+                                    if match:
+                                        sentence_id = match.group(1)
+                                        if sentence_id not in extracted_sentence_ids:
+                                            extracted_sentence_ids.append(sentence_id)
+                                        break  # 找到了就不再查找其他文件
+                    
+                    # 方法2：如果方法1失败，尝试从numbered_content开头提取
+                    if not extracted_sentence_ids and numbered_content:
+                        match = re.search(r'^\s*\[(\d+)\]', numbered_content.strip())
+                        if match:
+                            extracted_sentence_ids.append(match.group(1))
+
+                    # 修复：确保文件来源和句子来源至少为1（自动编码时）
+                    file_source_count = len(first_file_sources) if first_file_sources else 1
+                    sentence_source_count = len(first_sentence_sources) if first_sentence_sources else 1
+                    first_item.setText(3, str(file_source_count))  # 文件来源数
+                    first_item.setText(4, str(sentence_source_count))  # 句子来源数
+                    
+                    # 修复：关联编号显示句子ID（如 [1]）而不是 Code ID
+                    associated_id_display = ""
+                    
+                    # 收集所有可能的句子ID
+                    all_ids = set()
+                    
+                    # 从first_sentence_sources提取
+                    all_ids.update(first_sentence_sources)
+                    
+                    # 从sentence_details提取
+                    if not all_ids and sentence_details:
+                         for s in sentence_details:
+                             if isinstance(s, dict) and s.get('sentence_id'):
+                                 all_ids.add(str(s.get('sentence_id')))
+                    
+                    # 从提取的句子编号添加
+                    if not all_ids:
+                        all_ids.update(extracted_sentence_ids)
+                        
+                    if all_ids:
+                         # 格式化显示句子编号，纯数字格式（如 1, 2, 3）
+                         ids = sorted(all_ids, key=lambda x: int(x) if x.isdigit() else float('inf'))
+                         # 移除可能的括号，只保留数字
+                         clean_ids = [sid.strip('[]') if isinstance(sid, str) else str(sid) for sid in ids]
+                         associated_id_display = ", ".join(clean_ids)
+
+                    first_item.setText(5, associated_id_display)  # 关联编号
+                    
                     first_item.setData(0, Qt.UserRole, {
                         "level": 1,
                         "content": content,  # 原始内容，用于搜索
@@ -927,7 +1059,8 @@ class MainWindow(QMainWindow):
                         "code_id": code_id,  # 编码ID
                         "category": second_cat,
                         "core_category": third_cat,
-                        "sentence_details": sentence_details
+                        "sentence_details": sentence_details,
+                        "sentence_ids": list(all_ids)  # 存储句子编号列表，用于导航
                     })
 
             third_item.setText(2, str(len(second_cats)))  # 二阶编码数量
@@ -953,7 +1086,13 @@ class MainWindow(QMainWindow):
             # 获取当前选中的文件
             current_items = self.file_list.selectedItems()
             if not current_items:
-                return
+                # 如果没有选中文件，选中第一个文件
+                if self.file_list.count() > 0:
+                    first_item = self.file_list.item(0)
+                    self.file_list.setCurrentItem(first_item)
+                    current_items = [first_item]
+                else:
+                    return
 
             current_item = current_items[0]
             file_path = current_item.data(Qt.UserRole)
@@ -961,13 +1100,29 @@ class MainWindow(QMainWindow):
             if file_path not in self.loaded_files:
                 return
 
-            # 获取原始文本内容
-            original_text = self.loaded_files[file_path].get('content', '')
-            if not original_text:
-                return
-
-            # 创建带编号标记的文本
-            marked_text = original_text
+            # 优先使用已编号的内容，已保留句子编号 [1]
+            file_data = self.loaded_files[file_path]
+            marked_text = file_data.get('numbered_content', '')
+            
+            # 如果没有编号内容，尝试现有的 content（可能已经带编号）或生成编号
+            if not marked_text:
+                original_text = file_data.get('content', '')
+                if not original_text:
+                    return
+                
+                # 检查 content 是否包含编号
+                if re.search(r'\[\d+\]', original_text):
+                     marked_text = original_text
+                else:
+                     # 尝试自动编号
+                     try:
+                         filename = file_data.get('filename', os.path.basename(file_path))
+                         marked_text, _ = self.data_processor.numbering_manager.number_text(original_text, filename)
+                         # 保存编号后的内容
+                         self.loaded_files[file_path]['numbered_content'] = marked_text
+                     except Exception as e:
+                         # 降级：使用原始内容
+                         marked_text = original_text
 
             # 收集所有编码标记
             all_code_marks = []
@@ -985,27 +1140,61 @@ class MainWindow(QMainWindow):
                                     if not original_content:
                                         original_content = sentence.get('content', '')
 
-                                    # 清理可能已有的标记
+                                    # 清理可能已有的标记（编码标记和句子编号都清理，得到纯文本）
                                     original_content_clean = re.sub(r'\s*\[[A-Z]\d+\]', '', original_content)
+                                    original_content_clean = re.sub(r'\s*\[\d+\]', '', original_content_clean)
+                                    original_content_clean = original_content_clean.strip()
 
                                     if original_content_clean and code_id:
-                                        # 创建带标记的内容
-                                        marked_content = f"{original_content_clean} [{code_id}]"
-
-                                        # 记录标记信息
                                         all_code_marks.append({
-                                            'original': original_content_clean,
-                                            'marked': marked_content,
+                                            'clean_content': original_content_clean,
                                             'code_id': code_id
                                         })
 
-            # 按内容长度排序，先替换长的内容，避免嵌套替换问题
-            all_code_marks.sort(key=lambda x: len(x['original']), reverse=True)
+            # 按内容长度排序
+            all_code_marks.sort(key=lambda x: len(x['clean_content']), reverse=True)
 
             # 应用所有标记
             for mark in all_code_marks:
-                if mark['original'] in marked_text:
-                    marked_text = marked_text.replace(mark['original'], mark['marked'])
+                clean = mark['clean_content']
+                code_tag = f"[{mark['code_id']}]"
+                
+                # 使用转义来匹配文本
+                escaped_clean = re.escape(clean)
+                
+                # 策略1：匹配 "纯文本[标点]? [句子编号]" 的模式（最理想情况）
+                # 允许句子和编号之间有标点符号（。！？）
+                pattern1 = f"({escaped_clean}[。！？!?]?\\s*\\[\\d+\\])((?:\\s*\\[[A-Z]\\d+\\])*)(\\s*)"
+                
+                # 策略2：如果没有句子编号，直接匹配纯文本（可能带标点）
+                pattern2 = f"({escaped_clean}[。！？!?]?)((?:\\s*\\[[A-Z]\\d+\\])*)(\\s*)"
+                
+                def replace_func(match):
+                    full_match = match.group(0)
+                    part1 = match.group(1)  # 内容 [N] 或 纯内容
+                    existing_tags = match.group(2)  # 已有的编码标记
+                    whitespace = match.group(3)  # 后面的空白
+                    
+                    # 检查是否已经有了这个标记
+                    if code_tag in existing_tags:
+                         return full_match
+                    
+                    # 追加编码标记
+                    return f"{part1}{existing_tags} {code_tag}{whitespace}"
+
+                try:
+                    # 先尝试策略1（带句子编号）
+                    new_text = re.sub(pattern1, replace_func, marked_text)
+                    if new_text != marked_text:
+                        marked_text = new_text
+                    else:
+                        # 如果策略1没有匹配，尝试策略2（纯文本）
+                        marked_text = re.sub(pattern2, replace_func, marked_text)
+                except Exception as e:
+                    logger.warning(f"正则替换失败: {e}，尝试简单替换")
+                    # 如果正则失败，回退到简单替换
+                    if clean in marked_text and code_tag not in marked_text:
+                         marked_text = marked_text.replace(clean, f"{clean} {code_tag}")
 
             # 更新文本显示
             self.text_display.setPlainText(marked_text)
@@ -1021,15 +1210,143 @@ class MainWindow(QMainWindow):
 
         level = item_data.get("level")
         if level == 1:  # 一阶编码
-            content = item_data.get("content", "")
+            sentence_ids = item_data.get("sentence_ids", [])
             code_id = item_data.get("code_id", "")
-            sentence_details = item_data.get("sentence_details", [])
-
-            # 使用精确高亮功能
-            if code_id:
+            
+            # 优先使用句子编号导航（更准确）
+            if sentence_ids:
+                self.highlight_text_by_sentence_ids(sentence_ids)
+            elif code_id:
+                # 降级方案：使用编码ID
                 self.highlight_text_by_code_id_precise(code_id)
-            elif content:
-                self.highlight_text_content(content)
+            else:
+                # 最后的降级方案：使用内容匹配
+                content = item_data.get("content", "")
+                if content:
+                    self.highlight_text_content(content)
+
+    def highlight_text_by_sentence_ids(self, sentence_ids: list):
+        """通过句子编号列表高亮文本并导航"""
+        try:
+            if not sentence_ids:
+                return
+            
+            # 清理句子ID，确保是纯数字
+            clean_ids = []
+            for sid in sentence_ids:
+                if isinstance(sid, str):
+                    sid = sid.strip('[]').strip()
+                clean_ids.append(str(sid))
+            
+            if not clean_ids:
+                return
+            
+            # 查找包含这些句子编号的文件
+            target_file = None
+            for file_path, file_data in self.loaded_files.items():
+                file_text = file_data.get('numbered_content', '') or file_data.get('content', '')
+                # 检查文件是否包含第一个句子编号
+                if f"[{clean_ids[0]}]" in file_text:
+                    target_file = file_path
+                    break
+            
+            # 如果找到目标文件且不是当前显示的文件，切换文件
+            if target_file:
+                current_items = self.file_list.selectedItems()
+                current_file = current_items[0].data(Qt.UserRole) if current_items else None
+                
+                if current_file != target_file:
+                    # 在文件列表中查找并选中目标文件
+                    for i in range(self.file_list.count()):
+                        item = self.file_list.item(i)
+                        if item.data(Qt.UserRole) == target_file:
+                            self.file_list.setCurrentItem(item)
+                            # 等待文件显示更新
+                            QApplication.processEvents()
+                            break
+            
+            # 获取当前显示的文本
+            current_text = self.text_display.toPlainText()
+            if not current_text:
+                return
+            
+            # 清除之前的高亮
+            self.clear_text_highlights()
+            
+            # 查找并高亮所有匹配的句子编号
+            found_count = 0
+            first_match_position = None
+            
+            for sid in clean_ids:
+                # 查找句子编号标记 [N]
+                sentence_tag = f"[{sid}]"
+                
+                # 从文本开始查找
+                search_pos = 0
+                while True:
+                    pos = current_text.find(sentence_tag, search_pos)
+                    if pos < 0:
+                        break
+                    
+                    # 找到句子编号，现在需要高亮整个句子
+                    # 从编号位置向前查找句子开始（前一个句子的结束位置）
+                    sentence_start = 0
+                    # 向前查找上一个 [数字] 标记
+                    text_before = current_text[:pos]
+                    prev_tags = list(re.finditer(r'\[(\d+)\]', text_before))
+                    if prev_tags:
+                        # 从上一个标记的结束位置开始
+                        prev_end = prev_tags[-1].end()
+                        # 跳过前一句可能的编码标记 [Axx], [Bxx] 等
+                        text_between = current_text[prev_end:pos]
+                        code_tags_match = re.match(r'^(\s*\[[A-Z]\d+\])+\s*', text_between)
+                        if code_tags_match:
+                            sentence_start = prev_end + code_tags_match.end()
+                        else:
+                            sentence_start = prev_end
+                    
+                    # 句子结束位置：编号标记之后（可能还有编码标记 [Axx]）
+                    sentence_end = pos + len(sentence_tag)
+                    # 查找编号后是否有编码标记
+                    text_after = current_text[sentence_end:sentence_end + 20]
+                    code_match = re.match(r'^(\s*\[[A-Z]\d+\])+', text_after)
+                    if code_match:
+                        sentence_end += code_match.end()
+                    
+                    # 创建光标并选择这段文本
+                    cursor = self.text_display.textCursor()
+                    cursor.setPosition(sentence_start)
+                    cursor.setPosition(sentence_end, QTextCursor.KeepAnchor)
+                    
+                    # 设置浅蓝色高亮
+                    highlight_format = cursor.charFormat()
+                    highlight_format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
+                    highlight_format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
+                    cursor.mergeCharFormat(highlight_format)
+                    
+                    found_count += 1
+                    
+                    # 记录第一个匹配位置
+                    if first_match_position is None:
+                        first_match_position = sentence_start
+                    
+                    # 移动搜索位置
+                    search_pos = sentence_end
+            
+            if found_count > 0 and first_match_position is not None:
+                # 定位到第一个匹配位置
+                cursor = self.text_display.textCursor()
+                cursor.setPosition(first_match_position)
+                self.text_display.setTextCursor(cursor)
+                self.text_display.ensureCursorVisible()
+                
+                self.statusBar().showMessage(f"已高亮 {found_count} 个句子")
+            else:
+                self.statusBar().showMessage(f"未找到句子编号: {', '.join(clean_ids)}")
+        
+        except Exception as e:
+            logger.error(f"按句子编号高亮失败: {e}", exc_info=True)
+            self.statusBar().showMessage(f"高亮失败: {str(e)}")
 
     def highlight_text_by_code_id(self, code_id: str):
         """通过编码ID高亮文本"""
@@ -2138,7 +2455,21 @@ class MainWindow(QMainWindow):
                             # 找到匹配的编码，返回其句子详情
                             sentence_details = child_data.get("sentence_details", [])
                             if sentence_details:
-                                return sentence_details
+                                # 规范化句子对象，确保有 text 字段
+                                normalized_sentences = []
+                                for sent in sentence_details:
+                                    if isinstance(sent, dict):
+                                        # 尝试从多个字段获取文本内容
+                                        text = sent.get('text', '') or sent.get('content', '') or sent.get('original_content', '')
+                                        if text:
+                                            # 创建规范化的句子对象
+                                            normalized_sent = {
+                                                'text': text,
+                                                'code_id': code_id,
+                                                'original': sent  # 保留原始对象
+                                            }
+                                            normalized_sentences.append(normalized_sent)
+                                return normalized_sentences
                             else:
                                 # 如果没有sentence_details，使用内容创建基本结构
                                 content = child_data.get("content", "")
@@ -2184,6 +2515,49 @@ class MainWindow(QMainWindow):
             if not code_id:
                 return
 
+            # 获取编码对应的精确句子内容
+            sentences_to_highlight = self.get_sentences_by_code_id(code_id)
+
+            if not sentences_to_highlight:
+                self.statusBar().showMessage(f"未找到编码 {code_id} 的句子详情")
+                return
+
+            # 查找包含该句子的文件并切换显示
+            target_file = None
+            for sentence_info in sentences_to_highlight:
+                sentence_content = sentence_info.get('text', '').strip()
+                if not sentence_content:
+                    continue
+                
+                # 清理句子内容
+                sentence_clean = re.sub(r'\s*\[[A-Z]\d+\]', '', sentence_content)
+                sentence_clean = re.sub(r'\s*\[\d+\]', '', sentence_clean).strip()
+                
+                # 在所有已加载的文件中查找
+                for file_path, file_data in self.loaded_files.items():
+                    file_text = file_data.get('numbered_content', '') or file_data.get('content', '')
+                    if sentence_clean in file_text:
+                        target_file = file_path
+                        break
+                
+                if target_file:
+                    break
+            
+            # 如果找到目标文件且不是当前显示的文件，切换文件
+            if target_file:
+                current_items = self.file_list.selectedItems()
+                current_file = current_items[0].data(Qt.UserRole) if current_items else None
+                
+                if current_file != target_file:
+                    # 在文件列表中查找并选中目标文件
+                    for i in range(self.file_list.count()):
+                        item = self.file_list.item(i)
+                        if item.data(Qt.UserRole) == target_file:
+                            self.file_list.setCurrentItem(item)
+                            # 等待文件显示更新
+                            QApplication.processEvents()
+                            break
+
             # 获取当前显示的文本
             current_text = self.text_display.toPlainText()
             if not current_text:
@@ -2197,14 +2571,7 @@ class MainWindow(QMainWindow):
             # 清除之前的高亮
             self.clear_text_highlights()
 
-            # 获取编码对应的精确句子内容
-            sentences_to_highlight = self.get_sentences_by_code_id(code_id)
-
-            if not sentences_to_highlight:
-                self.statusBar().showMessage(f"未找到编码 {code_id} 的句子详情")
-                return
-
-            # 精确高亮每个句子（简化版本）
+            # 精确高亮每个句子
             found_count = 0
             first_match_position = None  # 记录第一个匹配项的位置
 
@@ -2213,12 +2580,28 @@ class MainWindow(QMainWindow):
                 if not sentence_content:
                     continue
 
+                # 清理句子内容：移除可能存在的编号标记
+                sentence_clean = re.sub(r'\s*\[[A-Z]\d+\]', '', sentence_content)
+                sentence_clean = re.sub(r'\s*\[\d+\]', '', sentence_clean).strip()
+
                 # 在文本中查找并高亮这个精确句子
                 search_cursor = self.text_display.textCursor()
                 search_cursor.movePosition(cursor.Start)
 
-                # 使用文本查找
-                found_cursor = self.text_document.find(sentence_content, search_cursor)
+                # 策略1：直接查找清理后的文本
+                found_cursor = self.text_document.find(sentence_clean, search_cursor)
+                
+                # 策略2：如果策略1失败，尝试查找前50个字符
+                if found_cursor.isNull() and len(sentence_clean) > 50:
+                    found_cursor = self.text_document.find(sentence_clean[:50], search_cursor)
+                
+                # 策略3：如果还失败，尝试使用正则表达式查找（忽略空白差异）
+                if found_cursor.isNull():
+                    # 转换为正则模式，将多个空白符视为一个
+                    pattern = re.sub(r'\s+', r'\\s+', re.escape(sentence_clean))
+                    regex = QRegularExpression(pattern)
+                    found_cursor = self.text_document.find(regex, search_cursor)
+
                 if not found_cursor.isNull():
                     # 设置浅蓝色高亮格式
                     highlight_format = found_cursor.charFormat()
@@ -2228,7 +2611,7 @@ class MainWindow(QMainWindow):
 
                     found_count += 1
 
-                    # 记录第一个匹配项的位置用于滚动（使用selectionStart更准确）
+                    # 记录第一个匹配项的位置用于滚动
                     if first_match_position is None:
                         first_match_position = found_cursor.selectionStart()
                         logger.info(f"记录第一个匹配位置: {first_match_position}")
@@ -2243,10 +2626,11 @@ class MainWindow(QMainWindow):
                 self.text_display.ensureCursorVisible()
 
                 logger.info(f"已定位到位置: {first_match_position}")
-                self.statusBar().showMessage(f"已高亮编码 {code_id} 的 {found_count} 个句子，定位到位置 {first_match_position}")
+                self.statusBar().showMessage(f"已高亮编码 {code_id} 的 {found_count} 个句子")
             else:
                 logger.warning(f"未找到编码 {code_id} 对应的句子内容")
                 self.statusBar().showMessage(f"未找到编码 {code_id} 对应的句子内容")
 
         except Exception as e:
-            logger.error(f"精确高亮文本失败: {e}")
+            logger.error(f"精确高亮文本失败: {e}", exc_info=True)
+            self.statusBar().showMessage(f"高亮失败: {str(e)}")
