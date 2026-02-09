@@ -79,7 +79,7 @@ class DragDropTreeWidget(QTreeWidget):
                 self.dialog.update_structured_codes_from_tree()
         else:
             event.ignore()
-    
+
     def _is_ancestor(self, item, potential_ancestor):
         """检查item是否是potential_ancestor的祖先节点"""
         while potential_ancestor:
@@ -274,7 +274,7 @@ class ManualCodingDialog(QDialog):
         add_third_layout.addWidget(add_third_label)
         add_third_layout.addWidget(add_third_btn)
         hierarchy_layout.addLayout(add_third_layout)
-        
+
         # 添加自动编码编辑功能
         auto_coding_layout = QHBoxLayout()
         auto_coding_label = QLabel("编辑自动编码:")
@@ -386,15 +386,15 @@ class ManualCodingDialog(QDialog):
         if self.existing_codes:
             # 增强对自动生成编码结构的解析
             self.current_codes = self.existing_codes.copy()
-            
+
             # 为自动生成的编码添加标识，便于用户识别
             self._mark_auto_generated_codes()
-            
+
             self.update_category_combos()
             # 只有当树形控件已经创建后才更新
             if hasattr(self, 'coding_tree'):
                 self.update_coding_tree()
-    
+
     def _mark_auto_generated_codes(self):
         """为自动生成的编码添加标识，便于用户识别"""
         try:
@@ -410,7 +410,7 @@ class ManualCodingDialog(QDialog):
                                 content_data['source'] = 'auto'
         except Exception as e:
             logger.error(f"标记自动生成编码失败: {e}")
-    
+
     def update_category_combos(self):
         """更新类别组合框（兼容方法）"""
         # 这个方法被调用但未定义，添加一个空实现以避免错误
@@ -732,21 +732,22 @@ class ManualCodingDialog(QDialog):
                         break
                 if has_auto_codes:
                     break
-            
+
             if not has_auto_codes:
                 QMessageBox.information(self, "提示", "没有找到自动生成的编码")
                 return
-            
+
             # 提示用户如何编辑自动编码
-            QMessageBox.information(self, "编辑自动编码", "请在右侧编码树中直接双击要编辑的编码进行修改。\n\n注意：\n1. 双击编码节点可以直接编辑内容\n2. 拖拽编码可以调整层级结构\n3. 右键菜单可以进行更多操作\n4. 编辑完成后点击'保存编码'按钮保存结果")
-            
+            QMessageBox.information(self, "编辑自动编码",
+                                    "请在右侧编码树中直接双击要编辑的编码进行修改。\n\n注意：\n1. 双击编码节点可以直接编辑内容\n2. 拖拽编码可以调整层级结构\n3. 右键菜单可以进行更多操作\n4. 编辑完成后点击'保存编码'按钮保存结果")
+
             # 自动展开编码树，方便用户编辑
             self.coding_tree.expandAll()
-            
+
         except Exception as e:
             logger.error(f"编辑自动编码失败: {e}")
             QMessageBox.critical(self, "错误", f"编辑自动编码失败: {str(e)}")
-    
+
     def closeEvent(self, event):
         """对话框关闭事件，保存编码标记状态"""
         try:
@@ -2976,12 +2977,12 @@ class ManualCodingDialog(QDialog):
         if not current_items:
             QMessageBox.information(self, "提示", "请先选择一个节点")
             return
-        
+
         # 如果选择了多个节点，执行批量编辑
         if len(current_items) > 1:
             self.batch_edit_tree_items(current_items)
             return
-        
+
         # 单个节点编辑
         current_item = current_items[0]
 
@@ -3138,7 +3139,7 @@ class ManualCodingDialog(QDialog):
             cancel_button.clicked.connect(dialog.reject)
 
             dialog.exec_()
-    
+
     def batch_edit_tree_items(self, items):
         """批量编辑多个选中的编码节点"""
         try:
@@ -3148,17 +3149,17 @@ class ManualCodingDialog(QDialog):
                 item_data = item.data(0, Qt.UserRole)
                 if item_data:
                     levels.add(item_data.get('level'))
-            
+
             if len(levels) > 1:
                 QMessageBox.warning(self, "警告", "只能批量编辑同一层级的编码节点")
                 return
-            
+
             if not levels:
                 QMessageBox.warning(self, "警告", "选中的节点数据无效")
                 return
-            
+
             level = levels.pop()
-            
+
             # 根据层级执行不同的批量编辑操作
             if level == 1:
                 self._batch_edit_first_level(items)
@@ -3166,152 +3167,152 @@ class ManualCodingDialog(QDialog):
                 self._batch_edit_second_level(items)
             elif level == 3:
                 self._batch_edit_third_level(items)
-                
+
         except Exception as e:
             logger.error(f"批量编辑失败: {e}")
             QMessageBox.critical(self, "错误", f"批量编辑失败: {str(e)}")
-    
+
     def _batch_edit_first_level(self, items):
         """批量编辑一阶编码"""
         dialog = QDialog(self)
         dialog.setWindowTitle("批量编辑一阶编码")
         dialog.resize(600, 500)
-        
+
         layout = QVBoxLayout(dialog)
-        
+
         label = QLabel(f"批量编辑 {len(items)} 个一阶编码")
         layout.addWidget(label)
-        
+
         # 显示选中的编码列表
         list_widget = QListWidget()
         for item in items:
             list_item = QListWidgetItem(item.text(0))
             list_widget.addItem(list_item)
         layout.addWidget(list_widget)
-        
+
         # 批量操作选项
         operation_group = QGroupBox("批量操作")
         operation_layout = QVBoxLayout(operation_group)
-        
+
         # 选项：移除自动生成标识
         remove_auto_checkbox = QCheckBox("移除自动生成标识")
         operation_layout.addWidget(remove_auto_checkbox)
-        
+
         # 选项：更新来源为手动
         update_source_checkbox = QCheckBox("更新来源为手动")
         operation_layout.addWidget(update_source_checkbox)
-        
+
         layout.addWidget(operation_group)
-        
+
         button_layout = QHBoxLayout()
         ok_button = QPushButton("确定")
         cancel_button = QPushButton("取消")
         button_layout.addWidget(ok_button)
         button_layout.addWidget(cancel_button)
         layout.addLayout(button_layout)
-        
+
         def on_ok():
             changes = 0
             for item in items:
                 item_data = item.data(0, Qt.UserRole)
                 if not item_data:
                     continue
-                
+
                 # 移除自动生成标识
                 if remove_auto_checkbox.isChecked() and item_data.get('auto_generated', False):
                     item_data['auto_generated'] = False
                     changes += 1
-                
+
                 # 更新来源为手动
                 if update_source_checkbox.isChecked():
                     item_data['source'] = 'manual'
                     changes += 1
-                
+
                 # 应用更改
                 if changes > 0:
                     item.setData(0, Qt.UserRole, item_data)
-            
+
             if changes > 0:
                 self.update_structured_codes_from_tree()
                 QMessageBox.information(self, "成功", f"已完成批量编辑，共修改 {changes} 个编码")
             else:
                 QMessageBox.information(self, "提示", "没有进行任何修改")
-            
+
             dialog.accept()
-        
+
         ok_button.clicked.connect(on_ok)
         cancel_button.clicked.connect(dialog.reject)
-        
+
         dialog.exec_()
-    
+
     def _batch_edit_second_level(self, items):
         """批量编辑二阶编码"""
         dialog = QDialog(self)
         dialog.setWindowTitle("批量编辑二阶编码")
         dialog.resize(600, 500)
-        
+
         layout = QVBoxLayout(dialog)
-        
+
         label = QLabel(f"批量编辑 {len(items)} 个二阶编码")
         layout.addWidget(label)
-        
+
         # 显示选中的编码列表
         list_widget = QListWidget()
         for item in items:
             list_item = QListWidgetItem(item.text(0))
             list_widget.addItem(list_item)
         layout.addWidget(list_widget)
-        
+
         button_layout = QHBoxLayout()
         ok_button = QPushButton("确定")
         cancel_button = QPushButton("取消")
         button_layout.addWidget(ok_button)
         button_layout.addWidget(cancel_button)
         layout.addLayout(button_layout)
-        
+
         def on_ok():
             # 目前只支持显示列表，后续可以添加更多批量操作
             QMessageBox.information(self, "提示", "批量编辑二阶编码功能即将推出")
             dialog.accept()
-        
+
         ok_button.clicked.connect(on_ok)
         cancel_button.clicked.connect(dialog.reject)
-        
+
         dialog.exec_()
-    
+
     def _batch_edit_third_level(self, items):
         """批量编辑三阶编码"""
         dialog = QDialog(self)
         dialog.setWindowTitle("批量编辑三阶编码")
         dialog.resize(600, 500)
-        
+
         layout = QVBoxLayout(dialog)
-        
+
         label = QLabel(f"批量编辑 {len(items)} 个三阶编码")
         layout.addWidget(label)
-        
+
         # 显示选中的编码列表
         list_widget = QListWidget()
         for item in items:
             list_item = QListWidgetItem(item.text(0))
             list_widget.addItem(list_item)
         layout.addWidget(list_widget)
-        
+
         button_layout = QHBoxLayout()
         ok_button = QPushButton("确定")
         cancel_button = QPushButton("取消")
         button_layout.addWidget(ok_button)
         button_layout.addWidget(cancel_button)
         layout.addLayout(button_layout)
-        
+
         def on_ok():
             # 目前只支持显示列表，后续可以添加更多批量操作
             QMessageBox.information(self, "提示", "批量编辑三阶编码功能即将推出")
             dialog.accept()
-        
+
         ok_button.clicked.connect(on_ok)
         cancel_button.clicked.connect(dialog.reject)
-        
+
         dialog.exec_()
 
     def delete_tree_item(self):
@@ -3396,14 +3397,15 @@ class ManualCodingDialog(QDialog):
                         # 获取原始内容，优先使用完整数据结构
                         first_item_data = first_item.data(0, Qt.UserRole)
 
-                        # 如果是字典格式，更新统计数据
+                        # 正确处理三阶-二阶-一阶结构中的一阶编码
                         if first_item_data and isinstance(first_item_data, dict):
                             # 更新一阶编码的统计数据
                             first_item_data["sentence_count"] = int(first_item.text(4)) if first_item.text(
                                 4).isdigit() else 1
                             first_item_data["code_id"] = first_item.text(5) if first_item.text(
                                 5) else first_item_data.get("code_id", "")
-                            self.unclassified_first_codes.append(first_item_data)
+                            # 修复：应该添加到正确的嵌套结构中，而不是未分类编码
+                            self.current_codes[third_display_name][second_display_name].append(first_item_data)
                         else:
                             # 后备方案：使用文本内容
                             first_content = first_item.text(0)
@@ -3422,9 +3424,112 @@ class ManualCodingDialog(QDialog):
                         content = top_item.text(0)
                         self.unclassified_first_codes.append(content)
 
+        # 调试输出
+        print(f"DEBUG: 更新后 current_codes 结构:")
+        for third_cat, second_cats in self.current_codes.items():
+            print(f"  {third_cat}: {len(second_cats)} 个二阶编码")
+            for second_cat, first_contents in second_cats.items():
+                print(f"    {second_cat}: {len(first_contents)} 个一阶编码")
+        print(f"DEBUG: 未分类一阶编码: {len(self.unclassified_first_codes)} 个")
+
     def update_coding_tree(self):
         """更新编码结构树"""
         try:
+            # ---------------------------------------------------------
+            # 自动修复编号：确保所有一阶编码都有A开头的规范编号
+            # ---------------------------------------------------------
+            existing_a_ids = set()
+            
+            # 1. 第一遍遍历：收集所有已存在的A开头有效编号
+            # 检查已分类编码
+            for third_cat, second_cats in self.current_codes.items():
+                for second_cat, first_contents in second_cats.items():
+                    for content in first_contents:
+                        if isinstance(content, dict):
+                            cid = str(content.get('code_id', ''))
+                            if cid.startswith('A') and cid[1:].isdigit():
+                                existing_a_ids.add(cid)
+            
+            # 检查未分类编码
+            for item in self.unclassified_first_codes:
+                if isinstance(item, dict):
+                    cid = str(item.get('code_id', ''))
+                    if cid.startswith('A') and cid[1:].isdigit():
+                        existing_a_ids.add(cid)
+            
+            # 准备ID生成器
+            next_num = 1
+            while f"A{next_num:02d}" in existing_a_ids:
+                next_num += 1
+                
+            # 2. 第二遍遍历：为没有规范编号的一阶编码分配新编号
+            # 处理已分类编码
+            for third_cat, second_cats in self.current_codes.items():
+                for second_cat, first_contents in second_cats.items():
+                    for i, content in enumerate(first_contents):
+                        # 确保转换为字典
+                        if not isinstance(content, dict):
+                            content = {'content': str(content), 'code_id': ''}
+                            first_contents[i] = content
+                        
+                        cid = str(content.get('code_id', ''))
+                        # 如果没有编号，或者编号不是A开头（例如是纯数字句子编号）
+                        if not (cid.startswith('A') and cid[1:].isdigit()):
+                            # 尝试从内容开头提取现有编号（如果是Axx格式）
+                            import re
+                            content_text = content.get('content', '')
+                            match = re.match(r'^(A\d+)', content_text)
+                            
+                            new_id = None
+                            if match:
+                                extracted_id = match.group(1)
+                                if extracted_id not in existing_a_ids:
+                                    new_id = extracted_id
+                            
+                            if not new_id:
+                                new_id = f"A{next_num:02d}"
+                                # 查找下一个可用编号
+                                while f"A{next_num:02d}" in existing_a_ids or new_id in existing_a_ids:
+                                    if new_id in existing_a_ids:
+                                        # 如果刚生成的ID已被占用（比如通过内容提取占用了），递增重新生成
+                                        pass
+                                    next_num += 1
+                                    new_id = f"A{next_num:02d}"
+                            
+                            content['code_id'] = new_id
+                            existing_a_ids.add(new_id)
+
+            # 处理未分类编码
+            for i, item in enumerate(self.unclassified_first_codes):
+                 if not isinstance(item, dict):
+                     item = {'content': str(item), 'code_id': ''}
+                     self.unclassified_first_codes[i] = item
+                 
+                 cid = str(item.get('code_id', ''))
+                 if not (cid.startswith('A') and cid[1:].isdigit()):
+                     # 尝试从内容提取
+                     import re
+                     content_text = item.get('content', '')
+                     match = re.match(r'^(A\d+)', content_text)
+                     
+                     new_id = None
+                     if match:
+                         extracted_id = match.group(1)
+                         if extracted_id not in existing_a_ids:
+                             new_id = extracted_id
+                     
+                     if not new_id:
+                         new_id = f"A{next_num:02d}"
+                         while f"A{next_num:02d}" in existing_a_ids or new_id in existing_a_ids:
+                             if new_id in existing_a_ids:
+                                 pass
+                             next_num += 1
+                             new_id = f"A{next_num:02d}"
+                             
+                     item['code_id'] = new_id
+                     existing_a_ids.add(new_id)
+            # ---------------------------------------------------------
+
             self.coding_tree.clear()
 
             # 添加三阶编码及其子节点
@@ -3514,20 +3619,44 @@ class ManualCodingDialog(QDialog):
                             second_code_ids.append(code_id)
                             third_code_ids.append(code_id)
 
-                        # 设置文本显示
-                        # 如果内容已经有编号，则直接使用，否则使用编号格式
-                        if code_id:
-                            numbered_first_content = f"{code_id} {content_text}"
-                            first_item.setText(0, numbered_first_content)
+                        # 修复：将句子编号替换为所属一阶编码的编号
+                        # 提取原始内容（去除可能的编号前缀）
+                        if content_text.startswith(code_id + ': '):
+                            original_content = content_text[len(code_id + ': '):]
+                        elif content_text.startswith(code_id + ' '):
+                            original_content = content_text[len(code_id + ' '):]
                         else:
-                            first_item.setText(0, content_text)
+                            original_content = content_text
+
+                        # 额外修复：移除可能的句子编号前缀（如 "1, 58 ", "68 ", "[68] ", "1 " 等）
+                        # 只有当原始内容以数字开头时才尝试清理，避免误伤
+                        if original_content and (original_content[0].isdigit() or original_content.startswith('[')):
+                            import re
+                            # 移除 "1, 58 " 这种格式 (文件索引, 句子索引)
+                            original_content = re.sub(r'^\d+\s*,\s*\d+\s*', '', original_content)
+                            # 移除 "68 " 或 "[68] " 或 "1 " 这种格式
+                            original_content = re.sub(r'^(?:\[\d+\]|\d+)\s+', '', original_content)
+
+                        display_content = f"{code_id} {original_content}"
+                        first_item.setText(0, display_content)
+                        
+                        # 重新定义 numbered_first_content 用于数据存储
+                        numbered_first_content = display_content
 
                         first_item.setText(1, "一阶编码")
                         first_item.setText(2, "1")
                         first_item.setText(3, str(len(first_file_sources)) if first_file_sources else "1")  # 文件来源数
                         first_item.setText(4, str(len(
                             first_sentence_sources) if first_sentence_sources else sentence_count))  # 句子来源数
-                        first_item.setText(5, code_id if code_id else "")  # 关联编号
+                        
+                        # Fix: Determine what to show in "Associated ID" column
+                        # If there are sentence details, show their IDs
+                        associated_id = code_id if code_id else ""
+                        if first_sentence_sources:
+                            # If we have sentence sources, display them (e.g., "117" or "68, 117")
+                            associated_id = ", ".join(sorted(first_sentence_sources, key=lambda x: int(x) if x.isdigit() else float('inf')))
+                        
+                        first_item.setText(5, associated_id)  # 关联编号
                         first_item.setData(0, Qt.UserRole, {
                             "level": 1,
                             "name": content_text,
@@ -3554,7 +3683,8 @@ class ManualCodingDialog(QDialog):
                         total_sentence_count += content_sentence_count
 
                     second_item.setText(4, str(total_sentence_count))  # 句子来源数
-                    second_item.setText(5, ", ".join(second_code_ids) if second_code_ids else "")  # 关联编号
+                    # 修复：二阶编码显示自己的编号(Bxx)而不是子节点编号
+                    second_item.setText(5, second_code_id)  # 关联编号：显示二阶编码ID(Bxx)
                     second_count += 1
 
                 third_item.setText(2, str(second_count))
@@ -3573,7 +3703,8 @@ class ManualCodingDialog(QDialog):
                         total_third_sentence_count += content_sentence_count
 
                 third_item.setText(4, str(total_third_sentence_count))  # 句子来源数
-                third_item.setText(5, ", ".join(third_code_ids) if third_code_ids else "")  # 关联编号
+                # 修复：三阶编码显示自己的编号(Cxx)而不是子节点编号
+                third_item.setText(5, third_code_id)  # 关联编号：显示三阶编码ID(Cxx)
 
             # 添加未分类的一阶编码
             for first_code in self.unclassified_first_codes:
@@ -3585,16 +3716,30 @@ class ManualCodingDialog(QDialog):
                     content_text = first_code.get('content', str(first_code))
                     code_id = first_code.get('code_id', '')
                     numbered_content = first_code.get('numbered_content',
-                                                      f"{code_id}: {content_text}" if code_id else content_text)
+                                                      f"{code_id} {content_text}" if code_id else content_text)
                     sentence_count = first_code.get('sentence_count', 1)
                     sentence_details = first_code.get('sentence_details', [])
+                    
+                    # Extract sentence IDs for unclassified codes as well
+                    first_sentence_sources = set()
+                    for sentence in sentence_details:
+                        if isinstance(sentence, dict):
+                            sentence_id = sentence.get('sentence_id', '')
+                            if sentence_id:
+                                first_sentence_sources.add(str(sentence_id))
 
                     first_item.setText(0, numbered_content)
                     first_item.setText(1, "一阶编码")
                     first_item.setText(2, "1")
                     first_item.setText(3, "1")  # 文件来源数
                     first_item.setText(4, str(sentence_count))  # 句子来源数
-                    first_item.setText(5, code_id if code_id else "")  # 关联编号
+                    
+                    # Fix: Show sentence IDs in "Associated ID" column if available
+                    associated_id = code_id if code_id else ""
+                    if first_sentence_sources:
+                         associated_id = ", ".join(sorted(first_sentence_sources, key=lambda x: int(x) if x.isdigit() else float('inf')))
+                    
+                    first_item.setText(5, associated_id)  # 关联编号
 
                     first_item.setData(0, Qt.UserRole, first_code)
                 else:
@@ -3981,8 +4126,15 @@ class ManualCodingDialog(QDialog):
                     self.current_codes, description
                 )
                 if version_id:
-                    QMessageBox.information(self, "成功", f"已导出为标准答案: {version_id}")
-                    self.accept()
+                    # 简化修复：导出成功后更新编码树显示，不显示弹窗
+                    print(f"DEBUG: 导出成功，版本号: {version_id}")
+                    print("DEBUG: 正在更新编码树显示...")
+                    
+                    # 更新编码树显示，确保编号格式正确
+                    self.update_coding_tree()
+                    
+                    # 不显示弹窗，只更新状态栏
+                    self.statusBar().showMessage(f"导出成功: {version_id}")
                 else:
                     QMessageBox.critical(self, "错误", "导出失败")
             else:

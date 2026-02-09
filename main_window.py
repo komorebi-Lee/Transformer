@@ -642,12 +642,12 @@ class MainWindow(QMainWindow):
                         # 有自动编码结构，提供选择性保存选项
                         auto_codes_count = self._count_codes(self.structured_codes)
                         manual_codes_count = self._count_codes(coding_result)
-                        
+
                         # 显示差异比较信息
                         msg = f"自动编码: {auto_codes_count['third']}三阶, {auto_codes_count['second']}二阶, {auto_codes_count['first']}一阶\n"
                         msg += f"手动编辑: {manual_codes_count['third']}三阶, {manual_codes_count['second']}二阶, {manual_codes_count['first']}一阶\n\n"
-                        msg += "选择保存方式:" 
-                        
+                        msg += "选择保存方式:"
+
                         # 提供保存选项
                         from PyQt5.QtWidgets import QMessageBox
                         reply = QMessageBox.question(
@@ -655,7 +655,7 @@ class MainWindow(QMainWindow):
                             QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel,
                             QMessageBox.Yes
                         )
-                        
+
                         if reply == QMessageBox.Yes:
                             # 完全替换自动编码
                             self.structured_codes = coding_result
@@ -738,31 +738,32 @@ class MainWindow(QMainWindow):
             'second': 0,
             'first': 0
         }
-        
+
         if coding_structure:
             count['third'] = len(coding_structure)
             for third_cat, second_cats in coding_structure.items():
                 count['second'] += len(second_cats)
                 for second_cat, first_contents in second_cats.items():
                     count['first'] += len(first_contents)
-        
+
         return count
-    
+
     def _merge_coding_results(self, auto_codes, manual_codes):
         """合并手动编码结果和自动编码结构，保留自动编码，添加手动编码"""
         merged_codes = auto_codes.copy()
-        
+
         # 遍历手动编码结果，添加到自动编码结构中
         for third_cat, second_cats in manual_codes.items():
             if third_cat not in merged_codes:
                 merged_codes[third_cat] = {}
-            
+
             for second_cat, first_contents in second_cats.items():
                 if second_cat not in merged_codes[third_cat]:
                     merged_codes[third_cat][second_cat] = []
-                
+
                 # 添加新的一阶编码，避免重复
-                existing_contents = [content.get('content', '') for content in merged_codes[third_cat][second_cat] if isinstance(content, dict)]
+                existing_contents = [content.get('content', '') for content in merged_codes[third_cat][second_cat] if
+                                     isinstance(content, dict)]
                 for first_content in first_contents:
                     if isinstance(first_content, dict):
                         content_str = first_content.get('content', '')
@@ -774,9 +775,9 @@ class MainWindow(QMainWindow):
                         if first_content not in existing_contents:
                             merged_codes[third_cat][second_cat].append(first_content)
                             existing_contents.append(first_content)
-        
+
         return merged_codes
-    
+
     def update_coding_tree(self):
         """更新编码树 - 修复版本，显示完整编号和统计信息"""
         self.coding_tree.clear()
@@ -900,8 +901,20 @@ class MainWindow(QMainWindow):
                             if sentence_id:
                                 first_sentence_sources.add(str(sentence_id))
 
+                    # 修复：将句子编号替换为所属一阶编码的编号
+                    if code_id and numbered_content:
+                        # 提取原始内容（去除编号前缀）
+                        if ': ' in numbered_content:
+                            original_content = numbered_content.split(': ', 1)[1]
+                        else:
+                            original_content = numbered_content
+                        # 使用一阶编码编号作为前缀
+                        display_content = f"{code_id} {original_content}"
+                    else:
+                        display_content = numbered_content
+                        
                     # 在树中显示带编号的内容
-                    first_item.setText(0, numbered_content)
+                    first_item.setText(0, display_content)
                     first_item.setText(1, "一阶编码")
                     first_item.setText(2, "1")
                     first_item.setText(3, str(len(first_file_sources)))  # 文件来源数
@@ -1757,35 +1770,35 @@ class MainWindow(QMainWindow):
         if ok and version:
             # 检查文件是否存在
             import os
-            
+
             # 获取绝对路径
             base_dir = os.path.dirname(os.path.abspath(__file__))
             file_path = os.path.join(base_dir, "standard_answers", version)
-            
+
             # 检查是否需要添加 .json 扩展名
             if not file_path.endswith('.json'):
                 file_path_json = file_path + '.json'
                 if os.path.exists(file_path_json):
                     file_path = file_path_json
-            
+
             # 打印路径信息用于调试
             print(f"检查文件路径: {file_path}")
             print(f"文件是否存在: {os.path.exists(file_path)}")
-            
+
             if not os.path.exists(file_path):
                 # 列出目录内容用于调试
                 dir_path = os.path.join(base_dir, "standard_answers")
                 if os.path.exists(dir_path):
                     files = os.listdir(dir_path)
                     print(f"目录内容: {files}")
-                
+
                 QMessageBox.critical(self, "错误", f"标准答案文件不存在: {version}\n检查路径: {file_path}\n请检查 standard_answers 目录")
                 return
-            
+
             if os.path.getsize(file_path) == 0:
                 QMessageBox.critical(self, "错误", f"标准答案文件为空: {version}")
                 return
-            
+
             # 使用正确的文件名（包含 .json 扩展名）
             actual_filename = os.path.basename(file_path)
             success = self.standard_answer_manager.load_answers(actual_filename)
@@ -1800,7 +1813,8 @@ class MainWindow(QMainWindow):
                 else:
                     QMessageBox.warning(self, "警告", "标准答案数据格式不完整，缺少 structured_codes 字段")
             else:
-                QMessageBox.critical(self, "错误", f"加载标准答案失败: {actual_filename}\n可能的原因:\n1. 文件格式错误\n2. 文件编码错误\n3. 文件内容损坏")
+                QMessageBox.critical(self, "错误",
+                                     f"加载标准答案失败: {actual_filename}\n可能的原因:\n1. 文件格式错误\n2. 文件编码错误\n3. 文件内容损坏")
 
     def load_trained_model(self):
         """加载训练模型"""
