@@ -54,9 +54,9 @@ class TextNumberingManager:
 
     def split_into_sentences(self, text: str) -> List[str]:
         """将文本按句子分割"""
-        # 使用中文句号、问号、感叹号分割句子
+        # 使用中文句号、问号、感叹号和换行符分割句子
         # 保留分隔符
-        sentences = re.split(r'([。！？!?])', text)
+        sentences = re.split(r'([。！？!? \n\r])', text)
 
         result = []
         for i in range(0, len(sentences) - 1, 2):

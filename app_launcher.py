@@ -6,6 +6,14 @@ from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QPixmap, QFont
 import traceback
 
+# 导入热部署模块
+try:
+    from hot_reload import init_hot_reload, stop_hot_reload
+    HOT_RELOAD_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"热部署模块导入失败: {e}")
+    HOT_RELOAD_AVAILABLE = False
+
 # 配置日志 - 修复level参数
 logging.basicConfig(
     level=logging.INFO,
@@ -84,16 +92,32 @@ class FixedAppLauncher:
             # 显示启动画面
             self.show_splash()
 
+            # 初始化热部署
+            if HOT_RELOAD_AVAILABLE:
+                init_hot_reload()
+                logger.info("热部署功能已启用")
+            else:
+                logger.info("热部署功能不可用")
+
             # 延迟初始化主窗口
             QTimer.singleShot(100, self.initialize_and_show_main_window)
 
             # 运行应用
             result = self.app.exec_()
+            
+            # 停止热部署
+            if HOT_RELOAD_AVAILABLE:
+                stop_hot_reload()
+                logger.info("热部署功能已停止")
+            
             logger.info("应用程序正常退出")
             return result
 
         except Exception as e:
             logger.error(f"启动失败: {e}")
+            # 停止热部署
+            if HOT_RELOAD_AVAILABLE:
+                stop_hot_reload()
             self.show_error_message(f"程序启动失败:\n{str(e)}")
             return 1
 

@@ -307,14 +307,14 @@ class DataProcessor:
         """检测说话人"""
         # 采访人模式
         interviewer_patterns = [
-            r'^[问Qq][：:]', r'^提问[：:]', r'^采访[：:]', r'^访谈[：:]',
+            r'^[问Qq][：:]', r'^[Aa][：:]', r'^提问[：:]', r'^采访[：:]', r'^访谈[：:]',
             r'^主持人[：:]', r'^记者[：:]', r'^访员[：:]', r'^请问',
             r'^您觉得', r'^您认为', r'^你们', r'^公司', r'^团队'
         ]
 
         # 受访人模式
         respondent_patterns = [
-            r'^[答Aa][：:]', r'^回答[：:]', r'^受访[：:]', r'^被访[：:]',
+            r'^[答][：:]', r'^[Bb][：:]', r'^回答[：:]', r'^受访[：:]', r'^被访[：:]',
             r'^嘉宾[：:]', r'^专家[：:]', r'^我们', r'^我的', r'^我觉得',
             r'^我认为', r'^我们的', r'^负责', r'^管理', r'^开发'
         ]
@@ -387,15 +387,20 @@ class DataProcessor:
 
                 for sentence in sentences:
                     if self.is_meaningful_sentence(sentence):
-                        respondent_sentences.append({
-                            'content': sentence,
-                            'original_content': sentence,  # 明确保存原始内容
-                            'paragraph_content': content[:100] + '...' if len(content) > 100 else content,
-                            'filename': filename,
-                            'speaker': 'respondent',
-                            'start_position': 0,
-                            'end_position': len(sentence)
-                        })
+                        # 移除一阶编码标记（如 [A1], [A2] 等）
+                        clean_sentence = re.sub(r'\s*\[A\d+\]', '', sentence)
+                        clean_sentence = clean_sentence.strip()
+                        
+                        if clean_sentence and len(clean_sentence) >= 5:
+                            respondent_sentences.append({
+                                'content': clean_sentence,
+                                'original_content': clean_sentence,  # 保存清理后的内容
+                                'paragraph_content': content[:100] + '...' if len(content) > 100 else content,
+                                'filename': filename,
+                                'speaker': 'respondent',
+                                'start_position': 0,
+                                'end_position': len(clean_sentence)
+                            })
 
         return respondent_sentences
     def split_into_sentences(self, text: str) -> List[str]:

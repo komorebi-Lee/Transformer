@@ -87,6 +87,9 @@ class GroundedTheoryCoder:
         """为编码结构添加新的自动编号格式：A开头一阶，B开头二阶，C开头三阶"""
         numbered_codes = {}
 
+        # 一阶编码编号：A01, A02, A03... (A开头表示一阶，全局递增)
+        first_index = 0
+
         # 三阶编码编号：C1, C2, C3... (C开头表示三阶)
         third_index = 0
         for third_category, second_categories in structured_codes.items():
@@ -108,11 +111,12 @@ class GroundedTheoryCoder:
                 numbered_second_category = f"{second_code} {self.clean_category_name(second_category)}"
                 numbered_codes[numbered_third_category][numbered_second_category] = []
 
-                # 一阶编码编号：A1, A2, A3... (A开头表示一阶)
-                for k, first_content in enumerate(first_contents):
+                # 一阶编码编号：A01, A02, A03... (A开头表示一阶，全局递增)
+                for first_content in first_contents:
                     first_letter = 'A'  # 一阶编码使用A开头
-                    first_number = k + 1
-                    code_id = f"{first_letter}{first_number}"  # A1, A2, A3...
+                    first_number = first_index + 1
+                    code_id = f"{first_letter}{first_number:02d}"  # A01, A02, A03...
+                    first_index += 1  # 全局递增
 
                     if isinstance(first_content, dict) and 'content' in first_content:
                         # 获取原始内容（不简化）
