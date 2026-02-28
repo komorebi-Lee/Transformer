@@ -90,24 +90,24 @@ class GroundedTheoryCoder:
         # 一阶编码编号：A01, A02, A03... (A开头表示一阶，全局递增)
         first_index = 0
 
-        # 三阶编码编号：C1, C2, C3... (C开头表示三阶)
+        # 三阶编码编号：C01, C02, C03... (C开头表示三阶)
         third_index = 0
         for third_category, second_categories in structured_codes.items():
             third_letter = 'C'  # 三阶编码使用C开头
             third_number = third_index + 1
-            third_code = f"{third_letter}{third_number}"  # C1, C2, C3...
+            third_code = f"{third_letter}{third_number:02d}"  # C01, C02, C03...
 
             # 清理三阶编码名称
             clean_third = self.clean_category_name(third_category)
             numbered_third_category = f"{third_code} {clean_third}"
             numbered_codes[numbered_third_category] = {}
 
-            # 二阶编码编号：B1, B2, B3... (B开头表示二阶)
+            # 二阶编码编号：B01, B02, B03... (B开头表示二阶)
             second_categories_list = list(second_categories.items())
             for j, (second_category, first_contents) in enumerate(second_categories_list):
                 second_letter = 'B'  # 二阶编码使用B开头
                 second_number = j + 1
-                second_code = f"{second_letter}{second_number}"  # B1, B2, B3...
+                second_code = f"{second_letter}{second_number:02d}"  # B01, B02, B03...
                 numbered_second_category = f"{second_code} {self.clean_category_name(second_category)}"
                 numbered_codes[numbered_third_category][numbered_second_category] = []
 

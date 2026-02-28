@@ -92,7 +92,8 @@ class DragDropTreeWidget(QTreeWidget):
 class ManualCodingDialog(QDialog):
     """手动编码对话框 - 修复文件选择显示问题"""
 
-    def __init__(self, parent=None, loaded_files=None, existing_codes=None, auto_coding_cache=None, code_markers_map=None):
+    def __init__(self, parent=None, loaded_files=None, existing_codes=None, auto_coding_cache=None,
+                 code_markers_map=None):
         super().__init__(parent)
         self.parent_window = parent  # 保存父窗口引用，用于访问data_processor
         self.loaded_files = loaded_files or {}
@@ -641,7 +642,24 @@ class ManualCodingDialog(QDialog):
             return None
 
     def eventFilter(self, source, event):
-        """事件过滤器：处理点击文本自动选中句子"""
+        """事件过滤器：处理点击文本自动选中句子和句子详情对话框的点击事件"""
+        # 处理句子详情对话框的点击事件
+        if hasattr(source, 'is_sentence_details_text') and source.is_sentence_details_text:
+            if event.type() == QEvent.MouseButtonRelease and event.button() == Qt.LeftButton:
+                # 获取点击位置的光标
+                cursor = source.cursorForPosition(event.pos())
+                position = cursor.position()
+                
+                # 检查点击位置是否在某个句子内容中
+                if hasattr(source, 'sentence_info'):
+                    for info in source.sentence_info:
+                        if 'start' in info and 'end' in info:
+                            if info['start'] <= position <= info['end']:
+                                # 点击了句子内容，导航到该句子并高亮
+                                self.navigate_and_highlight_sentence(info['number'], info['content'])
+                                return True  # 消耗事件
+        
+        # 处理主文本显示区的点击事件
         if source == self.text_display and event.type() == QEvent.MouseButtonRelease:
             # 如果是鼠标左键释放，且没有选区（或者是点击操作）
             if event.button() == Qt.LeftButton:
@@ -807,14 +825,14 @@ class ManualCodingDialog(QDialog):
             # 检查选中的文本后面是否已经有一阶编码标记
             current_text = self.text_display.toPlainText()
             check_pos = selection_end
-            
+
             # 查找并移除后面的一阶编码标记
             marker_pos = current_text.find(" [A", check_pos)
             if marker_pos != -1 and marker_pos < check_pos + 100:  # 限制搜索范围，避免影响其他内容
                 # 检查是否是完整的一阶编码标记
                 marker_end = current_text.find("]", marker_pos)
                 if marker_end != -1:
-                    marker = current_text[marker_pos:marker_end+1]
+                    marker = current_text[marker_pos:marker_end + 1]
                     if re.match(r'\s*\[A\d+\]', marker):
                         # 移除一阶编码标记
                         remove_cursor = QTextCursor(cursor)
@@ -1544,6 +1562,79 @@ class ManualCodingDialog(QDialog):
             code_id = self.generate_first_code_id()
             numbered_content = f"{code_id} {clean_content}"
 
+            # 解析内容中的编号和对应的句子文本
+            import re
+            number_matches = re.findall(r'\[(\d+)\]', clean_content)
+
+            sentence_id = code_id
+            detail_text = clean_content
+
+            if number_matches:
+                tmng_number = number_matches[-1]
+                sentence_id = tmng_number
+                try:
+                    pattern = r'(?:^|\]\s*)([^\[\]]*?\[' + re.escape(tmng_number) + r'\])'
+                    match = re.search(pattern, clean_content, re.DOTALL)
+                    if match:
+                        detail_text = match.group(1).strip()
+                except Exception as e:
+                    logger.error(f"提取句子文本失败: {e}")
+            else:
+                tmng_number = code_id
+                text_content = self.text_display.toPlainText()
+                if text_content:
+                    found_number = self.find_sentence_number_from_text(clean_content, text_content)
+                    if found_number:
+                        tmng_number = found_number
+                        sentence_id = tmng_number
+
+            # 尝试获取当前选中的文件路径
+            current_file_path = ""
+            if hasattr(self, 'file_list') and self.file_list.currentItem():
+                current_file_path = self.file_list.currentItem().data(Qt.UserRole)
+
+            sentence_details = [{
+                "text": detail_text,
+                "code_id": sentence_id,
+                "file_path": current_file_path,
+                "sentence_id": sentence_id
+            }]
+
+            # 7. 在文本中添加一阶编码标记
+            cursor = self.text_display.textCursor()
+            if cursor.hasSelection():
+                selected_text = cursor.selectedText().strip()
+                if selected_text in clean_content or clean_content in selected_text:
+                    self.add_code_marker_to_text(selected_text, code_id)
+            else:
+                if str(tmng_number).isdigit():
+                    doc = self.text_display.document()
+                    search_cursor = self.text_display.textCursor()
+                    search_cursor.movePosition(QTextCursor.Start)
+                    target_marker = f"[{tmng_number}]"
+                    found_cursor = doc.find(target_marker, search_cursor)
+
+                    if not found_cursor.isNull():
+                        current_text = self.text_display.toPlainText()
+                        found_pos = found_cursor.position() + len(target_marker)
+
+                        marker_pos = current_text.find(" [A", found_pos)
+                        if marker_pos != -1 and marker_pos < found_pos + 100:
+                            marker_end = current_text.find("]", marker_pos)
+                            if marker_end != -1:
+                                marker = current_text[marker_pos:marker_end + 1]
+                                if re.match(r'\s*\[A\d+\]', marker):
+                                    remove_cursor = QTextCursor(found_cursor)
+                                    remove_cursor.setPosition(marker_pos)
+                                    remove_cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor, len(marker))
+                                    remove_cursor.removeSelectedText()
+
+                        check_cursor = QTextCursor(found_cursor)
+                        check_cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor, len(f" [{code_id}]"))
+                        if check_cursor.selectedText() != f" [{code_id}]":
+                            found_cursor.movePosition(QTextCursor.Right)
+                            found_cursor.insertText(f" [{code_id}]")
+
             # 创建一阶节点
             first_item = QTreeWidgetItem(current_item)
             first_item.setText(0, numbered_content)
@@ -1551,7 +1642,7 @@ class ManualCodingDialog(QDialog):
             first_item.setText(2, "1")
             first_item.setText(3, "1")  # 文件来源数，未合并前为1
             first_item.setText(4, "1")  # 句子来源数，未合并前为1
-            first_item.setText(5, code_id)  # 关联编号
+            first_item.setText(5, str(tmng_number))  # 关联编号
 
             # 获取父节点信息
             parent_item = current_item.parent()
@@ -1580,7 +1671,7 @@ class ManualCodingDialog(QDialog):
                 "category": second_clean_name,  # 使用清理后的二阶名称
                 "core_category": third_name,  # 使用清理后的三阶名称
                 "classified": True,
-                "sentence_details": [],  # 初始化句子详情列表
+                "sentence_details": sentence_details,  # 初始化句子详情列表
                 "sentence_count": 1
             })
 
@@ -1889,21 +1980,23 @@ class ManualCodingDialog(QDialog):
 
             level = item_data.get("level")
             if level == 1:  # 一阶编码
-                # 注意：item_data 中存储的键是 "name"，而不是 "content"
-                content = item_data.get("name", "")
+                # 获取内容，由于不同地方可能使用不同的键名，所以同时尝试 name 和 content
+                content = item_data.get("name", "") or item_data.get("content", "")
                 code_id = item_data.get("code_id", "")
                 sentence_details = item_data.get("sentence_details", [])
 
-                # 显示句子详情对话框
-                self.show_sentence_details_dialog(sentence_details, content, code_id)
-
-                # 导航并高亮对应的句子内容
-                if code_id and content:
+                # 只高亮一阶编码对应的文本内容，不高亮拖拽文本内容
+                success = False
+                if content:
+                    # 直接使用内容进行定位和高亮
                     success = self.navigate_and_highlight_sentence(code_id, content)
                     if success:
                         logger.info(f"成功导航到编码: {code_id}")
                     else:
                         logger.warning(f"未找到编码 {code_id} 对应的内容")
+
+                # 显示句子详情对话框
+                self.show_sentence_details_dialog(sentence_details, content, code_id)
 
         except Exception as e:
             logger.error(f"点击树项目时出错: {e}")
@@ -1939,6 +2032,8 @@ class ManualCodingDialog(QDialog):
             search_count = 0
             max_searches = 100  # 设置最大搜索次数防止无限循环
 
+            extra_selections = []
+
             # 首先高亮编码标记
             while search_count < max_searches:
                 # 查找编码标记
@@ -1947,12 +2042,7 @@ class ManualCodingDialog(QDialog):
                     break
 
                 # 设置高亮格式 - 编码标记保持默认样式，不进行高亮
-                highlight_format = search_cursor.charFormat()
-                highlight_format.setBackground(QColor(255, 255, 255))  # 白色背景
-                highlight_format.setForeground(QColor(0, 0, 0))  # 黑色文字
-                search_cursor.mergeCharFormat(highlight_format)
-                #
-                # 保持编码标记的默认样式，不进行任何高亮
+                # 我们改为使用ExtraSelection但不添加背景色
                 found = True
 
                 # 记录第一个匹配项的位置
@@ -1981,18 +2071,23 @@ class ManualCodingDialog(QDialog):
                         if content_cursor.isNull():
                             break
 
-                        # 检查是否与编码标记重叠，避免重复高亮
                         # 设置高亮格式（使用不同颜色区分）
-                        content_highlight_format = content_cursor.charFormat()
-                        content_highlight_format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
-                        content_highlight_format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
+                        selection = QTextEdit.ExtraSelection()
+                        selection.cursor = content_cursor
+                        selection.format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
+                        selection.format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
+                        extra_selections.append(selection)
 
-                        # 应用高亮
-                        content_cursor.mergeCharFormat(content_highlight_format)
+                        if first_match_cursor is None:
+                            first_match_cursor = self.text_display.textCursor()
+                            first_match_cursor.setPosition(content_cursor.selectionStart())
 
                         # 移动光标到找到的内容之后，防止重复匹配
                         content_cursor.movePosition(content_cursor.Right, content_cursor.MoveAnchor, len(clean_content))
                         content_search_count += 1
+
+            if extra_selections:
+                self.text_display.setExtraSelections(extra_selections)
 
             if found and first_match_cursor:
                 # 滚动到第一个匹配项的位置
@@ -2091,6 +2186,7 @@ class ManualCodingDialog(QDialog):
             # 精确高亮每个句子（简化版本）
             found_count = 0
             first_match_cursor = None
+            extra_selections = []
 
             for sentence_info in sentences_to_highlight:
                 sentence_content = sentence_info.get('text', '').strip()
@@ -2103,12 +2199,25 @@ class ManualCodingDialog(QDialog):
 
                 # 使用文本查找
                 found_cursor = self.text_document.find(sentence_content, search_cursor)
+
+                # 如果完整匹配失败，尝试清理内容后搜索
+                if found_cursor.isNull():
+                    import re
+                    clean_content = re.sub(r'\s*\[\d+\]\s*', ' ', sentence_content)
+                    clean_content = re.sub(r'^\s*[①②③④⑤⑥⑦⑧⑨⑩]\s*', '', clean_content)
+                    clean_content = re.sub(r'\s+', ' ', clean_content).strip()
+
+                    if clean_content and clean_content != sentence_content:
+                        search_cursor.movePosition(cursor.Start)
+                        found_cursor = self.text_document.find(clean_content, search_cursor)
+
                 if not found_cursor.isNull():
                     # 设置浅蓝色高亮格式
-                    highlight_format = found_cursor.charFormat()
-                    highlight_format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
-                    highlight_format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
-                    found_cursor.mergeCharFormat(highlight_format)
+                    selection = QTextEdit.ExtraSelection()
+                    selection.cursor = found_cursor
+                    selection.format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
+                    selection.format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
+                    extra_selections.append(selection)
 
                     found_count += 1
 
@@ -2117,19 +2226,25 @@ class ManualCodingDialog(QDialog):
                         first_match_cursor = self.text_display.textCursor()
                         first_match_cursor.setPosition(found_cursor.selectionStart())
 
+            if extra_selections:
+                self.text_display.setExtraSelections(extra_selections)
+
             if found_count > 0 and first_match_cursor:
                 # 滚动到第一个匹配项的位置
                 self.text_display.setTextCursor(first_match_cursor)
                 self.text_display.ensureCursorVisible()
                 self.statusBar().showMessage(f"已高亮编码 {code_id} 的 {found_count} 个句子") if hasattr(self,
                                                                                                 'statusBar') else None
+                return True
             else:
                 self.statusBar().showMessage(f"未找到编码 {code_id} 对应的句子内容") if hasattr(self, 'statusBar') else None
+                return False
 
         except Exception as e:
             logger.error(f"精确高亮文本失败: {e}")
             import traceback
             traceback.print_exc()
+            return False
 
     def get_content_by_code_id(self, code_id: str) -> str:
         """根据编码ID获取对应的一阶编码内容"""
@@ -2254,18 +2369,21 @@ class ManualCodingDialog(QDialog):
             search_count = 0
             max_searches = 100  # 设置最大搜索次数防止无限循环
 
+            extra_selections = []
+
             while search_count < max_searches:
                 search_cursor = self.text_document.find(clean_content, search_cursor, QTextDocument.FindCaseSensitively)
                 if search_cursor.isNull():
                     break
 
                 # 设置高亮格式
-                highlight_format = search_cursor.charFormat()
-                highlight_format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
-                highlight_format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
+                selection = QTextEdit.ExtraSelection()
+                selection.cursor = search_cursor
+                selection.format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
+                selection.format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
 
                 # 应用高亮
-                search_cursor.mergeCharFormat(highlight_format)
+                extra_selections.append(selection)
                 found = True
 
                 # 记录第一个匹配项的位置
@@ -2276,6 +2394,9 @@ class ManualCodingDialog(QDialog):
                 # 移动光标到找到的内容之后，防止重复匹配
                 search_cursor.movePosition(search_cursor.Right, search_cursor.MoveAnchor, len(clean_content))
                 search_count += 1
+
+            if extra_selections:
+                self.text_display.setExtraSelections(extra_selections)
 
             # 如果内容与某个编码相关，也高亮编码标记
             code_id = self.get_code_id_by_content(clean_content)
@@ -2315,7 +2436,7 @@ class ManualCodingDialog(QDialog):
             QMessageBox.warning(self, "错误", f"高亮文本时发生错误: {str(e)}")
 
     def navigate_to_number(self, number_str):
-        """导航到特定的句子编号 [N] 并选中对应的内容部分"""
+        """导航到特定的句子编号 [N] 并选中前面的一整句"""
         try:
             self.clear_text_highlights()
             target_marker = f"[{number_str}]"
@@ -2325,59 +2446,66 @@ class ManualCodingDialog(QDialog):
             cursor = document.find(target_marker)
 
             if not cursor.isNull():
+                # 策略：从 [N] 开始向前搜索，直到遇到句子结束符或较大的间隔
+                # 这是一种启发式方法，因为我们没有严格的句子边界
+                found_cursor = QTextCursor(cursor)
+                end_pos = found_count = found_cursor.selectionEnd()
+
+                # 向前搜索可能的句子开头
+                # 我们可以尝试创建一个反向搜索的临时游标
+                temp_cursor = QTextCursor(found_cursor)
+
+                # 简单实现：向前查找直到遇到上一个 [M] 或 换行符
+                # 或者，我们可以利用 document.find 配合 FindBackward 选项
+
                 # 获取当前块（段落）的内容
-                block = cursor.block()
+                block = temp_cursor.block()
                 text = block.text()
                 # 计算 target_marker 在该块内的相对位置
+                # cursor.position() 是文档绝对位置
+                # block.position() 是块起始绝对位置
                 marker_pos_in_block = cursor.selectionStart() - block.position()
+
+                # 在 marker 之前寻找最近的句子终止符 (。！？) 或其它标记 (])
+                limit_pos = 0  # 块内搜索限制
 
                 # 搜索当前块内，marker之前的内容
                 pre_text = text[:marker_pos_in_block]
 
-                # 寻找最近的分割点 - 句子结束符
+                # 寻找最近的分割点
                 import re
-                # 匹配：句号/问号/感叹号，或者换行符
+                # 匹配：句号/问号/感叹号，或者 ] 符号（上一个编号的结束）
                 # 我们寻找最后一个匹配项
-                matches = list(re.finditer(r'[。！？\n]', pre_text))
+                matches = list(re.finditer(r'[。！？\n]|\]', pre_text))
 
                 start_offset = 0
                 if matches:
                     last_match = matches[-1]
                     start_offset = last_match.end()
 
-                # 构建最终的选择游标，只选择内容部分，不包括编号
+                # 构建最终的选择游标
                 range_cursor = QTextCursor(document)
                 # 起始位置 = 块起始 + 偏移
                 start_abs_pos = block.position() + start_offset
-                # 结束位置 = 编号标记的开始位置
-                end_abs_pos = cursor.selectionStart()
-                
-                # 调整结束位置，确保不包含编号
                 range_cursor.setPosition(start_abs_pos)
-                range_cursor.setPosition(end_abs_pos, QTextCursor.KeepAnchor)
+                range_cursor.setPosition(end_pos, QTextCursor.KeepAnchor)
 
-                # 额外清理：如果选区开头包含空白，修剪一下
+                # 额外清理：如果选区开头包含空白或特殊符号，修剪一下
                 sel_text = range_cursor.selectedText()
                 if sel_text and sel_text[0].strip() == '':
                     # 开头是空白
                     start_abs_pos += (len(sel_text) - len(sel_text.lstrip()))
                     range_cursor.setPosition(start_abs_pos)
-                    range_cursor.setPosition(end_abs_pos, QTextCursor.KeepAnchor)
+                    range_cursor.setPosition(end_pos, QTextCursor.KeepAnchor)
 
-                # 确保选区不为空
-                if range_cursor.selectedText().strip():
-                    extra_selections = []
-                    selection = QTextEdit.ExtraSelection()
-                    selection.cursor = range_cursor
-                    selection.format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
-                    selection.format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
-                    extra_selections.append(selection)
+                extra_selections = []
+                selection = QTextEdit.ExtraSelection()
+                selection.cursor = range_cursor
+                selection.format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
+                selection.format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
+                extra_selections.append(selection)
 
-                    self.text_display.setExtraSelections(extra_selections)
-                else:
-                    # 如果选区为空，回退到原始行为
-                    logger.warning(f"选区为空，回退到原始行为")
-                    return False
+                self.text_display.setExtraSelections(extra_selections)
 
                 # 滚动到可见区域，只移动光标位置不带选择
                 scroll_cursor = QTextCursor(cursor)
@@ -2400,50 +2528,6 @@ class ManualCodingDialog(QDialog):
 
         except Exception as e:
             logger.error(f"导航到编号失败: {e}")
-            return False
-
-    def highlight_exact_content(self, content, number_str):
-        """根据提供的内容和编号精确高亮文本"""
-        try:
-            self.clear_text_highlights()
-            
-            # 首先尝试根据内容进行精确匹配
-            document = self.text_display.document()
-            content_cursor = document.find(content)
-            
-            if not content_cursor.isNull():
-                # 找到内容，创建高亮选择
-                extra_selections = []
-                selection = QTextEdit.ExtraSelection()
-                selection.cursor = content_cursor
-                selection.format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
-                selection.format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
-                extra_selections.append(selection)
-
-                self.text_display.setExtraSelections(extra_selections)
-
-                # 滚动到可见区域，只移动光标位置不带选择
-                scroll_cursor = QTextCursor(content_cursor)
-                scroll_cursor.clearSelection()
-                self.text_display.setTextCursor(scroll_cursor)
-                self.text_display.ensureCursorVisible()
-
-                # 居中显示
-                cursor_rect = self.text_display.cursorRect(scroll_cursor)
-                viewport_height = self.text_display.viewport().height()
-                scrollbar = self.text_display.verticalScrollBar()
-                if scrollbar:
-                    target_val = scrollbar.value() + cursor_rect.top() - viewport_height // 2
-                    scrollbar.setValue(int(target_val))
-
-                return True
-            else:
-                # 如果内容匹配失败，尝试使用编号进行导航
-                logger.warning(f"内容匹配失败，尝试使用编号导航: {number_str}")
-                return self.navigate_to_number(number_str)
-
-        except Exception as e:
-            logger.error(f"精确高亮内容失败: {e}")
             return False
 
     def clear_text_highlights(self):
@@ -2761,7 +2845,7 @@ class ManualCodingDialog(QDialog):
             coding_tree_content = ""
             if current_item:
                 coding_tree_content = current_item.text(0)
-            
+
             # 从编码树内容中提取纯内容（去除 code_id 前缀）
             pure_content = coding_tree_content
             if code_id and pure_content.startswith(code_id):
@@ -2770,31 +2854,32 @@ class ManualCodingDialog(QDialog):
                     pure_content = pure_content[len(code_id + ': '):]
                 elif pure_content.startswith(code_id + ' '):
                     pure_content = pure_content[len(code_id + ' '):]
-            
+
             # 对纯内容进行清理，移除可能的编号标记，获取不含编号的内容
             import re
             content_without_number = re.sub(r'\s*\[[A-Z]\d+\]', '', pure_content)
             content_without_number = re.sub(r'\s*\[\d+\]', '', content_without_number)
             content_without_number = content_without_number.strip()
-            
+
             # 从关联编号中解析出多个句子编号
             associated_numbers_list = []
             if associated_number:
                 associated_numbers_list = [num.strip() for num in associated_number.split(',') if num.strip()]
-            
+
             # 处理句子详情，获取所有句子
             sentences_list = []
             if sentence_details:
                 for i, detail in enumerate(sentence_details):
                     if isinstance(detail, dict):
                         # 从各个可能的字段获取句子内容
-                        sent_text = detail.get('text', '') or detail.get('content', '') or detail.get('original_content', '')
+                        sent_text = detail.get('text', '') or detail.get('content', '') or detail.get(
+                            'original_content', '')
                         if sent_text:
                             # 清理内容，移除编号标记
                             clean_text = re.sub(r'\s*\[[A-Z]\d+\]', '', sent_text)
                             clean_text = re.sub(r'\s*\[\d+\]', '', clean_text)
                             clean_text = clean_text.strip()
-                            
+
                             # 优先使用句子详情中的编号
                             sent_number = detail.get('sentence_id', '') or detail.get('code_id', '')
                             # 如果没有，尝试从文本中提取
@@ -2802,13 +2887,13 @@ class ManualCodingDialog(QDialog):
                                 number_match = re.search(r'\[(\d+)\]', sent_text)
                                 if number_match:
                                     sent_number = number_match.group(1)
-                            
+
                             sentences_list.append({
                                 'text': clean_text,
                                 'original_text': sent_text,
                                 'number': str(sent_number) if sent_number else ''
                             })
-            
+
             # 确保至少有一个句子（显示一阶编码文本）
             if not sentences_list:
                 # 添加句子1：一阶编码文本
@@ -2824,35 +2909,32 @@ class ManualCodingDialog(QDialog):
 
             layout = QVBoxLayout(dialog)
 
-            # 创建 HTML 格式内容，严格按照用户要求的格式
-            from PyQt5.QtWidgets import QTextBrowser
-            from PyQt5.QtCore import Qt
+            # 创建文本编辑框，用于显示句子详情
+            from PyQt5.QtWidgets import QTextEdit
+            from PyQt5.QtCore import QEvent
 
-            text_display = QTextBrowser()
-            text_display.setOpenExternalLinks(False)
-            
+            text_display = QTextEdit()
+            text_display.setReadOnly(True)
+            text_display.setStyleSheet("font-family: 'Microsoft YaHei', Arial, sans-serif; font-size: 16px; line-height: 1.8;")
+
             # 存储句子信息，用于点击事件处理
             sentence_info = []
 
             # 构建显示内容，严格按照用户要求的格式
             # 用户要求的格式示例：
-            # 一阶编码: A01: 
-            # 
+            # 一阶编码: A01:
+            #
             # ，因为我现在主要是负责集团品牌这块的 [15]
-            # 
-            # 句子 1: 
-            # 
-            # 编号: 15 
-            # 
+            #
+            # 句子 1:
+            #
+            # 编号: 15
+            #
             # 内容: ，因为我现在主要是负责集团品牌这块的
-            
+
             # 首先构建一阶编码显示
-            display_html = f"""
-            <div style='font-family: "Microsoft YaHei", Arial, sans-serif; font-size: 16px; line-height: 1.8;'>
-                <div style='font-weight: bold; font-size: 18px;'>一阶编码: {code_id}:</div>
-                <br>
-            """
-            
+            display_text = f"一阶编码: {code_id}:\n\n"
+
             # 构建内容带编号的行（与一阶编码内容一致，带编号标记）
             first_code_number = ""
             # 优先使用关联编号列表中的纯数字编号
@@ -2867,15 +2949,27 @@ class ManualCodingDialog(QDialog):
             # 其次使用句子详情中的编号
             elif sentences_list and sentences_list[0]['number']:
                 first_code_number = sentences_list[0]['number']
-            
+
             # 一阶编码文本行显示纯内容和编号标记
             if first_code_number:
                 first_code_content_with_number = content_without_number
                 first_code_content_with_number += f" [{first_code_number}]"
-                display_html += f"<div>{first_code_content_with_number}</div><br>"
+                # 记录一阶编码文本的开始位置
+                first_code_start = len(display_text)
+                display_text += f"{first_code_content_with_number}\n\n"
+                # 记录一阶编码文本的结束位置
+                first_code_end = len(display_text)
+                # 存储一阶编码文本信息
+                sentence_info.append({
+                    'type': 'first_code',
+                    'number': first_code_number,
+                    'content': content_without_number,
+                    'start': first_code_start,
+                    'end': first_code_end
+                })
             else:
-                display_html += f"<div>{content_without_number}</div><br>"
-            
+                display_text += f"{content_without_number}\n\n"
+
             # 确定要显示的句子列表
             display_sentences = []
             if sentences_list:
@@ -2893,7 +2987,7 @@ class ManualCodingDialog(QDialog):
                     'text': content_without_number,
                     'number': ''
                 })
-            
+
             # 添加多个句子显示
             for i, sentence in enumerate(sentences_list, 1):
                 if i == 1:
@@ -2908,63 +3002,38 @@ class ManualCodingDialog(QDialog):
                     sentence_content = re.sub(r'\s*\[\d+\]', '', sentence_content)
                     sentence_content = sentence_content.strip()
                     sentence_number = sentence.get('number', '')
-                
-                # 为每个句子内容添加点击事件
-                sentence_id = f"sentence_{i}"
-                sentence_info.append({
-                    'id': sentence_id,
-                    'number': sentence_number,
-                    'content': sentence_content,
-                    'is_first': i == 1
-                })
-                
-                display_html += f"""
-                <div style='font-weight: bold; font-size: 18px;'>句子 {i}:</div>
-                <br>
-                <div>编号: {sentence_number}</div>
-                <br>
-                <div>内容: <a href='#{sentence_id}' style='color: black; text-decoration: none; cursor: pointer;'>{sentence_content}</a></div>
-                <br>
-                """
 
-            display_html += "</div>"
+                # 添加句子到显示文本
+                display_text += f"句子 {i}:\n\n"
+                display_text += f"编号: {sentence_number}\n\n"
+                # 记录内容的开始位置
+                content_start = len(display_text)
+                display_text += f"内容: {sentence_content}\n\n"
+                # 记录内容的结束位置
+                content_end = len(display_text)
+                
+                # 存储句子信息
+                if sentence_number:
+                    sentence_info.append({
+                        'type': 'sentence',
+                        'index': i,
+                        'number': sentence_number,
+                        'content': sentence_content,
+                        'start': content_start,
+                        'end': content_end
+                    })
 
-            text_display.setHtml(display_html)
+            text_display.setPlainText(display_text)
+
+            # 存储句子信息到文本编辑框对象，以便事件过滤器使用
+            text_display.sentence_info = sentence_info
+            
+            # 为文本编辑框添加自定义属性，用于标识它是句子详情对话框的文本框
+            text_display.is_sentence_details_text = True
+            
+            # 安装事件过滤器到当前对话框
+            text_display.installEventFilter(self)
             layout.addWidget(text_display)
-            
-            # 处理点击事件
-            def on_text_clicked(url):
-                # 提取句子ID
-                url_str = url.toString()
-                logger.info(f"点击了链接: {url_str}")
-                
-                # 提取句子ID
-                if '#' in url_str:
-                    sentence_id = url_str.split('#')[1]  # 提取 # 后面的部分
-                    logger.info(f"提取到句子ID: {sentence_id}")
-                    
-                    # 查找对应的句子信息
-                    for info in sentence_info:
-                        if info['id'] == sentence_id:
-                            logger.info(f"找到句子信息: {info}")
-                            # 清除之前的高亮
-                            self.clear_text_highlights()
-                            
-                            # 导航到对应的句子
-                            if info['is_first']:
-                                # 对于句子1，使用编码ID和内容
-                                logger.info(f"导航到句子1: {code_id}, {content_without_number}")
-                                success = self.navigate_and_highlight_sentence(code_id, content_without_number)
-                                logger.info(f"导航结果: {success}")
-                            else:
-                                # 对于其他句子，使用内容和编号进行精确高亮
-                                if info['content'] and info['number']:
-                                    logger.info(f"导航到句子内容: {info['content']}, 编号: {info['number']}")
-                                    success = self.highlight_exact_content(info['content'], info['number'])
-                                    logger.info(f"导航结果: {success}")
-                            break
-            
-            text_display.anchorClicked.connect(on_text_clicked)
 
             # 添加按钮
             button_layout = QHBoxLayout()
@@ -3846,7 +3915,8 @@ class ManualCodingDialog(QDialog):
                                             if pos_no_space >= 0:
                                                 # 找到了，但需要转换回原始位置
                                                 # 简化处理：直接在原文中用正则匹配
-                                                pattern = re.escape(sent_content_clean[:min(30, len(sent_content_clean))])
+                                                pattern = re.escape(
+                                                    sent_content_clean[:min(30, len(sent_content_clean))])
                                                 match = re.search(pattern, file_numbered)
                                                 if match:
                                                     pos = match.start()
@@ -4442,6 +4512,13 @@ class ManualCodingDialog(QDialog):
                     # 失败则使用全部内容
             else:
                 tmng_number = code_id
+                # 如果没有找到编号，尝试从父窗口中的文本内容定位拖拽句子所在的完整句段
+                text_content = self.text_display.toPlainText()
+                if text_content:
+                    found_number = self.find_sentence_number_from_text(clean_content, text_content)
+                    if found_number:
+                        tmng_number = found_number
+                        sentence_id = tmng_number
 
             # 尝试获取当前选中的文件路径
             current_file_path = ""
@@ -4483,14 +4560,14 @@ class ManualCodingDialog(QDialog):
                         # 找到了 [N]，检查后面是否已经有一阶编码标记
                         current_text = self.text_display.toPlainText()
                         found_pos = found_cursor.position() + len(target_marker)
-                        
+
                         # 查找 [N] 后面的一阶编码标记
                         marker_pos = current_text.find(" [A", found_pos)
                         if marker_pos != -1 and marker_pos < found_pos + 100:  # 限制搜索范围，避免影响其他内容
                             # 检查是否是完整的一阶编码标记
                             marker_end = current_text.find("]", marker_pos)
                             if marker_end != -1:
-                                marker = current_text[marker_pos:marker_end+1]
+                                marker = current_text[marker_pos:marker_end + 1]
                                 if re.match(r'\s*\[A\d+\]', marker):
                                     # 移除一阶编码标记
                                     remove_cursor = QTextCursor(found_cursor)
@@ -4498,7 +4575,7 @@ class ManualCodingDialog(QDialog):
                                     remove_cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor, len(marker))
                                     remove_cursor.removeSelectedText()
                                     logger.info(f"已移除 [N] 后的一阶编码标记: {marker}")
-                        
+
                         # 检查后面是否已经有 [code_id]
                         check_cursor = QTextCursor(found_cursor)
                         check_cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor, len(f" [{code_id}]"))
@@ -4829,31 +4906,31 @@ class ManualCodingDialog(QDialog):
     def find_sentence_number_from_text(self, sentence_text, full_text):
         """
         从父窗口中的文本内容定位拖拽句子所在的完整句段，并提取TextNumberingManager编号
-        
+
         Args:
             sentence_text: 拖拽的句子文本
             full_text: 完整的文本内容（从text_display获取）
-            
+
         Returns:
             str: 找到的句子编号，如果没找到则返回空字符串
         """
         try:
             import re
-            
+
             # 清理输入文本，移除编号标记
             clean_sentence = re.sub(r'\s*\[\d+\]\s*', '', sentence_text).strip()
             clean_sentence = re.sub(r'\s+', ' ', clean_sentence)
-            
+
             if not clean_sentence:
                 return ""
-            
+
             # 尝试多种方法查找句子，按优先级排序
             # 优先使用句子的后部分进行匹配，这样更准确
             search_text = clean_sentence[-min(50, len(clean_sentence)):] if len(clean_sentence) > 20 else clean_sentence
-            
+
             # 在完整文本中查找匹配位置
             found_pos = full_text.find(search_text)
-            
+
             if found_pos == -1:
                 # 如果没找到，尝试使用完整句子匹配
                 found_pos = full_text.find(clean_sentence)
@@ -4870,14 +4947,14 @@ class ManualCodingDialog(QDialog):
                     else:
                         logger.warning(f"未在文本中找到句子: {clean_sentence[:50]}...")
                         return ""
-            
+
             # 调整到句子开始位置
             start_pos = found_pos
             while start_pos > 0:
-                if full_text[start_pos-1] in ['。', '！', '？', '\n', '\u2029']:
+                if full_text[start_pos - 1] in ['。', '！', '？', '\n', '\u2029']:
                     break
                 start_pos -= 1
-            
+
             # 找到句子结束位置
             end_pos = found_pos + len(search_text)
             if len(search_text) < len(clean_sentence):
@@ -4890,11 +4967,11 @@ class ManualCodingDialog(QDialog):
                     temp_end += 1
             else:
                 end_pos = found_pos + len(clean_sentence)
-            
+
             # 向后查找编号，从句子结束位置开始
             temp_pos = end_pos
             total_len = len(full_text)
-            
+
             # 跳过所有空格和换行，直到找到非空白字符
             while temp_pos < total_len:
                 if full_text[temp_pos].isspace():
@@ -4902,7 +4979,7 @@ class ManualCodingDialog(QDialog):
                     temp_pos += 1
                 else:
                     break
-            
+
             # 检查是否有 [N] 编号
             if temp_pos < total_len and full_text[temp_pos] == '[':
                 bracket_start = temp_pos
@@ -4914,7 +4991,7 @@ class ManualCodingDialog(QDialog):
                 if temp_pos < total_len and full_text[temp_pos] == ']' and number_str:
                     logger.info(f"找到句子编号: {number_str} for sentence: {clean_sentence[:30]}...")
                     return number_str
-            
+
             # 如果在当前位置没找到，继续向后查找，直到找到编号或结束
             # 这是关键修复：继续向后查找，而不是立即放弃
             while temp_pos < total_len:
@@ -4922,19 +4999,19 @@ class ManualCodingDialog(QDialog):
                 bracket_pos = full_text.find('[', temp_pos)
                 if bracket_pos == -1:
                     break
-                
+
                 # 检查 [ 后面是否是数字
                 temp_pos = bracket_pos + 1
                 number_str = ''
                 while temp_pos < total_len and full_text[temp_pos].isdigit():
                     number_str += full_text[temp_pos]
                     temp_pos += 1
-                
+
                 # 检查是否有对应的 ]
                 if temp_pos < total_len and full_text[temp_pos] == ']' and number_str:
                     logger.info(f"向后找到句子编号: {number_str} for sentence: {clean_sentence[:30]}...")
                     return number_str
-            
+
             # 如果还是没找到，尝试向前查找
             temp_pos = start_pos
             while temp_pos > 0:
@@ -4942,25 +5019,25 @@ class ManualCodingDialog(QDialog):
                 bracket_pos = full_text.rfind(']', 0, temp_pos)
                 if bracket_pos == -1:
                     break
-                
+
                 # 向前查找对应的 [ 符号
                 open_bracket_pos = full_text.rfind('[', 0, bracket_pos)
                 if open_bracket_pos == -1:
                     temp_pos = bracket_pos - 1
                     continue
-                
+
                 # 提取数字
-                number_str = full_text[open_bracket_pos+1:bracket_pos]
+                number_str = full_text[open_bracket_pos + 1:bracket_pos]
                 if number_str.isdigit():
                     logger.info(f"向前找到句子编号: {number_str} for sentence: {clean_sentence[:30]}...")
                     return number_str
-                
+
                 temp_pos = open_bracket_pos - 1
-            
+
             # 如果所有方法都没找到，返回空字符串
             logger.warning(f"无法提取句子编号: {clean_sentence[:50]}...")
             return ""
-            
+
         except Exception as e:
             logger.error(f"从文本中查找句子编号时出错: {e}")
             return ""
@@ -5002,14 +5079,14 @@ class ManualCodingDialog(QDialog):
 
                 # 为每句话提取对应的TextNumberingManager编号
                 associated_code_ids = []
-                
+
                 # 首先从拖拽的文本中提取编号
                 import re
                 current_text_content = self.text_display.toPlainText()
-                
+
                 for sentence in sentences:
                     sentence_stripped = sentence.strip()
-                    
+
                     # 从完整句子中提取编号 [N]
                     number_match = re.search(r'\[(\d+)\]', sentence_stripped)
                     if number_match:
@@ -5028,7 +5105,7 @@ class ManualCodingDialog(QDialog):
                 # 从目标项的显示文本中提取一阶编码文本内容和编号
                 target_text = item.text(0)
                 code_id = target_item_data.get('code_id', '')
-                
+
                 # 提取纯内容（去除 code_id 前缀）
                 pure_content = target_text
                 if code_id and pure_content.startswith(code_id):
@@ -5036,12 +5113,12 @@ class ManualCodingDialog(QDialog):
                         pure_content = pure_content[len(code_id + ': '):]
                     elif pure_content.startswith(code_id + ' '):
                         pure_content = pure_content[len(code_id + ' '):]
-                
+
                 # 清理纯内容，移除编号标记
                 content_without_number = re.sub(r'\s*\[[A-Z]\d+\]', '', pure_content)
                 content_without_number = re.sub(r'\s*\[\d+\]', '', content_without_number)
                 content_without_number = content_without_number.strip()
-                
+
                 # 获取一阶编码文本的编号（从关联编号中获取第一个编号）
                 current_code_ids = item.text(5)
                 first_code_number = ""
@@ -5049,17 +5126,17 @@ class ManualCodingDialog(QDialog):
                     ids = [id.strip() for id in current_code_ids.split(',') if id.strip()]
                     if ids:
                         first_code_number = ids[0]
-                
+
                 # 更新目标项的句子详情，添加拖拽的文本和编号
                 target_sentence_details = target_item_data.get("sentence_details", [])
-                
+
                 # 收集所有已有的句子编号，避免重复
                 existing_numbers = set()
                 for detail in target_sentence_details:
                     existing_num = detail.get('code_id', '')
                     if existing_num and existing_num.isdigit():
                         existing_numbers.add(existing_num)
-                
+
                 # 为每个句子添加详情
                 new_sentences = []
                 for i, sentence in enumerate(sentences):
@@ -5070,30 +5147,30 @@ class ManualCodingDialog(QDialog):
                         clean_sentence = re.sub(r'\s*\[[A-Z]\d+\]', '', sentence)
                         clean_sentence = re.sub(r'\s*\[\d+\]', '', clean_sentence)
                         clean_sentence = clean_sentence.strip()
-                        
+
                         new_sentences.append({
                             "text": clean_sentence,
                             "code_id": code_id,  # 使用TextNumberingManager生成的编号
                             "sentence_id": code_id  # 设置sentence_id为文本编号
                         })
                         existing_numbers.add(code_id)
-                
+
                 # 构建新的句子详情列表，确保句子1始终是一阶编码文本
                 # 首先创建句子1（一阶编码文本）
                 first_sentence = {
                     "text": content_without_number,
                     "code_id": first_code_number
                 }
-                
+
                 # 收集所有其他句子（排除句子1）
                 other_sentences = []
-                
+
                 # 先添加现有句子
                 for detail in target_item_data.get("sentence_details", []):
                     detail_code_id = detail.get('code_id', '')
                     if detail_code_id and detail_code_id.isdigit() and detail_code_id != first_code_number:
                         other_sentences.append(detail)
-                
+
                 # 再添加新句子
                 for sentence in new_sentences:
                     detail_code_id = sentence.get('code_id', '')
@@ -5106,20 +5183,20 @@ class ManualCodingDialog(QDialog):
                                 break
                         if not existing:
                             other_sentences.append(sentence)
-                
+
                 # 对其他句子按编号排序
                 def get_sentence_number(detail):
                     code_id = detail.get('code_id', '')
                     if code_id and code_id.isdigit():
                         return int(code_id)
                     return 0
-                
+
                 other_sentences.sort(key=get_sentence_number)
-                
+
                 # 重新组合句子详情
                 sorted_sentences = [first_sentence]
                 sorted_sentences.extend(other_sentences)
-                
+
                 target_item_data["sentence_details"] = sorted_sentences
 
                 # 更新目标项的句子来源数（第4列）
@@ -5131,11 +5208,11 @@ class ManualCodingDialog(QDialog):
                 # 更新目标项的关联编号（第5列）
                 # 只包含来自TextNumberingManager的纯数字编号
                 all_ids = []
-                
+
                 # 首先添加一阶编码文本的编号
                 if first_code_number:
                     all_ids.append(first_code_number)
-                
+
                 # 添加所有其他句子的编号
                 for detail in other_sentences:
                     code_id = detail.get('code_id', '')
@@ -5144,7 +5221,7 @@ class ManualCodingDialog(QDialog):
 
                 # 对编号进行排序
                 all_ids.sort(key=lambda x: int(x))
-                
+
                 updated_code_ids = ", ".join(all_ids) + "," if all_ids else ""
                 item.setText(5, updated_code_ids)
 
@@ -5153,10 +5230,11 @@ class ManualCodingDialog(QDialog):
 
                 self.update_structured_codes_from_tree()
 
-                logger.info(f"通过拖放将{len(new_sentences)}个句子关联到一阶编码: {item.text(0)}，关联编号: {', '.join(associated_code_ids)}")
+                logger.info(
+                    f"通过拖放将{len(new_sentences)}个句子关联到一阶编码: {item.text(0)}，关联编号: {', '.join(associated_code_ids)}")
                 self.statusBar().showMessage(
                     f"通过拖放将{len(new_sentences)}个句子关联到一阶编码，关联编号: {', '.join(associated_code_ids)}") if hasattr(self,
-                                                                                                          'statusBar') else None
+                                                                                                              'statusBar') else None
 
                 # 明确设置为复制操作并接受，确保不删除源文本
                 event.setDropAction(Qt.CopyAction)
@@ -5315,18 +5393,18 @@ class ManualCodingDialog(QDialog):
                         next_pos = cursor.position() + len(clean_text_to_mark)
                         check_cursor2 = QTextCursor(cursor)
                         check_cursor2.setPosition(next_pos)
-                        
+
                         # 查找并移除后面的一阶编码标记
                         while True:
                             # 查找下一个一阶编码标记
                             marker_pos = current_text.find(" [A", next_pos)
                             if marker_pos == -1 or marker_pos > next_pos + 100:  # 限制搜索范围，避免影响其他内容
                                 break
-                            
+
                             # 检查是否是完整的一阶编码标记
                             marker_end = current_text.find("]", marker_pos)
                             if marker_end != -1:
-                                marker = current_text[marker_pos:marker_end+1]
+                                marker = current_text[marker_pos:marker_end + 1]
                                 if re.match(r'\s*\[A\d+\]', marker):
                                     # 移除一阶编码标记
                                     remove_cursor = QTextCursor(cursor)
@@ -5335,7 +5413,7 @@ class ManualCodingDialog(QDialog):
                                     remove_cursor.removeSelectedText()
                                     current_text = self.text_display.toPlainText()  # 更新当前文本
                                     break
-                        
+
                         # 在选中文本后添加一阶编码标记
                         cursor.insertText(f"{clean_text_to_mark} [{code_id}]")
                         logger.info(f"已为文本添加编码标记: [{code_id}]")
