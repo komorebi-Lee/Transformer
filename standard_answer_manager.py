@@ -571,6 +571,8 @@ class StandardAnswerManager:
 
     def get_version_history(self) -> List[Dict[str, Any]]:
         """获取版本历史"""
+        # 每次获取版本历史时都从文件重新加载，确保获取最新版本
+        self._load_version_history()
         return self.version_history
 
     def get_training_sample_count(self) -> int:

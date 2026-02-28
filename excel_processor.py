@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushBut
                             QListWidgetItem, QSplitter, QTextEdit, QGroupBox)
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from typing import List, Dict, Any
+from standard_answer_manager import StandardAnswerManager
 
 logger = logging.getLogger(__name__)
 
@@ -255,6 +256,7 @@ class ExcelProcessorDialog(QDialog):
         self.setWindowTitle("Excel表格处理")
         self.resize(800, 600)
         self.excel_processor = ExcelProcessor()
+        self.standard_answer_manager = StandardAnswerManager()
         self.import_thread = None
         self.init_ui()
     
@@ -419,41 +421,66 @@ class ExcelProcessorDialog(QDialog):
             QMessageBox.warning(self, "警告", "没有合并的数据")
             return
         
-        # 生成默认文件名
-        import datetime
-        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        default_filename = f"standard_answers_{timestamp}.json"
+        # 从合并数据中提取结构化编码
+        structured_codes = self._extract_structured_codes()
+        if not structured_codes:
+            QMessageBox.warning(self, "警告", "无法从合并数据中提取编码结构")
+            return
         
-        # 确保standard_answers目录存在且有写入权限
-        if not os.path.exists(self.excel_processor.standard_answers_dir):
-            try:
-                os.makedirs(self.excel_processor.standard_answers_dir, exist_ok=True)
-            except Exception as e:
-                # 如果创建目录失败，使用文档文件夹作为备选位置
-                import ctypes.wintypes
-                CSIDL_PERSONAL = 5  # My Documents
-                SHGFP_TYPE_CURRENT = 0  # Get current, not default value
-                
-                buf = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
-                ctypes.windll.shell32.SHGetFolderPathW(None, CSIDL_PERSONAL, None, SHGFP_TYPE_CURRENT, buf)
-                documents_path = buf.value
-                self.excel_processor.standard_answers_dir = os.path.join(documents_path, "standard_answers")
-                os.makedirs(self.excel_processor.standard_answers_dir, exist_ok=True)
-        
-        output_path = os.path.join(self.excel_processor.standard_answers_dir, default_filename)
-        
-        try:
-            success = self.excel_processor.convert_to_standard_answers(output_path)
-            if success:
-                QMessageBox.information(self, "创建成功", f"成功创建标准答案并保存到: {output_path}")
-                self.log_message(f"成功创建标准答案并保存到: {output_path}")
+        # 弹出输入对话框，让用户输入标准答案描述
+        from PyQt5.QtWidgets import QInputDialog
+        description, ok = QInputDialog.getText(
+            self, "创建标准答案", "请输入标准答案描述:"
+        )
+
+        if ok:
+            # 调用StandardAnswerManager创建标准答案
+            version_id = self.standard_answer_manager.create_from_structured_codes(
+                structured_codes, description or "从Excel数据创建的标准答案"
+            )
+
+            if version_id:
+                QMessageBox.information(self, "成功", f"标准答案已创建: {version_id}")
+                self.log_message(f"成功创建标准答案: {version_id}")
             else:
-                QMessageBox.critical(self, "创建失败", "创建标准答案失败")
+                QMessageBox.critical(self, "错误", "创建标准答案失败")
                 self.log_message("创建标准答案失败")
-        except Exception as e:
-            logger.error(f"创建标准答案失败: {e}")
-            QMessageBox.critical(self, "创建失败", f"创建标准答案失败: {str(e)}")
-            self.log_message(f"创建失败: {str(e)}")
+    
+    def _extract_structured_codes(self) -> Dict[str, Any]:
+        """从合并数据中提取结构化编码"""
+        structured_codes = {}
+        
+        # 尝试不同的列名组合
+        possible_columns = [
+            ['三阶编码', '二阶编码', '一阶编码'],
+            ['类别', '子类别', '内容'],
+            ['三级编码', '二级编码', '一级编码']
+        ]
+        
+        selected_columns = None
+        for column_set in possible_columns:
+            if all(col in self.excel_processor.merged_data.columns for col in column_set):
+                selected_columns = column_set
+                break
+        
+        if not selected_columns:
+            return structured_codes
+        
+        # 提取数据
+        for _, row in self.excel_processor.merged_data.iterrows():
+            third_level = str(row[selected_columns[0]]).strip()
+            second_level = str(row[selected_columns[1]]).strip()
+            first_level = str(row[selected_columns[2]]).strip()
+            
+            if third_level and second_level and first_level:
+                if third_level not in structured_codes:
+                    structured_codes[third_level] = {}
+                if second_level not in structured_codes[third_level]:
+                    structured_codes[third_level][second_level] = []
+                if first_level not in structured_codes[third_level][second_level]:
+                    structured_codes[third_level][second_level].append(first_level)
+        
+        return structured_codes
     
     def log_message(self, message):
         """记录日志"""
