@@ -73,13 +73,21 @@ class EnhancedCodingGenerator:
                 second_level_mapping[code_key] = second_cat
                 third_level_mapping[second_cat] = third_cat
 
+                # 抽象提炼内容
+                abstracted_content = self.abstract_sentence(text)
+                
                 # 构建一阶编码
+                # 保存原始句子，以便在添加编码标记时使用
+                original_sentence = all_sentences[i].copy() if isinstance(all_sentences[i], dict) else {}
+                if isinstance(original_sentence, dict):
+                    original_sentence['original_content'] = text
+                
                 first_level_codes[code_key] = [
-                    text,
+                    abstracted_content,
                     [all_sentences[i]],  # source_sentences
                     1,  # file_count
                     1,  # sentence_count
-                    [all_sentences[i]]  # sentence_details
+                    [original_sentence]  # sentence_details
                 ]
 
             if progress_callback:

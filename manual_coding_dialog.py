@@ -2315,7 +2315,7 @@ class ManualCodingDialog(QDialog):
             QMessageBox.warning(self, "错误", f"高亮文本时发生错误: {str(e)}")
 
     def navigate_to_number(self, number_str):
-        """导航到特定的句子编号 [N] 并选中前面的一整句"""
+        """导航到特定的句子编号 [N] 并选中对应的内容部分"""
         try:
             self.clear_text_highlights()
             target_marker = f"[{number_str}]"
@@ -2325,66 +2325,59 @@ class ManualCodingDialog(QDialog):
             cursor = document.find(target_marker)
 
             if not cursor.isNull():
-                # 策略：从 [N] 开始向前搜索，直到遇到句子结束符或较大的间隔
-                # 这是一种启发式方法，因为我们没有严格的句子边界
-                found_cursor = QTextCursor(cursor)
-                end_pos = found_count = found_cursor.selectionEnd()
-
-                # 向前搜索可能的句子开头
-                # 我们可以尝试创建一个反向搜索的临时游标
-                temp_cursor = QTextCursor(found_cursor)
-
-                # 简单实现：向前查找直到遇到上一个 [M] 或 换行符
-                # 或者，我们可以利用 document.find 配合 FindBackward 选项
-
                 # 获取当前块（段落）的内容
-                block = temp_cursor.block()
+                block = cursor.block()
                 text = block.text()
                 # 计算 target_marker 在该块内的相对位置
-                # cursor.position() 是文档绝对位置
-                # block.position() 是块起始绝对位置
                 marker_pos_in_block = cursor.selectionStart() - block.position()
-
-                # 在 marker 之前寻找最近的句子终止符 (。！？) 或其它标记 (])
-                limit_pos = 0  # 块内搜索限制
 
                 # 搜索当前块内，marker之前的内容
                 pre_text = text[:marker_pos_in_block]
 
-                # 寻找最近的分割点
+                # 寻找最近的分割点 - 句子结束符
                 import re
-                # 匹配：句号/问号/感叹号，或者 ] 符号（上一个编号的结束）
+                # 匹配：句号/问号/感叹号，或者换行符
                 # 我们寻找最后一个匹配项
-                matches = list(re.finditer(r'[。！？\n]|\]', pre_text))
+                matches = list(re.finditer(r'[。！？\n]', pre_text))
 
                 start_offset = 0
                 if matches:
                     last_match = matches[-1]
                     start_offset = last_match.end()
 
-                # 构建最终的选择游标
+                # 构建最终的选择游标，只选择内容部分，不包括编号
                 range_cursor = QTextCursor(document)
                 # 起始位置 = 块起始 + 偏移
                 start_abs_pos = block.position() + start_offset
+                # 结束位置 = 编号标记的开始位置
+                end_abs_pos = cursor.selectionStart()
+                
+                # 调整结束位置，确保不包含编号
                 range_cursor.setPosition(start_abs_pos)
-                range_cursor.setPosition(end_pos, QTextCursor.KeepAnchor)
+                range_cursor.setPosition(end_abs_pos, QTextCursor.KeepAnchor)
 
-                # 额外清理：如果选区开头包含空白或特殊符号，修剪一下
+                # 额外清理：如果选区开头包含空白，修剪一下
                 sel_text = range_cursor.selectedText()
                 if sel_text and sel_text[0].strip() == '':
                     # 开头是空白
                     start_abs_pos += (len(sel_text) - len(sel_text.lstrip()))
                     range_cursor.setPosition(start_abs_pos)
-                    range_cursor.setPosition(end_pos, QTextCursor.KeepAnchor)
+                    range_cursor.setPosition(end_abs_pos, QTextCursor.KeepAnchor)
 
-                extra_selections = []
-                selection = QTextEdit.ExtraSelection()
-                selection.cursor = range_cursor
-                selection.format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
-                selection.format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
-                extra_selections.append(selection)
+                # 确保选区不为空
+                if range_cursor.selectedText().strip():
+                    extra_selections = []
+                    selection = QTextEdit.ExtraSelection()
+                    selection.cursor = range_cursor
+                    selection.format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
+                    selection.format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
+                    extra_selections.append(selection)
 
-                self.text_display.setExtraSelections(extra_selections)
+                    self.text_display.setExtraSelections(extra_selections)
+                else:
+                    # 如果选区为空，回退到原始行为
+                    logger.warning(f"选区为空，回退到原始行为")
+                    return False
 
                 # 滚动到可见区域，只移动光标位置不带选择
                 scroll_cursor = QTextCursor(cursor)
@@ -2407,6 +2400,50 @@ class ManualCodingDialog(QDialog):
 
         except Exception as e:
             logger.error(f"导航到编号失败: {e}")
+            return False
+
+    def highlight_exact_content(self, content, number_str):
+        """根据提供的内容和编号精确高亮文本"""
+        try:
+            self.clear_text_highlights()
+            
+            # 首先尝试根据内容进行精确匹配
+            document = self.text_display.document()
+            content_cursor = document.find(content)
+            
+            if not content_cursor.isNull():
+                # 找到内容，创建高亮选择
+                extra_selections = []
+                selection = QTextEdit.ExtraSelection()
+                selection.cursor = content_cursor
+                selection.format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
+                selection.format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
+                extra_selections.append(selection)
+
+                self.text_display.setExtraSelections(extra_selections)
+
+                # 滚动到可见区域，只移动光标位置不带选择
+                scroll_cursor = QTextCursor(content_cursor)
+                scroll_cursor.clearSelection()
+                self.text_display.setTextCursor(scroll_cursor)
+                self.text_display.ensureCursorVisible()
+
+                # 居中显示
+                cursor_rect = self.text_display.cursorRect(scroll_cursor)
+                viewport_height = self.text_display.viewport().height()
+                scrollbar = self.text_display.verticalScrollBar()
+                if scrollbar:
+                    target_val = scrollbar.value() + cursor_rect.top() - viewport_height // 2
+                    scrollbar.setValue(int(target_val))
+
+                return True
+            else:
+                # 如果内容匹配失败，尝试使用编号进行导航
+                logger.warning(f"内容匹配失败，尝试使用编号导航: {number_str}")
+                return self.navigate_to_number(number_str)
+
+        except Exception as e:
+            logger.error(f"精确高亮内容失败: {e}")
             return False
 
     def clear_text_highlights(self):
@@ -2789,9 +2826,13 @@ class ManualCodingDialog(QDialog):
 
             # 创建 HTML 格式内容，严格按照用户要求的格式
             from PyQt5.QtWidgets import QTextBrowser
+            from PyQt5.QtCore import Qt
 
             text_display = QTextBrowser()
             text_display.setOpenExternalLinks(False)
+            
+            # 存储句子信息，用于点击事件处理
+            sentence_info = []
 
             # 构建显示内容，严格按照用户要求的格式
             # 用户要求的格式示例：
@@ -2868,20 +2909,62 @@ class ManualCodingDialog(QDialog):
                     sentence_content = sentence_content.strip()
                     sentence_number = sentence.get('number', '')
                 
+                # 为每个句子内容添加点击事件
+                sentence_id = f"sentence_{i}"
+                sentence_info.append({
+                    'id': sentence_id,
+                    'number': sentence_number,
+                    'content': sentence_content,
+                    'is_first': i == 1
+                })
+                
                 display_html += f"""
                 <div style='font-weight: bold; font-size: 18px;'>句子 {i}:</div>
                 <br>
                 <div>编号: {sentence_number}</div>
                 <br>
-                <div>内容: {sentence_content}</div>
+                <div>内容: <a href='#{sentence_id}' style='color: black; text-decoration: none; cursor: pointer;'>{sentence_content}</a></div>
                 <br>
                 """
-
 
             display_html += "</div>"
 
             text_display.setHtml(display_html)
             layout.addWidget(text_display)
+            
+            # 处理点击事件
+            def on_text_clicked(url):
+                # 提取句子ID
+                url_str = url.toString()
+                logger.info(f"点击了链接: {url_str}")
+                
+                # 提取句子ID
+                if '#' in url_str:
+                    sentence_id = url_str.split('#')[1]  # 提取 # 后面的部分
+                    logger.info(f"提取到句子ID: {sentence_id}")
+                    
+                    # 查找对应的句子信息
+                    for info in sentence_info:
+                        if info['id'] == sentence_id:
+                            logger.info(f"找到句子信息: {info}")
+                            # 清除之前的高亮
+                            self.clear_text_highlights()
+                            
+                            # 导航到对应的句子
+                            if info['is_first']:
+                                # 对于句子1，使用编码ID和内容
+                                logger.info(f"导航到句子1: {code_id}, {content_without_number}")
+                                success = self.navigate_and_highlight_sentence(code_id, content_without_number)
+                                logger.info(f"导航结果: {success}")
+                            else:
+                                # 对于其他句子，使用内容和编号进行精确高亮
+                                if info['content'] and info['number']:
+                                    logger.info(f"导航到句子内容: {info['content']}, 编号: {info['number']}")
+                                    success = self.highlight_exact_content(info['content'], info['number'])
+                                    logger.info(f"导航结果: {success}")
+                            break
+            
+            text_display.anchorClicked.connect(on_text_clicked)
 
             # 添加按钮
             button_layout = QHBoxLayout()

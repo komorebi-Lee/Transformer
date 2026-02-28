@@ -25,6 +25,7 @@ from grounded_theory_coder import GroundedTheoryCoder
 from word_exporter import WordExporter
 from model_downloader import ModelDownloader
 from manual_coding_dialog import ManualCodingDialog
+from excel_processor import ExcelProcessorDialog
 from config import Config
 from project_manager import ProjectManager
 import re
@@ -116,7 +117,7 @@ class MainWindow(QMainWindow):
         self.structured_codes = {}
         self.current_model_type = "offline"
         self.model_initialized = False
-        
+
         # 自动编码缓存 - 用于存储自动编码生成的文本内容
         self.auto_coding_cache = {}
         # 编码标记映射 - 用于存储一阶编码与文本位置的映射
@@ -263,9 +264,13 @@ class MainWindow(QMainWindow):
         self.import_coding_tree_btn = QPushButton("导入编码树")
         self.import_coding_tree_btn.clicked.connect(self.import_coding_tree)
 
+        self.excel_processor_btn = QPushButton("Excel表格处理")
+        self.excel_processor_btn.clicked.connect(self.open_excel_processor)
+
         project_buttons_layout.addWidget(self.save_project_btn)
         project_buttons_layout.addWidget(self.load_project_btn)
         project_buttons_layout.addWidget(self.import_coding_tree_btn)
+        project_buttons_layout.addWidget(self.excel_processor_btn)
 
         coding_layout.addLayout(project_buttons_layout)
 
@@ -644,9 +649,9 @@ class MainWindow(QMainWindow):
                 return
 
             # 将缓存内容传递给 ManualCodingDialog
-            dialog = ManualCodingDialog(self, processed_files, self.structured_codes, 
-                                       auto_coding_cache=self.auto_coding_cache,
-                                       code_markers_map=self.code_markers_map)
+            dialog = ManualCodingDialog(self, processed_files, self.structured_codes,
+                                        auto_coding_cache=self.auto_coding_cache,
+                                        code_markers_map=self.code_markers_map)
             if dialog.exec_() == QDialog.Accepted:
                 coding_result = dialog.get_coding_result()
                 if coding_result:
@@ -775,7 +780,8 @@ class MainWindow(QMainWindow):
                     continue
 
                 # 复制编号内容作为基础
-                content_with_markers = numbered_content.copy() if isinstance(numbered_content, str) else str(numbered_content)
+                content_with_markers = numbered_content.copy() if isinstance(numbered_content, str) else str(
+                    numbered_content)
 
                 # 收集所有一阶编码
                 first_level_codes = []
@@ -788,11 +794,16 @@ class MainWindow(QMainWindow):
                                     if code_id and code_id.startswith('A'):
                                         # 获取编码对应的句子详情
                                         sentence_details = first_content.get('sentence_details', [])
-                                        for sentence in sentence_details:
-                                            if isinstance(sentence, dict):
-                                                original_sentence = sentence.get('content', '')
-                                                if original_sentence:
-                                                    first_level_codes.append((code_id, original_sentence))
+                                        # 优先使用原始句子，而不是抽象后的内容
+                                        original_sentence = ""
+                                        if sentence_details and isinstance(sentence_details[0], dict):
+                                            # 尝试获取原始句子
+                                            original_sentence = sentence_details[0].get('original_content', '')
+                                        # 如果没有原始句子，使用编码内容
+                                        if not original_sentence:
+                                            original_sentence = first_content.get('content', '')
+                                        if original_sentence:
+                                            first_level_codes.append((code_id, original_sentence))
 
                 # 为每个一阶编码添加标记
                 import re
@@ -802,15 +813,53 @@ class MainWindow(QMainWindow):
                     if not clean_sentence:
                         continue
 
-                    # 在文本中查找句子并添加编码标记
-                    # 使用正则表达式查找句子，允许一定的差异
+                    # 尝试多种匹配方式，从最严格到最宽松
+                    match = None
+                    
+                    # 1. 尝试精确匹配
                     sentence_pattern = re.escape(clean_sentence)
                     match = re.search(sentence_pattern, content_with_markers)
+                    
+                    # 2. 如果精确匹配失败，尝试宽松匹配（忽略部分标点和空格）
+                    if not match:
+                        # 清理句子，移除标点和多余空格
+                        clean_sentence_no_punct = re.sub(r'[，。！？；：、]', '', clean_sentence)
+                        clean_sentence_no_punct = re.sub(r'\s+', ' ', clean_sentence_no_punct).strip()
+                        if clean_sentence_no_punct:
+                            # 创建宽松的正则表达式，允许单词之间有任意空格
+                            words = clean_sentence_no_punct.split()
+                            if words:
+                                # 创建一个正则表达式，允许单词之间有任意数量的空格
+                                loose_pattern = r'\s*'.join(re.escape(word) for word in words)
+                                match = re.search(loose_pattern, content_with_markers)
+                    
+                    # 3. 如果仍然失败，尝试匹配句子的核心部分
+                    if not match and len(clean_sentence) > 10:
+                        # 提取句子的核心部分（去掉开头和结尾的修饰语）
+                        core_sentence = clean_sentence
+                        # 移除常见的开头修饰语
+                        start_modifiers = ['我觉得', '我认为', '我感觉', '我想', '就是说', '然后', '那个', '这个', '就是']
+                        for modifier in start_modifiers:
+                            if core_sentence.startswith(modifier):
+                                core_sentence = core_sentence[len(modifier):].strip()
+                                break
+                        # 移除常见的结尾修饰语
+                        end_modifiers = ['吧', '啊', '呀', '呢', '嘛', '的', '了', '啊']
+                        for modifier in end_modifiers:
+                            if core_sentence.endswith(modifier):
+                                core_sentence = core_sentence[:-len(modifier)].strip()
+                                break
+                        # 尝试匹配核心部分
+                        if len(core_sentence) > 5:
+                            core_pattern = re.escape(core_sentence)
+                            match = re.search(core_pattern, content_with_markers)
+                    
                     if match:
                         # 在句子后添加编码标记
                         start_pos = match.start()
                         end_pos = match.end()
-                        modified_content = content_with_markers[:end_pos] + f" [{code_id}]" + content_with_markers[end_pos:]
+                        modified_content = content_with_markers[:end_pos] + f" [{code_id}]" + content_with_markers[
+                                                                                                  end_pos:]
                         content_with_markers = modified_content
 
                         # 保存编码标记映射
@@ -822,6 +871,9 @@ class MainWindow(QMainWindow):
                             'start_pos': start_pos,
                             'end_pos': end_pos
                         })
+                    else:
+                        # 匹配失败，记录警告
+                        logger.warning(f"无法在文本中找到句子: {clean_sentence[:50]}...")
 
                 # 保存到缓存
                 self.auto_coding_cache[file_path] = content_with_markers
@@ -2545,15 +2597,15 @@ class MainWindow(QMainWindow):
                                 normalized_sentences = []
                                 for sent in sentence_details:
                                     if isinstance(sent, dict):
-                                        # 尝试从多个字段获取文本内容
-                                        text = sent.get('text', '') or sent.get('content', '') or sent.get(
-                                            'original_content', '')
+                                        # 优先使用原始句子内容，而不是抽象后的内容
+                                        text = sent.get('original_content', '') or sent.get('content', '') or sent.get('text', '')
                                         if text:
                                             # 创建规范化的句子对象
                                             normalized_sent = {
                                                 'text': text,
                                                 'code_id': code_id,
-                                                'original': sent  # 保留原始对象
+                                                'original': sent,  # 保留原始对象
+                                                'original_content': sent.get('original_content', '')  # 保存原始内容
                                             }
                                             normalized_sentences.append(normalized_sent)
                                 return normalized_sentences
@@ -2612,12 +2664,13 @@ class MainWindow(QMainWindow):
             # 查找包含该句子的文件并切换显示
             target_file = None
             for sentence_info in sentences_to_highlight:
-                sentence_content = sentence_info.get('text', '').strip()
+                # 优先使用原始内容，而不是抽象后的内容
+                sentence_content = sentence_info.get('original_content', '') or sentence_info.get('text', '').strip()
                 if not sentence_content:
                     continue
 
                 # 清理句子内容
-                sentence_clean = re.sub(r'\s*\[[A-Z]\d+\]', '', sentence_content)
+                sentence_clean = re.sub(r'\s*\[A\d+\]', '', sentence_content)
                 sentence_clean = re.sub(r'\s*\[\d+\]', '', sentence_clean).strip()
 
                 # 在所有已加载的文件中查找
@@ -2663,12 +2716,13 @@ class MainWindow(QMainWindow):
             first_match_position = None  # 记录第一个匹配项的位置
 
             for sentence_info in sentences_to_highlight:
-                sentence_content = sentence_info.get('text', '').strip()
+                # 优先使用原始内容，而不是抽象后的内容
+                sentence_content = sentence_info.get('original_content', '') or sentence_info.get('text', '').strip()
                 if not sentence_content:
                     continue
 
                 # 清理句子内容：移除可能存在的编号标记
-                sentence_clean = re.sub(r'\s*\[[A-Z]\d+\]', '', sentence_content)
+                sentence_clean = re.sub(r'\s*\[A\d+\]', '', sentence_content)
                 sentence_clean = re.sub(r'\s*\[\d+\]', '', sentence_clean).strip()
 
                 # 在文本中查找并高亮这个精确句子
@@ -2721,3 +2775,12 @@ class MainWindow(QMainWindow):
         except Exception as e:
             logger.error(f"精确高亮文本失败: {e}", exc_info=True)
             self.statusBar().showMessage(f"高亮失败: {str(e)}")
+
+    def open_excel_processor(self):
+        """打开Excel处理器对话框"""
+        try:
+            dialog = ExcelProcessorDialog(self)
+            dialog.exec_()
+        except Exception as e:
+            logger.error(f"打开Excel处理器失败: {e}")
+            QMessageBox.critical(self, "错误", f"打开Excel处理器失败: {str(e)}")
