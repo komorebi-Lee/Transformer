@@ -3602,6 +3602,9 @@ class ManualCodingDialog(QDialog):
                     third_name = third_display_name
 
                 self.current_codes[third_display_name] = {}
+                
+                # 新增逻辑：计算并更新三阶节点数量统计
+                total_third_sentence_count = 0
 
                 for j in range(top_item.childCount()):
                     second_item = top_item.child(j)
@@ -3615,7 +3618,10 @@ class ManualCodingDialog(QDialog):
                         second_name = second_display_name
 
                     self.current_codes[third_display_name][second_display_name] = []
-
+                    
+                    # 新增逻辑：计算并更新二阶节点数量统计
+                    total_second_sentence_count = 0
+                    
                     for k in range(second_item.childCount()):
                         first_item = second_item.child(k)
                         # 获取原始内容，优先使用完整数据结构
@@ -3624,16 +3630,30 @@ class ManualCodingDialog(QDialog):
                         # 正确处理三阶-二阶-一阶结构中的一阶编码
                         if first_item_data and isinstance(first_item_data, dict):
                             # 更新一阶编码的统计数据
-                            first_item_data["sentence_count"] = int(first_item.text(4)) if first_item.text(
-                                4).isdigit() else 1
-                            first_item_data["code_id"] = first_item.text(5) if first_item.text(
-                                5) else first_item_data.get("code_id", "")
+                            first_item_data["sentence_count"] = int(first_item.text(4)) if first_item.text(4).isdigit() else 1
+                            first_item_data["code_id"] = first_item.text(5) if first_item.text(5) else first_item_data.get("code_id", "")
+                            
+                            # 累加句子来源数
+                            total_second_sentence_count += first_item_data["sentence_count"]
+                            
                             # 修复：应该添加到正确的嵌套结构中，而不是未分类编码
                             self.current_codes[third_display_name][second_display_name].append(first_item_data)
                         else:
                             # 后备方案：使用文本内容
                             first_content = first_item.text(0)
                             self.current_codes[third_display_name][second_display_name].append(first_content)
+                            total_second_sentence_count += 1
+                            
+                    # 动态更新二阶节点统计信息（子项数、句子来源数）
+                    second_item.setText(2, str(second_item.childCount()))
+                    second_item.setText(4, str(total_second_sentence_count))
+                    
+                    # 累加到三阶的句子来源数
+                    total_third_sentence_count += total_second_sentence_count
+                    
+                # 动态更新三阶节点统计信息（子项数、句子来源数）
+                top_item.setText(2, str(top_item.childCount()))
+                top_item.setText(4, str(total_third_sentence_count))
 
             elif level == 1:
                 # 未分类的一阶编码
