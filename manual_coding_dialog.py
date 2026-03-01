@@ -206,6 +206,7 @@ class ManualCodingDialog(QDialog):
         self.text_display.setAcceptDrops(False)  # 不接受拖放，但允许拖出
         # 安装事件过滤器以处理点击事件
         self.text_display.installEventFilter(self)
+        self.text_display.viewport().installEventFilter(self)
         text_layout.addWidget(self.text_display)
 
         # 文本选择按钮
@@ -643,24 +644,33 @@ class ManualCodingDialog(QDialog):
 
     def eventFilter(self, source, event):
         """事件过滤器：处理点击文本自动选中句子和句子详情对话框的点击事件"""
+        
+        # 兼容处理：检查事件源是否是 QTextEdit 的 viewport
+        from PyQt5.QtWidgets import QTextEdit
+        text_edit_source = source
+        is_viewport = False
+        if hasattr(source, 'parent') and isinstance(source.parent(), QTextEdit):
+            text_edit_source = source.parent()
+            is_viewport = True
+            
         # 处理句子详情对话框的点击事件
-        if hasattr(source, 'is_sentence_details_text') and source.is_sentence_details_text:
+        if hasattr(text_edit_source, 'is_sentence_details_text') and text_edit_source.is_sentence_details_text:
             if event.type() == QEvent.MouseButtonRelease and event.button() == Qt.LeftButton:
-                # 获取点击位置的光标
-                cursor = source.cursorForPosition(event.pos())
+                # 获取点击位置的光标，如果是 viewport 接收事件，坐标刚好对应
+                cursor = text_edit_source.cursorForPosition(event.pos())
                 position = cursor.position()
-                
+
                 # 检查点击位置是否在某个句子内容中
-                if hasattr(source, 'sentence_info'):
-                    for info in source.sentence_info:
+                if hasattr(text_edit_source, 'sentence_info'):
+                    for info in text_edit_source.sentence_info:
                         if 'start' in info and 'end' in info:
                             if info['start'] <= position <= info['end']:
                                 # 点击了句子内容，导航到该句子并高亮
                                 self.navigate_and_highlight_sentence(info['number'], info['content'])
                                 return True  # 消耗事件
-        
+
         # 处理主文本显示区的点击事件
-        if source == self.text_display and event.type() == QEvent.MouseButtonRelease:
+        if text_edit_source == self.text_display and event.type() == QEvent.MouseButtonRelease:
             # 如果是鼠标左键释放，且没有选区（或者是点击操作）
             if event.button() == Qt.LeftButton:
                 cursor = self.text_display.textCursor()
@@ -922,6 +932,7 @@ class ManualCodingDialog(QDialog):
     def navigate_and_highlight_sentence(self, code_id, content):
         """导航到编码对应的完整句子内容并高亮显示"""
         try:
+            print(f"=== NAV AND HIGHLIGHT === code_id: {code_id}, content: {content[:30]}...")
             # 如果传入的是数字字符串，说明是点击了句子编号
             if str(code_id).isdigit() and content is None:
                 return self.navigate_to_number(code_id)
@@ -962,6 +973,7 @@ class ManualCodingDialog(QDialog):
                     return self.highlight_multiple_sentences(sentences, code_id)
 
             if not content_cursor.isNull():
+                print(f"=== FOUND CONTENT EXACTLY ===")
                 # 找到内容，创建高亮选择
                 extra_selections = []
                 selection = QTextEdit.ExtraSelection()
@@ -2915,7 +2927,8 @@ class ManualCodingDialog(QDialog):
 
             text_display = QTextEdit()
             text_display.setReadOnly(True)
-            text_display.setStyleSheet("font-family: 'Microsoft YaHei', Arial, sans-serif; font-size: 16px; line-height: 1.8;")
+            text_display.setStyleSheet(
+                "font-family: 'Microsoft YaHei', Arial, sans-serif; font-size: 16px; line-height: 1.8;")
 
             # 存储句子信息，用于点击事件处理
             sentence_info = []
@@ -3011,7 +3024,7 @@ class ManualCodingDialog(QDialog):
                 display_text += f"内容: {sentence_content}\n\n"
                 # 记录内容的结束位置
                 content_end = len(display_text)
-                
+
                 # 存储句子信息
                 if sentence_number:
                     sentence_info.append({
@@ -3027,12 +3040,14 @@ class ManualCodingDialog(QDialog):
 
             # 存储句子信息到文本编辑框对象，以便事件过滤器使用
             text_display.sentence_info = sentence_info
-            
+
             # 为文本编辑框添加自定义属性，用于标识它是句子详情对话框的文本框
             text_display.is_sentence_details_text = True
-            
-            # 安装事件过滤器到当前对话框
+
+            # 安装事件过滤器到当前对话框及其视口以确保能捕获点击事件
             text_display.installEventFilter(self)
+            text_display.viewport().installEventFilter(self)
+
             layout.addWidget(text_display)
 
             # 添加按钮
