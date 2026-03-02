@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QFormLayout,
                              QListWidget, QListWidgetItem, QLabel, QMessageBox,
                              QTreeWidget, QTreeWidgetItem, QSplitter, QComboBox,
                              QInputDialog, QDialogButtonBox, QApplication, QMenu, QAction)
-from PyQt5.QtCore import Qt, QMimeData, QTimer, QEvent
+from PyQt5.QtCore import Qt, QMimeData, QTimer, QEvent, QRegularExpression
 from PyQt5.QtGui import QTextDocument, QTextCursor
 from PyQt5.QtGui import QFont, QColor, QDrag
 import logging
@@ -2385,17 +2385,28 @@ class ManualCodingDialog(QDialog):
             # 获取一阶编码的精确内容
             code_content = self.get_content_by_code_id(code_id)
             code_clean = ""
+            import re
             if code_content:
-                # 清理编码内容，移除可能存在的标记
-                code_clean = re.sub(r'\s*\[A\d+\]', '', code_content)
+                # 清理编码内容，移除可能存在的标记，例如 [A1], A1等
+                code_clean = re.sub(r'\s*\[[A-Z]\d+\]', '', code_content)
+                code_clean = re.sub(r'^[A-Z]\d+\s+', '', code_clean)
                 code_clean = re.sub(r'\s*\[\d+\]', '', code_clean).strip()
+                # 去除可能的关联编号前缀，例如 "1:"
+                code_clean = re.sub(r'^\d+\s*:\s*', '', code_clean).strip()
 
             # 查找包含该句子的文件并切换显示
             target_file = None
             best_match_score = 0
             best_match_file = None
             best_match_sentence = None
+            target_sentence_id = None  # 记录关联的句子ID
 
+            # 尝试从sentences_to_highlight中获取关联的句子ID
+            for sentence_info in sentences_to_highlight:
+                if sentence_info.get('sentence_id'):
+                    target_sentence_id = sentence_info.get('sentence_id')
+                    break
+            
             # 优先使用编码内容进行文件匹配
             if code_clean:
                 for file_path, file_data in self.loaded_files.items():
@@ -2408,6 +2419,15 @@ class ManualCodingDialog(QDialog):
                         continue
 
                     if code_clean in file_text:
+                        target_file = file_path
+                        break
+            
+            # 如果没找到，尝试通过句子ID匹配文件
+            if not target_file and target_sentence_id:
+                sentence_tag = f"[{target_sentence_id}]"
+                for file_path, file_data in self.loaded_files.items():
+                    file_text = file_data.get('numbered_content', '') or file_data.get('content', '')
+                    if sentence_tag in file_text:
                         target_file = file_path
                         break
 
@@ -2425,7 +2445,8 @@ class ManualCodingDialog(QDialog):
 
                     # 清理句子内容
                     import re
-                    sentence_clean = re.sub(r'\s*\[A\d+\]', '', sentence_content)
+                    sentence_clean = re.sub(r'\s*\[[A-Z]\d+\]', '', sentence_content)
+                    sentence_clean = re.sub(r'^[A-Z]\d+\s+', '', sentence_clean)
                     sentence_clean = re.sub(r'\s*\[\d+\]', '', sentence_clean).strip()
 
                     # 在所有已加载的文件中查找，使用更精确的匹配
@@ -2539,8 +2560,60 @@ class ManualCodingDialog(QDialog):
 
             # 如果没有找到编码内容，尝试高亮句子内容
             if found_count == 0:
-                # 限制处理的句子数量
-                max_sentences = 3
+                # 尝试使用句子ID精确定位（针对自动编码产生的数字ID）
+                # 这是最可靠的定位方式，特别是对于纯文本内容匹配失败的情况
+                if sentences_to_highlight:
+                    for sentence_info in sentences_to_highlight:
+                        sentence_id = sentence_info.get('id', '')
+                        if sentence_id:
+                            # 构造精确的ID查找正则表达式 [ID]
+                            id_pattern = r'\[' + re.escape(str(sentence_id)) + r'\]'
+                            id_regex = QRegularExpression(id_pattern)
+                            id_match = id_regex.match(current_text)
+                            
+                            if id_match.hasMatch():
+                                # 找到ID位置
+                                match_start = id_match.capturedStart()
+                                match_end = id_match.capturedEnd()
+                                
+                                # 将光标移动到ID之后
+                                cursor = self.text_display.textCursor()
+                                cursor.setPosition(match_end)
+                                
+                                # 尝试查找该句子的结束位置（下一个 [ID] 或段落结束）
+                                next_id_pattern = r'\[\w+\d+\]|\[\d+\]'  # 匹配下一个ID标记
+                                next_regex = QRegularExpression(next_id_pattern)
+                                next_match = next_regex.match(current_text, match_end)
+                                
+                                end_pos = -1
+                                if next_match.hasMatch():
+                                    end_pos = next_match.capturedStart()
+                                else:
+                                    # 如果没有下一个ID，则高亮到段落结束或一定长度
+                                    block = cursor.block()
+                                    end_pos = block.position() + block.length() - 1 
+                                
+                                # 选中从ID结束到句子结束的文本
+                                if end_pos > match_end:
+                                    selection = QTextEdit.ExtraSelection()
+                                    cursor.setPosition(match_end)
+                                    cursor.setPosition(end_pos, QTextCursor.KeepAnchor)
+                                    selection.cursor = cursor
+                                    selection.format.setBackground(QColor(173, 216, 230))
+                                    selection.format.setForeground(QColor(0, 0, 139))
+                                    extra_selections.append(selection)
+                                    
+                                    found_count += 1
+                                    if first_match_position is None:
+                                        first_match_position = match_start
+                                    
+                                    # 如果找到了，就跳出循环，避免重复处理
+                                    break
+                
+                # 如果ID定位也失败，继续尝试原来的内容匹配逻辑
+                if found_count == 0:
+                    # 限制处理的句子数量
+                    max_sentences = 3
                 processed_sentences = 0
                 
                 for sentence_info in sentences_to_highlight:
@@ -2557,7 +2630,8 @@ class ManualCodingDialog(QDialog):
                         continue
 
                     # 清理句子内容：移除可能存在的编号标记
-                    sentence_clean = re.sub(r'\s*\[A\d+\]', '', sentence_content)
+                    sentence_clean = re.sub(r'\s*\[[A-Z]\d+\]', '', sentence_content)
+                    sentence_clean = re.sub(r'^[A-Z]\d+\s+', '', sentence_clean)
                     sentence_clean = re.sub(r'\s*\[\d+\]', '', sentence_clean).strip()
 
                     # 尝试从sentence_info中获取file_path，如果有的话
@@ -2672,7 +2746,7 @@ class ManualCodingDialog(QDialog):
                     if child_data:
                         # 检查当前节点是否匹配
                         if child_data.get("code_id") == code_id:
-                            return child_data.get("content", "")
+                            return child_data.get("content", "") or child_data.get("name", "")
 
                         # 递归搜索子节点
                         result = search_tree_item(child)
@@ -2693,7 +2767,7 @@ class ManualCodingDialog(QDialog):
                 top_item = self.coding_tree.topLevelItem(i)
                 top_data = top_item.data(0, Qt.UserRole)
                 if top_data and top_data.get("level") == 1 and top_data.get("code_id") == code_id:
-                    return top_data.get("content", "")
+                    return top_data.get("content", "") or top_data.get("name", "")
 
             return ""
         except Exception as e:

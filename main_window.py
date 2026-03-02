@@ -815,11 +815,11 @@ class MainWindow(QMainWindow):
 
                     # 尝试多种匹配方式，从最严格到最宽松
                     match = None
-                    
+
                     # 1. 尝试精确匹配
                     sentence_pattern = re.escape(clean_sentence)
                     match = re.search(sentence_pattern, content_with_markers)
-                    
+
                     # 2. 如果精确匹配失败，尝试宽松匹配（忽略部分标点和空格）
                     if not match:
                         # 清理句子，移除标点和多余空格
@@ -832,7 +832,7 @@ class MainWindow(QMainWindow):
                                 # 创建一个正则表达式，允许单词之间有任意数量的空格
                                 loose_pattern = r'\s*'.join(re.escape(word) for word in words)
                                 match = re.search(loose_pattern, content_with_markers)
-                    
+
                     # 3. 如果仍然失败，尝试匹配句子的核心部分
                     if not match and len(clean_sentence) > 10:
                         # 提取句子的核心部分（去掉开头和结尾的修饰语）
@@ -853,13 +853,13 @@ class MainWindow(QMainWindow):
                         if len(core_sentence) > 5:
                             core_pattern = re.escape(core_sentence)
                             match = re.search(core_pattern, content_with_markers)
-                    
+
                     if match:
                         # 在句子后添加编码标记
                         start_pos = match.start()
                         end_pos = match.end()
                         modified_content = content_with_markers[:end_pos] + f" [{code_id}]" + content_with_markers[
-                                                                                                  end_pos:]
+                                                                                              end_pos:]
                         content_with_markers = modified_content
 
                         # 保存编码标记映射
@@ -1630,7 +1630,7 @@ class MainWindow(QMainWindow):
         try:
             # 清除 ExtraSelection 高亮
             self.text_display.setExtraSelections([])
-            
+
             # 获取整个文档
             cursor = self.text_display.textCursor()
             cursor.select(cursor.Document)
@@ -1660,7 +1660,7 @@ class MainWindow(QMainWindow):
                     if child_data:
                         # 检查当前节点是否匹配
                         if child_data.get("code_id") == code_id:
-                            return child_data.get("content", "")
+                            return child_data.get("content", "") or child_data.get("name", "")
 
                         # 递归搜索子节点
                         result = search_tree_item(child)
@@ -1681,7 +1681,7 @@ class MainWindow(QMainWindow):
                 top_item = self.coding_tree.topLevelItem(i)
                 top_data = top_item.data(0, Qt.UserRole)
                 if top_data and top_data.get("level") == 1 and top_data.get("code_id") == code_id:
-                    return top_data.get("content", "")
+                    return top_data.get("content", "") or top_data.get("name", "")
 
             return ""
         except Exception as e:
@@ -2601,7 +2601,8 @@ class MainWindow(QMainWindow):
                                 for sent in sentence_details:
                                     if isinstance(sent, dict):
                                         # 优先使用原始句子内容，而不是抽象后的内容
-                                        text = sent.get('original_content', '') or sent.get('content', '') or sent.get('text', '')
+                                        text = sent.get('original_content', '') or sent.get('content', '') or sent.get(
+                                            'text', '')
                                         if text:
                                             # 创建规范化的句子对象
                                             normalized_sent = {
@@ -2673,7 +2674,8 @@ class MainWindow(QMainWindow):
                     continue
 
                 # 清理句子内容
-                sentence_clean = re.sub(r'\s*\[A\d+\]', '', sentence_content)
+                sentence_clean = re.sub(r'\s*\[[A-Z]\d+\]', '', sentence_content)
+                sentence_clean = re.sub(r'^[A-Z]\d+\s+', '', sentence_clean)
                 sentence_clean = re.sub(r'\s*\[\d+\]', '', sentence_clean).strip()
 
                 # 在所有已加载的文件中查找
@@ -2719,19 +2721,65 @@ class MainWindow(QMainWindow):
             first_match_position = None  # 记录第一个匹配项的位置
             extra_selections = []  # 用于存储临时高亮的选择
 
-            for sentence_info in sentences_to_highlight:
-                # 优先使用原始内容，而不是抽象后的内容
-                sentence_content = sentence_info.get('original_content', '') or sentence_info.get('text', '').strip()
-                if not sentence_content:
-                    continue
+            # 获取一阶编码的精确内容
+            code_content = self.get_content_by_code_id(code_id)
+            code_clean = ""
+            if code_content:
+                # 清理编码内容，移除可能存在的标记，例如 [A1], A1等
+                code_clean = re.sub(r'\s*\[[A-Z]\d+\]', '', code_content)
+                code_clean = re.sub(r'^[A-Z]\d+\s+', '', code_clean)
+                code_clean = re.sub(r'\s*\[\d+\]', '', code_clean).strip()
+                # 去除可能的关联编号前缀，例如 "1:"
+                code_clean = re.sub(r'^\d+\s*:\s*', '', code_clean).strip()
 
-                # 清理句子内容：移除可能存在的编号标记
-                sentence_clean = re.sub(r'\s*\[A\d+\]', '', sentence_content)
-                sentence_clean = re.sub(r'\s*\[\d+\]', '', sentence_clean).strip()
-
-                # 在文本中查找并高亮这个精确句子
+            # 优先高亮一阶编码的精确内容 (短语)
+            if code_clean:
                 search_cursor = self.text_display.textCursor()
                 search_cursor.movePosition(cursor.Start)
+
+                # 策略1：直接查找编码内容
+                found_cursor = self.text_document.find(code_clean, search_cursor)
+
+                # 策略2：如果策略1失败，尝试使用正则表达式查找（忽略空白差异）
+                if found_cursor.isNull():
+                    # 限制正则表达式长度，避免性能问题
+                    if len(code_clean) > 100:
+                        code_clean = code_clean[:100]
+                    # 转换为正则模式，将多个空白符视为一个
+                    pattern = re.sub(r'\s+', r'\\s+', re.escape(code_clean))
+                    regex = QRegularExpression(pattern)
+                    found_cursor = self.text_document.find(regex, search_cursor)
+
+                if not found_cursor.isNull():
+                    # 使用 ExtraSelection 进行临时高亮
+                    selection = QTextEdit.ExtraSelection()
+                    selection.cursor = found_cursor
+                    selection.format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
+                    selection.format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
+                    extra_selections.append(selection)
+
+                    found_count += 1
+
+                    # 记录第一个匹配项的位置用于滚动
+                    if first_match_position is None:
+                        first_match_position = found_cursor.selectionStart()
+                        logger.info(f"记录第一个匹配位置: {first_match_position}")
+
+            if found_count == 0:
+                for sentence_info in sentences_to_highlight:
+                    # 优先使用原始内容，而不是抽象后的内容
+                    sentence_content = sentence_info.get('original_content', '') or sentence_info.get('text', '').strip()
+                    if not sentence_content:
+                        continue
+
+                    # 清理句子内容：移除可能存在的编号标记
+                    sentence_clean = re.sub(r'\s*\[[A-Z]\d+\]', '', sentence_content)
+                    sentence_clean = re.sub(r'^[A-Z]\d+\s+', '', sentence_clean)
+                    sentence_clean = re.sub(r'\s*\[\d+\]', '', sentence_clean).strip()
+
+                    # 在文本中查找并高亮这个精确句子
+                    search_cursor = self.text_display.textCursor()
+                    search_cursor.movePosition(cursor.Start)
 
                 # 策略1：直接查找清理后的文本
                 found_cursor = self.text_document.find(sentence_clean, search_cursor)
@@ -2765,7 +2813,7 @@ class MainWindow(QMainWindow):
             if found_count > 0 and first_match_position is not None:
                 # 应用临时高亮
                 self.text_display.setExtraSelections(extra_selections)
-                
+
                 # 创建新的光标并定位到第一个匹配项的位置
                 new_cursor = self.text_display.textCursor()
                 new_cursor.setPosition(first_match_position)
