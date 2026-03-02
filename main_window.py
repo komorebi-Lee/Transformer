@@ -815,11 +815,11 @@ class MainWindow(QMainWindow):
 
                     # 尝试多种匹配方式，从最严格到最宽松
                     match = None
-
+                    
                     # 1. 尝试精确匹配
                     sentence_pattern = re.escape(clean_sentence)
                     match = re.search(sentence_pattern, content_with_markers)
-
+                    
                     # 2. 如果精确匹配失败，尝试宽松匹配（忽略部分标点和空格）
                     if not match:
                         # 清理句子，移除标点和多余空格
@@ -832,7 +832,7 @@ class MainWindow(QMainWindow):
                                 # 创建一个正则表达式，允许单词之间有任意数量的空格
                                 loose_pattern = r'\s*'.join(re.escape(word) for word in words)
                                 match = re.search(loose_pattern, content_with_markers)
-
+                    
                     # 3. 如果仍然失败，尝试匹配句子的核心部分
                     if not match and len(clean_sentence) > 10:
                         # 提取句子的核心部分（去掉开头和结尾的修饰语）
@@ -853,13 +853,13 @@ class MainWindow(QMainWindow):
                         if len(core_sentence) > 5:
                             core_pattern = re.escape(core_sentence)
                             match = re.search(core_pattern, content_with_markers)
-
+                    
                     if match:
                         # 在句子后添加编码标记
                         start_pos = match.start()
                         end_pos = match.end()
                         modified_content = content_with_markers[:end_pos] + f" [{code_id}]" + content_with_markers[
-                                                                                              end_pos:]
+                                                                                                  end_pos:]
                         content_with_markers = modified_content
 
                         # 保存编码标记映射
@@ -973,23 +973,10 @@ class MainWindow(QMainWindow):
                         # 处理非字典格式的内容
                         third_code_ids.append("")
 
-            # 计算三阶编码的句子来源数（包含的所有一阶编码句子数之和）
-            total_third_sentence_count = 0
-            for _, first_contents in second_cats.items():
-                for content_data in first_contents:
-                    if isinstance(content_data, dict):
-                        first_sentence_sources = set()
-                        for sentence in content_data.get('sentence_details', []):
-                            if isinstance(sentence, dict) and sentence.get('sentence_id'):
-                                first_sentence_sources.add(str(sentence.get('sentence_id')))
-                        total_third_sentence_count += len(first_sentence_sources) if first_sentence_sources else 1
-                    else:
-                        total_third_sentence_count += 1
-
             # 设置三阶编码的统计信息
             third_item.setText(2, str(len(second_cats)))  # 二阶编码数量
             third_item.setText(3, str(len(third_file_sources)))  # 文件来源数
-            third_item.setText(4, str(total_third_sentence_count))  # 句子来源数
+            third_item.setText(4, str(len(third_sentence_sources)))  # 句子来源数
 
             # Extracts ID like "C01" from "C01 Category"
             third_id_match = re.match(r'^[A-Z]\d+', third_cat)
@@ -1032,22 +1019,10 @@ class MainWindow(QMainWindow):
                         # 处理非字典格式的内容
                         second_code_ids.append("")
 
-                # 计算二阶编码的句子来源数（包含的所有一阶编码句子数之和）
-                total_second_sentence_count = 0
-                for content_data in first_contents:
-                    if isinstance(content_data, dict):
-                        first_sentence_sources = set()
-                        for sentence in content_data.get('sentence_details', []):
-                            if isinstance(sentence, dict) and sentence.get('sentence_id'):
-                                first_sentence_sources.add(str(sentence.get('sentence_id')))
-                        total_second_sentence_count += len(first_sentence_sources) if first_sentence_sources else 1
-                    else:
-                        total_second_sentence_count += 1
-
                 # 设置二阶编码的统计信息
                 second_item.setText(2, str(second_first_count))  # 一阶编码数量
                 second_item.setText(3, "")  # 二阶编码不显示文件来源数
-                second_item.setText(4, str(total_second_sentence_count))  # 句子来源数
+                second_item.setText(4, str(len(second_sentence_sources)))  # 句子来源数
 
                 # Extracts ID like "B01" from "B01 Category"
                 second_id_match = re.match(r'^[A-Z]\d+', second_cat)
@@ -1653,6 +1628,9 @@ class MainWindow(QMainWindow):
     def clear_text_highlights(self):
         """清除文本高亮"""
         try:
+            # 清除 ExtraSelection 高亮
+            self.text_display.setExtraSelections([])
+            
             # 获取整个文档
             cursor = self.text_display.textCursor()
             cursor.select(cursor.Document)
@@ -2623,8 +2601,7 @@ class MainWindow(QMainWindow):
                                 for sent in sentence_details:
                                     if isinstance(sent, dict):
                                         # 优先使用原始句子内容，而不是抽象后的内容
-                                        text = sent.get('original_content', '') or sent.get('content', '') or sent.get(
-                                            'text', '')
+                                        text = sent.get('original_content', '') or sent.get('content', '') or sent.get('text', '')
                                         if text:
                                             # 创建规范化的句子对象
                                             normalized_sent = {
@@ -2740,6 +2717,7 @@ class MainWindow(QMainWindow):
             # 精确高亮每个句子
             found_count = 0
             first_match_position = None  # 记录第一个匹配项的位置
+            extra_selections = []  # 用于存储临时高亮的选择
 
             for sentence_info in sentences_to_highlight:
                 # 优先使用原始内容，而不是抽象后的内容
@@ -2770,11 +2748,12 @@ class MainWindow(QMainWindow):
                     found_cursor = self.text_document.find(regex, search_cursor)
 
                 if not found_cursor.isNull():
-                    # 设置浅蓝色高亮格式
-                    highlight_format = found_cursor.charFormat()
-                    highlight_format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
-                    highlight_format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
-                    found_cursor.mergeCharFormat(highlight_format)
+                    # 使用 ExtraSelection 进行临时高亮
+                    selection = QTextEdit.ExtraSelection()
+                    selection.cursor = found_cursor
+                    selection.format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
+                    selection.format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
+                    extra_selections.append(selection)
 
                     found_count += 1
 
@@ -2784,6 +2763,9 @@ class MainWindow(QMainWindow):
                         logger.info(f"记录第一个匹配位置: {first_match_position}")
 
             if found_count > 0 and first_match_position is not None:
+                # 应用临时高亮
+                self.text_display.setExtraSelections(extra_selections)
+                
                 # 创建新的光标并定位到第一个匹配项的位置
                 new_cursor = self.text_display.textCursor()
                 new_cursor.setPosition(first_match_position)
