@@ -4195,7 +4195,14 @@ class ManualCodingDialog(QDialog):
                     for content in first_contents:
                         first_item = QTreeWidgetItem(second_item)
                         if isinstance(content, dict):
-                            content_text = content.get('content', str(content))
+                            # 优先使用content字段，其次使用name字段
+                            if 'content' in content:
+                                content_text = content.get('content', '')
+                            elif 'name' in content:
+                                content_text = content.get('name', '')
+                            else:
+                                # 如果都没有，使用字符串表示
+                                content_text = str(content)
                             code_id = content.get('code_id', '')
                             sentence_details = content.get('sentence_details', [])
                             sentence_count = content.get('sentence_count', 1)
@@ -4808,59 +4815,96 @@ class ManualCodingDialog(QDialog):
 
     def export_to_standard(self):
         """导出为标准答案 - 修复版"""
-        # 调试输出当前状态
-        print("=" * 50)
-        print("DEBUG: 导出状态检查")
-        print("=" * 50)
-        print(f"current_codes 类型: {type(self.current_codes)}")
-        print(f"current_codes 内容: {self.current_codes}")
-        print(f"current_codes 长度: {len(self.current_codes)}")
-        print(f"coding_tree 项目数: {self.coding_tree.topLevelItemCount()}")
-        print(f"unclassified_first_codes: {len(self.unclassified_first_codes)}")
-        print("=" * 50)
-
-        # 确保数据是最新的
-        self.update_structured_codes_from_tree()
-
-        # 更严格的检查条件
-        if not self.current_codes and not self.unclassified_first_codes:
-            QMessageBox.warning(self, "警告", "没有编码数据可导出\n\n请先添加至少一个编码")
-            return
-
-        # 额外检查：如果 current_codes 为空但有未分类编码，尝试重构数据
-        if not self.current_codes and self.unclassified_first_codes:
-            print("DEBUG: current_codes 为空但有未分类编码，正在重构数据...")
-            # 强制更新数据结构
+        try:
+            # 确保数据是最新的
             self.update_structured_codes_from_tree()
-            if not self.current_codes:
-                # 如果仍然为空，创建基本结构
-                self.current_codes = {"未分类编码": {"未分类": self.unclassified_first_codes.copy()}}
-                print(f"DEBUG: 已创建基本结构: {self.current_codes}")
 
-        description, ok = QInputDialog.getText(self, "标准答案描述", "请输入本次标准答案的描述:")
-        if ok:
-            # 通过父窗口保存为标准答案
-            parent = self.parent()
-            print(f"DEBUG: 父窗口类型: {type(parent)}")
-            if hasattr(parent, 'standard_answer_manager'):
-                print("DEBUG: 找到 standard_answer_manager")
-                version_id = parent.standard_answer_manager.create_from_structured_codes(
-                    self.current_codes, description
-                )
-                if version_id:
-                    # 简化修复：导出成功后更新编码树显示，不显示弹窗
-                    print(f"DEBUG: 导出成功，版本号: {version_id}")
-                    print("DEBUG: 正在更新编码树显示...")
+            # 更严格的检查条件
+            if not self.current_codes and not self.unclassified_first_codes:
+                QMessageBox.warning(self, "警告", "没有编码数据可导出\n\n请先添加至少一个编码")
+                return
 
-                    # 更新编码树显示，确保编号格式正确
-                    self.update_coding_tree()
+            # 准备导出数据
+            export_data = {}
+            
+            # 处理已分类编码
+            if self.current_codes:
+                export_data = self._prepare_export_data(self.current_codes)
+            
+            # 处理未分类编码
+            if not export_data and self.unclassified_first_codes:
+                # 创建基本结构
+                unclassified_data = []
+                for item in self.unclassified_first_codes:
+                    if isinstance(item, dict):
+                        # 优先使用content字段，其次使用name字段
+                        if 'content' in item:
+                            unclassified_data.append(item.get('content'))
+                        elif 'name' in item:
+                            unclassified_data.append(item.get('name'))
+                        else:
+                            unclassified_data.append(str(item))
+                    else:
+                        unclassified_data.append(str(item))
+                export_data = {"未分类编码": {"未分类": unclassified_data}}
 
-                    # 不显示弹窗，只更新状态栏
-                    self.statusBar().showMessage(f"导出成功: {version_id}")
+            # 检查导出数据是否有效
+            if not export_data:
+                QMessageBox.warning(self, "警告", "没有有效的编码数据可导出")
+                return
+
+            description, ok = QInputDialog.getText(self, "标准答案描述", "请输入本次标准答案的描述:")
+            if ok:
+                # 通过父窗口保存为标准答案
+                parent = self.parent()
+                if hasattr(parent, 'standard_answer_manager'):
+                    try:
+                        version_id = parent.standard_answer_manager.create_from_structured_codes(
+                            export_data, description
+                        )
+                        if version_id:
+                            # 更新编码树显示，确保编号格式正确
+                            self.update_coding_tree()
+                            # 显示成功消息
+                            QMessageBox.information(self, "成功", f"标准答案已导出: {version_id}")
+                        else:
+                            QMessageBox.critical(self, "错误", "导出失败")
+                    except Exception as e:
+                        logger.error(f"导出标准答案时出错: {e}")
+                        QMessageBox.critical(self, "错误", f"导出失败: {str(e)}")
                 else:
-                    QMessageBox.critical(self, "错误", "导出失败")
-            else:
-                QMessageBox.critical(self, "错误", "父窗口缺少 standard_answer_manager\n\n请通过主界面启动手动编码功能")
+                    QMessageBox.critical(self, "错误", "父窗口缺少 standard_answer_manager\n\n请通过主界面启动手动编码功能")
+        except Exception as e:
+            logger.error(f"导出标准答案失败: {e}")
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(self, "错误", f"导出失败: {str(e)}")
+
+    def _prepare_export_data(self, structured_codes):
+        """准备导出数据，确保格式正确"""
+        export_data = {}
+        
+        for third_cat, second_cats in structured_codes.items():
+            export_data[third_cat] = {}
+            
+            for second_cat, first_contents in second_cats.items():
+                export_data[third_cat][second_cat] = []
+                
+                for content in first_contents:
+                    if isinstance(content, dict):
+                        # 提取一阶编码内容，优先使用content字段，其次使用name字段
+                        if 'content' in content:
+                            export_data[third_cat][second_cat].append(content.get('content'))
+                        elif 'name' in content:
+                            export_data[third_cat][second_cat].append(content.get('name'))
+                        else:
+                            # 如果都没有，使用字符串表示
+                            export_data[third_cat][second_cat].append(str(content))
+                    else:
+                        # 直接使用字符串内容
+                        export_data[third_cat][second_cat].append(str(content))
+        
+        return export_data
 
     def add_first_level_direct(self):
         """直接添加一阶编码 - 添加到树的根部作为未分类"""

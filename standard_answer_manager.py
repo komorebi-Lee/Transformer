@@ -401,7 +401,14 @@ class StandardAnswerManager:
 
                 for content in first_contents:
                     if isinstance(content, dict):
-                        clean_content = self._clean_first_level_content(content.get('content', ''))
+                        # 优先使用content字段，其次使用name字段
+                        if 'content' in content:
+                            clean_content = self._clean_first_level_content(content.get('content', ''))
+                        elif 'name' in content:
+                            clean_content = self._clean_first_level_content(content.get('name', ''))
+                        else:
+                            # 如果都没有，使用字符串表示
+                            clean_content = self._clean_first_level_content(str(content))
                     else:
                         clean_content = self._clean_first_level_content(str(content))
 
@@ -442,7 +449,14 @@ class StandardAnswerManager:
             for second_cat, first_contents in second_cats.items():
                 for content in first_contents:
                     if isinstance(content, dict):
-                        text_content = content.get('content', '')
+                        # 优先使用content字段，其次使用name字段
+                        if 'content' in content:
+                            text_content = content.get('content', '')
+                        elif 'name' in content:
+                            text_content = content.get('name', '')
+                        else:
+                            # 如果都没有，使用字符串表示
+                            text_content = str(content)
                     else:
                         text_content = str(content)
 
