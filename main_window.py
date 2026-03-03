@@ -2229,9 +2229,9 @@ class MainWindow(QMainWindow):
             # 检查文件是否存在
             import os
 
-            # 获取绝对路径
-            base_dir = os.path.dirname(os.path.abspath(__file__))
-            file_path = os.path.join(base_dir, "standard_answers", version)
+            # 获取绝对路径，使用标准答案管理器的目录
+            base_dir = os.path.abspath(self.standard_answer_manager.standard_answers_dir)
+            file_path = os.path.join(base_dir, version)
 
             # 检查是否需要添加 .json 扩展名
             if not file_path.endswith('.json'):
