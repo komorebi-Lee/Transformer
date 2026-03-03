@@ -1,4 +1,4 @@
-import os
+﻿import os
 import json
 import re
 from datetime import datetime
@@ -6,7 +6,8 @@ from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QFormLayout,
                              QGroupBox, QTextEdit, QLineEdit, QPushButton, QWidget,
                              QListWidget, QListWidgetItem, QLabel, QMessageBox,
                              QTreeWidget, QTreeWidgetItem, QSplitter, QComboBox,
-                             QInputDialog, QDialogButtonBox, QApplication, QMenu, QAction)
+                             QInputDialog, QDialogButtonBox, QApplication, QMenu, QAction,
+                             QCheckBox)
 from PyQt5.QtCore import Qt, QMimeData, QTimer, QEvent, QRegularExpression
 from PyQt5.QtGui import QTextDocument, QTextCursor
 from PyQt5.QtGui import QFont, QColor, QDrag
@@ -2169,6 +2170,231 @@ class ManualCodingDialog(QDialog):
             logger.error(f"点击树项目时出错: {e}")
             QMessageBox.warning(self, "错误", f"点击项目时发生错误: {str(e)}")
 
+    def navigate_to_sentence_content(self, sentence_content, sentence_number=""):
+        """导航到句子内容并高亮显示 - 增强稳定性版"""
+        try:
+            logger.info(f"导航请求: Content='{sentence_content[:20] if sentence_content else 'None'}...', Number='{sentence_number}'")
+            
+            # 安全检查：确保UI组件存在
+            if not hasattr(self, 'text_display') or self.text_display is None:
+                logger.error("text_display 组件不存在")
+                return
+
+            # 获取文档内容 - 使用安全的方式
+            try:
+                current_text = self.text_display.toPlainText()
+            except Exception as e:
+                logger.error(f"获取文本内容失败: {e}")
+                return
+
+            if not current_text:
+                logger.warning("文本内容为空")
+                return
+
+            import re
+            found_pos = -1
+            found_length = 0
+            
+            # 清理输入内容，处理可能的 None
+            sentence_content = sentence_content if sentence_content else ""
+            sentence_number = sentence_number if sentence_number else ""
+
+            # === 策略 1: 精确匹配 (内容 + 编号) ===
+            # 如果同时有内容和编号，这是最准确的定位方式
+            if sentence_content and sentence_number:
+                try:
+                    # 查找所有该编号的出现位置
+                    pattern = r'\[' + re.escape(sentence_number) + r'\]'
+                    matches = list(re.finditer(pattern, current_text))
+                    
+                    for match in matches:
+                        num_start = match.start()
+                        # 在编号前搜索内容
+                        # 为了容错，搜索范围设为内容长度 + 200字符
+                        search_range = len(sentence_content) + 200
+                        search_start = max(0, num_start - search_range)
+                        text_before = current_text[search_start:num_start]
+                        
+                        # 检查内容是否在编号前的文本中
+                        idx = text_before.rfind(sentence_content)
+                        if idx != -1:
+                            # 找到了！
+                            found_pos = search_start + idx
+                            found_length = len(sentence_content)
+                            logger.info(f"策略1成功: 找到特定编号 [{sentence_number}] 前的内容")
+                            break
+                except Exception as e:
+                    logger.error(f"策略1搜索出错: {e}")
+
+            # === 策略 2: 内容精确匹配 ===
+            # 如果策略1失败，尝试直接找内容
+            if found_pos == -1 and sentence_content:
+                try:
+                    idx = current_text.find(sentence_content)
+                    if idx != -1:
+                        found_pos = idx
+                        found_length = len(sentence_content)
+                        logger.info("策略2成功: 内容精确匹配")
+                except Exception as e:
+                    logger.error(f"策略2搜索出错: {e}")
+
+            # === 策略 3: 去除标点和空白后的模糊匹配 ===
+            if found_pos == -1 and sentence_content:
+                try:
+                    # 获取句子的唯一标识（前20个字符 + 后10个字符）
+                    # 这种方式比完全去空格更加鲁棒且快速
+                    if len(sentence_content) > 30:
+                        prefix = sentence_content[:20]
+                        suffix = sentence_content[-10:]
+                        
+                        # 查找前缀
+                        start_idx = current_text.find(prefix)
+                        if start_idx != -1:
+                            # 验证后缀是否在合理距离内
+                            # 允许内容长度有 +/- 20% 甚至更多的变化
+                            expected_len = len(sentence_content)
+                            max_dist = int(expected_len * 1.5) + 50
+                            
+                            snippet = current_text[start_idx:start_idx + max_dist]
+                            suffix_idx = snippet.find(suffix)
+                            
+                            if suffix_idx != -1:
+                                found_pos = start_idx
+                                found_length = suffix_idx + len(suffix)
+                                logger.info("策略3成功: 前后缀匹配")
+                    
+                    # 备用：仅前缀匹配 (如果句子较短或没找到后缀)
+                    elif len(sentence_content) > 5:
+                        idx = current_text.find(sentence_content[:10])
+                        if idx != -1:
+                            found_pos = idx
+                            found_length = len(sentence_content)
+                            logger.info("策略3b成功: 短句前缀匹配")
+                except Exception as e:
+                    logger.error(f"策略3搜索出错: {e}")
+
+            # === 策略 4: 仅编号匹配 (兜底) ===
+            if found_pos == -1 and sentence_number:
+                try:
+                    pattern = r'\[' + re.escape(sentence_number) + r'\]'
+                    match = re.search(pattern, current_text)
+                    if match:
+                        num_pos = match.start()
+                        # 尝试向前选中一段文本作为一个句子 (寻找句末标点)
+                        scan_start = max(0, num_pos - 200)
+                        text_scan = current_text[scan_start:num_pos]
+                        
+                        # 寻找最后一个句末标点
+                        last_punct = -1
+                        for p in ['。', '！', '？', '\n', '!', '?', '.']:
+                            p_idx = text_scan.rfind(p)
+                            if p_idx > last_punct:
+                                last_punct = p_idx
+                        
+                        if last_punct != -1:
+                            found_pos = scan_start + last_punct + 1
+                            found_length = num_pos - found_pos
+                        else:
+                            # 没找到标点，就默认选中前50个字
+                            found_pos = max(0, num_pos - 50)
+                            found_length = num_pos - found_pos
+                            
+                        logger.info(f"策略4成功: 仅通过编号 [{sentence_number}] 估算位置")
+                except Exception as e:
+                    logger.error(f"策略4搜索出错: {e}")
+
+            # 执行高亮与滚动
+            if found_pos != -1:
+                # 再次修正长度，防止越界
+                if found_pos + found_length > len(current_text):
+                    found_length = len(current_text) - found_pos
+                
+                if found_length > 0:
+                    self._highlight_and_scroll_to_position(found_pos, found_length)
+                    if hasattr(self, 'statusBar'):
+                        self.statusBar().showMessage(f"已定位到内容 (位置: {found_pos})")
+                else:
+                    logger.warning("找到位置但长度无效")
+            else:
+                logger.warning(f"未找到句子: {sentence_content[:20]}... [{sentence_number}]")
+                if hasattr(self, 'statusBar'):
+                    self.statusBar().showMessage("在当前文本中未找到对应句子")
+
+        except Exception as e:
+            logger.error(f"导航过程发生严重错误: {e}")
+            import traceback
+            traceback.print_exc()
+
+    
+    def _highlight_and_scroll_to_position(self, start_pos, length):
+        """在指定位置高亮文本并滚动到该位置"""
+        try:
+            # 验证参数
+            if start_pos < 0 or length <= 0:
+                logger.warning(f"无效的位置参数: start_pos={start_pos}, length={length}")
+                return
+            
+            # 验证text_display是否存在
+            if not hasattr(self, 'text_display') or self.text_display is None:
+                logger.error("text_display不存在")
+                return
+            
+            # 获取文本长度，确保不越界
+            try:
+                current_text = self.text_display.toPlainText()
+                text_length = len(current_text)
+            except Exception as e:
+                logger.error(f"获取文本长度失败: {e}")
+                return
+                
+            if start_pos >= text_length:
+                logger.warning(f"起始位置超出文本范围: start_pos={start_pos}, text_length={text_length}")
+                return
+            
+            # 调整长度，确保不越界
+            if start_pos + length > text_length:
+                length = text_length - start_pos
+                logger.info(f"调整高亮长度以避免越界: new_length={length}")
+            
+            if length <= 0:
+                logger.warning(f"调整后长度无效: {length}")
+                return
+            
+            # 创建光标并设置选区
+            cursor = self.text_display.textCursor()
+            cursor.setPosition(start_pos)
+            cursor.setPosition(start_pos + length, QTextCursor.KeepAnchor)
+            
+            # 设置高亮
+            selection = QTextEdit.ExtraSelection()
+            selection.cursor = cursor
+            selection.format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
+            selection.format.setForeground(QColor(0, 0, 0))  # 黑色文字
+            self.text_display.setExtraSelections([selection])
+            
+            # 将光标移动到选区开始位置
+            cursor.setPosition(start_pos)
+            self.text_display.setTextCursor(cursor)
+            
+            # 确保光标可见（滚动到该位置）
+            self.text_display.ensureCursorVisible()
+            
+            logger.info(f"成功高亮位置: start={start_pos}, length={length}")
+            
+        except Exception as e:
+            logger.error(f"高亮和滚动到位置时出错: {e}")
+            import traceback
+            traceback.print_exc()
+            # 不要抛出异常，避免闪退
+            # 不要抛出异常，避免闪退
+
+    def clear_text_highlights(self):
+        """清除文本高亮"""
+        try:
+            self.text_display.setExtraSelections([])
+        except Exception as e:
+            logger.error(f"清除文本高亮时出错: {e}")
+
     def highlight_text_by_code_id(self, code_id: str):
         """通过编码ID高亮文本和对应内容"""
         try:
@@ -3410,6 +3636,7 @@ class ManualCodingDialog(QDialog):
 
             text_display = QTextBrowser()
             text_display.setOpenExternalLinks(False)
+            text_display.setOpenLinks(False)  # 禁止点击链接时自动跳转，防止内容被替换为空白
 
             # 构建显示内容，严格按照用户要求的格式
             # 用户要求的格式示例：
@@ -3471,6 +3698,9 @@ class ManualCodingDialog(QDialog):
                     'number': ''
                 })
 
+            # 保存句子信息的字典，用于点击时查找
+            sentence_data = {}
+            
             # 添加多个句子显示
             for i, sentence in enumerate(sentences_list, 1):
                 if i == 1:
@@ -3486,18 +3716,67 @@ class ManualCodingDialog(QDialog):
                     sentence_content = sentence_content.strip()
                     sentence_number = sentence.get('number', '')
 
+                # 保存句子信息，使用句子编号或索引作为key
+                key = sentence_number if sentence_number else str(i)
+                sentence_data[key] = {
+                    'content': sentence_content,
+                    'number': sentence_number
+                }
+                
+                # 创建可点击的链接，只使用编号作为href，避免URL编码复杂问题
+                # HTML转义句子内容以防止XSS
+                safe_content = sentence_content.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&#39;')
+                clickable_content = f"<a href='navigate:{key}' style='text-decoration: none; color: black; cursor: pointer;'>{safe_content}</a>"
+
                 display_html += f"""
                 <div style='font-weight: bold; font-size: 18px;'>句子 {i}:</div>
                 <br>
                 <div>编号: {sentence_number}</div>
                 <br>
-                <div>内容: {sentence_content}</div>
+                <div>内容: {clickable_content}</div>
                 <br>
                 """
 
             display_html += "</div>"
 
             text_display.setHtml(display_html)
+            
+            # 保存对self的引用，避免闭包问题
+            parent_dialog = self
+            
+            # 连接点击事件处理函数
+            def handle_link_clicked(url):
+                """处理句子内容点击事件"""
+                try:
+                    url_str = url.toString()
+                    logger.info(f"点击了链接: {url_str}")
+                    
+                    if url_str.startswith('navigate:'):
+                        # 解析URL：navigate:key（编号或索引）
+                        key = url_str[9:]  # 去掉 'navigate:' 前缀
+                        
+                        logger.info(f"查找句子key: {key}")
+                        
+                        # 从保存的字典中获取句子信息
+                        if key in sentence_data:
+                            sent_info = sentence_data[key]
+                            sent_content = sent_info.get('content', '')
+                            sent_number = sent_info.get('number', '')
+                            
+                            logger.info(f"找到句子 - 编号: {sent_number}, 内容前50字: {sent_content[:50]}...")
+                            
+                            # 执行导航和高亮
+                            parent_dialog.navigate_to_sentence_content(sent_content, sent_number)
+                        else:
+                            logger.warning(f"未找到key为 {key} 的句子信息")
+                            
+                except Exception as e:
+                    logger.error(f"处理句子链接点击时出错: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    # 不要弹出错误对话框，避免影响用户体验
+            
+            text_display.anchorClicked.connect(handle_link_clicked)
             layout.addWidget(text_display)
 
             # 添加按钮
@@ -3515,7 +3794,13 @@ class ManualCodingDialog(QDialog):
 
         except Exception as e:
             logger.error(f"显示句子详情对话框时出错: {e}")
-            QMessageBox.warning(self, "错误", f"显示句子详情时发生错误: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            # 不弹出错误消息框，避免闪退
+            try:
+                QMessageBox.warning(self, "错误", f"显示句子详情时发生错误: {str(e)}")
+            except:
+                pass  # 如果连错误消息框都失败，也不要崩溃
 
     def merge_sentence_details(self, sentence_details):
         """智能合并句子详情"""
@@ -4036,6 +4321,8 @@ class ManualCodingDialog(QDialog):
             # 移除当前节点
             if parent:
                 parent.removeChild(current_item)
+                # 更新父级节点的句子来源数
+                self.update_parent_sentence_counts(parent)
             else:
                 index = self.coding_tree.indexOfTopLevelItem(current_item)
                 self.coding_tree.takeTopLevelItem(index)
@@ -4475,18 +4762,15 @@ class ManualCodingDialog(QDialog):
 
                 third_item.setText(2, str(second_count))
                 third_item.setText(3, str(len(third_file_sources)) if third_file_sources else "0")  # 文件来源数
-                # 计算三阶编码的句子来源数：累加所有子一阶编码的句子数
+                # 计算三阶编码的句子来源数：累加所有子二阶编码的句子来源数
                 total_third_sentence_count = 0
-                for second_cat, first_contents in second_cats.items():
-                    for content in first_contents:
-                        if isinstance(content, dict):
-                            sentence_count = content.get('sentence_count', 1)
-                            sentence_details = content.get('sentence_details', [])
-                            # 使用句子详情的数量或sentence_count中的较大值
-                            content_sentence_count = max(len(sentence_details), sentence_count)
-                        else:
-                            content_sentence_count = 1
-                        total_third_sentence_count += content_sentence_count
+                # 遍历该三阶编码下的所有二阶编码
+                for j in range(third_item.childCount()):
+                    second_child_item = third_item.child(j)
+                    # 获取二阶编码的句子来源数（第4列）
+                    second_sentence_count_str = second_child_item.text(4)
+                    if second_sentence_count_str and second_sentence_count_str.isdigit():
+                        total_third_sentence_count += int(second_sentence_count_str)
 
                 third_item.setText(4, str(total_third_sentence_count))  # 句子来源数
                 # 修复：三阶编码显示自己的编号(Cxx)而不是子节点编号
@@ -4596,7 +4880,7 @@ class ManualCodingDialog(QDialog):
         """生成二阶编码ID：B01, B02, B03...（B开头，数字递增）"""
         # 统计所有已存在的二阶编码ID，找到最大的编号
         existing_second_numbers = []
-        
+
         if parent_node:
             for j in range(parent_node.childCount()):
                 second_item = parent_node.child(j)
@@ -5581,6 +5865,54 @@ class ManualCodingDialog(QDialog):
             logger.error(f"从文本中查找句子编号时出错: {e}")
             return ""
 
+    def update_parent_sentence_counts(self, item):
+        """递归更新父级节点的句子来源数"""
+        try:
+            if not item:
+                return
+            
+            parent = item.parent()
+            if not parent:
+                return
+            
+            parent_data = parent.data(0, Qt.UserRole)
+            if not parent_data:
+                return
+            
+            level = parent_data.get("level")
+            
+            if level == 2:
+                # 父节点是二阶编码，计算所有子一阶编码的句子来源数总和
+                total_count = 0
+                for i in range(parent.childCount()):
+                    child = parent.child(i)
+                    child_sentence_count_str = child.text(4)  # 第4列是句子来源数
+                    if child_sentence_count_str and child_sentence_count_str.isdigit():
+                        total_count += int(child_sentence_count_str)
+                
+                parent.setText(4, str(total_count))
+                logger.info(f"更新二阶编码 '{parent.text(0)}' 的句子来源数为: {total_count}")
+                
+                # 继续向上更新祖父节点（三阶编码）
+                self.update_parent_sentence_counts(parent)
+                
+            elif level == 3:
+                # 父节点是三阶编码，计算所有子二阶编码的句子来源数总和
+                total_count = 0
+                for i in range(parent.childCount()):
+                    child = parent.child(i)
+                    child_sentence_count_str = child.text(4)  # 第4列是句子来源数
+                    if child_sentence_count_str and child_sentence_count_str.isdigit():
+                        total_count += int(child_sentence_count_str)
+                
+                parent.setText(4, str(total_count))
+                logger.info(f"更新三阶编码 '{parent.text(0)}' 的句子来源数为: {total_count}")
+                
+        except Exception as e:
+            logger.error(f"更新父级句子来源数失败: {e}")
+            import traceback
+            traceback.print_exc()
+
     def handle_drop_on_tree(self, event):
         """处理拖放到树形控件的事件"""
         try:
@@ -5766,6 +6098,9 @@ class ManualCodingDialog(QDialog):
 
                 # 更新目标项的数据
                 item.setData(0, Qt.UserRole, target_item_data)
+
+                # 更新父级节点的句子来源数（二阶和三阶编码）
+                self.update_parent_sentence_counts(item)
 
                 self.update_structured_codes_from_tree()
 

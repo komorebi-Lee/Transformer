@@ -976,7 +976,8 @@ class MainWindow(QMainWindow):
             # 设置三阶编码的统计信息
             third_item.setText(2, str(len(second_cats)))  # 二阶编码数量
             third_item.setText(3, str(len(third_file_sources)))  # 文件来源数
-            third_item.setText(4, str(len(third_sentence_sources)))  # 句子来源数
+            # 暂时设置为0，后面会根据子二阶编码累加更新
+            third_item.setText(4, "0")  # 句子来源数（稍后更新）
 
             # Extracts ID like "C01" from "C01 Category"
             third_id_match = re.match(r'^[A-Z]\d+', third_cat)
@@ -984,6 +985,9 @@ class MainWindow(QMainWindow):
             third_item.setText(5, third_id_display)  # 关联编号显示自身编号
 
             third_item.setData(0, Qt.UserRole, {"level": 3, "name": third_cat})
+            
+            # 用于累加三阶编码的句子来源数
+            third_total_sentence_count = 0
 
             for second_cat, first_contents in second_cats.items():
                 second_item = QTreeWidgetItem(third_item)
@@ -1022,7 +1026,8 @@ class MainWindow(QMainWindow):
                 # 设置二阶编码的统计信息
                 second_item.setText(2, str(second_first_count))  # 一阶编码数量
                 second_item.setText(3, "")  # 二阶编码不显示文件来源数
-                second_item.setText(4, str(len(second_sentence_sources)))  # 句子来源数
+                # 暂时设置为0，后面会根据子一阶编码累加更新
+                second_item.setText(4, "0")  # 句子来源数（稍后更新）
 
                 # Extracts ID like "B01" from "B01 Category"
                 second_id_match = re.match(r'^[A-Z]\d+', second_cat)
@@ -1030,6 +1035,9 @@ class MainWindow(QMainWindow):
                 second_item.setText(5, second_id_display)  # 关联编号显示自身编号
 
                 second_item.setData(0, Qt.UserRole, {"level": 2, "name": second_cat, "parent": third_cat})
+
+                # 用于累加二阶编码的句子来源数
+                second_total_sentence_count = 0
 
                 for content_data in first_contents:
                     first_item = QTreeWidgetItem(second_item)
@@ -1161,6 +1169,9 @@ class MainWindow(QMainWindow):
                     sentence_source_count = len(first_sentence_sources) if first_sentence_sources else 1
                     first_item.setText(3, str(file_source_count))  # 文件来源数
                     first_item.setText(4, str(sentence_source_count))  # 句子来源数
+                    
+                    # 累加到二阶编码的句子来源数
+                    second_total_sentence_count += sentence_source_count
 
                     # 修复：关联编号显示句子ID（如 [1]）而不是 Code ID
                     associated_id_display = ""
@@ -1200,8 +1211,15 @@ class MainWindow(QMainWindow):
                         "sentence_details": sentence_details,
                         "sentence_ids": list(all_ids)  # 存储句子编号列表，用于导航
                     })
+                
+                # 更新二阶编码的句子来源数（所有子一阶编码的句子来源数之和）
+                second_item.setText(4, str(second_total_sentence_count))
+                # 累加到三阶编码的句子来源数
+                third_total_sentence_count += second_total_sentence_count
 
+            # 更新三阶编码的句子来源数（所有子二阶编码的句子来源数之和）
             third_item.setText(2, str(len(second_cats)))  # 二阶编码数量
+            third_item.setText(4, str(third_total_sentence_count))  # 句子来源数
 
         self.coding_tree.expandAll()
 
