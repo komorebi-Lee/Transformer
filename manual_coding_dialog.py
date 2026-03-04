@@ -1370,59 +1370,9 @@ class ManualCodingDialog(QDialog):
 
         return f"A{next_number:02d}"
 
-    def generate_second_code_id(self, third_letter="B", parent_node=None):
-        """生成二阶编码ID：B01, B02, B03...（B开头，数字递增）
 
-        Args:
-            third_letter: 编码前缀，默认为"B"
-            parent_node: 父节点（三阶编码），如果提供，则只统计该父节点下的二阶编码
-        """
-        # 统计已存在的二阶编码ID
-        existing_second_numbers = []
+    # generate_second_code_id 已移至后面定义（约4900行），此处原有定义已删除以避免混淆
 
-        if parent_node:
-            # 只统计指定父节点下的二阶编码
-            for j in range(parent_node.childCount()):
-                second_item = parent_node.child(j)
-                second_data = second_item.data(0, Qt.UserRole)
-                if second_data and second_data.get("level") == 2:
-                    second_name = second_item.text(0)
-                    # 检查二阶名称是否以B开头并有数字
-                    if second_name.startswith('B'):
-                        # 提取两位数字部分
-                        import re
-                        match = re.search(r'\d{2}', second_name)
-                        if match:
-                            existing_second_numbers.append(int(match.group()))
-        else:
-            # 统计所有已存在的二阶编码ID
-            for i in range(self.coding_tree.topLevelItemCount()):
-                top_item = self.coding_tree.topLevelItem(i)
-                # 检查是否是三阶编码节点
-                top_data = top_item.data(0, Qt.UserRole)
-                if top_data and top_data.get("level") == 3:
-                    # 统计该三阶编码下的二阶编码
-                    for j in range(top_item.childCount()):
-                        second_item = top_item.child(j)
-                        second_data = second_item.data(0, Qt.UserRole)
-                        if second_data and second_data.get("level") == 2:
-                            second_name = second_item.text(0)
-                            # 检查二阶名称是否以B开头并有数字
-                            if second_name.startswith('B'):
-                                # 提取两位数字部分
-                                import re
-                                match = re.search(r'\d{2}', second_name)
-                                if match:
-                                    existing_second_numbers.append(int(match.group()))
-
-        # 找到下一个可用的编号
-        existing_second_numbers = list(set(existing_second_numbers))  # 去重
-        if existing_second_numbers:
-            next_number = max(existing_second_numbers) + 1
-        else:
-            next_number = 1
-
-        return f"B{next_number:02d}"
 
     def reorder_unclassified_second_codes(self):
         """对未分类的二阶编码（没有父节点的二阶编码）进行重新编序，从B01开始依次递增编号"""
@@ -4877,42 +4827,40 @@ class ManualCodingDialog(QDialog):
         return True, clean_name.strip(), ""
 
     def generate_second_code_id(self, third_letter="B", parent_node=None):
-        """生成二阶编码ID：B01, B02, B03...（B开头，数字递增）"""
-        # 统计所有已存在的二阶编码ID，找到最大的编号
+        """生成二阶编码ID：B01, B02, B03...（修复：独立二阶只在未分类中计数）"""
         existing_second_numbers = []
+        import re
 
         if parent_node:
+            # Case 1: 指定了父节点（三阶），统计该节点下的二阶
+            # 这种情况生成的编码应该跟随父节点的ID规则（如果父节点本身有编码规则）
+            # 或者如果是从 add_parent_second_for_first 调用，parent_node 通常为 None
             for j in range(parent_node.childCount()):
                 second_item = parent_node.child(j)
                 second_data = second_item.data(0, Qt.UserRole)
                 if second_data and second_data.get("level") == 2:
                     second_name = second_item.text(0)
-                    if second_name.startswith('B'):
-                        import re
-                        match = re.search(r'\d{2}', second_name)
-                        if match:
-                            existing_second_numbers.append(int(match.group()))
+                    match = re.search(f"{third_letter}(\\d{{2}})", second_name)
+                    if match:
+                        existing_second_numbers.append(int(match.group(1)))
         else:
+            # Case 2: 未指定父节点（通过“为一阶添加父节点(二阶)”添加的独立二阶）
+            # 关键修改：此时只统计同样是独立二阶（Top Level）的编码，不再统计三阶下的二阶
+            # 从而避免受自动编码（已在三阶下）的影响
             for i in range(self.coding_tree.topLevelItemCount()):
-                top_item = self.coding_tree.topLevelItem(i)
-                for j in range(top_item.childCount()):
-                    second_item = top_item.child(j)
-                    second_data = second_item.data(0, Qt.UserRole)
-                    if second_data and second_data.get("level") == 2:
-                        second_name = second_item.text(0)
-                        # 提取编号部分
-                        import re
-                        parts = second_name.split(' ', 1)
-                        if len(parts) > 0:
-                            code_part = parts[0]
-                            # 检查编号是否以字母开头并有两位数字
-                            match = re.match(r'^([A-Z])(\d{2})$', code_part)
-                            if match:
-                                letter_part = match.group(1)
-                                number_part = match.group(2)
-                                # 如果是B开头的编号，则记录数字
-                                if letter_part == 'B':
-                                    existing_second_numbers.append(int(number_part))
+                item = self.coding_tree.topLevelItem(i)
+                item_data = item.data(0, Qt.UserRole)
+                
+                # 只统计顶层的二阶编码
+                if item_data and item_data.get("level") == 2:
+                    second_name = item.text(0)
+                    # 尝试匹配 B01, B02 等
+                    match = re.match(r'^([A-Z])(\d{2})', second_name.split(' ')[0])
+                    if match:
+                        letter = match.group(1)
+                        number = int(match.group(2))
+                        if letter == third_letter:
+                            existing_second_numbers.append(number)
 
         # 找到下一个可用的编号
         if existing_second_numbers:
@@ -4920,7 +4868,8 @@ class ManualCodingDialog(QDialog):
         else:
             next_number = 1
 
-        return f"B{next_number:02d}"
+        return f"{third_letter}{next_number:02d}"
+
 
     def generate_third_code_id(self):
         """生成三阶编码ID：C01, C02, C03...（C开头，数字递增）"""
