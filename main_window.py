@@ -585,6 +585,12 @@ class MainWindow(QMainWindow):
     def on_file_selected(self, item):
         """文件选择事件"""
         file_path = item.data(Qt.UserRole)
+
+        # 优先显示自动编码缓存的内容（带有一阶编码标记）
+        if hasattr(self, 'auto_coding_cache') and file_path in self.auto_coding_cache:
+            self.text_display.setText(self.auto_coding_cache[file_path])
+            return
+
         if file_path in self.loaded_files:
             file_data = self.loaded_files[file_path]
             # 优先显示编号内容，如果存在的话
@@ -754,6 +760,10 @@ class MainWindow(QMainWindow):
             # 保存自动编码生成的文本内容到缓存
             self.save_auto_coding_to_cache()
 
+            # 刷新当前显示
+            if self.file_list.currentItem():
+                self.on_file_selected(self.file_list.currentItem())
+
             self.statusBar().showMessage("自动编码生成完成")
 
         except Exception as e:
@@ -780,11 +790,12 @@ class MainWindow(QMainWindow):
                     continue
 
                 # 复制编号内容作为基础
-                content_with_markers = numbered_content.copy() if isinstance(numbered_content, str) else str(
-                    numbered_content)
+                content_with_markers = str(numbered_content)
 
-                # 收集所有一阶编码
+                # 收集本文件相关的所有一阶编码
                 first_level_codes = []
+                target_filename = file_data.get('filename', os.path.basename(file_path))
+
                 if self.structured_codes:
                     for third_cat, second_cats in self.structured_codes.items():
                         for second_cat, first_contents in second_cats.items():
@@ -792,18 +803,23 @@ class MainWindow(QMainWindow):
                                 if isinstance(first_content, dict):
                                     code_id = first_content.get('code_id', '')
                                     if code_id and code_id.startswith('A'):
-                                        # 获取编码对应的句子详情
                                         sentence_details = first_content.get('sentence_details', [])
-                                        # 优先使用原始句子，而不是抽象后的内容
-                                        original_sentence = ""
-                                        if sentence_details and isinstance(sentence_details[0], dict):
-                                            # 尝试获取原始句子
-                                            original_sentence = sentence_details[0].get('original_content', '')
-                                        # 如果没有原始句子，使用编码内容
-                                        if not original_sentence:
-                                            original_sentence = first_content.get('content', '')
-                                        if original_sentence:
-                                            first_level_codes.append((code_id, original_sentence))
+                                        
+                                        # 遍历所有句子详情，查找属于当前文件的
+                                        has_details = False
+                                        for detail in sentence_details:
+                                            if isinstance(detail, dict):
+                                                has_details = True
+                                                if detail.get('filename') == target_filename:
+                                                    original_sentence = detail.get('original_content', '')
+                                                    if original_sentence:
+                                                        first_level_codes.append((code_id, original_sentence))
+                                        
+                                        # 如果没有 sentence_details (旧数据兼容)，尝试匹配内容
+                                        if not has_details:
+                                             original_sentence = first_content.get('content', '')
+                                             if original_sentence:
+                                                 first_level_codes.append((code_id, original_sentence))
 
                 # 为每个一阶编码添加标记
                 import re
@@ -2460,6 +2476,12 @@ class MainWindow(QMainWindow):
 
         if ok and project_name.strip():
             try:
+                # 在保存前，将自动编码缓存中的内容也更新到loaded_files中
+                if hasattr(self, 'auto_coding_cache') and self.auto_coding_cache:
+                    for file_path, content in self.auto_coding_cache.items():
+                        if file_path in self.loaded_files:
+                            self.loaded_files[file_path]['full_marked_content'] = content
+
                 success = self.project_manager.save_project(project_name.strip(), self.loaded_files,
                                                             self.structured_codes)
                 if success:
@@ -2494,14 +2516,34 @@ class MainWindow(QMainWindow):
 
                     # 更新文件列表
                     self.file_list.clear()
+                    
+                    # 恢复自动编码缓存
+                    if not hasattr(self, 'auto_coding_cache'):
+                        self.auto_coding_cache = {}
+                    else:
+                        self.auto_coding_cache.clear()
+
                     for file_path, file_data in self.loaded_files.items():
                         filename = file_data.get('filename', os.path.basename(file_path))
                         item = QListWidgetItem(filename)
                         item.setData(Qt.UserRole, file_path)
                         self.file_list.addItem(item)
+                        
+                        # 如果存在已保存的完整标记内容，恢复到缓存中
+                        if 'full_marked_content' in file_data:
+                            self.auto_coding_cache[file_path] = file_data['full_marked_content']
 
                     # 更新编码树
                     self.update_coding_tree()
+
+                    # 自动选择第一个文件并显示
+                    if self.file_list.count() > 0:
+                        first_item = self.file_list.item(0)
+                        self.file_list.setCurrentItem(first_item)
+                        self.on_file_selected(first_item)
+
+                    QMessageBox.information(self, "成功", f"项目 '{project_name}' 已加载")
+                    self.statusBar().showMessage(f"项目已加载: {project_name}")
 
                     # 如果有选中的文件，显示其内容
                     if self.file_list.count() > 0:
