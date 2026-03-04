@@ -1,4 +1,4 @@
-﻿import os
+import os
 import json
 import re
 from datetime import datetime
@@ -12,6 +12,7 @@ from PyQt5.QtCore import Qt, QMimeData, QTimer, QEvent, QRegularExpression
 from PyQt5.QtGui import QTextDocument, QTextCursor
 from PyQt5.QtGui import QFont, QColor, QDrag
 import logging
+from path_manager import PathManager
 
 logger = logging.getLogger(__name__)
 
@@ -1370,9 +1371,59 @@ class ManualCodingDialog(QDialog):
 
         return f"A{next_number:02d}"
 
+    def generate_second_code_id(self, third_letter="B", parent_node=None):
+        """生成二阶编码ID：B01, B02, B03...（B开头，数字递增）
 
-    # generate_second_code_id 已移至后面定义（约4900行），此处原有定义已删除以避免混淆
+        Args:
+            third_letter: 编码前缀，默认为"B"
+            parent_node: 父节点（三阶编码），如果提供，则只统计该父节点下的二阶编码
+        """
+        # 统计已存在的二阶编码ID
+        existing_second_numbers = []
 
+        if parent_node:
+            # 只统计指定父节点下的二阶编码
+            for j in range(parent_node.childCount()):
+                second_item = parent_node.child(j)
+                second_data = second_item.data(0, Qt.UserRole)
+                if second_data and second_data.get("level") == 2:
+                    second_name = second_item.text(0)
+                    # 检查二阶名称是否以B开头并有数字
+                    if second_name.startswith('B'):
+                        # 提取两位数字部分
+                        import re
+                        match = re.search(r'\d{2}', second_name)
+                        if match:
+                            existing_second_numbers.append(int(match.group()))
+        else:
+            # 统计所有已存在的二阶编码ID
+            for i in range(self.coding_tree.topLevelItemCount()):
+                top_item = self.coding_tree.topLevelItem(i)
+                # 检查是否是三阶编码节点
+                top_data = top_item.data(0, Qt.UserRole)
+                if top_data and top_data.get("level") == 3:
+                    # 统计该三阶编码下的二阶编码
+                    for j in range(top_item.childCount()):
+                        second_item = top_item.child(j)
+                        second_data = second_item.data(0, Qt.UserRole)
+                        if second_data and second_data.get("level") == 2:
+                            second_name = second_item.text(0)
+                            # 检查二阶名称是否以B开头并有数字
+                            if second_name.startswith('B'):
+                                # 提取两位数字部分
+                                import re
+                                match = re.search(r'\d{2}', second_name)
+                                if match:
+                                    existing_second_numbers.append(int(match.group()))
+
+        # 找到下一个可用的编号
+        existing_second_numbers = list(set(existing_second_numbers))  # 去重
+        if existing_second_numbers:
+            next_number = max(existing_second_numbers) + 1
+        else:
+            next_number = 1
+
+        return f"B{next_number:02d}"
 
     def reorder_unclassified_second_codes(self):
         """对未分类的二阶编码（没有父节点的二阶编码）进行重新编序，从B01开始依次递增编号"""
@@ -2123,8 +2174,9 @@ class ManualCodingDialog(QDialog):
     def navigate_to_sentence_content(self, sentence_content, sentence_number=""):
         """导航到句子内容并高亮显示 - 增强稳定性版"""
         try:
-            logger.info(f"导航请求: Content='{sentence_content[:20] if sentence_content else 'None'}...', Number='{sentence_number}'")
-            
+            logger.info(
+                f"导航请求: Content='{sentence_content[:20] if sentence_content else 'None'}...', Number='{sentence_number}'")
+
             # 安全检查：确保UI组件存在
             if not hasattr(self, 'text_display') or self.text_display is None:
                 logger.error("text_display 组件不存在")
@@ -2144,7 +2196,7 @@ class ManualCodingDialog(QDialog):
             import re
             found_pos = -1
             found_length = 0
-            
+
             # 清理输入内容，处理可能的 None
             sentence_content = sentence_content if sentence_content else ""
             sentence_number = sentence_number if sentence_number else ""
@@ -2156,7 +2208,7 @@ class ManualCodingDialog(QDialog):
                     # 查找所有该编号的出现位置
                     pattern = r'\[' + re.escape(sentence_number) + r'\]'
                     matches = list(re.finditer(pattern, current_text))
-                    
+
                     for match in matches:
                         num_start = match.start()
                         # 在编号前搜索内容
@@ -2164,7 +2216,7 @@ class ManualCodingDialog(QDialog):
                         search_range = len(sentence_content) + 200
                         search_start = max(0, num_start - search_range)
                         text_before = current_text[search_start:num_start]
-                        
+
                         # 检查内容是否在编号前的文本中
                         idx = text_before.rfind(sentence_content)
                         if idx != -1:
@@ -2196,7 +2248,7 @@ class ManualCodingDialog(QDialog):
                     if len(sentence_content) > 30:
                         prefix = sentence_content[:20]
                         suffix = sentence_content[-10:]
-                        
+
                         # 查找前缀
                         start_idx = current_text.find(prefix)
                         if start_idx != -1:
@@ -2204,15 +2256,15 @@ class ManualCodingDialog(QDialog):
                             # 允许内容长度有 +/- 20% 甚至更多的变化
                             expected_len = len(sentence_content)
                             max_dist = int(expected_len * 1.5) + 50
-                            
+
                             snippet = current_text[start_idx:start_idx + max_dist]
                             suffix_idx = snippet.find(suffix)
-                            
+
                             if suffix_idx != -1:
                                 found_pos = start_idx
                                 found_length = suffix_idx + len(suffix)
                                 logger.info("策略3成功: 前后缀匹配")
-                    
+
                     # 备用：仅前缀匹配 (如果句子较短或没找到后缀)
                     elif len(sentence_content) > 5:
                         idx = current_text.find(sentence_content[:10])
@@ -2233,14 +2285,14 @@ class ManualCodingDialog(QDialog):
                         # 尝试向前选中一段文本作为一个句子 (寻找句末标点)
                         scan_start = max(0, num_pos - 200)
                         text_scan = current_text[scan_start:num_pos]
-                        
+
                         # 寻找最后一个句末标点
                         last_punct = -1
                         for p in ['。', '！', '？', '\n', '!', '?', '.']:
                             p_idx = text_scan.rfind(p)
                             if p_idx > last_punct:
                                 last_punct = p_idx
-                        
+
                         if last_punct != -1:
                             found_pos = scan_start + last_punct + 1
                             found_length = num_pos - found_pos
@@ -2248,7 +2300,7 @@ class ManualCodingDialog(QDialog):
                             # 没找到标点，就默认选中前50个字
                             found_pos = max(0, num_pos - 50)
                             found_length = num_pos - found_pos
-                            
+
                         logger.info(f"策略4成功: 仅通过编号 [{sentence_number}] 估算位置")
                 except Exception as e:
                     logger.error(f"策略4搜索出错: {e}")
@@ -2258,7 +2310,7 @@ class ManualCodingDialog(QDialog):
                 # 再次修正长度，防止越界
                 if found_pos + found_length > len(current_text):
                     found_length = len(current_text) - found_pos
-                
+
                 if found_length > 0:
                     self._highlight_and_scroll_to_position(found_pos, found_length)
                     if hasattr(self, 'statusBar'):
@@ -2275,7 +2327,6 @@ class ManualCodingDialog(QDialog):
             import traceback
             traceback.print_exc()
 
-    
     def _highlight_and_scroll_to_position(self, start_pos, length):
         """在指定位置高亮文本并滚动到该位置"""
         try:
@@ -2283,12 +2334,12 @@ class ManualCodingDialog(QDialog):
             if start_pos < 0 or length <= 0:
                 logger.warning(f"无效的位置参数: start_pos={start_pos}, length={length}")
                 return
-            
+
             # 验证text_display是否存在
             if not hasattr(self, 'text_display') or self.text_display is None:
                 logger.error("text_display不存在")
                 return
-            
+
             # 获取文本长度，确保不越界
             try:
                 current_text = self.text_display.toPlainText()
@@ -2296,41 +2347,41 @@ class ManualCodingDialog(QDialog):
             except Exception as e:
                 logger.error(f"获取文本长度失败: {e}")
                 return
-                
+
             if start_pos >= text_length:
                 logger.warning(f"起始位置超出文本范围: start_pos={start_pos}, text_length={text_length}")
                 return
-            
+
             # 调整长度，确保不越界
             if start_pos + length > text_length:
                 length = text_length - start_pos
                 logger.info(f"调整高亮长度以避免越界: new_length={length}")
-            
+
             if length <= 0:
                 logger.warning(f"调整后长度无效: {length}")
                 return
-            
+
             # 创建光标并设置选区
             cursor = self.text_display.textCursor()
             cursor.setPosition(start_pos)
             cursor.setPosition(start_pos + length, QTextCursor.KeepAnchor)
-            
+
             # 设置高亮
             selection = QTextEdit.ExtraSelection()
             selection.cursor = cursor
             selection.format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
             selection.format.setForeground(QColor(0, 0, 0))  # 黑色文字
             self.text_display.setExtraSelections([selection])
-            
+
             # 将光标移动到选区开始位置
             cursor.setPosition(start_pos)
             self.text_display.setTextCursor(cursor)
-            
+
             # 确保光标可见（滚动到该位置）
             self.text_display.ensureCursorVisible()
-            
+
             logger.info(f"成功高亮位置: start={start_pos}, length={length}")
-            
+
         except Exception as e:
             logger.error(f"高亮和滚动到位置时出错: {e}")
             import traceback
@@ -3329,13 +3380,13 @@ class ManualCodingDialog(QDialog):
             self.save_current_file_coding_marks()
 
             # 确保目录存在
-            save_dir = os.path.join(os.getcwd(), "projects", "手动编码编码树保存")
-            os.makedirs(save_dir, exist_ok=True)
+            save_dir = PathManager.get_manual_coding_tree_save_dir()
+            PathManager.ensure_dir(save_dir)
 
             # 生成文件名
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"编码树_{timestamp}.json"
-            file_path = os.path.join(save_dir, filename)
+            file_path = PathManager.join(save_dir, filename)
 
             # 从树形控件构建完整的数据结构
             tree_data = self.extract_tree_data()
@@ -3350,7 +3401,7 @@ class ManualCodingDialog(QDialog):
             }
 
             # 保存完整的编码结构和文件状态
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with PathManager.safe_open(file_path, 'w', encoding='utf-8') as f:
                 json.dump(save_data, f, ensure_ascii=False, indent=2)
 
             QMessageBox.information(self, "成功", f"编码树已保存到: {file_path}\n\n包含了所有文件的编码标记状态")
@@ -3366,8 +3417,8 @@ class ManualCodingDialog(QDialog):
             from PyQt5.QtWidgets import QFileDialog
 
             # 设置导入路径为手动编码编码树保存文件夹
-            import_dir = os.path.join(os.path.dirname(__file__), "projects", "手动编码编码树保存")
-            os.makedirs(import_dir, exist_ok=True)
+            import_dir = PathManager.get_manual_coding_tree_save_dir()
+            PathManager.ensure_dir(import_dir)
 
             # 获取导入路径
             file_path, _ = QFileDialog.getOpenFileName(
@@ -3376,7 +3427,7 @@ class ManualCodingDialog(QDialog):
 
             if file_path:
                 # 读取编码结构
-                with open(file_path, 'r', encoding='utf-8') as f:
+                with PathManager.safe_open(file_path, 'r', encoding='utf-8') as f:
                     imported_data = json.load(f)
 
                 # 检查是新格式还是旧格式
@@ -3443,8 +3494,8 @@ class ManualCodingDialog(QDialog):
             from PyQt5.QtWidgets import QFileDialog
 
             # 设置导入路径为手动编码保存编码文件夹
-            import_dir = os.path.join(os.path.dirname(__file__), "projects", "手动编码保存编码")
-            os.makedirs(import_dir, exist_ok=True)
+            import_dir = PathManager.get_manual_coding_save_dir()
+            PathManager.ensure_dir(import_dir)
 
             # 获取导入路径
             file_path, _ = QFileDialog.getOpenFileName(
@@ -3453,7 +3504,7 @@ class ManualCodingDialog(QDialog):
 
             if file_path:
                 # 读取编码结果
-                with open(file_path, 'r', encoding='utf-8') as f:
+                with PathManager.safe_open(file_path, 'r', encoding='utf-8') as f:
                     coding_data = json.load(f)
 
                 # 询问用户是否确认导入
@@ -3650,7 +3701,7 @@ class ManualCodingDialog(QDialog):
 
             # 保存句子信息的字典，用于点击时查找
             sentence_data = {}
-            
+
             # 添加多个句子显示
             for i, sentence in enumerate(sentences_list, 1):
                 if i == 1:
@@ -3672,10 +3723,11 @@ class ManualCodingDialog(QDialog):
                     'content': sentence_content,
                     'number': sentence_number
                 }
-                
+
                 # 创建可点击的链接，只使用编号作为href，避免URL编码复杂问题
                 # HTML转义句子内容以防止XSS
-                safe_content = sentence_content.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&#39;')
+                safe_content = sentence_content.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace(
+                    '"', '&quot;').replace("'", '&#39;')
                 clickable_content = f"<a href='navigate:{key}' style='text-decoration: none; color: black; cursor: pointer;'>{safe_content}</a>"
 
                 display_html += f"""
@@ -3690,42 +3742,42 @@ class ManualCodingDialog(QDialog):
             display_html += "</div>"
 
             text_display.setHtml(display_html)
-            
+
             # 保存对self的引用，避免闭包问题
             parent_dialog = self
-            
+
             # 连接点击事件处理函数
             def handle_link_clicked(url):
                 """处理句子内容点击事件"""
                 try:
                     url_str = url.toString()
                     logger.info(f"点击了链接: {url_str}")
-                    
+
                     if url_str.startswith('navigate:'):
                         # 解析URL：navigate:key（编号或索引）
                         key = url_str[9:]  # 去掉 'navigate:' 前缀
-                        
+
                         logger.info(f"查找句子key: {key}")
-                        
+
                         # 从保存的字典中获取句子信息
                         if key in sentence_data:
                             sent_info = sentence_data[key]
                             sent_content = sent_info.get('content', '')
                             sent_number = sent_info.get('number', '')
-                            
+
                             logger.info(f"找到句子 - 编号: {sent_number}, 内容前50字: {sent_content[:50]}...")
-                            
+
                             # 执行导航和高亮
                             parent_dialog.navigate_to_sentence_content(sent_content, sent_number)
                         else:
                             logger.warning(f"未找到key为 {key} 的句子信息")
-                            
+
                 except Exception as e:
                     logger.error(f"处理句子链接点击时出错: {e}")
                     import traceback
                     traceback.print_exc()
                     # 不要弹出错误对话框，避免影响用户体验
-            
+
             text_display.anchorClicked.connect(handle_link_clicked)
             layout.addWidget(text_display)
 
@@ -4827,40 +4879,42 @@ class ManualCodingDialog(QDialog):
         return True, clean_name.strip(), ""
 
     def generate_second_code_id(self, third_letter="B", parent_node=None):
-        """生成二阶编码ID：B01, B02, B03...（修复：独立二阶只在未分类中计数）"""
+        """生成二阶编码ID：B01, B02, B03...（B开头，数字递增）"""
+        # 统计所有已存在的二阶编码ID，找到最大的编号
         existing_second_numbers = []
-        import re
 
         if parent_node:
-            # Case 1: 指定了父节点（三阶），统计该节点下的二阶
-            # 这种情况生成的编码应该跟随父节点的ID规则（如果父节点本身有编码规则）
-            # 或者如果是从 add_parent_second_for_first 调用，parent_node 通常为 None
             for j in range(parent_node.childCount()):
                 second_item = parent_node.child(j)
                 second_data = second_item.data(0, Qt.UserRole)
                 if second_data and second_data.get("level") == 2:
                     second_name = second_item.text(0)
-                    match = re.search(f"{third_letter}(\\d{{2}})", second_name)
-                    if match:
-                        existing_second_numbers.append(int(match.group(1)))
+                    if second_name.startswith('B'):
+                        import re
+                        match = re.search(r'\d{2}', second_name)
+                        if match:
+                            existing_second_numbers.append(int(match.group()))
         else:
-            # Case 2: 未指定父节点（通过“为一阶添加父节点(二阶)”添加的独立二阶）
-            # 关键修改：此时只统计同样是独立二阶（Top Level）的编码，不再统计三阶下的二阶
-            # 从而避免受自动编码（已在三阶下）的影响
             for i in range(self.coding_tree.topLevelItemCount()):
-                item = self.coding_tree.topLevelItem(i)
-                item_data = item.data(0, Qt.UserRole)
-                
-                # 只统计顶层的二阶编码
-                if item_data and item_data.get("level") == 2:
-                    second_name = item.text(0)
-                    # 尝试匹配 B01, B02 等
-                    match = re.match(r'^([A-Z])(\d{2})', second_name.split(' ')[0])
-                    if match:
-                        letter = match.group(1)
-                        number = int(match.group(2))
-                        if letter == third_letter:
-                            existing_second_numbers.append(number)
+                top_item = self.coding_tree.topLevelItem(i)
+                for j in range(top_item.childCount()):
+                    second_item = top_item.child(j)
+                    second_data = second_item.data(0, Qt.UserRole)
+                    if second_data and second_data.get("level") == 2:
+                        second_name = second_item.text(0)
+                        # 提取编号部分
+                        import re
+                        parts = second_name.split(' ', 1)
+                        if len(parts) > 0:
+                            code_part = parts[0]
+                            # 检查编号是否以字母开头并有两位数字
+                            match = re.match(r'^([A-Z])(\d{2})$', code_part)
+                            if match:
+                                letter_part = match.group(1)
+                                number_part = match.group(2)
+                                # 如果是B开头的编号，则记录数字
+                                if letter_part == 'B':
+                                    existing_second_numbers.append(int(number_part))
 
         # 找到下一个可用的编号
         if existing_second_numbers:
@@ -4868,8 +4922,7 @@ class ManualCodingDialog(QDialog):
         else:
             next_number = 1
 
-        return f"{third_letter}{next_number:02d}"
-
+        return f"B{next_number:02d}"
 
     def generate_third_code_id(self):
         """生成三阶编码ID：C01, C02, C03...（C开头，数字递增）"""
@@ -4911,8 +4964,8 @@ class ManualCodingDialog(QDialog):
             self.save_current_file_coding_marks()
 
             # 确保目录存在
-            save_dir = os.path.join(os.getcwd(), "projects", "手动编码保存编码")
-            os.makedirs(save_dir, exist_ok=True)
+            save_dir = PathManager.get_manual_coding_save_dir()
+            PathManager.ensure_dir(save_dir)
 
             # 获取当前编码进度信息
             progress_info = self.get_current_coding_progress()
@@ -4920,7 +4973,7 @@ class ManualCodingDialog(QDialog):
             # 生成保存文件名
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"手动编码_{timestamp}.json"
-            file_path = os.path.join(save_dir, filename)
+            file_path = PathManager.join(save_dir, filename)
 
             # 构建保存数据
             save_data = {
@@ -4933,7 +4986,7 @@ class ManualCodingDialog(QDialog):
             }
 
             # 保存数据
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with PathManager.safe_open(file_path, 'w', encoding='utf-8') as f:
                 json.dump(save_data, f, ensure_ascii=False, indent=2)
 
             # 保存最后编码位置信息（用于下次自动恢复）
@@ -5023,10 +5076,10 @@ class ManualCodingDialog(QDialog):
     def save_last_coding_position(self, progress_info):
         """保存最后编码位置（用于自动恢复）"""
         try:
-            position_file = os.path.join(os.getcwd(), "projects", "last_coding_position.json")
-            os.makedirs(os.path.dirname(position_file), exist_ok=True)
+            position_file = PathManager.get_last_position_file()
+            PathManager.ensure_dir(os.path.dirname(position_file))
 
-            with open(position_file, 'w', encoding='utf-8') as f:
+            with PathManager.safe_open(position_file, 'w', encoding='utf-8') as f:
                 json.dump(progress_info, f, ensure_ascii=False, indent=2)
 
             logger.info("最后编码位置已保存")
@@ -5037,11 +5090,11 @@ class ManualCodingDialog(QDialog):
     def restore_last_coding_position(self):
         """恢复到上次编码的位置"""
         try:
-            position_file = os.path.join(os.getcwd(), "projects", "last_coding_position.json")
-            if not os.path.exists(position_file):
+            position_file = PathManager.get_last_position_file()
+            if not PathManager.exists(position_file):
                 return
 
-            with open(position_file, 'r', encoding='utf-8') as f:
+            with PathManager.safe_open(position_file, 'r', encoding='utf-8') as f:
                 progress_info = json.load(f)
 
             # 恢复文件选择
@@ -5080,11 +5133,11 @@ class ManualCodingDialog(QDialog):
     def check_and_restore_last_coding_position(self):
         """检查是否有可恢复的编码进度，并询问用户是否恢复"""
         try:
-            position_file = os.path.join(os.getcwd(), "projects", "last_coding_position.json")
-            if not os.path.exists(position_file):
+            position_file = PathManager.get_last_position_file()
+            if not PathManager.exists(position_file):
                 return  # 没有上次的进度文件
 
-            with open(position_file, 'r', encoding='utf-8') as f:
+            with PathManager.safe_open(position_file, 'r', encoding='utf-8') as f:
                 progress_info = json.load(f)
 
             # 检查是否有有效的进度信息
@@ -5819,17 +5872,17 @@ class ManualCodingDialog(QDialog):
         try:
             if not item:
                 return
-            
+
             parent = item.parent()
             if not parent:
                 return
-            
+
             parent_data = parent.data(0, Qt.UserRole)
             if not parent_data:
                 return
-            
+
             level = parent_data.get("level")
-            
+
             if level == 2:
                 # 父节点是二阶编码，计算所有子一阶编码的句子来源数总和
                 total_count = 0
@@ -5838,13 +5891,13 @@ class ManualCodingDialog(QDialog):
                     child_sentence_count_str = child.text(4)  # 第4列是句子来源数
                     if child_sentence_count_str and child_sentence_count_str.isdigit():
                         total_count += int(child_sentence_count_str)
-                
+
                 parent.setText(4, str(total_count))
                 logger.info(f"更新二阶编码 '{parent.text(0)}' 的句子来源数为: {total_count}")
-                
+
                 # 继续向上更新祖父节点（三阶编码）
                 self.update_parent_sentence_counts(parent)
-                
+
             elif level == 3:
                 # 父节点是三阶编码，计算所有子二阶编码的句子来源数总和
                 total_count = 0
@@ -5853,10 +5906,10 @@ class ManualCodingDialog(QDialog):
                     child_sentence_count_str = child.text(4)  # 第4列是句子来源数
                     if child_sentence_count_str and child_sentence_count_str.isdigit():
                         total_count += int(child_sentence_count_str)
-                
+
                 parent.setText(4, str(total_count))
                 logger.info(f"更新三阶编码 '{parent.text(0)}' 的句子来源数为: {total_count}")
-                
+
         except Exception as e:
             logger.error(f"更新父级句子来源数失败: {e}")
             import traceback

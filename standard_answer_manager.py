@@ -5,6 +5,8 @@ from typing import Dict, List, Any, Optional, Set
 from datetime import datetime
 import shutil
 import re
+from config import Config
+from path_manager import PathManager
 
 logger = logging.getLogger(__name__)
 
@@ -13,12 +15,12 @@ class StandardAnswerManager:
     """标准答案管理器 - 增强版，支持增量保存"""
 
     def __init__(self):
-        self.standard_answers_dir = "standard_answers"
-        self.backup_dir = os.path.join(self.standard_answers_dir, "backups")
-        self.modifications_dir = os.path.join(self.standard_answers_dir, "modifications")
-        os.makedirs(self.standard_answers_dir, exist_ok=True)
-        os.makedirs(self.backup_dir, exist_ok=True)
-        os.makedirs(self.modifications_dir, exist_ok=True)
+        self.standard_answers_dir = PathManager.get_standard_answers_dir()
+        self.backup_dir = PathManager.get_backup_dir()
+        self.modifications_dir = PathManager.get_modifications_dir()
+        PathManager.ensure_dir(self.standard_answers_dir)
+        PathManager.ensure_dir(self.backup_dir)
+        PathManager.ensure_dir(self.modifications_dir)
 
         # 当前标准答案
         self.current_answers = {}
@@ -52,8 +54,8 @@ class StandardAnswerManager:
             }
 
             # 保存文件
-            file_path = os.path.join(self.standard_answers_dir, f"{version_id}.json")
-            with open(file_path, 'w', encoding='utf-8') as f:
+            file_path = PathManager.join(self.standard_answers_dir, f"{version_id}.json")
+            with PathManager.safe_open(file_path, 'w', encoding='utf-8') as f:
                 json.dump(standard_answer, f, ensure_ascii=False, indent=2)
 
             # 创建备份
@@ -128,13 +130,13 @@ class StandardAnswerManager:
             }
 
             # 保存完整文件
-            file_path = os.path.join(self.standard_answers_dir, f"{version_id}.json")
-            with open(file_path, 'w', encoding='utf-8') as f:
+            file_path = PathManager.join(self.standard_answers_dir, f"{version_id}.json")
+            with PathManager.safe_open(file_path, 'w', encoding='utf-8') as f:
                 json.dump(standard_answer, f, ensure_ascii=False, indent=2)
 
             # 保存修改详情（单独文件）
-            modification_file = os.path.join(self.modifications_dir, f"modifications_{version_id}.json")
-            with open(modification_file, 'w', encoding='utf-8') as f:
+            modification_file = PathManager.join(self.modifications_dir, f"modifications_{version_id}.json")
+            with PathManager.safe_open(modification_file, 'w', encoding='utf-8') as f:
                 json.dump(modifications, f, ensure_ascii=False, indent=2)
 
             # 更新当前答案和版本历史
@@ -364,8 +366,8 @@ class StandardAnswerManager:
 
         for file in modification_files:
             try:
-                file_path = os.path.join(self.modifications_dir, file)
-                with open(file_path, 'r', encoding='utf-8') as f:
+                file_path = PathManager.join(self.modifications_dir, file)
+                with PathManager.safe_open(file_path, 'r', encoding='utf-8') as f:
                     modification_data = json.load(f)
 
                 version = file.replace('modifications_', '').replace('.json', '')
@@ -471,14 +473,14 @@ class StandardAnswerManager:
 
     def _create_backup(self, version_id: str, data: Dict[str, Any]):
         """创建备份"""
-        backup_file = os.path.join(self.backup_dir, f"{version_id}.json")
-        with open(backup_file, 'w', encoding='utf-8') as f:
+        backup_file = PathManager.join(self.backup_dir, f"{version_id}.json")
+        with PathManager.safe_open(backup_file, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
     def _save_version_history(self):
         """保存版本历史"""
-        history_file = os.path.join(self.standard_answers_dir, "version_history.json")
-        with open(history_file, 'w', encoding='utf-8') as f:
+        history_file = PathManager.join(self.standard_answers_dir, "version_history.json")
+        with PathManager.safe_open(history_file, 'w', encoding='utf-8') as f:
             json.dump(self.version_history, f, ensure_ascii=False, indent=2)
 
     def load_latest_answers(self):
@@ -508,9 +510,9 @@ class StandardAnswerManager:
 
     def _load_version_history(self):
         """加载版本历史"""
-        history_file = os.path.join(self.standard_answers_dir, "version_history.json")
-        if os.path.exists(history_file):
-            with open(history_file, 'r', encoding='utf-8') as f:
+        history_file = PathManager.join(self.standard_answers_dir, "version_history.json")
+        if PathManager.exists(history_file):
+            with PathManager.safe_open(history_file, 'r', encoding='utf-8') as f:
                 self.version_history = json.load(f)
 
     def load_answers(self, filename: str) -> bool:
@@ -519,18 +521,18 @@ class StandardAnswerManager:
             # 检查是否需要添加 .json 扩展名
             if not filename.endswith('.json'):
                 filename_json = filename + '.json'
-                file_path_json = os.path.join(self.standard_answers_dir, filename_json)
-                if os.path.exists(file_path_json):
+                file_path_json = PathManager.join(self.standard_answers_dir, filename_json)
+                if PathManager.exists(file_path_json):
                     filename = filename_json
             
-            file_path = os.path.join(self.standard_answers_dir, filename)
+            file_path = PathManager.join(self.standard_answers_dir, filename)
             
             # 打印路径信息用于调试
             print(f"StandardAnswerManager 检查文件路径: {file_path}")
-            print(f"文件是否存在: {os.path.exists(file_path)}")
+            print(f"文件是否存在: {PathManager.exists(file_path)}")
             
             # 检查文件是否存在
-            if not os.path.exists(file_path):
+            if not PathManager.exists(file_path):
                 logger.error(f"标准答案文件不存在: {file_path}")
                 return False
             
@@ -541,7 +543,7 @@ class StandardAnswerManager:
             
             # 尝试打开和解析文件
             try:
-                with open(file_path, 'r', encoding='utf-8') as f:
+                with PathManager.safe_open(file_path, 'r', encoding='utf-8') as f:
                     content = f.read()
                     
                 # 检查文件内容是否为空

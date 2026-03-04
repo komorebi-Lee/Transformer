@@ -5,21 +5,17 @@ from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QPixmap, QFont
 import traceback
+from path_manager import PathManager
 
-# 导入热部署模块
-try:
-    from hot_reload import init_hot_reload, stop_hot_reload
-    HOT_RELOAD_AVAILABLE = True
-except ImportError as e:
-    logger.warning(f"热部署模块导入失败: {e}")
-    HOT_RELOAD_AVAILABLE = False
+
 
 # 配置日志 - 修复level参数
+log_file = PathManager.join("grounded_coding.log")
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler("grounded_coding.log", encoding='utf-8'),
+        logging.FileHandler(log_file, encoding='utf-8'),
         logging.StreamHandler()
     ]
 )
@@ -62,14 +58,14 @@ class FixedAppLauncher:
             # 检查必要的目录
             required_dirs = ['local_models', 'trained_models', 'standard_answers', 'data']
             for dir_name in required_dirs:
-                dir_path = os.path.join(Config.BASE_DIR, dir_name)
-                if not os.path.exists(dir_path):
-                    os.makedirs(dir_path, exist_ok=True)
+                dir_path = PathManager.join(dir_name)
+                if not PathManager.exists(dir_path):
+                    PathManager.ensure_dir(dir_path)
                     logger.info(f"创建目录: {dir_path}")
 
             # 检查模型是否存在（但不强制要求）
-            bert_path = os.path.join(Config.LOCAL_MODELS_DIR, Config.DEFAULT_MODEL_NAME)
-            if not os.path.exists(bert_path):
+            bert_path = PathManager.join(Config.LOCAL_MODELS_DIR, Config.DEFAULT_MODEL_NAME)
+            if not PathManager.exists(bert_path):
                 logger.warning("BERT模型不存在，将使用降级模式")
                 return True, "BERT模型不存在，将使用降级模式"
 
@@ -92,12 +88,7 @@ class FixedAppLauncher:
             # 显示启动画面
             self.show_splash()
 
-            # 初始化热部署
-            if HOT_RELOAD_AVAILABLE:
-                init_hot_reload()
-                logger.info("热部署功能已启用")
-            else:
-                logger.info("热部署功能不可用")
+
 
             # 延迟初始化主窗口
             QTimer.singleShot(100, self.initialize_and_show_main_window)
@@ -105,19 +96,11 @@ class FixedAppLauncher:
             # 运行应用
             result = self.app.exec_()
             
-            # 停止热部署
-            if HOT_RELOAD_AVAILABLE:
-                stop_hot_reload()
-                logger.info("热部署功能已停止")
-            
             logger.info("应用程序正常退出")
             return result
 
         except Exception as e:
             logger.error(f"启动失败: {e}")
-            # 停止热部署
-            if HOT_RELOAD_AVAILABLE:
-                stop_hot_reload()
             self.show_error_message(f"程序启动失败:\n{str(e)}")
             return 1
 

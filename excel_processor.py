@@ -8,6 +8,8 @@ from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushBut
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from typing import List, Dict, Any
 from standard_answer_manager import StandardAnswerManager
+from config import Config
+from path_manager import PathManager
 
 logger = logging.getLogger(__name__)
 
@@ -18,10 +20,10 @@ class ExcelProcessor:
     def __init__(self):
         self.imported_files = []
         self.merged_data = None
-        self.standard_answers_dir = os.path.join(os.path.dirname(__file__), "standard_answers")
+        self.standard_answers_dir = PathManager.get_standard_answers_dir()
         
         # 创建标准答案目录
-        os.makedirs(self.standard_answers_dir, exist_ok=True)
+        PathManager.ensure_dir(self.standard_answers_dir)
 
     def import_excel_files(self, file_paths: List[str]) -> bool:
         """导入Excel文件"""
