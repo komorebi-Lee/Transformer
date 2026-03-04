@@ -888,8 +888,9 @@ class MainWindow(QMainWindow):
                             'end_pos': end_pos
                         })
                     else:
-                        # 匹配失败，记录警告
-                        logger.warning(f"无法在文本中找到句子: {clean_sentence[:50]}...")
+                        # 匹配失败，忽略警告
+                        pass
+                        # logger.warning(f"无法在文本中找到句子: {clean_sentence[:50]}...")
 
                 # 保存到缓存
                 self.auto_coding_cache[file_path] = content_with_markers

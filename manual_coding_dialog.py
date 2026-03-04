@@ -1,4 +1,4 @@
-import os
+﻿import os
 import json
 import re
 from datetime import datetime
@@ -1799,6 +1799,56 @@ class ManualCodingDialog(QDialog):
         """更新过滤下拉框（已弃用，调用update_coding_tree代替）"""
         self.update_coding_tree()
 
+    def update_statistics_for_item(self, item):
+        """更新节点及其所有祖先的统计信息（数量、句子来源等）"""
+        if not item:
+            return
+
+        item_data = item.data(0, Qt.UserRole)
+        if not item_data:
+            return
+            
+        try:
+            level = item_data.get("level")
+            
+            # 统计子节点数据
+            child_count = item.childCount()
+            sentence_count = 0
+            
+            if level == 2: # 二阶编码
+                # 数量 = 一阶子节点数
+                item.setText(2, str(child_count))
+                
+                # 句子来源 = 所有子节点的句子来源之和
+                for i in range(child_count):
+                    child = item.child(i)
+                    try:
+                        s_count = int(child.text(4))
+                    except:
+                        s_count = 0
+                    sentence_count += s_count
+                item.setText(4, str(sentence_count))
+                
+                # 递归更新父节点（三阶）
+                if item.parent():
+                    self.update_statistics_for_item(item.parent())
+
+            elif level == 3: # 三阶编码
+                # 数量 = 二阶子节点数
+                item.setText(2, str(child_count))
+                
+                # 句子来源 = 所有二阶子节点的句子来源之和
+                for i in range(child_count):
+                    child = item.child(i)
+                    try:
+                        s_count = int(child.text(4))
+                    except:
+                        s_count = 0
+                    sentence_count += s_count
+                item.setText(4, str(sentence_count))
+        except Exception as e:
+            logger.error(f"更新统计信息失败: {e}")
+
     def add_parent_second_for_first(self):
         """为选中的一阶编码添加父节点二阶编码"""
         try:
@@ -1869,7 +1919,7 @@ class ManualCodingDialog(QDialog):
                 second_item.setText(0, numbered_name)
                 second_item.setText(1, "二阶编码")
                 second_item.setText(3, "")  # 二阶编码不显示文件来源数
-                second_item.setText(4, "0")  # 句子来源数
+                second_item.setText(4, "0")  # 句子来源数（稍后更新）
                 second_item.setText(5, code_id)  # 关联编号
                 second_item.setData(0, Qt.UserRole, {
                     "level": 2,
@@ -1909,7 +1959,9 @@ class ManualCodingDialog(QDialog):
 
                     item.setData(0, Qt.UserRole, item_data)
 
-                second_item.setText(2, str(len(first_level_items)))
+                # 更新统计信息（包括句子来源数）
+                self.update_statistics_for_item(second_item)
+                
                 second_item.setExpanded(True)
 
                 self.update_structured_codes_from_tree()
@@ -2047,7 +2099,9 @@ class ManualCodingDialog(QDialog):
                     item_data["code_id"] = new_code_id
                     item.setData(0, Qt.UserRole, item_data)
 
-                third_item.setText(2, str(len(second_level_items)))
+                # 更新统计信息
+                self.update_statistics_for_item(third_item)
+
                 third_item.setExpanded(True)
 
                 self.update_structured_codes_from_tree()
@@ -4879,42 +4933,37 @@ class ManualCodingDialog(QDialog):
         return True, clean_name.strip(), ""
 
     def generate_second_code_id(self, third_letter="B", parent_node=None):
-        """生成二阶编码ID：B01, B02, B03...（B开头，数字递增）"""
-        # 统计所有已存在的二阶编码ID，找到最大的编号
+        """生成二阶编码ID：B01, B02...（修复：独立二阶只在未分类中计数）"""
         existing_second_numbers = []
+        import re
 
         if parent_node:
+            # Case 1: 指定了父节点（三阶），统计该节点下的二阶
             for j in range(parent_node.childCount()):
                 second_item = parent_node.child(j)
                 second_data = second_item.data(0, Qt.UserRole)
                 if second_data and second_data.get("level") == 2:
                     second_name = second_item.text(0)
-                    if second_name.startswith('B'):
-                        import re
-                        match = re.search(r'\d{2}', second_name)
-                        if match:
-                            existing_second_numbers.append(int(match.group()))
+                    # 兼容 B01 或 B01 维度名称
+                    match = re.search(f"{third_letter}(\\d{{2}})", second_name)
+                    if match:
+                        existing_second_numbers.append(int(match.group(1)))
         else:
+            # Case 2: 未指定父节点（独立二阶），只统计顶层的二阶
+            # 关键修改：此时只统计同样是独立二阶（Top Level）的编码，不再统计三阶下的二阶
             for i in range(self.coding_tree.topLevelItemCount()):
-                top_item = self.coding_tree.topLevelItem(i)
-                for j in range(top_item.childCount()):
-                    second_item = top_item.child(j)
-                    second_data = second_item.data(0, Qt.UserRole)
-                    if second_data and second_data.get("level") == 2:
-                        second_name = second_item.text(0)
-                        # 提取编号部分
-                        import re
-                        parts = second_name.split(' ', 1)
-                        if len(parts) > 0:
-                            code_part = parts[0]
-                            # 检查编号是否以字母开头并有两位数字
-                            match = re.match(r'^([A-Z])(\d{2})$', code_part)
-                            if match:
-                                letter_part = match.group(1)
-                                number_part = match.group(2)
-                                # 如果是B开头的编号，则记录数字
-                                if letter_part == 'B':
-                                    existing_second_numbers.append(int(number_part))
+                item = self.coding_tree.topLevelItem(i)
+                item_data = item.data(0, Qt.UserRole)
+                
+                # 只检查 Level 2 的项
+                if item_data and item_data.get("level") == 2:
+                    second_name = item.text(0)
+                    match = re.match(r'^([A-Z])(\d{2})', second_name.split(' ')[0])
+                    if match:
+                        letter = match.group(1)
+                        number = int(match.group(2))
+                        if letter == third_letter:
+                            existing_second_numbers.append(number)
 
         # 找到下一个可用的编号
         if existing_second_numbers:
@@ -4922,7 +4971,7 @@ class ManualCodingDialog(QDialog):
         else:
             next_number = 1
 
-        return f"B{next_number:02d}"
+        return f"{third_letter}{next_number:02d}"
 
     def generate_third_code_id(self):
         """生成三阶编码ID：C01, C02, C03...（C开头，数字递增）"""
@@ -6171,12 +6220,8 @@ class ManualCodingDialog(QDialog):
                     # 不再向文本中添加编码标记，保持原始文本不变
                     # self.add_code_marker_to_text(dropped_text, new_code_id)
 
-                    # 更新父节点计数
-                    item.setText(2, str(item.childCount()))
-
-                    # 更新祖父节点计数
-                    if grandparent:
-                        grandparent.setText(2, str(grandparent.childCount()))
+                    # 更新父节点（二阶）及其祖先（三阶）的统计信息
+                    self.update_statistics_for_item(item)
 
                     self.update_structured_codes_from_tree()
 
