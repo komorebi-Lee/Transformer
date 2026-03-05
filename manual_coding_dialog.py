@@ -112,10 +112,16 @@ class ManualCodingDialog(QDialog):
         self.setWindowTitle("手动编码工具 - 全屏版")
         self.setModal(False)  # 改为非模态，允许全屏显示
 
+        # 添加系统标题栏缩小（最小化）按钮和最大化/还原按钮
+        self.setWindowFlags(self.windowFlags() | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint)
+
         # 设置为全屏或最大化
         screen_geometry = QApplication.desktop().availableGeometry()
         self.setGeometry(screen_geometry)
+        self._is_half_screen = False        # 当前是否处于半屏状态
+        self._handling_state_change = True  # 保护初始化时的 showMaximized 不被拦截
         self.showMaximized()
+        self._handling_state_change = False
 
         layout = QVBoxLayout(self)
 
@@ -174,6 +180,38 @@ class ManualCodingDialog(QDialog):
 
         # 不再自动弹出恢复编码进度对话框，用户可以通过导入功能手动恢复
         # self.check_and_restore_last_coding_position()
+
+    def changeEvent(self, event):
+        """拦截窗口状态变化：还原按鈕→半屏，最大化按鈕→全屏"""
+        from PyQt5.QtCore import QEvent, QTimer
+        if event.type() == QEvent.WindowStateChange:
+            if not getattr(self, '_handling_state_change', False):
+                old_state = event.oldState()
+                new_state = self.windowState()
+                # 全屏 → 还原（点击还原按鈕）：改为半屏
+                if (old_state & Qt.WindowMaximized) and not (new_state & Qt.WindowMaximized) \
+                        and not (new_state & Qt.WindowMinimized):
+                    if not getattr(self, '_is_half_screen', False):
+                        QTimer.singleShot(0, self._apply_half_screen)
+                # 半屏 → 最大化（点击最大化按鈕）：恢复全屏，清除标记
+                elif (new_state & Qt.WindowMaximized) and getattr(self, '_is_half_screen', False):
+                    self._is_half_screen = False
+        super().changeEvent(event)
+
+    def _apply_half_screen(self):
+        """将窗口设置为屏幕一半大小并居中"""
+        self._handling_state_change = True
+        screen = QApplication.desktop().availableGeometry()
+        half_w = screen.width() // 2
+        half_h = screen.height() // 2
+        self.setGeometry(
+            screen.x() + half_w // 2,
+            screen.y() + half_h // 2,
+            half_w,
+            half_h
+        )
+        self._is_half_screen = True
+        self._handling_state_change = False
 
     def create_left_panel(self):
         panel = QWidget()
