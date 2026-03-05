@@ -1,11 +1,28 @@
 import os
+from datetime import datetime
+
 import torch
 import logging
 import numpy as np
 import pickle
 from typing import Dict, List, Any, Optional, Tuple
-from transformers import AutoTokenizer, AutoModel
 from config import Config
+
+# 先导入pyarrow，确保它被正确加载
+try:
+    import pyarrow
+    from pyarrow import PyExtensionType
+    logging.info(f"pyarrow {pyarrow.__version__} 导入成功")
+except ImportError as e:
+    logging.warning(f"pyarrow导入失败: {e}")
+
+# 尝试导入transformers，失败时使用降级模式
+try:
+    from transformers import AutoTokenizer, AutoModel
+    TRANSFORMERS_AVAILABLE = True
+except ImportError as e:
+    logging.warning(f"transformers库导入失败: {e}")
+    TRANSFORMERS_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
@@ -108,10 +125,21 @@ class EnhancedModelManager:
     def save_trained_model(self, model_data: Dict[str, Any], version: str = None) -> bool:
         """保存训练过的模型"""
         try:
+            # 确保训练模型目录存在
+            os.makedirs(self.trained_model_dir, exist_ok=True)
+            
             if version is None:
-                version = f"model_{len(os.listdir(self.trained_model_dir)) + 1}"
+                # 安全地获取目录中的文件数量
+                try:
+                    model_files = [f for f in os.listdir(self.trained_model_dir) if f.endswith('.pkl')]
+                    version = f"model_{len(model_files) + 1}"
+                except Exception as dir_error:
+                    logger.error(f"读取训练模型目录失败: {dir_error}")
+                    version = f"model_{int(datetime.now().timestamp())}"
 
+            # 规范化模型文件路径
             model_file = os.path.join(self.trained_model_dir, f"{version}.pkl")
+            model_file = os.path.normpath(model_file)
 
             # 添加元数据
             model_data['metadata'] = {
@@ -119,8 +147,12 @@ class EnhancedModelManager:
                 'timestamp': self.get_timestamp(),
                 'model_type': 'grounded_theory_coder',
                 'sample_count': model_data.get('sample_count', 0),
-                'class_count': model_data.get('class_count', 0)
+                'class_count': model_data.get('class_count', 0),
+                'model_path': model_file
             }
+
+            # 确保目录存在
+            os.makedirs(os.path.dirname(model_file), exist_ok=True)
 
             with open(model_file, 'wb') as f:
                 pickle.dump(model_data, f)
@@ -136,26 +168,44 @@ class EnhancedModelManager:
     def load_trained_model(self, version: str = None) -> bool:
         """加载训练过的模型"""
         try:
+            # 确保训练模型目录存在
+            os.makedirs(self.trained_model_dir, exist_ok=True)
+            
             if version is None:
                 # 加载最新的模型
-                model_files = [f for f in os.listdir(self.trained_model_dir) if f.endswith('.pkl')]
-                if not model_files:
-                    logger.info("没有找到训练模型文件")
+                try:
+                    model_files = [f for f in os.listdir(self.trained_model_dir) if f.endswith('.pkl')]
+                    if not model_files:
+                        logger.info("没有找到训练模型文件")
+                        return False
+                    # 按文件名排序，确保最新的模型被加载
+                    model_files.sort(reverse=True)
+                    version = model_files[0].replace('.pkl', '')
+                except Exception as dir_error:
+                    logger.error(f"读取训练模型目录失败: {dir_error}")
                     return False
-                model_files.sort(reverse=True)
-                version = model_files[0].replace('.pkl', '')
 
+            # 规范化模型文件路径
             model_file = os.path.join(self.trained_model_dir, f"{version}.pkl")
+            model_file = os.path.normpath(model_file)
+            
             if os.path.exists(model_file):
                 file_size = os.path.getsize(model_file)
                 if file_size == 0:
                     logger.warning(f"训练模型文件为空: {model_file}")
                     return False
 
-                with open(model_file, 'rb') as f:
-                    self.trained_model = pickle.load(f)
+                try:
+                    with open(model_file, 'rb') as f:
+                        self.trained_model = pickle.load(f)
+                except pickle.UnpicklingError as pickle_error:
+                    logger.error(f"模型文件解析失败: {pickle_error}")
+                    return False
+                except Exception as load_error:
+                    logger.error(f"加载模型文件失败: {load_error}")
+                    return False
 
-                logger.info(f"训练模型已加载: {version}")
+                logger.info(f"训练模型已加载: {version} 路径: {model_file}")
                 return True
 
             logger.warning(f"训练模型文件不存在: {model_file}")

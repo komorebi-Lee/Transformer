@@ -1,0 +1,442 @@
+# -*- mode: python ; coding: utf-8 -*-
+import sys
+import os
+
+# 项目根目录
+project_root = os.path.abspath(SPECPATH)
+
+# 收集模型文件
+model_files = []
+models_dir = os.path.join(project_root, 'local_models')
+if os.path.exists(models_dir):
+    for root, dirs, files in os.walk(models_dir):
+        for file in files:
+            full_path = os.path.join(root, file)
+            rel_path = os.path.relpath(full_path, project_root)
+            model_files.append((full_path, rel_path))
+
+# 数据文件列表
+datas = []
+
+# 添加模型文件
+for full_path, rel_path in model_files:
+    target_dir = os.path.dirname(rel_path)
+    if target_dir:
+        datas.append((full_path, target_dir))
+    else:
+        datas.append((full_path, '.'))
+
+# 添加 regex 包的元数据文件
+import regex
+import os
+import glob
+regex_path = os.path.dirname(regex.__file__)
+regex_metadata = os.path.join(regex_path, '..', 'regex-*.dist-info')
+regex_metadata_files = glob.glob(regex_metadata)
+for metadata_file in regex_metadata_files:
+    if os.path.exists(metadata_file):
+        target_dir = os.path.basename(metadata_file)
+        datas.append((metadata_file, target_dir))
+
+# 添加 transformers 包的元数据文件
+import transformers
+transformers_path = os.path.dirname(transformers.__file__)
+transformers_metadata = os.path.join(transformers_path, '..', 'transformers-*.dist-info')
+transformers_metadata_files = glob.glob(transformers_metadata)
+for metadata_file in transformers_metadata_files:
+    if os.path.exists(metadata_file):
+        target_dir = os.path.basename(metadata_file)
+        datas.append((metadata_file, target_dir))
+
+# 隐藏导入
+hiddenimports = [
+    # PyQt5
+    'PyQt5',
+    'PyQt5.QtCore',
+    'PyQt5.QtGui',
+    'PyQt5.QtWidgets',
+    'PyQt5.sip',
+    
+    # 数据处理
+    'pandas',
+    'pandas._libs.tslibs',
+    'pandas._libs.tslibs.base',
+    'pandas._libs.tslibs.nattype',
+    'pandas._libs.tslibs.np_datetime',
+    'pandas._libs.tslibs.offsets',
+    'pandas._libs.tslibs.timestamps',
+    'pandas._libs.tslibs.timezones',
+    'numpy',
+    'numpy.core',
+    'numpy.core._dtype_ctypes',
+    'numpy.core._multiarray_umath',
+    'numpy.linalg.lapack_lite',
+    
+    # Excel 处理
+    'openpyxl',
+    'openpyxl.cell',
+    'openpyxl.chart',
+    'openpyxl.comments',
+    'openpyxl.compat',
+    'openpyxl.descriptors',
+    'openpyxl.drawing',
+    'openpyxl.formatting',
+    'openpyxl.formula',
+    'openpyxl.packaging',
+    'openpyxl.pivot',
+    'openpyxl.reader',
+    'openpyxl.styles',
+    'openpyxl.utils',
+    'openpyxl.workbook',
+    'openpyxl.worksheet',
+    'openpyxl.writer',
+    'openpyxl.xml',
+    'et_xmlfile',
+    
+    # Word 处理
+    'docx',
+    'docx.api',
+    'docx.document',
+    'docx.opc',
+    'docx.oxml',
+    'docx.parts',
+    'docx.section',
+    'docx.settings',
+    'docx.shared',
+    'docx.styles',
+    'docx.table',
+    'docx.text',
+    'lxml',
+    'lxml.etree',
+    'lxml._elementpath',
+    
+    # 深度学习
+    'torch',
+    'torch.nn',
+    'torch.nn.functional',
+    'torch.optim',
+    'torch.utils',
+    'torch.utils.data',
+    'torch.serialization',
+    'torch.jit',
+    'torchvision',
+    'torchvision.transforms',
+    'torchaudio',
+    
+    # Transformers
+    'transformers',
+    'transformers.models',
+    'transformers.models.bert',
+    'transformers.models.bert.tokenization_bert',
+    'transformers.models.bert.tokenization_bert_fast',
+    'transformers.models.bert.modeling_bert',
+    'transformers.tokenization_utils',
+    'transformers.tokenization_utils_base',
+    'transformers.tokenization_utils_fast',
+    'transformers.modeling_utils',
+    'transformers.configuration_utils',
+    'transformers.file_utils',
+    'transformers.utils',
+    'transformers.pipelines',
+    'transformers.data',
+    'transformers.trainer',
+    'transformers.training_args',
+    'transformers.integrations',
+    
+    # Sentence Transformers
+    'sentence_transformers',
+    'sentence_transformers.models',
+    'sentence_transformers.losses',
+    'sentence_transformers.evaluation',
+    'sentence_transformers.datasets',
+    'sentence_transformers.util',
+    
+    # 其他依赖
+    'jieba',
+    'requests',
+    'urllib3',
+    'charset_normalizer',
+    'certifi',
+    'idna',
+    'huggingface_hub',
+    'huggingface_hub.commands',
+    'accelerate',
+    'accelerate.commands',
+    'safetensors',
+    'safetensors.torch',
+    'tokenizers',
+    'tokenizers.models',
+    'tokenizers.trainers',
+    'tokenizers.pre_tokenizers',
+    'tokenizers.decoders',
+    'tokenizers.processors',
+    'tokenizers.normalizers',
+    'tokenizers.implementations',
+    'regex',
+    'packaging',
+    'packaging.version',
+    'packaging.specifiers',
+    'packaging.requirements',
+    'filelock',
+    'fsspec',
+    'fsspec.implementations',
+    'yaml',
+    'tqdm',
+    'tqdm.auto',
+    'tqdm.notebook',
+    'psutil',
+    'psutil._psutil_windows',
+    
+    # 机器学习
+    'sklearn',
+    'sklearn.base',
+    'sklearn.utils',
+    'sklearn.utils._joblib',
+    'sklearn.utils.validation',
+    'sklearn.preprocessing',
+    'sklearn.feature_extraction',
+    'sklearn.feature_extraction.text',
+    'sklearn.decomposition',
+    'sklearn.cluster',
+    'sklearn.metrics',
+    'sklearn.metrics.pairwise',
+    'sklearn.model_selection',
+    'sklearn.linear_model',
+    'sklearn.svm',
+    'sklearn.ensemble',
+    'sklearn.tree',
+    'sklearn.neighbors',
+    'sklearn.naive_bayes',
+    'sklearn.discriminant_analysis',
+    'sklearn.calibration',
+    'sklearn.neural_network',
+    'sklearn.pipeline',
+    'sklearn.compose',
+    'sklearn.impute',
+    'sklearn.experimental',
+    'sklearn.manifold',
+    'sklearn.semi_supervised',
+    'sklearn.covariance',
+    'sklearn.random_projection',
+    'sklearn.kernel_approximation',
+    'sklearn.multioutput',
+    'sklearn.multiclass',
+    'sklearn.dummy',
+    'sklearn.isotonic',
+    'sklearn.cross_decomposition',
+    'sklearn.gaussian_process',
+    'sklearn.mixture',
+    'sklearn.model_selection',
+    'sklearn.inspection',
+    'sklearn._config',
+    'sklearn.__check_build',
+    'sklearn._distributor_init',
+    'scipy',
+    'scipy.sparse',
+    'scipy.sparse.csgraph',
+    'scipy.sparse.linalg',
+    'scipy.linalg',
+    'scipy.stats',
+    'scipy.special',
+    'scipy.integrate',
+    'scipy.optimize',
+    'scipy.interpolate',
+    'scipy.fft',
+    'scipy.signal',
+    'scipy.ndimage',
+    'scipy.spatial',
+    'scipy.cluster',
+    'joblib',
+    'threadpoolctl',
+    
+    # 其他工具
+    'typing_extensions',
+    'annotated_types',
+    'sympy',
+    'sympy.core',
+    'sympy.logic',
+    'sympy.polys',
+    'sympy.polys.domains',
+    'sympy.polys.rings',
+    'sympy.polys.fields',
+    'sympy.polys.solvers',
+    'sympy.polys.polytools',
+    'sympy.polys.polyfuncs',
+    'sympy.polys.numberfields',
+    'sympy.polys.matrices',
+    'sympy.polys.agca',
+    'sympy.polys.partfrac',
+    'sympy.ntheory',
+    'sympy.combinatorics',
+    'sympy.functions',
+    'sympy.functions.elementary',
+    'sympy.functions.special',
+    'sympy.functions.combinatorial',
+    'sympy.integrals',
+    'sympy.series',
+    'sympy.sets',
+    'sympy.simplify',
+    'sympy.solvers',
+    'sympy.matrices',
+    'sympy.tensor',
+    'sympy.utilities',
+    'sympy.parsing',
+    'sympy.physics',
+    'sympy.stats',
+    'sympy.plotting',
+    'sympy.printing',
+    'sympy.codegen',
+    'sympy.concrete',
+    'sympy.categories',
+    'sympy.diffgeom',
+    'sympy.geometry',
+    'sympy.holonomic',
+    'sympy.liealgebras',
+    'sympy.polys',
+    'sympy.crypto',
+    'mpmath',
+    'networkx',
+    'networkx.algorithms',
+    'networkx.classes',
+    'networkx.generators',
+    'networkx.readwrite',
+    'networkx.drawing',
+    'networkx.linalg',
+    'networkx.convert',
+    'networkx.relabel',
+    'networkx.utils',
+    'PIL',
+    'PIL.Image',
+    'PIL.ImageDraw',
+    'PIL.ImageFont',
+    'PIL.ImageFilter',
+    'PIL.ImageEnhance',
+    'PIL.ImageOps',
+    'PIL.ImageChops',
+    'PIL.ImagePalette',
+    'PIL.ImageSequence',
+    'PIL.ImageTk',
+    'PIL.ImageWin',
+    'PIL._imaging',
+    'PIL._imagingft',
+    'PIL._imagingtk',
+    'PIL.features',
+    'click',
+    'colorama',
+    'colorama.initialise',
+    'colorama.ansi',
+    'colorama.winterm',
+    'colorama.win32',
+    'dateutil',
+    'dateutil.parser',
+    'dateutil.tz',
+    'dateutil.zoneinfo',
+    'dateutil.rrule',
+    'dateutil.easter',
+    'dateutil.relativedelta',
+    'pytz',
+    'six',
+    
+    # 项目内部模块
+    'path_manager',
+    'config',
+    'app_launcher',
+    'main_window',
+    'manual_coding_dialog',
+    'standard_answer_manager',
+    'excel_processor',
+    'grounded_theory_coder',
+    'enhanced_coding_generator',
+    'project_manager',
+    'model_manager',
+    'text_numbering',
+    'data_processor',
+    'word_table_importer',
+    'word_exporter',
+    'training_manager',
+    'text_navigator',
+    'server_model',
+    'model_downloader',
+    'enhanced_word_exporter',
+    'download_models',
+    
+    # 额外的依赖
+    'importlib_metadata',
+    'importlib_resources',
+    'zipp',
+    'tomli',
+    'pyarrow',
+    'pyarrow.lib',
+    'pyarrow._compute',
+    'pyarrow._csv',
+    'pyarrow._dataset',
+    'pyarrow._flight',
+    'pyarrow._hdfs',
+    'pyarrow._json',
+    'pyarrow._orc',
+    'pyarrow._parquet',
+    'pyarrow._plasma',
+    'pyarrow._s3fs',
+    'pyarrow._util',
+    'pyarrow.compat',
+    'pyarrow.compute',
+    'pyarrow.csv',
+    'pyarrow.dataset',
+    'pyarrow.flight',
+    'pyarrow.fs',
+    'pyarrow.hdfs',
+    'pyarrow.json',
+    'pyarrow.orc',
+    'pyarrow.parquet',
+    'pyarrow.plasma',
+    'pyarrow.serialization',
+    'pyarrow.types',
+    'pyarrow.utf8',
+    'regex._regex',
+    'regex._regex_core',
+    'regex.regex',
+]
+
+# 分析配置
+a = Analysis(
+    ['main.py'],
+    pathex=[project_root],
+    binaries=[],
+    datas=datas,
+    hiddenimports=hiddenimports,
+    hookspath=[],
+    hooksconfig={},
+    runtime_hooks=['runtime_hook.py'],
+    excludes=[],
+    win_no_prefer_redirects=False,
+    win_private_assemblies=False,
+    cipher=None,
+    noarchive=False,
+)
+
+# 创建 PYZ
+pyz = PYZ(a.pure, a.zipped_data, cipher=None)
+
+# 创建 EXE
+exe = EXE(
+    pyz,
+    a.scripts,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    [],
+    name='zthree2',
+    debug=False,
+    bootloader_ignore_signals=False,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    runtime_tmpdir=None,
+    console=True,
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=None,
+    icon=None,
+)

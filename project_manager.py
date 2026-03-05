@@ -7,6 +7,7 @@ from typing import Dict, Any
 from docx import Document
 from docx.shared import Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -14,13 +15,12 @@ logger = logging.getLogger(__name__)
 class ProjectManager:
     """项目管理器 - 处理项目的保存和加载"""
 
-    PROJECT_DIR_NAME = "projects"
     PROJECT_META_FILE = "project_meta.json"
     PROJECT_DATA_FILE = "project_data.json"
 
     def __init__(self):
         # 创建项目目录结构
-        self.project_base_dir = os.path.join(os.getcwd(), self.PROJECT_DIR_NAME)
+        self.project_base_dir = Config.PROJECTS_DIR
         os.makedirs(self.project_base_dir, exist_ok=True)
 
         # 创建分类文件夹

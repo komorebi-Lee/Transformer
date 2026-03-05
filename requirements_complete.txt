@@ -1,0 +1,99 @@
+# Core dependencies for zthree2 project
+# Generated from code analysis + conda/pip list
+
+# GUI Framework
+PyQt5==5.15.11
+PyQt5-Qt5==5.15.2
+PyQt5_sip==12.17.1
+
+# Data Processing
+pandas==2.2.3
+numpy==2.0.2
+openpyxl==3.1.5
+et_xmlfile==2.0.0
+
+# Deep Learning & NLP
+torch==2.9.1
+torchaudio==2.3.1
+torchvision==0.18.1
+transformers==4.57.3
+sentence-transformers==5.2.0
+accelerate==1.12.0
+huggingface_hub==0.23.4
+hf-xet==1.2.0
+tokenizers==0.19.1
+safetensors==0.4.3
+
+# Word Document Processing
+python-docx==1.2.0
+lxml==6.0.2
+docxtpl==0.20.2
+
+# Text Processing
+jieba==0.42.1
+
+# HTTP & Network
+requests==2.32.5
+urllib3==2.2.2
+charset-normalizer==3.4.4
+certifi==2025.2.25
+idna==3.11
+
+# Machine Learning
+scikit-learn==1.7.1
+scipy==1.15.2
+joblib==1.5.3
+threadpoolctl==3.6.0
+
+# Utilities
+psutil==7.2.2
+packaging==26.0
+filelock==3.19.1
+fsspec==2025.10.0
+PyYAML==6.0.2
+tqdm==4.67.1
+regex==2024.11.6
+
+# Typing & Data Structures
+typing_extensions==4.12.2
+annotated-types==0.6.0
+
+# Async & Network (for huggingface)
+aiohttp==3.13.2
+aiosignal==1.3.2
+aiohappyeyeballs==2.6.1
+async-timeout==5.0.1
+attrs==25.4.0
+
+# Image Processing (for torchvision)
+pillow==11.3.0
+
+# SymPy (for torch)
+sympy==1.13.3
+mpmath==1.3.0
+
+# Networkx (for torch)
+networkx==3.4.2
+
+# MarkupSafe (for Jinja2)
+MarkupSafe==3.0.3
+Jinja2==3.1.6
+
+# Click (for various CLI tools)
+click==8.1.8
+
+# Colorama (for Windows terminal colors)
+colorama==0.4.6
+
+# Python Date/Time Utilities
+python-dateutil==2.9.0.post0
+pytz==2025.2
+six==1.17.0
+
+# Scientific Computing
+Bottleneck==1.4.2
+numexpr==2.10.2
+
+# Conda/pip compatibility
+setuptools==75.8.0
+pip==25.3

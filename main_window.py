@@ -804,7 +804,7 @@ class MainWindow(QMainWindow):
                                     code_id = first_content.get('code_id', '')
                                     if code_id and code_id.startswith('A'):
                                         sentence_details = first_content.get('sentence_details', [])
-                                        
+
                                         # 遍历所有句子详情，查找属于当前文件的
                                         has_details = False
                                         for detail in sentence_details:
@@ -814,12 +814,12 @@ class MainWindow(QMainWindow):
                                                     original_sentence = detail.get('original_content', '')
                                                     if original_sentence:
                                                         first_level_codes.append((code_id, original_sentence))
-                                        
+
                                         # 如果没有 sentence_details (旧数据兼容)，尝试匹配内容
                                         if not has_details:
-                                             original_sentence = first_content.get('content', '')
-                                             if original_sentence:
-                                                 first_level_codes.append((code_id, original_sentence))
+                                            original_sentence = first_content.get('content', '')
+                                            if original_sentence:
+                                                first_level_codes.append((code_id, original_sentence))
 
                 # 为每个一阶编码添加标记
                 import re
@@ -888,9 +888,9 @@ class MainWindow(QMainWindow):
                             'end_pos': end_pos
                         })
                     else:
-                        # 匹配失败，忽略警告
+                        # 匹配失败，记录警告
                         pass
-                        # logger.warning(f"无法在文本中找到句子: {clean_sentence[:50]}...")
+                        logger.warning(f"无法在文本中找到句子: {clean_sentence[:50]}...")
 
                 # 保存到缓存
                 self.auto_coding_cache[file_path] = content_with_markers
@@ -1002,7 +1002,7 @@ class MainWindow(QMainWindow):
             third_item.setText(5, third_id_display)  # 关联编号显示自身编号
 
             third_item.setData(0, Qt.UserRole, {"level": 3, "name": third_cat})
-            
+
             # 用于累加三阶编码的句子来源数
             third_total_sentence_count = 0
 
@@ -1186,7 +1186,7 @@ class MainWindow(QMainWindow):
                     sentence_source_count = len(first_sentence_sources) if first_sentence_sources else 1
                     first_item.setText(3, str(file_source_count))  # 文件来源数
                     first_item.setText(4, str(sentence_source_count))  # 句子来源数
-                    
+
                     # 累加到二阶编码的句子来源数
                     second_total_sentence_count += sentence_source_count
 
@@ -1228,7 +1228,7 @@ class MainWindow(QMainWindow):
                         "sentence_details": sentence_details,
                         "sentence_ids": list(all_ids)  # 存储句子编号列表，用于导航
                     })
-                
+
                 # 更新二阶编码的句子来源数（所有子一阶编码的句子来源数之和）
                 second_item.setText(4, str(second_total_sentence_count))
                 # 累加到三阶编码的句子来源数
@@ -2517,7 +2517,7 @@ class MainWindow(QMainWindow):
 
                     # 更新文件列表
                     self.file_list.clear()
-                    
+
                     # 恢复自动编码缓存
                     if not hasattr(self, 'auto_coding_cache'):
                         self.auto_coding_cache = {}
@@ -2529,7 +2529,7 @@ class MainWindow(QMainWindow):
                         item = QListWidgetItem(filename)
                         item.setData(Qt.UserRole, file_path)
                         self.file_list.addItem(item)
-                        
+
                         # 如果存在已保存的完整标记内容，恢复到缓存中
                         if 'full_marked_content' in file_data:
                             self.auto_coding_cache[file_path] = file_data['full_marked_content']
@@ -2829,7 +2829,8 @@ class MainWindow(QMainWindow):
             if found_count == 0:
                 for sentence_info in sentences_to_highlight:
                     # 优先使用原始内容，而不是抽象后的内容
-                    sentence_content = sentence_info.get('original_content', '') or sentence_info.get('text', '').strip()
+                    sentence_content = sentence_info.get('original_content', '') or sentence_info.get('text',
+                                                                                                      '').strip()
                     if not sentence_content:
                         continue
 

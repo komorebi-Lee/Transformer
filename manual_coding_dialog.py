@@ -1807,18 +1807,18 @@ class ManualCodingDialog(QDialog):
         item_data = item.data(0, Qt.UserRole)
         if not item_data:
             return
-            
+
         try:
             level = item_data.get("level")
-            
+
             # 统计子节点数据
             child_count = item.childCount()
             sentence_count = 0
-            
-            if level == 2: # 二阶编码
+
+            if level == 2:  # 二阶编码
                 # 数量 = 一阶子节点数
                 item.setText(2, str(child_count))
-                
+
                 # 句子来源 = 所有子节点的句子来源之和
                 for i in range(child_count):
                     child = item.child(i)
@@ -1828,15 +1828,15 @@ class ManualCodingDialog(QDialog):
                         s_count = 0
                     sentence_count += s_count
                 item.setText(4, str(sentence_count))
-                
+
                 # 递归更新父节点（三阶）
                 if item.parent():
                     self.update_statistics_for_item(item.parent())
 
-            elif level == 3: # 三阶编码
+            elif level == 3:  # 三阶编码
                 # 数量 = 二阶子节点数
                 item.setText(2, str(child_count))
-                
+
                 # 句子来源 = 所有二阶子节点的句子来源之和
                 for i in range(child_count):
                     child = item.child(i)
@@ -1961,7 +1961,7 @@ class ManualCodingDialog(QDialog):
 
                 # 更新统计信息（包括句子来源数）
                 self.update_statistics_for_item(second_item)
-                
+
                 second_item.setExpanded(True)
 
                 self.update_structured_codes_from_tree()
@@ -2154,7 +2154,7 @@ class ManualCodingDialog(QDialog):
                 # 获取内容，由于不同地方可能使用不同的键名，所以同时尝试 name 和 content
                 content = item_data.get("name", "") or item_data.get("content", "")
                 sentence_details = item_data.get("sentence_details", [])
-                
+
                 # 修复：正确获取一阶编码自身的编号
                 code_id = ""
                 # 优先从sentence_details第一项获取一阶编码自身的编号
@@ -2162,23 +2162,24 @@ class ManualCodingDialog(QDialog):
                     first_detail = sentence_details[0]
                     code_id = first_detail.get('code_id', '') or first_detail.get('sentence_id', '')
                     logger.info(f"从sentence_details获取一阶编码自身编号: {code_id}")
-                
+
                 # 如果上述方式失败，使用item_data中的code_id
                 if not code_id:
                     code_id = item_data.get("code_id", "")
                     logger.info(f"从item_data获取编号: {code_id}")
-                
+
                 # 如果还是失败，尝试从关联编号中获取第一个
                 if not code_id:
                     current_item = self.coding_tree.currentItem()
                     if current_item:
                         associated_number = current_item.text(5)  # 关联编号在第5列
                         if associated_number:
-                            associated_numbers_list = [num.strip() for num in associated_number.split(',') if num.strip()]
+                            associated_numbers_list = [num.strip() for num in associated_number.split(',') if
+                                                       num.strip()]
                             if associated_numbers_list:
                                 code_id = associated_numbers_list[0]
                                 logger.info(f"从关联编号获取第一个作为一阶编码自身编号: {code_id}")
-                                
+
                 logger.info(f"最终确定的一阶编码编号: {code_id}")
 
                 # 显示句子详情对话框
@@ -3635,7 +3636,7 @@ class ManualCodingDialog(QDialog):
             QMessageBox.critical(self, "错误", f"导入编码结果失败: {str(e)}")
 
     def show_sentence_details_dialog(self, sentence_details, content, code_id):
-        """显示句子详情对话框 - 按照用户要求的格式显示"""
+        """显示句子详情对话框 - 支持编辑功能，保持TextNumbering编号不变"""
         try:
             # 首先从当前选中的项目中获取关联编号（从编码树第5列获取）
             associated_number = ""
@@ -3672,6 +3673,7 @@ class ManualCodingDialog(QDialog):
 
             # 处理句子详情，获取所有句子
             sentences_list = []
+            original_sentences_data = []  # 保存原始数据用于更新
             if sentence_details:
                 for i, detail in enumerate(sentence_details):
                     if isinstance(detail, dict):
@@ -3699,6 +3701,8 @@ class ManualCodingDialog(QDialog):
                                 'original_text': sent_text,
                                 'number': str(sent_number) if sent_number else ''
                             })
+                            # 保存原始数据副本
+                            original_sentences_data.append(dict(detail))
 
             # 确保至少有一个句子（显示一阶编码文本）
             if not sentences_list:
@@ -3710,7 +3714,7 @@ class ManualCodingDialog(QDialog):
 
             # 修复 UnboundLocalError: 必须在使用前定义和赋值 first_code_number
             first_code_number = ""
-            
+
             # 修复：正确获取一阶编码自身的句子编号（不是A01这种编码标识符）
             # 优先使用sentence_details中第一项的句子编号
             if sentence_details and len(sentence_details) > 0:
@@ -3724,13 +3728,13 @@ class ManualCodingDialog(QDialog):
                         logger.info(f"从关联编号获取一阶编码实际句子编号: {first_code_number}")
                 else:
                     logger.info(f"从sentence_details获取一阶编码句子编号: {first_code_number}")
-            
+
             # 如果上述方式失败，使用关联编号列表中的第一个编号
             if not first_code_number or not first_code_number.isdigit():
                 if associated_numbers_list:
                     first_code_number = associated_numbers_list[0]
                     logger.info(f"使用关联编号第一项作为一阶编码句子编号: {first_code_number}")
-                
+
             logger.info(f"最终确定的一阶编码句子编号: {first_code_number}")
             logger.info(f"关联编号完整列表: {associated_numbers_list}")
             logger.info(f"sentence_details数量: {len(sentence_details) if sentence_details else 0}")
@@ -3738,9 +3742,13 @@ class ManualCodingDialog(QDialog):
             # 创建对话框
             dialog = QDialog(self)
             dialog.setWindowTitle(f"编辑一阶编码")
-            dialog.resize(600, 500)
+            dialog.resize(700, 600)
 
             layout = QVBoxLayout(dialog)
+
+            # ========== 查看模式页面 ==========
+            view_page = QWidget()
+            view_layout = QVBoxLayout(view_page)
 
             # 创建 HTML 格式内容，严格按照用户要求的格式
             from PyQt5.QtWidgets import QTextBrowser
@@ -3749,96 +3757,86 @@ class ManualCodingDialog(QDialog):
             text_display.setOpenExternalLinks(False)
             text_display.setOpenLinks(False)  # 禁止点击链接时自动跳转，防止内容被替换为空白
 
-            # 首先构建一阶编码显示
-            # 修复：使用实际句子编号作为标题，而不是编码标识符
-            display_html = f"""
-            <div style='font-family: "Microsoft YaHei", Arial, sans-serif; font-size: 16px; line-height: 1.8;'>
-                <div style='font-weight: bold; font-size: 18px;'>一阶编码: {first_code_number if first_code_number and first_code_number.isdigit() else code_id}:</div>
-                <br>
-            """
-
-            # 一阶编码文本行显示纯内容和编号标记
-            if first_code_number:
-                # 修复：确保显示的内容不包含编码标识符
-                first_code_content_with_number = re.sub(r'^[A-Z]\d+\s+', '', content_without_number).strip()
-                first_code_content_with_number += f" [{first_code_number}]"
-                display_html += f"<div>{first_code_content_with_number}</div><br>"
-            else:
-                display_html += f"<div>{content_without_number}</div><br>"
-
-            # 确定要显示的句子列表
-            display_sentences = []
-            if sentences_list:
-                display_sentences = sentences_list
-            elif associated_numbers_list:
-                # 如果没有句子详情但有关联编号，则显示关联编号对应的句子
-                for num in associated_numbers_list:
-                    display_sentences.append({
-                        'text': content_without_number,
-                        'number': num
-                    })
-            else:
-                # 默认显示一个句子
-                display_sentences.append({
-                    'text': content_without_number,
-                    'number': ''
-                })
+            # 保存对self的引用，避免闭包问题
+            parent_dialog = self
 
             # 保存句子信息的字典，用于点击时查找
             sentence_data = {}
 
-            # 添加多个句子显示
-            for i, sentence in enumerate(sentences_list, 1):
-                if i == 1:
-                    # 句子1：显示一阶编码文本和对应的实际句子编号
-                    # 修复：确保句子内容不包含编码标识符，以便正确导航
-                    sentence_content = content_without_number
-                    # 使用实际的句子编号而不是编码标识符(如A01)
-                    sentence_number = first_code_number if first_code_number and first_code_number.isdigit() else ""
-                    logger.info(f"弹出对话框句子1 - 编号: {sentence_number}, 内容前30字: {sentence_content[:30]}...")
-                else:
-                    # 后续句子：显示拖拽的文本内容和对应的编号
-                    sentence_content = sentence.get('text', content_without_number)
-                    # 清理句子内容，移除编号标记和编码标识符
-                    sentence_content = re.sub(r'\s*\[[A-Z]\d+\]', '', sentence_content)
-                    sentence_content = re.sub(r'\s*\[\d+\]', '', sentence_content)
-                    sentence_content = re.sub(r'^[A-Z]\d+\s+', '', sentence_content)  # 修复：移除开头编码标识符
-                    sentence_content = sentence_content.strip()
-                    sentence_number = sentence.get('number', '')
-                    logger.info(f"弹出对话框句子{i} - 编号: {sentence_number}, 内容前30字: {sentence_content[:30]}...")
-
-                # 保存句子信息，使用句子编号或索引作为key
-                key = sentence_number if sentence_number else str(i)
-                sentence_data[key] = {
-                    'content': sentence_content,
-                    'number': sentence_number
-                }
-
-                # 创建可点击的链接，只使用编号作为href，避免URL编码复杂问题
-                # HTML转义句子内容以防止XSS
-                safe_content = sentence_content.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace(
-                    '"', '&quot;').replace("'", '&#39;')
-                clickable_content = f"<a href='navigate:{key}' style='text-decoration: none; color: black; cursor: pointer;'>{safe_content}</a>"
-
-                display_html += f"""
-                <div style='font-weight: bold; font-size: 18px;'>句子 {i}:</div>
-                <br>
-                <div>编号: {sentence_number}</div>
-                <br>
-                <div>内容: {clickable_content}</div>
-                <br>
+            def refresh_view_content():
+                """刷新查看模式的内容显示"""
+                # 首先构建一阶编码显示
+                # 一阶编码标题始终使用A0X格式（code_id），而非TextNumbering编号
+                display_html = f"""
+                <div style='font-family: "Microsoft YaHei", Arial, sans-serif; font-size: 16px; line-height: 1.8;'>
+                    <div style='font-weight: bold; font-size: 18px;'>一阶编码: {code_id}:</div>
+                    <br>
                 """
 
-            display_html += "</div>"
+                # 一阶编码文本行显示纯内容和编号标记
+                if first_code_number:
+                    # 修复：确保显示的内容不包含编码标识符
+                    first_code_content_with_number = re.sub(r'^[A-Z]\d+\s+', '', content_without_number).strip()
+                    first_code_content_with_number += f" [{first_code_number}]"
+                    display_html += f"<div>{first_code_content_with_number}</div><br>"
+                else:
+                    display_html += f"<div>{content_without_number}</div><br>"
 
-            text_display.setHtml(display_html)
+                # 清空并重新填充句子数据
+                sentence_data.clear()
 
-            # 保存对self的引用，避免闭包问题
-            parent_dialog = self
+                # 添加多个句子显示
+                for i, sentence in enumerate(sentences_list, 1):
+                    if i == 1:
+                        # 句子1：显示一阶编码文本和对应的实际句子编号
+                        # 修复：确保句子内容不包含编码标识符，以便正确导航
+                        sentence_content = content_without_number
+                        # 使用实际的句子编号而不是编码标识符(如A01)
+                        sentence_number = first_code_number if first_code_number and first_code_number.isdigit() else ""
+                        logger.info(f"弹出对话框句子1 - 编号: {sentence_number}, 内容前30字: {sentence_content[:30]}...")
+                    else:
+                        # 后续句子：显示拖拽的文本内容和对应的编号
+                        sentence_content = sentence.get('text', content_without_number)
+                        # 清理句子内容，移除编号标记和编码标识符
+                        sentence_content = re.sub(r'\s*\[[A-Z]\d+\]', '', sentence_content)
+                        sentence_content = re.sub(r'\s*\[\d+\]', '', sentence_content)
+                        sentence_content = re.sub(r'^[A-Z]\d+\s+', '', sentence_content)  # 修复：移除开头编码标识符
+                        sentence_content = sentence_content.strip()
+                        sentence_number = sentence.get('number', '')
+                        logger.info(f"弹出对话框句子{i} - 编号: {sentence_number}, 内容前30字: {sentence_content[:30]}...")
 
-            # 连接点击事件处理函数
+                    # 保存句子信息，使用句子编号或索引作为key
+                    key = sentence_number if sentence_number else str(i)
+                    sentence_data[key] = {
+                        'content': sentence_content,
+                        'number': sentence_number,
+                        'index': i - 1  # 保存索引用于编辑
+                    }
+
+                    # 创建可点击的链接，只使用编号作为href，避免URL编码复杂问题
+                    # HTML转义句子内容以防止XSS
+                    safe_content = sentence_content.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace(
+                        '"', '&quot;').replace("'", '&#39;')
+                    clickable_content = f"<a href='navigate:{key}' style='text-decoration: none; color: black; cursor: pointer;'>{safe_content}</a>"
+
+                    display_html += f"""
+                    <div style='font-weight: bold; font-size: 18px;'>句子 {i}:</div>
+                    <br>
+                    <div>编号: {sentence_number}</div>
+                    <br>
+                    <div>内容: {clickable_content}</div>
+                    <br>
+                    """
+
+                display_html += "</div>"
+                text_display.setHtml(display_html)
+
+            # 初始刷新内容
+            refresh_view_content()
+
+            # 连接点击事件处理函数 - 保持原有导航高亮功能不变
             def handle_link_clicked(url):
-                """处理句子内容点击事件"""
+                """处理句子内容点击事件 - 导航到对应句子并高亮"""
                 try:
                     url_str = url.toString()
                     logger.info(f"点击了链接: {url_str}")
@@ -3857,7 +3855,7 @@ class ManualCodingDialog(QDialog):
 
                             logger.info(f"找到句子 - 编号: {sent_number}, 内容前50字: {sent_content[:50]}...")
 
-                            # 执行导航和高亮
+                            # 执行导航和高亮 - 与原有代码完全一致
                             parent_dialog.navigate_to_sentence_content(sent_content, sent_number)
                         else:
                             logger.warning(f"未找到key为 {key} 的句子信息")
@@ -3869,17 +3867,217 @@ class ManualCodingDialog(QDialog):
                     # 不要弹出错误对话框，避免影响用户体验
 
             text_display.anchorClicked.connect(handle_link_clicked)
-            layout.addWidget(text_display)
 
-            # 添加按钮
-            button_layout = QHBoxLayout()
-            button_layout.addStretch()
+            # ========== 右键菜单功能 ==========
+            from PyQt5.QtWidgets import QMenu
+
+            # 存储当前点击的句子信息
+            current_sentence_key = None
+
+            def show_context_menu(position):
+                """显示右键菜单"""
+                global current_sentence_key
+                
+                # 检查点击位置是否在链接上
+                cursor = text_display.cursorForPosition(position)
+                cursor.select(QTextCursor.WordUnderCursor)
+                selected_text = cursor.selectedText()
+                
+                # 尝试获取链接信息
+                char_format = cursor.charFormat()
+                anchor = char_format.anchorHref()
+                
+                if anchor and anchor.startswith('navigate:'):
+                    # 解析链接
+                    current_sentence_key = anchor[9:]  # 去掉 'navigate:' 前缀
+                    
+                    if current_sentence_key in sentence_data:
+                        sent_info = sentence_data[current_sentence_key]
+                        sent_index = sent_info.get('index', -1)
+                        
+                        # 创建菜单
+                        menu = QMenu()
+                        
+                        # 编辑选项
+                        edit_action = menu.addAction("编辑")
+                        edit_action.triggered.connect(lambda: edit_sentence(current_sentence_key))
+                        
+                        # 删除选项（句子1不能删除）
+                        if sent_index > 0:
+                            delete_action = menu.addAction("删除")
+                            delete_action.triggered.connect(lambda: delete_sentence_context(current_sentence_key))
+                        
+                        # 显示菜单
+                        menu.exec_(text_display.mapToGlobal(position))
+
+            def edit_sentence(key):
+                """编辑句子内容"""
+                try:
+                    if key in sentence_data:
+                        sent_info = sentence_data[key]
+                        sent_content = sent_info.get('content', '')
+                        sent_number = sent_info.get('number', '')
+                        sent_index = sent_info.get('index', -1)
+                        
+                        if sent_index >= 0 and sent_index < len(sentences_list):
+                            # 创建编辑对话框
+                            from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTextEdit, QDialogButtonBox
+                            
+                            edit_dialog = QDialog(dialog)
+                            edit_dialog.setWindowTitle(f"编辑句子")
+                            edit_dialog.resize(500, 200)
+                            
+                            layout = QVBoxLayout(edit_dialog)
+                            
+                            text_edit = QTextEdit()
+                            text_edit.setPlainText(sent_content)
+                            layout.addWidget(text_edit)
+                            
+                            buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+                            buttons.accepted.connect(edit_dialog.accept)
+                            buttons.rejected.connect(edit_dialog.reject)
+                            layout.addWidget(buttons)
+                            
+                            if edit_dialog.exec_() == QDialog.Accepted:
+                                new_text = text_edit.toPlainText().strip()
+                                if new_text:
+                                    # 更新句子内容
+                                    sentences_list[sent_index]['text'] = new_text
+                                    
+                                    # 构建新的sentence_details数据结构
+                                    update_sentence_details()
+                                    
+                                    # 刷新查看模式内容
+                                    refresh_view_content()
+                                    
+                                    logger.info(f"编辑句子 {sent_index + 1}: {new_text[:30]}...")
+                                    QMessageBox.information(dialog, "成功", "句子编辑成功")
+
+                except Exception as e:
+                    logger.error(f"编辑句子失败: {e}")
+                    QMessageBox.critical(dialog, "错误", f"编辑句子失败: {str(e)}")
+
+            def delete_sentence_context(key):
+                """删除句子"""
+                try:
+                    if key in sentence_data:
+                        sent_info = sentence_data[key]
+                        sent_content = sent_info.get('content', '')
+                        sent_index = sent_info.get('index', -1)
+                        
+                        if sent_index > 0 and sent_index < len(sentences_list):
+                            # 确认删除
+                            reply = QMessageBox.question(
+                                dialog,
+                                "确认删除",
+                                f"确定要删除该句子吗？\n\n内容: {sent_content[:50]}...",
+                                QMessageBox.Yes | QMessageBox.No
+                            )
+                            
+                            if reply == QMessageBox.Yes:
+                                # 删除句子
+                                deleted_sentence = sentences_list.pop(sent_index)
+                                
+                                # 构建新的sentence_details数据结构
+                                update_sentence_details()
+                                
+                                # 刷新查看模式内容
+                                refresh_view_content()
+                                
+                                logger.info(f"删除句子 {sent_index + 1}: {deleted_sentence.get('text', '')[:30]}...")
+                                QMessageBox.information(dialog, "成功", "句子删除成功")
+
+                except Exception as e:
+                    logger.error(f"删除句子失败: {e}")
+                    QMessageBox.critical(dialog, "错误", f"删除句子失败: {str(e)}")
+
+            def update_sentence_details():
+                """更新sentence_details数据结构"""
+                try:
+                    # 构建新的sentence_details数据结构
+                    new_sentence_details = []
+
+                    # 句子1：一阶编码本身
+                    if sentences_list:
+                        first_sentence = sentences_list[0]
+                        new_sentence_details.append({
+                            'text': first_sentence['text'],
+                            'code_id': first_code_number if first_code_number and first_code_number.isdigit() else first_sentence['number'],
+                            'sentence_id': first_code_number if first_code_number and first_code_number.isdigit() else first_sentence['number'],
+                            'original_content': first_sentence['text']
+                        })
+
+                    # 后续句子：关联的句子
+                    for i in range(1, len(sentences_list)):
+                        sentence = sentences_list[i]
+                        new_sentence_details.append({
+                            'text': sentence['text'],
+                            'code_id': sentence['number'],
+                            'sentence_id': sentence['number'],
+                            'original_content': sentence['original_text'] if sentence['original_text'] else sentence['text']
+                        })
+
+                    # 更新当前选中项的数据
+                    if current_item:
+                        item_data = current_item.data(0, Qt.UserRole)
+                        if item_data:
+                            # 更新sentence_details
+                            item_data['sentence_details'] = new_sentence_details
+                            item_data['sentence_count'] = len(new_sentence_details)
+
+                            # 更新内容（使用句子1的文本）
+                            if sentences_list:
+                                new_content = sentences_list[0]['text']
+                                item_data['content'] = new_content
+                                item_data['name'] = new_content
+
+                            # 保存回树节点
+                            current_item.setData(0, Qt.UserRole, item_data)
+
+                            # 更新显示文本
+                            display_text = f"{code_id} {sentences_list[0]['text']}" if sentences_list else f"{code_id}"
+                            current_item.setText(0, display_text)
+
+                            # 更新句子来源数
+                            current_item.setText(4, str(len(new_sentence_details)))
+
+                            # 更新关联编号
+                            all_numbers = []
+                            if first_code_number and first_code_number.isdigit():
+                                all_numbers.append(first_code_number)
+                            for i in range(1, len(sentences_list)):
+                                num = sentences_list[i].get('number', '')
+                                if num and num.isdigit() and num not in all_numbers:
+                                    all_numbers.append(num)
+
+                            if all_numbers:
+                                all_numbers.sort(key=lambda x: int(x))
+                                current_item.setText(5, ", ".join(all_numbers) + ",")
+
+                    # 数据同步：更新整体数据结构
+                    self.update_structured_codes_from_tree()
+
+                except Exception as e:
+                    logger.error(f"更新sentence_details失败: {e}")
+                    import traceback
+                    traceback.print_exc()
+
+            # 设置右键菜单
+            text_display.setContextMenuPolicy(Qt.CustomContextMenu)
+            text_display.customContextMenuRequested.connect(show_context_menu)
+
+            view_layout.addWidget(text_display)
+
+            # 主按钮布局
+            main_button_layout = QHBoxLayout()
+            main_button_layout.addStretch()
 
             close_btn = QPushButton("关闭")
             close_btn.clicked.connect(dialog.close)
-            button_layout.addWidget(close_btn)
+            main_button_layout.addWidget(close_btn)
 
-            layout.addLayout(button_layout)
+            layout.addLayout(main_button_layout)
+            layout.addWidget(view_page)
 
             # 显示对话框（非模态）
             dialog.show()
@@ -5004,7 +5202,7 @@ class ManualCodingDialog(QDialog):
             for i in range(self.coding_tree.topLevelItemCount()):
                 item = self.coding_tree.topLevelItem(i)
                 item_data = item.data(0, Qt.UserRole)
-                
+
                 # 只检查 Level 2 的项
                 if item_data and item_data.get("level") == 2:
                     second_name = item.text(0)
@@ -6095,7 +6293,7 @@ class ManualCodingDialog(QDialog):
                 # 修复：优先从当前关联编号中获取一阶编码原有的句子编号
                 first_code_number = ""
                 existing_sentence_details = target_item_data.get("sentence_details", [])
-                
+
                 # 策略1：从当前显示的关联编号中获取（最可靠）
                 current_code_ids = item.text(5)  # 关联编号列
                 logger.info(f"拖拽前的关联编号: '{current_code_ids}'")
@@ -6105,7 +6303,7 @@ class ManualCodingDialog(QDialog):
                     if ids:
                         first_code_number = ids[0]  # 使用第一个作为一阶编码自身句子编号
                         logger.info(f"从当前关联编号获取一阶编码自身句子编号: {first_code_number} (全部编号: {ids})")
-                
+
                 # 策略2：如果没有关联编号，从sentence_details获取
                 if not first_code_number and existing_sentence_details and len(existing_sentence_details) > 0:
                     first_detail = existing_sentence_details[0]
@@ -6115,7 +6313,7 @@ class ManualCodingDialog(QDialog):
                         logger.info(f"从sentence_details获取一阶编码自身句子编号: {first_code_number}")
                     else:
                         first_code_number = ""  # 清空无效编号
-                            
+
                 logger.info(f"最终确定的一阶编码自身句子编号: {first_code_number}")
 
                 # 更新目标项的句子详情，添加拖拽的文本和编号
@@ -6149,7 +6347,7 @@ class ManualCodingDialog(QDialog):
                 # 重新构建完整的句子详情列表
                 # 确保第一项始终是一阶编码自身，后续是其他句子
                 new_sentence_details = []
-                
+
                 # 1. 添加一阶编码自身（第一项）
                 if existing_sentence_details and len(existing_sentence_details) > 0:
                     # 使用现有的第一项，但更新文本内容，确保保留原有的句子编号
@@ -6170,29 +6368,29 @@ class ManualCodingDialog(QDialog):
                         "sentence_id": first_code_number if first_code_number and first_code_number.isdigit() else ""
                     })
                     logger.info(f"创建新的第一项，句子编号: {first_code_number}")
-                
+
                 # 2. 添加其他已存在的句子（跳过第一项）
                 if existing_sentence_details and len(existing_sentence_details) > 1:
                     for detail in existing_sentence_details[1:]:
                         new_sentence_details.append(detail)
-                
+
                 # 3. 添加新拖拽的句子
                 new_sentence_details.extend(new_sentences)
-                
+
                 # 4. 按句子编号排序（第一项保持不动）
                 if len(new_sentence_details) > 1:
                     first_item = new_sentence_details[0]  # 保存第一项
                     other_items = new_sentence_details[1:]  # 其余项目排序
                     other_items.sort(key=lambda x: int(x.get('code_id', '0')) if x.get('code_id', '').isdigit() else 0)
                     new_sentence_details = [first_item] + other_items
-                
+
                 # 更新target_item_data
                 target_item_data["sentence_details"] = new_sentence_details
-                
+
                 # 调试日志：输出完整的sentence_details
                 logger.info(f"完整更新后的sentence_details (共{len(new_sentence_details)}个):")
                 for idx, s in enumerate(new_sentence_details):
-                    logger.info(f"  句子{idx+1}: code_id={s.get('code_id', 'N/A')}, text={s.get('text', '')[:30]}...")
+                    logger.info(f"  句子{idx + 1}: code_id={s.get('code_id', 'N/A')}, text={s.get('text', '')[:30]}...")
 
                 # 更新目标项的句子来源数（第4列）
                 total_sentences = len(new_sentence_details)
@@ -6205,33 +6403,34 @@ class ManualCodingDialog(QDialog):
                 if new_sentence_details and len(new_sentence_details) > 0:
                     # 一阶编码自身的编号（第一项）
                     first_level_code_id = new_sentence_details[0].get('code_id', '')
-                    
+
                     # 收集其他句子的编号（除了一阶编码自身）
                     other_ids = []
                     for detail in new_sentence_details[1:]:
                         code_id = detail.get('code_id', '')
                         if code_id and code_id.isdigit() and code_id not in other_ids:
                             other_ids.append(code_id)
-                    
+
                     # 对其他编号进行排序
                     other_ids.sort(key=lambda x: int(x))
-                    
+
                     # 组合编号：一阶编码自身编号 + 其他编号
                     all_ids = []
                     if first_level_code_id and first_level_code_id.isdigit():
                         all_ids.append(first_level_code_id)
                     all_ids.extend(other_ids)
-                    
+
                     updated_code_ids = ", ".join(all_ids) if all_ids else ""
                 else:
                     updated_code_ids = ""
-                
+
                 item.setText(5, updated_code_ids)
-                
-                logger.info(f"修复关联编号显示 - 一阶编码自身编号: {first_level_code_id if 'first_level_code_id' in locals() else 'N/A'}")
+
+                logger.info(
+                    f"修复关联编号显示 - 一阶编码自身编号: {first_level_code_id if 'first_level_code_id' in locals() else 'N/A'}")
                 logger.info(f"修复关联编号显示 - 其他编号: {other_ids if 'other_ids' in locals() else []}")
                 logger.info(f"修复关联编号显示 - 最终关联编号: {updated_code_ids}")
-                
+
                 logger.info(f"更新关联编号: {updated_code_ids}")
 
                 # 更新目标项的数据
