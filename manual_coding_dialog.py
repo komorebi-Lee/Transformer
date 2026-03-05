@@ -2120,6 +2120,395 @@ class ManualCodingDialog(QDialog):
             traceback.print_exc()
             QMessageBox.critical(self, "错误", f"添加失败:\n{str(e)}")
 
+    def move_first_to_new_parent_second(self):
+        """修改一阶编码的父节点（二阶），允许移动到另一个二阶编码下"""
+        try:
+            selected_items = self.coding_tree.selectedItems()
+            if not selected_items:
+                QMessageBox.information(self, "提示", "请先选中一个一阶编码")
+                return
+
+            # 只处理第一个选中的一阶编码
+            first_item = None
+            for item in selected_items:
+                item_data = item.data(0, Qt.UserRole)
+                if item_data and item_data.get("level") == 1:
+                    parent = item.parent()
+                    if parent and parent.data(0, Qt.UserRole) and parent.data(0, Qt.UserRole).get("level") == 2:
+                        first_item = item
+                        break
+
+            if not first_item:
+                QMessageBox.warning(self, "警告", "请选中一个已归属于二阶编码的一阶编码")
+                return
+
+            old_parent = first_item.parent()
+
+            # 收集所有二阶编码（带三阶父节点信息）
+            # 结构: [(third_item_or_None, [second_item, ...]), ...]
+            third_second_list = []
+            root_count = self.coding_tree.topLevelItemCount()
+            orphan_seconds = []  # 没有三阶父节点的二阶编码
+            for i in range(root_count):
+                top = self.coding_tree.topLevelItem(i)
+                top_data = top.data(0, Qt.UserRole)
+                if not top_data:
+                    continue
+                if top_data.get("level") == 3:
+                    children = []
+                    for j in range(top.childCount()):
+                        child = top.child(j)
+                        child_data = child.data(0, Qt.UserRole)
+                        if child_data and child_data.get("level") == 2:
+                            children.append(child)
+                    if children:
+                        third_second_list.append((top, children))
+                elif top_data.get("level") == 2:
+                    orphan_seconds.append(top)
+            if orphan_seconds:
+                third_second_list.append((None, orphan_seconds))
+
+            if not third_second_list:
+                QMessageBox.information(self, "提示", "当前没有可选的二阶编码")
+                return
+
+            # 弹出选择对话框
+            dialog = QDialog(self)
+            dialog.setWindowTitle("修改一阶对应父节点(二阶)")
+            dialog.resize(500, 450)
+            layout = QVBoxLayout(dialog)
+
+            label = QLabel(f"为一阶编码「{first_item.text(0)}」选择新的二阶父节点：\n（点击二阶编码行进行选择）")
+            label.setWordWrap(True)
+            layout.addWidget(label)
+
+            from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem as _TWI
+            tree = QTreeWidget()
+            tree.setColumnCount(1)
+            tree.setHeaderHidden(True)
+            tree.setSelectionMode(QTreeWidget.SingleSelection)
+
+            item_to_second_map = {}  # tree item → original coding_tree second-level item
+
+            for third_node, second_list in third_second_list:
+                if third_node is None:
+                    parent_node = tree.invisibleRootItem()
+                else:
+                    t_item = _TWI(tree)
+                    t_item.setText(0, third_node.text(0))
+                    t_item.setFlags(t_item.flags() & ~Qt.ItemIsSelectable)
+                    font = t_item.font(0)
+                    font.setBold(True)
+                    t_item.setFont(0, font)
+                    parent_node = t_item
+                    t_item.setExpanded(True)
+
+                for sec in second_list:
+                    if sec is old_parent:
+                        continue  # 跳过当前父节点
+                    s_item = _TWI(parent_node)
+                    s_item.setText(0, "    " + sec.text(0))
+                    item_to_second_map[id(s_item)] = sec
+
+            tree.expandAll()
+            layout.addWidget(tree)
+
+            selected_second = [None]  # 用列表包装，方便闭包写入
+
+            def on_selection_changed():
+                sel = tree.selectedItems()
+                if sel and id(sel[0]) in item_to_second_map:
+                    selected_second[0] = item_to_second_map[id(sel[0])]
+
+            tree.itemSelectionChanged.connect(on_selection_changed)
+
+            btn_layout = QHBoxLayout()
+            ok_btn = QPushButton("选择")
+            cancel_btn = QPushButton("取消")
+            btn_layout.addStretch()
+            btn_layout.addWidget(ok_btn)
+            btn_layout.addWidget(cancel_btn)
+            layout.addLayout(btn_layout)
+
+            def on_ok():
+                if selected_second[0] is None:
+                    QMessageBox.warning(dialog, "提示", "请先点击一个二阶编码")
+                    return
+
+                new_parent = selected_second[0]
+
+                # 从旧父节点移除
+                old_parent.removeChild(first_item)
+
+                # 添加到新父节点
+                new_parent.addChild(first_item)
+
+                # 更新一阶编码数据中的parent信息
+                fd = first_item.data(0, Qt.UserRole)
+                new_parent_data = new_parent.data(0, Qt.UserRole)
+                fd["category"] = new_parent_data.get("name", new_parent.text(0))
+
+                # 更新 core_category（三阶）
+                grandparent = new_parent.parent()
+                if grandparent:
+                    gp_data = grandparent.data(0, Qt.UserRole)
+                    if gp_data and gp_data.get("level") == 3:
+                        import re as _re
+                        parts = grandparent.text(0).split(' ', 1)
+                        fd["core_category"] = parts[1] if len(parts) > 1 else grandparent.text(0)
+                    else:
+                        fd.pop("core_category", None)
+                else:
+                    fd.pop("core_category", None)
+
+                first_item.setData(0, Qt.UserRole, fd)
+
+                # 更新统计并全局重新编号
+                self.update_statistics_for_item(old_parent)
+                self.update_statistics_for_item(new_parent)
+                self.renumber_all_codes()
+
+                logger.info(f"已将一阶编码从「{old_parent.text(0)}」移动到「{new_parent.text(0)}」")
+                QMessageBox.information(self, "成功",
+                                        f"已将一阶编码移动到：{new_parent.text(0)}")
+                dialog.accept()
+
+            ok_btn.clicked.connect(on_ok)
+            cancel_btn.clicked.connect(dialog.reject)
+            dialog.exec_()
+
+        except Exception as e:
+            logger.error(f"修改一阶对应父节点失败: {e}")
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(self, "错误", f"操作失败:\n{str(e)}")
+
+    def move_second_to_new_parent_third(self):
+        """修改二阶编码的父节点（三阶），允许移动到另一个三阶编码下"""
+        try:
+            selected_items = self.coding_tree.selectedItems()
+            if not selected_items:
+                QMessageBox.information(self, "提示", "请先选中一个二阶编码")
+                return
+
+            # 只处理第一个符合条件的二阶编码
+            second_item = None
+            for item in selected_items:
+                item_data = item.data(0, Qt.UserRole)
+                if item_data and item_data.get("level") == 2:
+                    parent = item.parent()
+                    if parent and parent.data(0, Qt.UserRole) and parent.data(0, Qt.UserRole).get("level") == 3:
+                        second_item = item
+                        break
+
+            if not second_item:
+                QMessageBox.warning(self, "警告", "请选中一个已归属于三阶编码的二阶编码")
+                return
+
+            old_parent = second_item.parent()
+
+            # 收集所有三阶编码
+            third_nodes = []
+            root_count = self.coding_tree.topLevelItemCount()
+            for i in range(root_count):
+                top = self.coding_tree.topLevelItem(i)
+                top_data = top.data(0, Qt.UserRole)
+                if top_data and top_data.get("level") == 3 and top is not old_parent:
+                    third_nodes.append(top)
+
+            if not third_nodes:
+                QMessageBox.information(self, "提示", "当前没有其他可选的三阶编码")
+                return
+
+            # 弹出选择对话框
+            dialog = QDialog(self)
+            dialog.setWindowTitle("修改二阶对应父节点(三阶)")
+            dialog.resize(500, 400)
+            layout = QVBoxLayout(dialog)
+
+            label = QLabel(f"为二阶编码「{second_item.text(0)}」选择新的三阶父节点：\n（点击三阶编码行进行选择）")
+            label.setWordWrap(True)
+            layout.addWidget(label)
+
+            from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem as _TWI2
+            tree = QTreeWidget()
+            tree.setColumnCount(1)
+            tree.setHeaderHidden(True)
+            tree.setSelectionMode(QTreeWidget.SingleSelection)
+
+            item_to_third_map = {}
+
+            for third_node in third_nodes:
+                t_item = _TWI2(tree)
+                t_item.setText(0, third_node.text(0))
+                item_to_third_map[id(t_item)] = third_node
+
+            layout.addWidget(tree)
+
+            selected_third = [None]
+
+            def on_selection_changed():
+                sel = tree.selectedItems()
+                if sel and id(sel[0]) in item_to_third_map:
+                    selected_third[0] = item_to_third_map[id(sel[0])]
+
+            tree.itemSelectionChanged.connect(on_selection_changed)
+
+            btn_layout = QHBoxLayout()
+            ok_btn = QPushButton("选择")
+            cancel_btn = QPushButton("取消")
+            btn_layout.addStretch()
+            btn_layout.addWidget(ok_btn)
+            btn_layout.addWidget(cancel_btn)
+            layout.addLayout(btn_layout)
+
+            def on_ok():
+                if selected_third[0] is None:
+                    QMessageBox.warning(dialog, "提示", "请先点击一个三阶编码")
+                    return
+
+                new_parent = selected_third[0]
+                new_parent_data = new_parent.data(0, Qt.UserRole)
+                import re as _re
+                parts = new_parent.text(0).split(' ', 1)
+                new_third_name = parts[1] if len(parts) > 1 else new_parent.text(0)
+
+                # 从旧父节点移除
+                old_parent.removeChild(second_item)
+
+                # 添加到新三阶下
+                new_parent.addChild(second_item)
+
+                # 更新二阶编码数据
+                sd = second_item.data(0, Qt.UserRole)
+                sd["parent"] = new_third_name
+                second_item.setData(0, Qt.UserRole, sd)
+
+                # 更新所有子一阶的 core_category
+                for i in range(second_item.childCount()):
+                    fi = second_item.child(i)
+                    fd = fi.data(0, Qt.UserRole)
+                    if fd:
+                        fd["core_category"] = new_third_name
+                        fi.setData(0, Qt.UserRole, fd)
+
+                new_parent.setExpanded(True)
+
+                # 更新统计并全局重新编号
+                self.update_statistics_for_item(old_parent)
+                self.update_statistics_for_item(new_parent)
+                self.renumber_all_codes()
+
+                logger.info(f"已将二阶编码从「{old_parent.text(0)}」移动到「{new_parent.text(0)}」")
+                QMessageBox.information(self, "成功",
+                                        f"已将二阶编码移动到：{new_parent.text(0)}")
+                dialog.accept()
+
+            ok_btn.clicked.connect(on_ok)
+            cancel_btn.clicked.connect(dialog.reject)
+            dialog.exec_()
+
+        except Exception as e:
+            logger.error(f"修改二阶对应父节点失败: {e}")
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(self, "错误", f"操作失败:\n{str(e)}")
+
+    def renumber_all_codes(self):
+        """对整棵编码树所有节点进行全局重新顺序编号：
+        三阶 C01/C02...（顶层顺序），
+        二阶 B01/B02...（各自三阶父节点内顺序），
+        一阶 A01/A02...（全树从上到下全局顺序）"""
+        try:
+            import re
+
+            def strip_prefix(text):
+                """剥离编码前缀（如 A01: / B02  / C03 等），返回纯名称"""
+                m = re.match(r'^[A-Z]\d+(?:[:：]\s*|\s+)', text)
+                return text[m.end():] if m else text
+
+            first_counter = [0]  # 全局一阶编号计数器（列表便于闭包修改）
+
+            def assign_first(item, idata):
+                first_counter[0] += 1
+                new_id = f"A{first_counter[0]:02d}"
+                pure = strip_prefix(item.text(0))
+                item.setText(0, f"{new_id} {pure}")
+                idata["code_id"] = new_id
+                idata["numbered_content"] = f"{new_id} {pure}"
+                item.setData(0, Qt.UserRole, idata)
+
+            def process_second(sec_item, b_index):
+                """给二阶节点编号并处理其子一阶"""
+                new_id = f"B{b_index:02d}"
+                pure = strip_prefix(sec_item.text(0))
+                sec_item.setText(0, f"{new_id} {pure}")
+                sec_item.setText(5, new_id)
+                sd = sec_item.data(0, Qt.UserRole)
+                if sd:
+                    sd["code_id"] = new_id
+                    if not sd.get("name"):
+                        sd["name"] = pure
+                    sec_item.setData(0, Qt.UserRole, sd)
+                for k in range(sec_item.childCount()):
+                    fi = sec_item.child(k)
+                    fd = fi.data(0, Qt.UserRole)
+                    if fd and fd.get("level") == 1:
+                        assign_first(fi, fd)
+
+            third_counter = 0
+            for i in range(self.coding_tree.topLevelItemCount()):
+                top = self.coding_tree.topLevelItem(i)
+                td = top.data(0, Qt.UserRole)
+                if not td:
+                    continue
+                lvl = td.get("level")
+
+                if lvl == 3:
+                    third_counter += 1
+                    new_id = f"C{third_counter:02d}"
+                    pure = strip_prefix(top.text(0))
+                    top.setText(0, f"{new_id} {pure}")
+                    top.setText(5, new_id)
+                    td["code_id"] = new_id
+                    if not td.get("name"):
+                        td["name"] = pure
+                    top.setData(0, Qt.UserRole, td)
+                    b_idx = 1
+                    for j in range(top.childCount()):
+                        sec = top.child(j)
+                        sd2 = sec.data(0, Qt.UserRole)
+                        if sd2 and sd2.get("level") == 2:
+                            process_second(sec, b_idx)
+                            b_idx += 1
+                        elif sd2 and sd2.get("level") == 1:
+                            assign_first(sec, sd2)
+
+                elif lvl == 2:
+                    # 顶层二阶（无三阶父节点），只处理子一阶
+                    for k in range(top.childCount()):
+                        fi = top.child(k)
+                        fd = fi.data(0, Qt.UserRole)
+                        if fd and fd.get("level") == 1:
+                            assign_first(fi, fd)
+
+                elif lvl == 1:
+                    # 顶层一阶（未分类）
+                    assign_first(top, td)
+
+            # 更新 last_code_number 以便下次新增编码时继续递增
+            if first_counter[0] > 0:
+                self.last_code_number = first_counter[0]
+                self.last_code_letter = "A"
+
+            self.update_structured_codes_from_tree()
+            logger.info(f"全局重新编号完成：三阶共 {third_counter} 个，一阶共 {first_counter[0]} 个")
+
+        except Exception as e:
+            logger.error(f"renumber_all_codes 失败: {e}")
+            import traceback
+            traceback.print_exc()
+
     def update_first_codes_display(self):
         """更新一阶编码列表显示（已弃用，调用update_coding_tree代替）"""
         self.update_coding_tree()
@@ -3877,36 +4266,36 @@ class ManualCodingDialog(QDialog):
             def show_context_menu(position):
                 """显示右键菜单"""
                 global current_sentence_key
-                
+
                 # 检查点击位置是否在链接上
                 cursor = text_display.cursorForPosition(position)
                 cursor.select(QTextCursor.WordUnderCursor)
                 selected_text = cursor.selectedText()
-                
+
                 # 尝试获取链接信息
                 char_format = cursor.charFormat()
                 anchor = char_format.anchorHref()
-                
+
                 if anchor and anchor.startswith('navigate:'):
                     # 解析链接
                     current_sentence_key = anchor[9:]  # 去掉 'navigate:' 前缀
-                    
+
                     if current_sentence_key in sentence_data:
                         sent_info = sentence_data[current_sentence_key]
                         sent_index = sent_info.get('index', -1)
-                        
+
                         # 创建菜单
                         menu = QMenu()
-                        
+
                         # 编辑选项
                         edit_action = menu.addAction("编辑")
                         edit_action.triggered.connect(lambda: edit_sentence(current_sentence_key))
-                        
+
                         # 删除选项（句子1不能删除）
                         if sent_index > 0:
                             delete_action = menu.addAction("删除")
                             delete_action.triggered.connect(lambda: delete_sentence_context(current_sentence_key))
-                        
+
                         # 显示菜单
                         menu.exec_(text_display.mapToGlobal(position))
 
@@ -3918,38 +4307,38 @@ class ManualCodingDialog(QDialog):
                         sent_content = sent_info.get('content', '')
                         sent_number = sent_info.get('number', '')
                         sent_index = sent_info.get('index', -1)
-                        
+
                         if sent_index >= 0 and sent_index < len(sentences_list):
                             # 创建编辑对话框
                             from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTextEdit, QDialogButtonBox
-                            
+
                             edit_dialog = QDialog(dialog)
                             edit_dialog.setWindowTitle(f"编辑句子")
                             edit_dialog.resize(500, 200)
-                            
+
                             layout = QVBoxLayout(edit_dialog)
-                            
+
                             text_edit = QTextEdit()
                             text_edit.setPlainText(sent_content)
                             layout.addWidget(text_edit)
-                            
+
                             buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
                             buttons.accepted.connect(edit_dialog.accept)
                             buttons.rejected.connect(edit_dialog.reject)
                             layout.addWidget(buttons)
-                            
+
                             if edit_dialog.exec_() == QDialog.Accepted:
                                 new_text = text_edit.toPlainText().strip()
                                 if new_text:
                                     # 更新句子内容
                                     sentences_list[sent_index]['text'] = new_text
-                                    
+
                                     # 构建新的sentence_details数据结构
                                     update_sentence_details()
-                                    
+
                                     # 刷新查看模式内容
                                     refresh_view_content()
-                                    
+
                                     logger.info(f"编辑句子 {sent_index + 1}: {new_text[:30]}...")
                                     QMessageBox.information(dialog, "成功", "句子编辑成功")
 
@@ -3964,7 +4353,7 @@ class ManualCodingDialog(QDialog):
                         sent_info = sentence_data[key]
                         sent_content = sent_info.get('content', '')
                         sent_index = sent_info.get('index', -1)
-                        
+
                         if sent_index > 0 and sent_index < len(sentences_list):
                             # 确认删除
                             reply = QMessageBox.question(
@@ -3973,17 +4362,17 @@ class ManualCodingDialog(QDialog):
                                 f"确定要删除该句子吗？\n\n内容: {sent_content[:50]}...",
                                 QMessageBox.Yes | QMessageBox.No
                             )
-                            
+
                             if reply == QMessageBox.Yes:
                                 # 删除句子
                                 deleted_sentence = sentences_list.pop(sent_index)
-                                
+
                                 # 构建新的sentence_details数据结构
                                 update_sentence_details()
-                                
+
                                 # 刷新查看模式内容
                                 refresh_view_content()
-                                
+
                                 logger.info(f"删除句子 {sent_index + 1}: {deleted_sentence.get('text', '')[:30]}...")
                                 QMessageBox.information(dialog, "成功", "句子删除成功")
 
@@ -4217,6 +4606,32 @@ class ManualCodingDialog(QDialog):
         add_third_action = QAction("为二阶添加父节点(三阶)", self)
         add_third_action.triggered.connect(self.add_parent_third_for_second)
         menu.addAction(add_third_action)
+
+        # 根据当前选中节点动态添加"修改父节点"选项
+        clicked_item = self.coding_tree.itemAt(position)
+        if clicked_item:
+            clicked_data = clicked_item.data(0, Qt.UserRole)
+            if clicked_data:
+                clicked_level = clicked_data.get("level")
+                clicked_parent = clicked_item.parent()
+
+                # 一阶且有二阶父节点 → 可修改父节点(二阶)
+                if clicked_level == 1 and clicked_parent:
+                    parent_data = clicked_parent.data(0, Qt.UserRole)
+                    if parent_data and parent_data.get("level") == 2:
+                        menu.addSeparator()
+                        move_first_action = QAction("修改一阶对应父节点(二阶)", self)
+                        move_first_action.triggered.connect(self.move_first_to_new_parent_second)
+                        menu.addAction(move_first_action)
+
+                # 二阶且有三阶父节点 → 可修改父节点(三阶)
+                elif clicked_level == 2 and clicked_parent:
+                    parent_data = clicked_parent.data(0, Qt.UserRole)
+                    if parent_data and parent_data.get("level") == 3:
+                        menu.addSeparator()
+                        move_second_action = QAction("修改二阶对应父节点(三阶)", self)
+                        move_second_action.triggered.connect(self.move_second_to_new_parent_third)
+                        menu.addAction(move_second_action)
 
         menu.exec_(self.coding_tree.viewport().mapToGlobal(position))
 
