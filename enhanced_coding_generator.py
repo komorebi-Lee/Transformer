@@ -75,13 +75,13 @@ class EnhancedCodingGenerator:
 
                 # 抽象提炼内容
                 abstracted_content = self.abstract_sentence(text)
-                
+
                 # 构建一阶编码
                 # 保存原始句子，以便在添加编码标记时使用
                 original_sentence = all_sentences[i].copy() if isinstance(all_sentences[i], dict) else {}
                 if isinstance(original_sentence, dict):
                     original_sentence['original_content'] = text
-                
+
                 first_level_codes[code_key] = [
                     abstracted_content,
                     [all_sentences[i]],  # source_sentences
@@ -224,19 +224,23 @@ class EnhancedCodingGenerator:
 
     def abstract_sentence(self, sentence: str) -> str:
         """抽象提炼句子内容"""
+        # 移除说话人标记（如 B：, 答：等）
+        # 使用正则表达式移除句子开头的说话人前缀，保留剩余部分
+        abstracted = re.sub(r'^(?:[Bb]|答|回答|受访|被访)[:：]\s*', '', sentence)
+
         # 移除一阶编码标记（如 [A1], [A2] 等）
-        abstracted = re.sub(r'\s*\[A\d+\]', '', sentence)
-        
+        abstracted = re.sub(r'\s*\[A\d+\]', '', abstracted)
+
         # 移除口语化表达
         oral_expressions = ['我觉得', '我认为', '我感觉', '我想', '就是说', '然后',
-                          '那个', '这个', '就是', '就是說', '嗯', '啊', '对不对']
-        
+                            '那个', '这个', '就是', '就是說', '嗯', '啊', '对不对']
+
         for expr in oral_expressions:
             abstracted = abstracted.replace(expr, '')
-        
+
         # 移除重复的词语
         abstracted = re.sub(r'(\w)\1{2,}', r'\1', abstracted)
-        
+
         # 移除多余的空格
         abstracted = re.sub(r'\s+', ' ', abstracted).strip()
 
@@ -263,8 +267,9 @@ class EnhancedCodingGenerator:
                     break
 
         # 确保内容长度合理
-        if len(abstracted) > 80:
-            abstracted = abstracted[:80] + '...'
+        # 增加长度限制以保留更多完整内容（从 80 增加到 500）
+        if len(abstracted) > 500:
+            abstracted = abstracted[:500] + '...'
 
         return abstracted
 
