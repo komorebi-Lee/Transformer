@@ -1,4 +1,4 @@
-﻿import os
+import os
 import json
 import re
 from datetime import datetime
@@ -118,7 +118,7 @@ class ManualCodingDialog(QDialog):
         # 设置为全屏或最大化
         screen_geometry = QApplication.desktop().availableGeometry()
         self.setGeometry(screen_geometry)
-        self._is_half_screen = False        # 当前是否处于半屏状态
+        self._is_half_screen = False  # 当前是否处于半屏状态
         self._handling_state_change = True  # 保护初始化时的 showMaximized 不被拦截
         self.showMaximized()
         self._handling_state_change = False
@@ -181,37 +181,37 @@ class ManualCodingDialog(QDialog):
         # 不再自动弹出恢复编码进度对话框，用户可以通过导入功能手动恢复
         # self.check_and_restore_last_coding_position()
 
-    def changeEvent(self, event):
-        """拦截窗口状态变化：还原按鈕→半屏，最大化按鈕→全屏"""
-        from PyQt5.QtCore import QEvent, QTimer
-        if event.type() == QEvent.WindowStateChange:
-            if not getattr(self, '_handling_state_change', False):
-                old_state = event.oldState()
-                new_state = self.windowState()
-                # 全屏 → 还原（点击还原按鈕）：改为半屏
-                if (old_state & Qt.WindowMaximized) and not (new_state & Qt.WindowMaximized) \
-                        and not (new_state & Qt.WindowMinimized):
-                    if not getattr(self, '_is_half_screen', False):
-                        QTimer.singleShot(0, self._apply_half_screen)
-                # 半屏 → 最大化（点击最大化按鈕）：恢复全屏，清除标记
-                elif (new_state & Qt.WindowMaximized) and getattr(self, '_is_half_screen', False):
-                    self._is_half_screen = False
-        super().changeEvent(event)
+        def changeEvent(self, event):
+            """拦截窗口状态变化：还原按鈕→半屏，最大化按鈕→全屏"""
+            from PyQt5.QtCore import QEvent, QTimer
+            if event.type() == QEvent.WindowStateChange:
+                if not getattr(self, '_handling_state_change', False):
+                    old_state = event.oldState()
+                    new_state = self.windowState()
+                    # 全屏 → 还原（点击还原按鈕）：改为半屏
+                    if (old_state & Qt.WindowMaximized) and not (new_state & Qt.WindowMaximized) \
+                            and not (new_state & Qt.WindowMinimized):
+                        if not getattr(self, '_is_half_screen', False):
+                            QTimer.singleShot(0, self._apply_half_screen)
+                    # 半屏 → 最大化（点击最大化按鈕）：恢复全屏，清除标记
+                    elif (new_state & Qt.WindowMaximized) and getattr(self, '_is_half_screen', False):
+                        self._is_half_screen = False
+            super().changeEvent(event)
 
-    def _apply_half_screen(self):
-        """将窗口设置为屏幕一半大小并居中"""
-        self._handling_state_change = True
-        screen = QApplication.desktop().availableGeometry()
-        half_w = screen.width() // 2
-        half_h = screen.height() // 2
-        self.setGeometry(
-            screen.x() + half_w // 2,
-            screen.y() + half_h // 2,
-            half_w,
-            half_h
-        )
-        self._is_half_screen = True
-        self._handling_state_change = False
+        def _apply_half_screen(self):
+            """将窗口设置为屏幕一半大小并居中"""
+            self._handling_state_change = True
+            screen = QApplication.desktop().availableGeometry()
+            half_w = screen.width() // 2
+            half_h = screen.height() // 2
+            self.setGeometry(
+                screen.x() + half_w // 2,
+                screen.y() + half_h // 2,
+                half_w,
+                half_h
+            )
+            self._is_half_screen = True
+            self._handling_state_change = False
 
     def create_left_panel(self):
         panel = QWidget()
@@ -345,6 +345,24 @@ class ManualCodingDialog(QDialog):
         # 编码结构显示（使用树形结构）
         structure_group = QGroupBox("编码结构")
         structure_layout = QVBoxLayout(structure_group)
+
+        # 搜索框
+        search_layout = QHBoxLayout()
+        self.search_line_edit = QLineEdit()
+        self.search_line_edit.setPlaceholderText("搜索一阶编码...")
+        self.search_line_edit.setMinimumWidth(200)
+        
+        # 放大镜图标按钮
+        search_button = QPushButton("🔍")
+        search_button.setStyleSheet("QPushButton { border: none; padding: 0 5px; }")
+        
+        search_layout.addWidget(self.search_line_edit)
+        search_layout.addWidget(search_button)
+        structure_layout.addLayout(search_layout)
+
+        # 连接搜索信号
+        self.search_line_edit.returnPressed.connect(self.perform_search)
+        search_button.clicked.connect(self.perform_search)
 
         # 树形控件
         self.coding_tree = DragDropTreeWidget()
@@ -3563,6 +3581,189 @@ class ManualCodingDialog(QDialog):
             logger.error(f"获取编码ID时出错: {e}")
             return ""
 
+
+
+    def perform_search(self):
+        """执行搜索"""
+        search_text = self.search_line_edit.text().strip()
+        if not search_text:
+            return
+
+        # 搜索一阶编码
+        results = self.search_first_level_codes(search_text)
+        if results:
+            # 显示搜索结果弹窗
+            self.show_search_results(results, search_text)
+
+    def search_first_level_codes(self, search_text):
+        """搜索一阶编码"""
+        results = []
+        
+        # 遍历已分类编码
+        for third_cat, second_cats in self.current_codes.items():
+            for second_cat, first_contents in second_cats.items():
+                for content in first_contents:
+                    if isinstance(content, dict):
+                        code_content = content.get('content', '')
+                        code_id = content.get('code_id', '')
+                        sentence_details = content.get('sentence_details', [])
+                        
+                        # 检查是否包含搜索文本
+                        if search_text in code_content:
+                            # 提取TextNumbering编号
+                            text_numbering = ""
+                            if sentence_details:
+                                first_detail = sentence_details[0]
+                                text_numbering = first_detail.get('sentence_id', '') or first_detail.get('code_id', '')
+                            
+                            results.append({
+                                'content': code_content,
+                                'code_id': code_id,
+                                'text_numbering': text_numbering,
+                                'third_cat': third_cat,
+                                'second_cat': second_cat,
+                                'content_obj': content
+                            })
+                    else:
+                        # 处理字符串内容
+                        code_content = str(content)
+                        if search_text in code_content:
+                            results.append({
+                                'content': code_content,
+                                'code_id': '',
+                                'text_numbering': '',
+                                'third_cat': third_cat,
+                                'second_cat': second_cat,
+                                'content_obj': content
+                            })
+        
+        # 遍历未分类编码
+        for item in self.unclassified_first_codes:
+            if isinstance(item, dict):
+                code_content = item.get('content', '')
+                code_id = item.get('code_id', '')
+                sentence_details = item.get('sentence_details', [])
+                
+                if search_text in code_content:
+                    text_numbering = ""
+                    if sentence_details:
+                        first_detail = sentence_details[0]
+                        text_numbering = first_detail.get('sentence_id', '') or first_detail.get('code_id', '')
+                    
+                    results.append({
+                        'content': code_content,
+                        'code_id': code_id,
+                        'text_numbering': text_numbering,
+                        'third_cat': '未分类',
+                        'second_cat': '未分类',
+                        'content_obj': item
+                    })
+            else:
+                code_content = str(item)
+                if search_text in code_content:
+                    results.append({
+                        'content': code_content,
+                        'code_id': '',
+                        'text_numbering': '',
+                        'third_cat': '未分类',
+                        'second_cat': '未分类',
+                        'content_obj': item
+                    })
+        
+        # 按TextNumbering编号排序
+        results.sort(key=lambda x: x['text_numbering'] if x['text_numbering'] else '')
+        return results
+
+    def show_search_results(self, results, search_text):
+        """显示搜索结果弹窗"""
+        dialog = QDialog(self)
+        dialog.setWindowTitle("搜索结果")
+        dialog.resize(400, 300)
+        
+        layout = QVBoxLayout(dialog)
+        
+        # 结果列表
+        result_list = QListWidget()
+        result_list.setSelectionMode(QListWidget.SingleSelection)
+        
+        # 添加结果项
+        for i, result in enumerate(results):
+            item_text = f"[{result['text_numbering']}] {result['content'][:100]}"
+            item = QListWidgetItem(item_text)
+            item.setData(Qt.UserRole, result)
+            result_list.addItem(item)
+        
+        layout.addWidget(result_list)
+        
+        # 按钮
+        button_layout = QHBoxLayout()
+        ok_btn = QPushButton("确定")
+        cancel_btn = QPushButton("取消")
+        
+        button_layout.addStretch()
+        button_layout.addWidget(cancel_btn)
+        button_layout.addWidget(ok_btn)
+        
+        layout.addLayout(button_layout)
+        
+        # 连接信号
+        def on_item_double_clicked(item):
+            result = item.data(Qt.UserRole)
+            self.navigate_to_search_result(result)
+            dialog.accept()
+        
+        def on_ok_clicked():
+            selected_items = result_list.selectedItems()
+            if selected_items:
+                result = selected_items[0].data(Qt.UserRole)
+                self.navigate_to_search_result(result)
+            dialog.accept()
+        
+        result_list.itemDoubleClicked.connect(on_item_double_clicked)
+        
+        ok_btn.clicked.connect(on_ok_clicked)
+        cancel_btn.clicked.connect(lambda: dialog.reject())
+        
+        dialog.exec_()
+
+    def navigate_to_search_result(self, result):
+        """导航到搜索结果"""
+        # 定位到编码树中的一阶编码
+        self.locate_and_select_code(result)
+        
+        # 高亮文本内容
+        self.highlight_search_result(result)
+
+    def locate_and_select_code(self, result):
+        """定位并选中编码树中的一阶编码"""
+        # 展开所有节点
+        self.coding_tree.expandAll()
+        
+        # 查找并选中对应的一阶编码
+        self.find_and_select_first_level_code(result['third_cat'], result['second_cat'], result['content'])
+
+    def find_and_select_first_level_code(self, third_cat, second_cat, content):
+        """查找并选中一阶编码"""
+        for i in range(self.coding_tree.topLevelItemCount()):
+            third_item = self.coding_tree.topLevelItem(i)
+            if third_item.text(0) == third_cat:
+                for j in range(third_item.childCount()):
+                    second_item = third_item.child(j)
+                    if second_item.text(0) == second_cat:
+                        for k in range(second_item.childCount()):
+                            first_item = second_item.child(k)
+                            if content in first_item.text(0):
+                                self.coding_tree.setCurrentItem(first_item)
+                                # 确保可见
+                                self.coding_tree.scrollToItem(first_item)
+                                return
+
+    def highlight_search_result(self, result):
+        """高亮搜索结果"""
+        content = result['content']
+        if content:
+            self.highlight_text_content(content)
+
     def highlight_text_content(self, content: str):
         """在文本中高亮内容"""
         try:
@@ -4304,36 +4505,36 @@ class ManualCodingDialog(QDialog):
             def show_context_menu(position):
                 """显示右键菜单"""
                 global current_sentence_key
-
+                
                 # 检查点击位置是否在链接上
                 cursor = text_display.cursorForPosition(position)
                 cursor.select(QTextCursor.WordUnderCursor)
                 selected_text = cursor.selectedText()
-
+                
                 # 尝试获取链接信息
                 char_format = cursor.charFormat()
                 anchor = char_format.anchorHref()
-
+                
                 if anchor and anchor.startswith('navigate:'):
                     # 解析链接
                     current_sentence_key = anchor[9:]  # 去掉 'navigate:' 前缀
-
+                    
                     if current_sentence_key in sentence_data:
                         sent_info = sentence_data[current_sentence_key]
                         sent_index = sent_info.get('index', -1)
-
+                        
                         # 创建菜单
                         menu = QMenu()
-
+                        
                         # 编辑选项
                         edit_action = menu.addAction("编辑")
                         edit_action.triggered.connect(lambda: edit_sentence(current_sentence_key))
-
+                        
                         # 删除选项（句子1不能删除）
                         if sent_index > 0:
                             delete_action = menu.addAction("删除")
                             delete_action.triggered.connect(lambda: delete_sentence_context(current_sentence_key))
-
+                        
                         # 显示菜单
                         menu.exec_(text_display.mapToGlobal(position))
 
@@ -4345,38 +4546,38 @@ class ManualCodingDialog(QDialog):
                         sent_content = sent_info.get('content', '')
                         sent_number = sent_info.get('number', '')
                         sent_index = sent_info.get('index', -1)
-
+                        
                         if sent_index >= 0 and sent_index < len(sentences_list):
                             # 创建编辑对话框
                             from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTextEdit, QDialogButtonBox
-
+                            
                             edit_dialog = QDialog(dialog)
                             edit_dialog.setWindowTitle(f"编辑句子")
                             edit_dialog.resize(500, 200)
-
+                            
                             layout = QVBoxLayout(edit_dialog)
-
+                            
                             text_edit = QTextEdit()
                             text_edit.setPlainText(sent_content)
                             layout.addWidget(text_edit)
-
+                            
                             buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
                             buttons.accepted.connect(edit_dialog.accept)
                             buttons.rejected.connect(edit_dialog.reject)
                             layout.addWidget(buttons)
-
+                            
                             if edit_dialog.exec_() == QDialog.Accepted:
                                 new_text = text_edit.toPlainText().strip()
                                 if new_text:
                                     # 更新句子内容
                                     sentences_list[sent_index]['text'] = new_text
-
+                                    
                                     # 构建新的sentence_details数据结构
                                     update_sentence_details()
-
+                                    
                                     # 刷新查看模式内容
                                     refresh_view_content()
-
+                                    
                                     logger.info(f"编辑句子 {sent_index + 1}: {new_text[:30]}...")
                                     QMessageBox.information(dialog, "成功", "句子编辑成功")
 
@@ -4391,7 +4592,7 @@ class ManualCodingDialog(QDialog):
                         sent_info = sentence_data[key]
                         sent_content = sent_info.get('content', '')
                         sent_index = sent_info.get('index', -1)
-
+                        
                         if sent_index > 0 and sent_index < len(sentences_list):
                             # 确认删除
                             reply = QMessageBox.question(
@@ -4400,17 +4601,17 @@ class ManualCodingDialog(QDialog):
                                 f"确定要删除该句子吗？\n\n内容: {sent_content[:50]}...",
                                 QMessageBox.Yes | QMessageBox.No
                             )
-
+                            
                             if reply == QMessageBox.Yes:
                                 # 删除句子
                                 deleted_sentence = sentences_list.pop(sent_index)
-
+                                
                                 # 构建新的sentence_details数据结构
                                 update_sentence_details()
-
+                                
                                 # 刷新查看模式内容
                                 refresh_view_content()
-
+                                
                                 logger.info(f"删除句子 {sent_index + 1}: {deleted_sentence.get('text', '')[:30]}...")
                                 QMessageBox.information(dialog, "成功", "句子删除成功")
 
@@ -5967,14 +6168,12 @@ class ManualCodingDialog(QDialog):
                 # 创建基本结构
                 unclassified_data = []
                 for item in self.unclassified_first_codes:
+                    # 保留完整的一阶编码数据结构，包括sentence_details
                     if isinstance(item, dict):
-                        # 优先使用content字段，其次使用name字段
-                        if 'content' in item:
-                            unclassified_data.append(item.get('content'))
-                        elif 'name' in item:
-                            unclassified_data.append(item.get('name'))
-                        else:
-                            unclassified_data.append(str(item))
+                        # 确保content字段存在
+                        if 'content' not in item and 'name' in item:
+                            item['content'] = item['name']
+                        unclassified_data.append(item)
                     else:
                         unclassified_data.append(str(item))
                 export_data = {"未分类编码": {"未分类": unclassified_data}}
@@ -5994,10 +6193,24 @@ class ManualCodingDialog(QDialog):
                             export_data, description
                         )
                         if version_id:
-                            # 更新编码树显示，确保编号格式正确
-                            self.update_coding_tree()
-                            # 显示成功消息
-                            QMessageBox.information(self, "成功", f"标准答案已导出: {version_id}")
+                            # 重新加载刚创建的标准答案，确保编码树与标准答案完全一致
+                            success = parent.standard_answer_manager.load_answers(f"{version_id}.json")
+                            if success:
+                                # 从标准答案管理器获取最新的编码数据
+                                current_answers = parent.standard_answer_manager.get_current_answers()
+                                if current_answers and "structured_codes" in current_answers:
+                                    # 更新当前编码数据为标准答案中的数据
+                                    self.current_codes = current_answers["structured_codes"]
+                                    # 清空未分类编码，因为标准答案中不包含未分类编码
+                                    self.unclassified_first_codes = []
+                                    # 更新编码树显示，确保与标准答案完全一致
+                                    self.update_coding_tree()
+                                    # 显示成功消息
+                                    QMessageBox.information(self, "成功", f"标准答案已导出: {version_id}\n编码树已更新为标准答案内容")
+                                else:
+                                    QMessageBox.warning(self, "警告", "标准答案数据格式不完整")
+                            else:
+                                QMessageBox.warning(self, "警告", "重新加载标准答案失败，编码树可能未完全更新")
                         else:
                             QMessageBox.critical(self, "错误", "导出失败")
                     except Exception as e:
@@ -6022,15 +6235,12 @@ class ManualCodingDialog(QDialog):
                 export_data[third_cat][second_cat] = []
 
                 for content in first_contents:
+                    # 保留完整的一阶编码数据结构，包括sentence_details
                     if isinstance(content, dict):
-                        # 提取一阶编码内容，优先使用content字段，其次使用name字段
-                        if 'content' in content:
-                            export_data[third_cat][second_cat].append(content.get('content'))
-                        elif 'name' in content:
-                            export_data[third_cat][second_cat].append(content.get('name'))
-                        else:
-                            # 如果都没有，使用字符串表示
-                            export_data[third_cat][second_cat].append(str(content))
+                        # 确保content字段存在
+                        if 'content' not in content and 'name' in content:
+                            content['content'] = content['name']
+                        export_data[third_cat][second_cat].append(content)
                     else:
                         # 直接使用字符串内容
                         export_data[third_cat][second_cat].append(str(content))
