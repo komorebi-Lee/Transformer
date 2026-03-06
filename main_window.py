@@ -292,11 +292,11 @@ class MainWindow(QMainWindow):
         self.search_line_edit = QLineEdit()
         self.search_line_edit.setPlaceholderText("搜索一阶编码...")
         self.search_line_edit.setMinimumWidth(200)
-        
+
         # 放大镜图标按钮
         search_button = QPushButton("🔍")
         search_button.setStyleSheet("QPushButton { border: none; padding: 0 5px; }")
-        
+
         search_layout.addWidget(self.search_line_edit)
         search_layout.addWidget(search_button)
         coding_layout.addLayout(search_layout)
@@ -1416,11 +1416,11 @@ class MainWindow(QMainWindow):
                 first_detail = sentence_details[0]
                 sent_content = first_detail.get('original_content', '') or first_detail.get('text', '') or first_detail.get('content', '')
                 sent_number = first_detail.get('sentence_id', '') or first_detail.get('code_id', '')
-                
+
                 # 如果获取到的是编码标识符（如A01），则尝试从sentence_ids获取数字编号
                 if sent_number and not sent_number.isdigit() and sentence_ids:
                     sent_number = str(sentence_ids[0]).strip('[]')
-                
+
                 if sent_content:
                     self.navigate_to_sentence_content(sent_content, sent_number)
             elif sentence_ids:
@@ -1466,6 +1466,8 @@ class MainWindow(QMainWindow):
                         item = self.file_list.item(i)
                         if item.data(Qt.UserRole) == target_file:
                             self.file_list.setCurrentItem(item)
+                            # 显式触发文件加载
+                            self.on_file_selected(item)
                             # 等待文件显示更新
                             QApplication.processEvents()
                             break
@@ -1572,7 +1574,7 @@ class MainWindow(QMainWindow):
             # 查找句子编号标记 [N]
             sentence_tag = f"[{sid}]"
             pos = current_text.find(sentence_tag)
-            
+
             if pos < 0:
                 self.statusBar().showMessage(f"未找到句子编号: {sid}")
                 return
@@ -1603,7 +1605,7 @@ class MainWindow(QMainWindow):
 
             # 使用 ExtraSelection 进行单一高亮
             from PyQt5.QtWidgets import QTextEdit
-            
+
             selection = QTextEdit.ExtraSelection()
             cursor = self.text_display.textCursor()
             cursor.setPosition(sentence_start)
@@ -1611,7 +1613,7 @@ class MainWindow(QMainWindow):
             selection.cursor = cursor
             selection.format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
             selection.format.setForeground(QColor(0, 0, 0))  # 黑色文字
-            
+
             # 应用单一高亮
             self.text_display.setExtraSelections([selection])
 
@@ -1891,7 +1893,7 @@ class MainWindow(QMainWindow):
     def search_first_level_codes(self, search_text):
         """搜索一阶编码"""
         results = []
-        
+
         # 遍历编码树
         for third_cat, second_cats in self.structured_codes.items():
             for second_cat, first_contents in second_cats.items():
@@ -1900,7 +1902,7 @@ class MainWindow(QMainWindow):
                         code_content = content.get('content', '')
                         code_id = content.get('code_id', '')
                         sentence_details = content.get('sentence_details', [])
-                        
+
                         # 检查是否包含搜索文本
                         if search_text in code_content:
                             # 提取TextNumbering编号
@@ -1908,7 +1910,7 @@ class MainWindow(QMainWindow):
                             if sentence_details:
                                 first_detail = sentence_details[0]
                                 text_numbering = first_detail.get('sentence_id', '') or first_detail.get('code_id', '')
-                            
+
                             results.append({
                                 'content': code_content,
                                 'code_id': code_id,
@@ -1929,7 +1931,7 @@ class MainWindow(QMainWindow):
                                 'second_cat': second_cat,
                                 'content_obj': content
                             })
-        
+
         # 按TextNumbering编号排序
         results.sort(key=lambda x: x['text_numbering'] if x['text_numbering'] else '')
         return results
@@ -1939,58 +1941,58 @@ class MainWindow(QMainWindow):
         dialog = QDialog(self)
         dialog.setWindowTitle("搜索结果")
         dialog.resize(400, 300)
-        
+
         layout = QVBoxLayout(dialog)
-        
+
         # 结果列表
         result_list = QListWidget()
         result_list.setSelectionMode(QListWidget.SingleSelection)
-        
+
         # 添加结果项
         for i, result in enumerate(results):
             item_text = f"[{result['text_numbering']}] {result['content'][:100]}"
             item = QListWidgetItem(item_text)
             item.setData(Qt.UserRole, result)
             result_list.addItem(item)
-        
+
         layout.addWidget(result_list)
-        
+
         # 按钮
         button_layout = QHBoxLayout()
         ok_btn = QPushButton("确定")
         cancel_btn = QPushButton("取消")
-        
+
         button_layout.addStretch()
         button_layout.addWidget(cancel_btn)
         button_layout.addWidget(ok_btn)
-        
+
         layout.addLayout(button_layout)
-        
+
         # 连接信号
         def on_item_double_clicked(item):
             result = item.data(Qt.UserRole)
             self.navigate_to_search_result(result)
             dialog.accept()
-        
+
         def on_ok_clicked():
             selected_items = result_list.selectedItems()
             if selected_items:
                 result = selected_items[0].data(Qt.UserRole)
                 self.navigate_to_search_result(result)
             dialog.accept()
-        
+
         result_list.itemDoubleClicked.connect(on_item_double_clicked)
-        
+
         ok_btn.clicked.connect(on_ok_clicked)
         cancel_btn.clicked.connect(lambda: dialog.reject())
-        
+
         dialog.exec_()
 
     def navigate_to_search_result(self, result):
         """导航到搜索结果"""
         # 定位到编码树中的一阶编码
         self.locate_and_select_code(result)
-        
+
         # 高亮文本内容
         self.highlight_search_result(result)
 
@@ -1998,7 +2000,7 @@ class MainWindow(QMainWindow):
         """定位并选中编码树中的一阶编码"""
         # 展开所有节点
         self.coding_tree.expandAll()
-        
+
         # 查找并选中对应的一阶编码
         self.find_and_select_first_level_code(result['third_cat'], result['second_cat'], result['content'])
 
@@ -2028,7 +2030,7 @@ class MainWindow(QMainWindow):
             clean_content = re.sub(r'\s*\[\d+\]', '', clean_content)
             clean_content = re.sub(r'^[A-Z]\d+\s+', '', clean_content)
             clean_content = clean_content.strip()
-            
+
             if clean_content:
                 self.navigate_to_sentence_content(clean_content, "")
 
@@ -3191,36 +3193,36 @@ class MainWindow(QMainWindow):
             def show_context_menu(position):
                 """显示右键菜单"""
                 global current_sentence_key
-                
+
                 # 检查点击位置是否在链接上
                 cursor = text_display.cursorForPosition(position)
                 cursor.select(QTextCursor.WordUnderCursor)
                 selected_text = cursor.selectedText()
-                
+
                 # 尝试获取链接信息
                 char_format = cursor.charFormat()
                 anchor = char_format.anchorHref()
-                
+
                 if anchor and anchor.startswith('navigate:'):
                     # 解析链接
                     current_sentence_key = anchor[9:]  # 去掉 'navigate:' 前缀
-                    
+
                     if current_sentence_key in sentence_data:
                         sent_info = sentence_data[current_sentence_key]
                         sent_index = sent_info.get('index', -1)
-                        
+
                         # 创建菜单
                         menu = QMenu()
-                        
+
                         # 编辑选项
                         edit_action = menu.addAction("编辑")
                         edit_action.triggered.connect(lambda: edit_sentence(current_sentence_key))
-                        
+
                         # 删除选项（句子1不能删除）
                         if sent_index > 0:
                             delete_action = menu.addAction("删除")
                             delete_action.triggered.connect(lambda: delete_sentence_context(current_sentence_key))
-                        
+
                         # 显示菜单
                         menu.exec_(text_display.mapToGlobal(position))
 
@@ -3232,38 +3234,38 @@ class MainWindow(QMainWindow):
                         sent_content = sent_info.get('content', '')
                         sent_number = sent_info.get('number', '')
                         sent_index = sent_info.get('index', -1)
-                        
+
                         if sent_index >= 0 and sent_index < len(sentences_list):
                             # 创建编辑对话框
                             from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTextEdit, QDialogButtonBox
-                            
+
                             edit_dialog = QDialog(dialog)
                             edit_dialog.setWindowTitle(f"编辑句子")
                             edit_dialog.resize(500, 200)
-                            
+
                             layout = QVBoxLayout(edit_dialog)
-                            
+
                             text_edit = QTextEdit()
                             text_edit.setPlainText(sent_content)
                             layout.addWidget(text_edit)
-                            
+
                             buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
                             buttons.accepted.connect(edit_dialog.accept)
                             buttons.rejected.connect(edit_dialog.reject)
                             layout.addWidget(buttons)
-                            
+
                             if edit_dialog.exec_() == QDialog.Accepted:
                                 new_text = text_edit.toPlainText().strip()
                                 if new_text:
                                     # 更新句子内容
                                     sentences_list[sent_index]['text'] = new_text
-                                    
+
                                     # 构建新的sentence_details数据结构
                                     update_sentence_details()
-                                    
+
                                     # 刷新查看模式内容
                                     refresh_view_content()
-                                    
+
                                     logger.info(f"编辑句子 {sent_index + 1}: {new_text[:30]}...")
                                     QMessageBox.information(dialog, "成功", "句子编辑成功")
 
@@ -3278,7 +3280,7 @@ class MainWindow(QMainWindow):
                         sent_info = sentence_data[key]
                         sent_content = sent_info.get('content', '')
                         sent_index = sent_info.get('index', -1)
-                        
+
                         if sent_index > 0 and sent_index < len(sentences_list):
                             # 确认删除
                             reply = QMessageBox.question(
@@ -3287,17 +3289,17 @@ class MainWindow(QMainWindow):
                                 f"确定要删除该句子吗？\n\n内容: {sent_content[:50]}...",
                                 QMessageBox.Yes | QMessageBox.No
                             )
-                            
+
                             if reply == QMessageBox.Yes:
                                 # 删除句子
                                 deleted_sentence = sentences_list.pop(sent_index)
-                                
+
                                 # 构建新的sentence_details数据结构
                                 update_sentence_details()
-                                
+
                                 # 刷新查看模式内容
                                 refresh_view_content()
-                                
+
                                 logger.info(f"删除句子 {sent_index + 1}: {deleted_sentence.get('text', '')[:30]}...")
                                 QMessageBox.information(dialog, "成功", "句子删除成功")
 
@@ -3502,7 +3504,7 @@ class MainWindow(QMainWindow):
 
     def navigate_to_sentence_content(self, sentence_content, sentence_number=""):
         """导航到句子内容并高亮显示 - 与手动编码界面完全一致的实现
-        
+
         规范：
         1. 首先清除界面中所有已存在的高亮状态
         2. 仅高亮显示当前目标内容
@@ -3567,6 +3569,8 @@ class MainWindow(QMainWindow):
                         item = self.file_list.item(i)
                         if item.data(Qt.UserRole) == target_file:
                             self.file_list.setCurrentItem(item)
+                            # 显式触发文件加载
+                            self.on_file_selected(item)
                             # 等待文件显示更新
                             QApplication.processEvents()
                             break
@@ -3627,7 +3631,7 @@ class MainWindow(QMainWindow):
             import traceback
             traceback.print_exc()
             return False
-    
+
     def split_into_sentences(self, content):
         """将内容分割成句子"""
         import re
@@ -3636,7 +3640,7 @@ class MainWindow(QMainWindow):
         # 过滤空句子并去除前后空白
         sentences = [s.strip() for s in sentences if s.strip()]
         return sentences
-    
+
     def highlight_multiple_sentences(self, sentences, code_id):
         """高亮多个句子"""
         try:
@@ -3684,7 +3688,7 @@ class MainWindow(QMainWindow):
         except Exception as e:
             logger.error(f"多句子高亮失败: {e}")
             return False
-    
+
     def fallback_highlight_by_marker(self, code_id):
         """回退方法：基于编码标记进行高亮"""
         try:
@@ -3736,7 +3740,7 @@ class MainWindow(QMainWindow):
         except Exception as e:
             logger.error(f"回退高亮方法失败: {e}")
             return False
-    
+
     def find_sentence_start(self, mark_position):
         """从编码标记位置向前查找句子开始位置"""
         try:
@@ -3832,6 +3836,8 @@ class MainWindow(QMainWindow):
                         item = self.file_list.item(i)
                         if item.data(Qt.UserRole) == target_file:
                             self.file_list.setCurrentItem(item)
+                            # 显式触发文件加载
+                            self.on_file_selected(item)
                             # 等待文件显示更新
                             QApplication.processEvents()
                             break

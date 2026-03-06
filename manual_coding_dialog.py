@@ -1,4 +1,4 @@
-import os
+﻿import os
 import json
 import re
 from datetime import datetime
@@ -351,11 +351,11 @@ class ManualCodingDialog(QDialog):
         self.search_line_edit = QLineEdit()
         self.search_line_edit.setPlaceholderText("搜索一阶编码...")
         self.search_line_edit.setMinimumWidth(200)
-        
+
         # 放大镜图标按钮
         search_button = QPushButton("🔍")
         search_button.setStyleSheet("QPushButton { border: none; padding: 0 5px; }")
-        
+
         search_layout.addWidget(self.search_line_edit)
         search_layout.addWidget(search_button)
         structure_layout.addLayout(search_layout)
@@ -1747,13 +1747,16 @@ class ManualCodingDialog(QDialog):
 
             # 尝试获取当前选中的文件路径
             current_file_path = ""
+            current_filename = ""
             if hasattr(self, 'file_list') and self.file_list.currentItem():
                 current_file_path = self.file_list.currentItem().data(Qt.UserRole)
+                current_filename = os.path.basename(current_file_path)
 
             sentence_details = [{
                 "text": detail_text,
                 "code_id": sentence_id,
                 "file_path": current_file_path,
+                "filename": current_filename,
                 "sentence_id": sentence_id
             }]
 
@@ -1838,6 +1841,9 @@ class ManualCodingDialog(QDialog):
             # 更新父节点计数
             if parent_item and parent_item.data(0, Qt.UserRole) and parent_item.data(0, Qt.UserRole).get("level") == 3:
                 parent_item.setText(2, str(parent_item.childCount()))
+
+            # 更新父节点的统计信息（包括句子来源数）
+            self.update_statistics_for_item(current_item)
 
             self.first_content_edit.clear()
             self.update_structured_codes_from_tree()
@@ -2627,6 +2633,47 @@ class ManualCodingDialog(QDialog):
 
                 logger.info(f"最终确定的一阶编码编号: {code_id}")
 
+                # 优先根据sentence_details中的文件信息切换到正确的文件
+                if sentence_details and len(sentence_details) > 0:
+                    first_detail = sentence_details[0]
+                    target_file_path = first_detail.get('file_path')
+                    target_filename = first_detail.get('filename')
+                    
+                    # 定义一个尽量标准化的路径比较函数
+                    def normalize_path(path):
+                        return os.path.normpath(path).lower() if path else ""
+
+                    if target_file_path:
+                        # 检查当前文件是否已经是目标文件
+                        current_file_item = self.file_list.currentItem()
+                        current_path = current_file_item.data(Qt.UserRole) if current_file_item else ""
+                        
+                        if normalize_path(current_path) != normalize_path(target_file_path):
+                            # 寻找并切换文件
+                            found_file = False
+                            for i in range(self.file_list.count()):
+                                list_item = self.file_list.item(i)
+                                item_path = list_item.data(Qt.UserRole)
+                                if normalize_path(item_path) == normalize_path(target_file_path):
+                                    self.file_list.setCurrentItem(list_item)
+                                    self.on_file_selected(list_item)
+                                    QApplication.processEvents() # 确保UI刷新
+                                    logger.info(f"根据一阶编码文件路径切换到文件: {target_file_path}")
+                                    found_file = True
+                                    break
+                            
+                            if not found_file and target_filename:
+                                # 如果路径不匹配（可能项目移动过），尝试文件名匹配
+                                for i in range(self.file_list.count()):
+                                    list_item = self.file_list.item(i)
+                                    item_filename = os.path.basename(list_item.data(Qt.UserRole))
+                                    if item_filename == target_filename:
+                                        self.file_list.setCurrentItem(list_item)
+                                        self.on_file_selected(list_item)
+                                        QApplication.processEvents()
+                                        logger.info(f"根据一阶编码文件名切换到文件: {target_filename}")
+                                        break
+
                 # 显示句子详情对话框
                 self.show_sentence_details_dialog(sentence_details, content, code_id)
 
@@ -2696,12 +2743,41 @@ class ManualCodingDialog(QDialog):
             logger.error(f"点击树项目时出错: {e}")
             QMessageBox.warning(self, "错误", f"点击项目时发生错误: {str(e)}")
 
-    def navigate_to_sentence_content(self, sentence_content, sentence_number=""):
-        """导航到句子内容并高亮显示 - 增强稳定性版"""
+    def navigate_to_sentence_content(self, sentence_content, sentence_number="", file_path="", filename=""):
+        """导航到句子内容并高亮显示 - 增强稳定性版 (支持先切换文件)"""
         try:
             logger.info(
-                f"导航请求: Content='{sentence_content[:20] if sentence_content else 'None'}...', Number='{sentence_number}'")
+                f"导航请求: Content='{sentence_content[:20] if sentence_content else 'None'}...', Number='{sentence_number}', File='{file_path}', Filename='{filename}'")
 
+            # 策略0：如果提供了文件路径或文件名，优先切换文件
+            target_file_path = ""
+            if file_path:
+                target_file_path = file_path
+            elif filename:
+                # 尝试根据文件名查找完整路径
+                for loaded_fp in self.loaded_files.keys():
+                     if os.path.basename(loaded_fp) == filename:
+                         target_file_path = loaded_fp
+                         break
+            
+            if target_file_path:
+                current_file = ""
+                if hasattr(self, 'file_list') and self.file_list.currentItem():
+                    current_file = self.file_list.currentItem().data(Qt.UserRole)
+                
+                if current_file != target_file_path and target_file_path in self.loaded_files:
+                    logger.info(f"导航前切换文件到: {target_file_path}")
+                    # 在文件列表中查找并选中目标文件
+                    for i in range(self.file_list.count()):
+                        item = self.file_list.item(i)
+                        if item.data(Qt.UserRole) == target_file_path:
+                            self.file_list.setCurrentItem(item)
+                            # 显式触发文件加载
+                            self.on_file_selected(item)
+                            # 等待文件显示更新
+                            QApplication.processEvents()
+                            break
+            
             # 安全检查：确保UI组件存在
             if not hasattr(self, 'text_display') or self.text_display is None:
                 logger.error("text_display 组件不存在")
@@ -3004,18 +3080,29 @@ class ManualCodingDialog(QDialog):
                         # 移动光标到找到的内容之后，防止重复匹配
                         content_cursor.movePosition(content_cursor.Right, content_cursor.MoveAnchor, len(clean_content))
                         content_search_count += 1
-
+            
+            # 安全检查：确保只有当文档内容与请求一致时才显示高亮
+            # 否则可能会在错误的文档中高亮错误的位置
             if extra_selections:
                 self.text_display.setExtraSelections(extra_selections)
-
+            
             if found and first_match_cursor:
                 # 滚动到第一个匹配项的位置
                 self.text_display.setTextCursor(first_match_cursor)
-                self.text_display.ensureCursorVisible()  # 确保光标位置可见
-                self.statusBar().showMessage(f"已高亮编码 {code_id} 及其对应内容，定位到第一个匹配项") if hasattr(self,
-                                                                                             'statusBar') else None
+                self.text_display.ensureCursorVisible()
+                if hasattr(self, 'statusBar'):
+                    self.statusBar().showMessage(f"已高亮编码 {code_id}")
+            elif extra_selections:
+                # 如果没有找到编码标记但找到了内容，也定位到内容
+                first_sel = extra_selections[0]
+                self.text_display.setTextCursor(first_sel.cursor)
+                self.text_display.ensureCursorVisible()
+                if hasattr(self, 'statusBar'):
+                    self.statusBar().showMessage(f"已高亮编码 {code_id} 的内容")
             else:
-                self.statusBar().showMessage(f"未找到编码 {code_id} 的标记") if hasattr(self, 'statusBar') else None
+                 if hasattr(self, 'statusBar'):
+                    self.statusBar().showMessage(f"未找到编码 {code_id} 的标记或内容")
+
         except Exception as e:
             logger.error(f"高亮编码ID时出错: {e}")
             QMessageBox.warning(self, "错误", f"高亮编码时发生错误: {str(e)}")
@@ -3159,26 +3246,50 @@ class ManualCodingDialog(QDialog):
             best_match_sentence = None
             target_sentence_id = None  # 记录关联的句子ID
 
-            # 尝试从sentences_to_highlight中获取关联的句子ID
+            # 策略0：优先检查sentence_details中是否直接包含file_path或filename
+            # 这是最准确的定位方式：如果有明确的文件来源，直接使用该文件
             for sentence_info in sentences_to_highlight:
-                if sentence_info.get('sentence_id'):
-                    target_sentence_id = sentence_info.get('sentence_id')
+                fp = sentence_info.get('file_path')
+                fn = sentence_info.get('filename')
+                
+                # 情况1: 直接有完整路径
+                if fp and fp in self.loaded_files:
+                    target_file = fp
+                    logger.info(f"直接使用sentence_details中的文件路径: {target_file}")
                     break
-
-            # 优先使用编码内容进行文件匹配
-            if code_clean:
-                for file_path, file_data in self.loaded_files.items():
-                    if time.time() - start_time > max_execution_time:
-                        logger.warning("文件匹配超时")
-                        return False
-
-                    file_text = file_data.get('numbered_content', '') or file_data.get('content', '')
-                    if not file_text:
-                        continue
-
-                    if code_clean in file_text:
-                        target_file = file_path
+                
+                # 情况2: 只有文件名，需要在已加载文件中查找
+                if fn:
+                    for loaded_fp in self.loaded_files.keys():
+                        if os.path.basename(loaded_fp) == fn:
+                            target_file = loaded_fp
+                            logger.info(f"根据文件名找到文件路径: {target_file}")
+                            break
+                    if target_file:
                         break
+            
+            # 如果策略0未找到文件，继续后续策略
+            if not target_file:
+                # 尝试从sentences_to_highlight中获取关联的句子ID
+                for sentence_info in sentences_to_highlight:
+                    if sentence_info.get('sentence_id'):
+                        target_sentence_id = sentence_info.get('sentence_id')
+                        break
+
+                # 优先使用编码内容进行文件匹配
+                if code_clean:
+                    for file_path, file_data in self.loaded_files.items():
+                        if time.time() - start_time > max_execution_time:
+                            logger.warning("文件匹配超时")
+                            return False
+
+                        file_text = file_data.get('numbered_content', '') or file_data.get('content', '')
+                        if not file_text:
+                            continue
+
+                        if code_clean in file_text:
+                            target_file = file_path
+                            break
 
             # 如果没找到，尝试通过句子ID匹配文件
             if not target_file and target_sentence_id:
@@ -3254,6 +3365,8 @@ class ManualCodingDialog(QDialog):
                         item = self.file_list.item(i)
                         if item.data(Qt.UserRole) == target_file:
                             self.file_list.setCurrentItem(item)
+                            # 显式触发文件加载
+                            self.on_file_selected(item)
                             # 等待文件显示更新
                             QApplication.processEvents()
                             break
@@ -3581,8 +3694,6 @@ class ManualCodingDialog(QDialog):
             logger.error(f"获取编码ID时出错: {e}")
             return ""
 
-
-
     def perform_search(self):
         """执行搜索"""
         search_text = self.search_line_edit.text().strip()
@@ -3598,7 +3709,7 @@ class ManualCodingDialog(QDialog):
     def search_first_level_codes(self, search_text):
         """搜索一阶编码"""
         results = []
-        
+
         # 遍历已分类编码
         for third_cat, second_cats in self.current_codes.items():
             for second_cat, first_contents in second_cats.items():
@@ -3607,7 +3718,7 @@ class ManualCodingDialog(QDialog):
                         code_content = content.get('content', '')
                         code_id = content.get('code_id', '')
                         sentence_details = content.get('sentence_details', [])
-                        
+
                         # 检查是否包含搜索文本
                         if search_text in code_content:
                             # 提取TextNumbering编号
@@ -3615,7 +3726,7 @@ class ManualCodingDialog(QDialog):
                             if sentence_details:
                                 first_detail = sentence_details[0]
                                 text_numbering = first_detail.get('sentence_id', '') or first_detail.get('code_id', '')
-                            
+
                             results.append({
                                 'content': code_content,
                                 'code_id': code_id,
@@ -3636,20 +3747,20 @@ class ManualCodingDialog(QDialog):
                                 'second_cat': second_cat,
                                 'content_obj': content
                             })
-        
+
         # 遍历未分类编码
         for item in self.unclassified_first_codes:
             if isinstance(item, dict):
                 code_content = item.get('content', '')
                 code_id = item.get('code_id', '')
                 sentence_details = item.get('sentence_details', [])
-                
+
                 if search_text in code_content:
                     text_numbering = ""
                     if sentence_details:
                         first_detail = sentence_details[0]
                         text_numbering = first_detail.get('sentence_id', '') or first_detail.get('code_id', '')
-                    
+
                     results.append({
                         'content': code_content,
                         'code_id': code_id,
@@ -3669,7 +3780,7 @@ class ManualCodingDialog(QDialog):
                         'second_cat': '未分类',
                         'content_obj': item
                     })
-        
+
         # 按TextNumbering编号排序
         results.sort(key=lambda x: x['text_numbering'] if x['text_numbering'] else '')
         return results
@@ -3679,58 +3790,58 @@ class ManualCodingDialog(QDialog):
         dialog = QDialog(self)
         dialog.setWindowTitle("搜索结果")
         dialog.resize(400, 300)
-        
+
         layout = QVBoxLayout(dialog)
-        
+
         # 结果列表
         result_list = QListWidget()
         result_list.setSelectionMode(QListWidget.SingleSelection)
-        
+
         # 添加结果项
         for i, result in enumerate(results):
             item_text = f"[{result['text_numbering']}] {result['content'][:100]}"
             item = QListWidgetItem(item_text)
             item.setData(Qt.UserRole, result)
             result_list.addItem(item)
-        
+
         layout.addWidget(result_list)
-        
+
         # 按钮
         button_layout = QHBoxLayout()
         ok_btn = QPushButton("确定")
         cancel_btn = QPushButton("取消")
-        
+
         button_layout.addStretch()
         button_layout.addWidget(cancel_btn)
         button_layout.addWidget(ok_btn)
-        
+
         layout.addLayout(button_layout)
-        
+
         # 连接信号
         def on_item_double_clicked(item):
             result = item.data(Qt.UserRole)
             self.navigate_to_search_result(result)
             dialog.accept()
-        
+
         def on_ok_clicked():
             selected_items = result_list.selectedItems()
             if selected_items:
                 result = selected_items[0].data(Qt.UserRole)
                 self.navigate_to_search_result(result)
             dialog.accept()
-        
+
         result_list.itemDoubleClicked.connect(on_item_double_clicked)
-        
+
         ok_btn.clicked.connect(on_ok_clicked)
         cancel_btn.clicked.connect(lambda: dialog.reject())
-        
+
         dialog.exec_()
 
     def navigate_to_search_result(self, result):
         """导航到搜索结果"""
         # 定位到编码树中的一阶编码
         self.locate_and_select_code(result)
-        
+
         # 高亮文本内容
         self.highlight_search_result(result)
 
@@ -3738,7 +3849,7 @@ class ManualCodingDialog(QDialog):
         """定位并选中编码树中的一阶编码"""
         # 展开所有节点
         self.coding_tree.expandAll()
-        
+
         # 查找并选中对应的一阶编码
         self.find_and_select_first_level_code(result['third_cat'], result['second_cat'], result['content'])
 
@@ -4327,7 +4438,9 @@ class ManualCodingDialog(QDialog):
                             sentences_list.append({
                                 'text': clean_text,
                                 'original_text': sent_text,
-                                'number': str(sent_number) if sent_number else ''
+                                'number': str(sent_number) if sent_number else '',
+                                'file_path': detail.get('file_path', ''),
+                                'filename': detail.get('filename', '')  # 保存文件名
                             })
                             # 保存原始数据副本
                             original_sentences_data.append(dict(detail))
@@ -4337,7 +4450,9 @@ class ManualCodingDialog(QDialog):
                 # 添加句子1：一阶编码文本
                 sentences_list.append({
                     'text': content_without_number,
-                    'number': associated_numbers_list[0] if associated_numbers_list else ''
+                    'number': associated_numbers_list[0] if associated_numbers_list else '',
+                    'file_path': '', # 默认为空
+                    'filename': ''
                 })
 
             # 修复 UnboundLocalError: 必须在使用前定义和赋值 first_code_number
@@ -4356,6 +4471,14 @@ class ManualCodingDialog(QDialog):
                         logger.info(f"从关联编号获取一阶编码实际句子编号: {first_code_number}")
                 else:
                     logger.info(f"从sentence_details获取一阶编码句子编号: {first_code_number}")
+            
+            # 确保正确设置sentences_list[0]的文件路径和编号
+            if sentences_list:
+                if not sentences_list[0].get('file_path'):
+                     if sentence_details and len(sentence_details) > 0:
+                         sentences_list[0]['file_path'] = sentence_details[0].get('file_path', '')
+                if not sentences_list[0].get('number') and first_code_number and first_code_number.isdigit():
+                    sentences_list[0]['number'] = first_code_number
 
             # 如果上述方式失败，使用关联编号列表中的第一个编号
             if not first_code_number or not first_code_number.isdigit():
@@ -4366,6 +4489,11 @@ class ManualCodingDialog(QDialog):
             logger.info(f"最终确定的一阶编码句子编号: {first_code_number}")
             logger.info(f"关联编号完整列表: {associated_numbers_list}")
             logger.info(f"sentence_details数量: {len(sentence_details) if sentence_details else 0}")
+            
+            # 为句子1填充缺失的文件路径（如果有的话）
+            if sentences_list and not sentences_list[0].get('file_path'):
+                 if sentence_details and len(sentence_details) > 0:
+                     sentences_list[0]['file_path'] = sentence_details[0].get('file_path', '')
 
             # 创建对话框
             dialog = QDialog(self)
@@ -4421,6 +4549,8 @@ class ManualCodingDialog(QDialog):
                         sentence_content = content_without_number
                         # 使用实际的句子编号而不是编码标识符(如A01)
                         sentence_number = first_code_number if first_code_number and first_code_number.isdigit() else ""
+                        if not sentence_number:
+                            sentence_number = sentences_list[0].get('number', '')
                         logger.info(f"弹出对话框句子1 - 编号: {sentence_number}, 内容前30字: {sentence_content[:30]}...")
                     else:
                         # 后续句子：显示拖拽的文本内容和对应的编号
@@ -4438,12 +4568,15 @@ class ManualCodingDialog(QDialog):
                     sentence_data[key] = {
                         'content': sentence_content,
                         'number': sentence_number,
-                        'index': i - 1  # 保存索引用于编辑
+                        'index': i - 1,  # 保存索引用于编辑
+                        'file_path': sentence.get('file_path', ''),  # 保存file_path
+                        'filename': sentence.get('filename', '')  # 保存文件名
                     }
 
                     # 创建可点击的链接，只使用编号作为href，避免URL编码复杂问题
                     # HTML转义句子内容以防止XSS
-                    safe_content = sentence_content.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace(
+                    safe_content = sentence_content.replace('&', '&amp;').replace('<', '&lt;').replace('>',
+                                                                                                       '&gt;').replace(
                         '"', '&quot;').replace("'", '&#39;')
                     clickable_content = f"<a href='navigate:{key}' style='text-decoration: none; color: black; cursor: pointer;'>{safe_content}</a>"
 
@@ -4483,8 +4616,13 @@ class ManualCodingDialog(QDialog):
 
                             logger.info(f"找到句子 - 编号: {sent_number}, 内容前50字: {sent_content[:50]}...")
 
-                            # 执行导航和高亮 - 与原有代码完全一致
-                            parent_dialog.navigate_to_sentence_content(sent_content, sent_number)
+                            # 执行导航和高亮 - 更新为支持文件路径
+                            parent_dialog.navigate_to_sentence_content(
+                                sent_content, 
+                                sent_number, 
+                                sent_info.get('file_path', ''),
+                                sent_info.get('filename', '')
+                            )
                         else:
                             logger.warning(f"未找到key为 {key} 的句子信息")
 
@@ -4505,36 +4643,36 @@ class ManualCodingDialog(QDialog):
             def show_context_menu(position):
                 """显示右键菜单"""
                 global current_sentence_key
-                
+
                 # 检查点击位置是否在链接上
                 cursor = text_display.cursorForPosition(position)
                 cursor.select(QTextCursor.WordUnderCursor)
                 selected_text = cursor.selectedText()
-                
+
                 # 尝试获取链接信息
                 char_format = cursor.charFormat()
                 anchor = char_format.anchorHref()
-                
+
                 if anchor and anchor.startswith('navigate:'):
                     # 解析链接
                     current_sentence_key = anchor[9:]  # 去掉 'navigate:' 前缀
-                    
+
                     if current_sentence_key in sentence_data:
                         sent_info = sentence_data[current_sentence_key]
                         sent_index = sent_info.get('index', -1)
-                        
+
                         # 创建菜单
                         menu = QMenu()
-                        
+
                         # 编辑选项
                         edit_action = menu.addAction("编辑")
                         edit_action.triggered.connect(lambda: edit_sentence(current_sentence_key))
-                        
+
                         # 删除选项（句子1不能删除）
                         if sent_index > 0:
                             delete_action = menu.addAction("删除")
                             delete_action.triggered.connect(lambda: delete_sentence_context(current_sentence_key))
-                        
+
                         # 显示菜单
                         menu.exec_(text_display.mapToGlobal(position))
 
@@ -4546,38 +4684,38 @@ class ManualCodingDialog(QDialog):
                         sent_content = sent_info.get('content', '')
                         sent_number = sent_info.get('number', '')
                         sent_index = sent_info.get('index', -1)
-                        
+
                         if sent_index >= 0 and sent_index < len(sentences_list):
                             # 创建编辑对话框
                             from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTextEdit, QDialogButtonBox
-                            
+
                             edit_dialog = QDialog(dialog)
                             edit_dialog.setWindowTitle(f"编辑句子")
                             edit_dialog.resize(500, 200)
-                            
+
                             layout = QVBoxLayout(edit_dialog)
-                            
+
                             text_edit = QTextEdit()
                             text_edit.setPlainText(sent_content)
                             layout.addWidget(text_edit)
-                            
+
                             buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
                             buttons.accepted.connect(edit_dialog.accept)
                             buttons.rejected.connect(edit_dialog.reject)
                             layout.addWidget(buttons)
-                            
+
                             if edit_dialog.exec_() == QDialog.Accepted:
                                 new_text = text_edit.toPlainText().strip()
                                 if new_text:
                                     # 更新句子内容
                                     sentences_list[sent_index]['text'] = new_text
-                                    
+
                                     # 构建新的sentence_details数据结构
                                     update_sentence_details()
-                                    
+
                                     # 刷新查看模式内容
                                     refresh_view_content()
-                                    
+
                                     logger.info(f"编辑句子 {sent_index + 1}: {new_text[:30]}...")
                                     QMessageBox.information(dialog, "成功", "句子编辑成功")
 
@@ -4592,7 +4730,7 @@ class ManualCodingDialog(QDialog):
                         sent_info = sentence_data[key]
                         sent_content = sent_info.get('content', '')
                         sent_index = sent_info.get('index', -1)
-                        
+
                         if sent_index > 0 and sent_index < len(sentences_list):
                             # 确认删除
                             reply = QMessageBox.question(
@@ -4601,17 +4739,17 @@ class ManualCodingDialog(QDialog):
                                 f"确定要删除该句子吗？\n\n内容: {sent_content[:50]}...",
                                 QMessageBox.Yes | QMessageBox.No
                             )
-                            
+
                             if reply == QMessageBox.Yes:
                                 # 删除句子
                                 deleted_sentence = sentences_list.pop(sent_index)
-                                
+
                                 # 构建新的sentence_details数据结构
                                 update_sentence_details()
-                                
+
                                 # 刷新查看模式内容
                                 refresh_view_content()
-                                
+
                                 logger.info(f"删除句子 {sent_index + 1}: {deleted_sentence.get('text', '')[:30]}...")
                                 QMessageBox.information(dialog, "成功", "句子删除成功")
 
@@ -4630,8 +4768,10 @@ class ManualCodingDialog(QDialog):
                         first_sentence = sentences_list[0]
                         new_sentence_details.append({
                             'text': first_sentence['text'],
-                            'code_id': first_code_number if first_code_number and first_code_number.isdigit() else first_sentence['number'],
-                            'sentence_id': first_code_number if first_code_number and first_code_number.isdigit() else first_sentence['number'],
+                            'code_id': first_code_number if first_code_number and first_code_number.isdigit() else
+                            first_sentence['number'],
+                            'sentence_id': first_code_number if first_code_number and first_code_number.isdigit() else
+                            first_sentence['number'],
                             'original_content': first_sentence['text']
                         })
 
@@ -4642,7 +4782,8 @@ class ManualCodingDialog(QDialog):
                             'text': sentence['text'],
                             'code_id': sentence['number'],
                             'sentence_id': sentence['number'],
-                            'original_content': sentence['original_text'] if sentence['original_text'] else sentence['text']
+                            'original_content': sentence['original_text'] if sentence['original_text'] else sentence[
+                                'text']
                         })
 
                     # 更新当前选中项的数据
@@ -5266,7 +5407,7 @@ class ManualCodingDialog(QDialog):
             if parent:
                 parent.removeChild(current_item)
                 # 更新父级节点的句子来源数
-                self.update_parent_sentence_counts(parent)
+                self.update_statistics_for_item(parent)
             else:
                 index = self.coding_tree.indexOfTopLevelItem(current_item)
                 self.coding_tree.takeTopLevelItem(index)
@@ -6307,14 +6448,18 @@ class ManualCodingDialog(QDialog):
 
             # 尝试获取当前选中的文件路径
             current_file_path = ""
+            current_filename = ""
             if hasattr(self, 'file_list') and self.file_list.currentItem():
                 current_file_path = self.file_list.currentItem().data(Qt.UserRole)
+                if current_file_path:
+                    current_filename = os.path.basename(current_file_path)
 
             # 创建句子详情
             sentence_details = [{
                 "text": detail_text,
                 "code_id": sentence_id,
                 "file_path": current_file_path,
+                "filename": current_filename,
                 "sentence_id": sentence_id
             }]
 
@@ -6988,6 +7133,13 @@ class ManualCodingDialog(QDialog):
                         if existing_num and existing_num.isdigit():
                             existing_numbers.add(existing_num)
 
+                # 获取当前文本文档路径，用于关联拖拽的句子
+                current_file_path = ""
+                file_item = self.file_list.currentItem()
+                if file_item:
+                    current_file_path = file_item.data(Qt.UserRole)
+                current_filename = os.path.basename(current_file_path) if current_file_path else ""
+
                 # 为每个拖拽的句子创建详情
                 new_sentences = []
                 for i, sentence in enumerate(sentences):
@@ -6999,13 +7151,17 @@ class ManualCodingDialog(QDialog):
                         clean_sentence = re.sub(r'\s*\[\d+\]', '', clean_sentence)
                         clean_sentence = clean_sentence.strip()
 
-                        new_sentences.append({
+                        new_sentence_data = {
                             "text": clean_sentence,
                             "code_id": code_id,  # 使用TextNumberingManager生成的编号
-                            "sentence_id": code_id  # 设置sentence_id为文本编号
-                        })
+                            "sentence_id": code_id,  # 设置sentence_id为文本编号
+                            "file_path": current_file_path,  # 添加文件路径
+                            "filename": current_filename     # 添加文件名
+                        }
+                        
+                        new_sentences.append(new_sentence_data)
                         existing_numbers.add(code_id)
-                        logger.info(f"添加新拖拽句子: code_id={code_id}, text={clean_sentence[:30]}...")
+                        logger.info(f"添加新拖拽句子: code_id={code_id}, text={clean_sentence[:30]}..., file={current_filename}")
 
                 # 重新构建完整的句子详情列表
                 # 确保第一项始终是一阶编码自身，后续是其他句子
