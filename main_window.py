@@ -2214,15 +2214,96 @@ class MainWindow(QMainWindow):
         )
 
         if reply == QMessageBox.Yes:
+            # 删除前记录相关信息，用于后续更新统计
+            deleted_content = content
+            deleted_level = level
+            
+            # 获取父节点信息，用于更新统计
             parent = current_item.parent()
+            
+            # 从界面删除项目
             if parent:
                 parent.removeChild(current_item)
             else:
                 index = self.coding_tree.indexOfTopLevelItem(current_item)
                 self.coding_tree.takeTopLevelItem(index)
 
+            # 仅更新数据结构，避免重建整个树
             self.update_structured_codes_from_tree()
-            self.statusBar().showMessage(f"已删除{level}阶编码")
+            
+            # 仅更新受影响的统计信息，而不重建整个树
+            self.update_statistics_after_deletion(parent, deleted_level)
+            
+            self.statusBar().showMessage(f"已删除{deleted_level}阶编码：{deleted_content}")
+
+    def update_statistics_after_deletion(self, parent_item, deleted_level):
+        """删除后更新统计信息，避免重建整个树"""
+        if not parent_item:
+            # 如果删除的是顶级项目，更新总体统计
+            total_third = len(self.structured_codes)
+            total_second = sum(len(cats) for cats in self.structured_codes.values())
+            total_first = sum(len(contents) for cats in self.structured_codes.values() for contents in cats.values())
+            self.statusBar().showMessage(f"编码结构: {total_third}三阶, {total_second}二阶, {total_first}一阶")
+            return
+            
+        # 递归更新父节点及其祖先节点的统计信息
+        self.update_parent_statistics(parent_item)
+        
+        # 更新总体统计
+        total_third = len(self.structured_codes)
+        total_second = sum(len(cats) for cats in self.structured_codes.values())
+        total_first = sum(len(contents) for cats in self.structured_codes.values() for contents in cats.values())
+        self.statusBar().showMessage(f"编码结构: {total_third}三阶, {total_second}二阶, {total_first}一阶")
+
+    def update_parent_statistics(self, item):
+        """更新指定项目及其父项目的统计信息"""
+        if not item:
+            return
+            
+        item_data = item.data(0, Qt.UserRole)
+        if not item_data:
+            return
+            
+        level = item_data.get("level", 0)
+        
+        if level == 2:  # 二阶编码
+            # 重新统计一阶编码数量和句子来源数
+            child_count = item.childCount()
+            total_sentence_count = 0
+            
+            for i in range(child_count):
+                child_item = item.child(i)
+                sentence_count_text = child_item.text(4)
+                try:
+                    sentence_count = int(sentence_count_text) if sentence_count_text.isdigit() else 0
+                    total_sentence_count += sentence_count
+                except:
+                    total_sentence_count += 1  # 默认值
+                    
+            item.setText(2, str(child_count))  # 一阶编码数量
+            item.setText(4, str(total_sentence_count))  # 句子来源数
+            
+            # 递归更新父项目（三阶编码）
+            parent_item = item.parent()
+            if parent_item:
+                self.update_parent_statistics(parent_item)
+                
+        elif level == 3:  # 三阶编码
+            # 重新统计二阶编码数量和句子来源数
+            child_count = item.childCount()
+            total_sentence_count = 0
+            
+            for i in range(child_count):
+                child_item = item.child(i)
+                sentence_count_text = child_item.text(4)
+                try:
+                    sentence_count = int(sentence_count_text) if sentence_count_text.isdigit() else 0
+                    total_sentence_count += sentence_count
+                except:
+                    pass
+                    
+            item.setText(2, str(child_count))  # 二阶编码数量
+            item.setText(4, str(total_sentence_count))  # 句子来源数
 
     def update_structured_codes_from_tree(self):
         """从树形结构更新编码数据"""
