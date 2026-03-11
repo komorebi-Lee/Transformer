@@ -2,6 +2,9 @@ import os
 import json
 import logging
 import re
+import pickle
+from datetime import datetime
+from collections import Counter
 from PyQt5.QtWidgets import (QMainWindow, QVBoxLayout, QHBoxLayout, QWidget,
                              QPushButton, QTextEdit, QLabel, QMessageBox, QRadioButton,
                              QProgressBar, QFileDialog, QListWidget,
@@ -14,6 +17,10 @@ from PyQt5.QtCore import Qt, QSettings, QThread, pyqtSignal, QTimer, QRegularExp
 from PyQt5.QtGui import QFont, QColor, QTextCursor, QIcon
 from typing import Dict, List, Any, Optional
 import traceback
+import numpy as np
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 from model_manager import EnhancedModelManager
 from data_processor import DataProcessor
@@ -203,11 +210,212 @@ class MainWindow(QMainWindow):
         answer_buttons_layout.addWidget(self.load_answer_btn)
         answer_layout.addLayout(answer_buttons_layout)
 
+        self.visualize_training_btn = QPushButton("训练结果可视化")
+        self.visualize_training_btn.clicked.connect(self.visualize_training_results)
+        answer_layout.addWidget(self.visualize_training_btn)
+
         layout.addWidget(answer_group)
 
         layout.addStretch()
 
         return panel
+
+    def visualize_training_results(self):
+        """读取训练模型并生成可视化结果图"""
+        try:
+            preferred_path = os.path.join("trained_models", "grounded_theory_latest.pkl")
+            fallback_path = os.path.join("trained_models", "grounded_codong_latest.pkl")
+            model_path = preferred_path if os.path.exists(preferred_path) else fallback_path
+            if not os.path.exists(model_path):
+                QMessageBox.warning(self, "文件不存在", f"未找到模型文件:\n{model_path}")
+                return
+
+            with open(model_path, "rb") as f:
+                model_data = pickle.load(f)
+
+            stats = self._extract_training_visual_stats(model_data)
+            image_path = self._plot_and_save_training_visualization(stats, model_path)
+
+            if not image_path:
+                QMessageBox.warning(self, "可视化失败", "未能生成可视化图像")
+                return
+
+            # Windows 下直接打开图片，便于查看和保存
+            try:
+                os.startfile(image_path)
+            except Exception:
+                pass
+
+            QMessageBox.information(
+                self,
+                "训练结果可视化",
+                f"已生成可视化结果:\n{image_path}\n\n"
+                f"模型类型: {stats.get('model_type', 'unknown')}\n"
+                f"类别数: {stats.get('class_count', 0)}\n"
+                f"样本数: {stats.get('sample_count', 0)}\n"
+                f"准确率: {stats.get('accuracy_display', 'N/A')}"
+            )
+
+        except Exception as e:
+            logger.error(f"训练结果可视化失败: {e}")
+            QMessageBox.warning(
+                self,
+                "可视化失败",
+                f"无法读取模型或生成图像:\n{str(e)}\n\n"
+                "请确认当前环境与模型训练环境兼容（numpy/sklearn 版本）。"
+            )
+
+    def _extract_training_visual_stats(self, model_data):
+        """从模型数据中提取可视化所需统计信息"""
+        stats = {
+            "model_type": "grounded_theory_coder",
+            "sample_count": 0,
+            "class_count": 0,
+            "accuracy": None,
+            "accuracy_display": "N/A",
+            "class_labels": [],
+            "class_distribution": {},
+            "feature_importances": [],
+            "training_time": "",
+            "model_version": "",
+        }
+
+        if isinstance(model_data, dict):
+            # 兼容 metadata
+            metadata = model_data.get("metadata", {})
+            if isinstance(metadata, dict):
+                stats["model_type"] = metadata.get("model_type", stats["model_type"])
+                stats["training_time"] = metadata.get("training_time", metadata.get("timestamp", ""))
+                stats["model_version"] = metadata.get("version", "")
+                if metadata.get("sample_count") is not None:
+                    stats["sample_count"] = metadata.get("sample_count", 0)
+                if metadata.get("class_count") is not None:
+                    stats["class_count"] = metadata.get("class_count", 0)
+                if metadata.get("accuracy") is not None:
+                    stats["accuracy"] = metadata.get("accuracy")
+
+            # 回退：部分历史模型把指标保存在顶层字段而不是 metadata
+            if not stats["training_time"] and model_data.get("training_time"):
+                stats["training_time"] = model_data.get("training_time")
+            if not stats["model_version"] and model_data.get("version"):
+                stats["model_version"] = model_data.get("version")
+            if stats["sample_count"] == 0 and model_data.get("sample_count") is not None:
+                stats["sample_count"] = model_data.get("sample_count", 0)
+            if stats["class_count"] == 0 and model_data.get("class_count") is not None:
+                stats["class_count"] = model_data.get("class_count", 0)
+            if stats["accuracy"] is None and model_data.get("accuracy") is not None:
+                stats["accuracy"] = model_data.get("accuracy")
+
+            # labels 分布
+            labels = model_data.get("labels", [])
+            if labels is not None:
+                try:
+                    label_list = list(labels)
+                    if label_list:
+                        counts = Counter([str(x) for x in label_list])
+                        stats["class_distribution"] = dict(counts)
+                        stats["class_labels"] = list(counts.keys())
+                        stats["sample_count"] = max(stats["sample_count"], len(label_list))
+                        stats["class_count"] = max(stats["class_count"], len(counts))
+                except Exception:
+                    pass
+
+            # classifier 特征重要性
+            classifier = model_data.get("classifier")
+            if classifier is not None:
+                if hasattr(classifier, "classes_"):
+                    try:
+                        cls = [str(x) for x in list(classifier.classes_)]
+                        if cls and not stats["class_labels"]:
+                            stats["class_labels"] = cls
+                            stats["class_count"] = max(stats["class_count"], len(cls))
+                    except Exception:
+                        pass
+
+                if hasattr(classifier, "feature_importances_"):
+                    try:
+                        fi = list(classifier.feature_importances_)
+                        if fi:
+                            stats["feature_importances"] = fi
+                    except Exception:
+                        pass
+
+        # accuracy 展示格式
+        if isinstance(stats["accuracy"], (int, float)):
+            stats["accuracy_display"] = f"{float(stats['accuracy']):.4f}"
+
+        return stats
+
+    def _plot_and_save_training_visualization(self, stats, model_path):
+        """绘制并保存训练结果可视化图像"""
+        output_dir = os.path.join("output", "training_visualizations")
+        os.makedirs(output_dir, exist_ok=True)
+
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        image_path = os.path.abspath(os.path.join(output_dir, f"training_visual_{ts}.png"))
+
+        # 中文字体设置（Windows 优先），避免中文乱码和负号显示异常
+        plt.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei", "SimSun", "Arial Unicode MS"]
+        plt.rcParams["axes.unicode_minus"] = False
+
+        fig, axes = plt.subplots(2, 2, figsize=(14, 9))
+        fig.suptitle("模型训练结果可视化", fontsize=14)
+
+        # 左上：摘要信息
+        axes[0, 0].axis("off")
+        summary_lines = [
+            f"模型文件: {os.path.basename(model_path)}",
+            f"模型类型: {stats.get('model_type', 'unknown')}",
+            f"训练时间: {stats.get('training_time', '') or 'N/A'}",
+            f"版本号: {stats.get('model_version', '') or 'N/A'}",
+            f"样本数: {stats.get('sample_count', 0)}",
+            f"类别数: {stats.get('class_count', 0)}",
+            f"准确率: {stats.get('accuracy_display', 'N/A')}",
+        ]
+        axes[0, 0].text(0.02, 0.98, "\n".join(summary_lines), va="top", fontsize=10)
+
+        # 右上：类别分布
+        class_distribution = stats.get("class_distribution", {})
+        if class_distribution:
+            items = sorted(class_distribution.items(), key=lambda x: x[1], reverse=True)
+            labels = [k for k, _ in items][:20]
+            values = [v for _, v in items][:20]
+            axes[0, 1].bar(range(len(values)), values)
+            axes[0, 1].set_title("类别分布（Top20）")
+            axes[0, 1].set_xticks(range(len(labels)))
+            axes[0, 1].set_xticklabels(labels, rotation=60, ha="right", fontsize=8)
+            axes[0, 1].set_ylabel("数量")
+        else:
+            axes[0, 1].axis("off")
+            axes[0, 1].text(0.5, 0.5, "未找到标签分布数据", ha="center", va="center")
+
+        # 左下：特征重要性 Top20
+        feature_importances = stats.get("feature_importances", [])
+        if feature_importances:
+            fi = np.array(feature_importances)
+            top_n = min(20, len(fi))
+            idx = np.argsort(fi)[-top_n:][::-1]
+            vals = fi[idx]
+            axes[1, 0].bar(range(top_n), vals)
+            axes[1, 0].set_title("特征重要性（Top20）")
+            axes[1, 0].set_xlabel("特征排名")
+            axes[1, 0].set_ylabel("重要性")
+            axes[1, 0].set_xticks(range(top_n))
+            axes[1, 0].set_xticklabels([str(i + 1) for i in range(top_n)], fontsize=8)
+        else:
+            axes[1, 0].axis("off")
+            axes[1, 0].text(0.5, 0.5, "未找到特征重要性数据", ha="center", va="center")
+
+        # 右下：类别数量统计
+        axes[1, 1].bar(["样本数", "类别数"], [stats.get("sample_count", 0), stats.get("class_count", 0)])
+        axes[1, 1].set_title("数据规模")
+        axes[1, 1].set_ylabel("数量")
+
+        plt.tight_layout(rect=[0, 0, 1, 0.96])
+        fig.savefig(image_path, dpi=150)
+        plt.close(fig)
+
+        return image_path
 
     def create_center_panel(self):
         """创建中间面板"""

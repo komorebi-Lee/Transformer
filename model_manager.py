@@ -12,6 +12,7 @@ from config import Config
 try:
     import pyarrow
     from pyarrow import PyExtensionType
+
     logging.info(f"pyarrow {pyarrow.__version__} 导入成功")
 except ImportError as e:
     logging.warning(f"pyarrow导入失败: {e}")
@@ -19,6 +20,7 @@ except ImportError as e:
 # 尝试导入transformers，失败时使用降级模式
 try:
     from transformers import AutoTokenizer, AutoModel
+
     TRANSFORMERS_AVAILABLE = True
 except ImportError as e:
     logging.warning(f"transformers库导入失败: {e}")
@@ -66,13 +68,13 @@ class EnhancedModelManager:
             sentence_model_path = os.path.join(self.local_model_dir, "sentence-transformer")
             if os.path.exists(sentence_model_path):
                 try:
-                      from sentence_transformers import SentenceTransformer
-                      logger.info("加载本地sentence-transformer模型")
-                      self.models['sentence'] = SentenceTransformer(sentence_model_path).to(self.device)
-                      self.is_model_loaded = True
-                      logger.info("sentence-transformer初始化成功")
+                    from sentence_transformers import SentenceTransformer
+                    logger.info("加载本地sentence-transformer模型")
+                    self.models['sentence'] = SentenceTransformer(sentence_model_path).to(self.device)
+                    self.is_model_loaded = True
+                    logger.info("sentence-transformer初始化成功")
                 except Exception as e:
-                     logger.warning(f"sentence-transformer模型加载失败: {e}")
+                    logger.warning(f"sentence-transformer模型加载失败: {e}")
 
             logger.info("模型初始化完成")
             return True
@@ -127,7 +129,7 @@ class EnhancedModelManager:
         try:
             # 确保训练模型目录存在
             os.makedirs(self.trained_model_dir, exist_ok=True)
-            
+
             if version is None:
                 # 安全地获取目录中的文件数量
                 try:
@@ -148,6 +150,8 @@ class EnhancedModelManager:
                 'model_type': 'grounded_theory_coder',
                 'sample_count': model_data.get('sample_count', 0),
                 'class_count': model_data.get('class_count', 0),
+                'training_time': model_data.get('training_time', ''),
+                'accuracy': model_data.get('accuracy', None),
                 'model_path': model_file
             }
 
@@ -170,7 +174,7 @@ class EnhancedModelManager:
         try:
             # 确保训练模型目录存在
             os.makedirs(self.trained_model_dir, exist_ok=True)
-            
+
             if version is None:
                 # 加载最新的模型
                 try:
@@ -188,7 +192,7 @@ class EnhancedModelManager:
             # 规范化模型文件路径
             model_file = os.path.join(self.trained_model_dir, f"{version}.pkl")
             model_file = os.path.normpath(model_file)
-            
+
             if os.path.exists(model_file):
                 file_size = os.path.getsize(model_file)
                 if file_size == 0:
