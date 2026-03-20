@@ -5,6 +5,7 @@ from typing import Dict, List, Any, Optional, Set
 from datetime import datetime
 import shutil
 import re
+import copy
 from config import Config
 from path_manager import PathManager
 
@@ -175,38 +176,40 @@ class StandardAnswerManager:
             "has_changes": False
         }
 
-        # 转换为标准格式进行比较
-        original_standard = self._convert_to_standard_format(original)
-        modified_standard = self._convert_to_standard_format(modified)
+        try:
+            original_standard = self._convert_to_standard_format(original)
+            modified_standard = self._convert_to_standard_format(modified)
+        except Exception as e:
+            logger.error(f"转换标准格式失败: {e}")
+            return modifications
 
-        # 分析新增的三阶编码
         for third_cat in modified_standard:
             if third_cat not in original_standard:
-                modifications["added"][third_cat] = modified_standard[third_cat]
+                modifications["added"][third_cat] = copy.deepcopy(modified_standard[third_cat])
                 modifications["summary"]["added_codes"] += self._count_codes_in_category(modified_standard[third_cat])
 
-        # 分析删除的三阶编码
         for third_cat in original_standard:
             if third_cat not in modified_standard:
-                modifications["deleted"][third_cat] = original_standard[third_cat]
+                modifications["deleted"][third_cat] = copy.deepcopy(original_standard[third_cat])
                 modifications["summary"]["deleted_codes"] += self._count_codes_in_category(original_standard[third_cat])
 
-        # 分析修改的三阶编码
         for third_cat in modified_standard:
             if third_cat in original_standard:
-                third_modifications = self._analyze_second_level_modifications(
-                    original_standard[third_cat],
-                    modified_standard[third_cat],
-                    third_cat
-                )
+                try:
+                    third_modifications = self._analyze_second_level_modifications(
+                        original_standard[third_cat],
+                        modified_standard[third_cat],
+                        third_cat
+                    )
 
-                if third_modifications["has_changes"]:
-                    modifications["modified"][third_cat] = third_modifications
-                    modifications["summary"]["added_codes"] += third_modifications["summary"]["added_codes"]
-                    modifications["summary"]["modified_codes"] += third_modifications["summary"]["modified_codes"]
-                    modifications["summary"]["deleted_codes"] += third_modifications["summary"]["deleted_codes"]
+                    if third_modifications["has_changes"]:
+                        modifications["modified"][third_cat] = third_modifications
+                        modifications["summary"]["added_codes"] += third_modifications["summary"]["added_codes"]
+                        modifications["summary"]["modified_codes"] += third_modifications["summary"]["modified_codes"]
+                        modifications["summary"]["deleted_codes"] += third_modifications["summary"]["deleted_codes"]
+                except Exception as e:
+                    logger.error(f"分析三阶编码修改失败 {third_cat}: {e}")
 
-        # 检查是否有变化
         total_changes = (modifications["summary"]["added_codes"] +
                          modifications["summary"]["modified_codes"] +
                          modifications["summary"]["deleted_codes"])
@@ -230,22 +233,18 @@ class StandardAnswerManager:
             "has_changes": False
         }
 
-        # 分析新增的二阶编码
         for second_cat in modified_second:
             if second_cat not in original_second:
-                modifications["added"][second_cat] = modified_second[second_cat]
+                modifications["added"][second_cat] = copy.deepcopy(modified_second[second_cat])
                 modifications["summary"]["added_codes"] += len(modified_second[second_cat])
 
-        # 分析删除的二阶编码
         for second_cat in original_second:
             if second_cat not in modified_second:
-                modifications["deleted"][second_cat] = original_second[second_cat]
+                modifications["deleted"][second_cat] = copy.deepcopy(original_second[second_cat])
                 modifications["summary"]["deleted_codes"] += len(original_second[second_cat])
 
-        # 分析修改的二阶编码
         for second_cat in modified_second:
             if second_cat in original_second:
-                # 分析一阶编码的变化
                 first_modifications = self._analyze_first_level_modifications(
                     original_second[second_cat],
                     modified_second[second_cat],
@@ -258,7 +257,6 @@ class StandardAnswerManager:
                     modifications["summary"]["modified_codes"] += first_modifications["summary"]["modified_codes"]
                     modifications["summary"]["deleted_codes"] += first_modifications["summary"]["deleted_codes"]
 
-        # 检查是否有变化
         total_changes = (modifications["summary"]["added_codes"] +
                          modifications["summary"]["modified_codes"] +
                          modifications["summary"]["deleted_codes"])
@@ -266,8 +264,8 @@ class StandardAnswerManager:
 
         return modifications
 
-    def _analyze_first_level_modifications(self, original_first: List[str],
-                                           modified_first: List[str],
+    def _analyze_first_level_modifications(self, original_first: List[Any],
+                                           modified_first: List[Any],
                                            category_path: str) -> Dict[str, Any]:
         """分析一阶编码的修改"""
         modifications = {
@@ -282,62 +280,80 @@ class StandardAnswerManager:
             "has_changes": False
         }
 
-        # 转换为集合进行比较
-        original_set = set(original_first)
-        modified_set = set(modified_first)
+        try:
+            def get_content_key(item):
+                if isinstance(item, dict):
+                    return item.get('content', item.get('name', str(item)))
+                return str(item)
 
-        # 分析新增的一阶编码
-        added_codes = modified_set - original_set
-        if added_codes:
-            modifications["added"] = list(added_codes)
-            modifications["summary"]["added_codes"] = len(added_codes)
+            def get_content_dict(item):
+                if isinstance(item, dict):
+                    return copy.deepcopy(item)
+                return {'content': str(item)}
 
-        # 分析删除的一阶编码
-        deleted_codes = original_set - modified_set
-        if deleted_codes:
-            modifications["deleted"] = list(deleted_codes)
-            modifications["summary"]["deleted_codes"] = len(deleted_codes)
+            original_dict = {}
+            for item in original_first:
+                try:
+                    key = get_content_key(item)
+                    original_dict[key] = get_content_dict(item)
+                except Exception as e:
+                    logger.warning(f"处理原始一阶编码时出错: {e}")
 
-        # 检查是否有变化
-        total_changes = len(added_codes) + len(deleted_codes)
-        modifications["has_changes"] = total_changes > 0
+            modified_dict = {}
+            for item in modified_first:
+                try:
+                    key = get_content_key(item)
+                    modified_dict[key] = get_content_dict(item)
+                except Exception as e:
+                    logger.warning(f"处理修改后一阶编码时出错: {e}")
+
+            original_keys = set(original_dict.keys())
+            modified_keys = set(modified_dict.keys())
+
+            added_keys = modified_keys - original_keys
+            if added_keys:
+                modifications["added"] = [modified_dict[k] for k in added_keys]
+                modifications["summary"]["added_codes"] = len(added_keys)
+
+            deleted_keys = original_keys - modified_keys
+            if deleted_keys:
+                modifications["deleted"] = [original_dict[k] for k in deleted_keys]
+                modifications["summary"]["deleted_codes"] = len(deleted_keys)
+
+            total_changes = len(added_keys) + len(deleted_keys)
+            modifications["has_changes"] = total_changes > 0
+
+        except Exception as e:
+            logger.error(f"分析一阶编码修改失败 {category_path}: {e}")
 
         return modifications
 
     def _merge_modifications(self, original: Dict[str, Any], modifications: Dict[str, Any]) -> Dict[str, Any]:
         """合并修改到原始标准答案"""
-        merged = original.copy()
+        merged = copy.deepcopy(original)
 
-        # 处理新增的三阶编码
         for third_cat, second_cats in modifications["added"].items():
-            merged[third_cat] = second_cats
+            merged[third_cat] = copy.deepcopy(second_cats)
 
-        # 处理删除的三阶编码
         for third_cat in modifications["deleted"]:
             if third_cat in merged:
                 del merged[third_cat]
 
-        # 处理修改的三阶编码
         for third_cat, third_modifications in modifications["modified"].items():
             if third_cat in merged:
-                # 处理新增的二阶编码
                 for second_cat, first_codes in third_modifications["added"].items():
-                    merged[third_cat][second_cat] = first_codes
+                    merged[third_cat][second_cat] = copy.deepcopy(first_codes)
 
-                # 处理删除的二阶编码
                 for second_cat in third_modifications["deleted"]:
                     if second_cat in merged[third_cat]:
                         del merged[third_cat][second_cat]
 
-                # 处理修改的二阶编码
                 for second_cat, second_modifications in third_modifications["modified"].items():
                     if second_cat in merged[third_cat]:
-                        # 处理新增的一阶编码
                         for first_code in second_modifications["added"]:
                             if first_code not in merged[third_cat][second_cat]:
-                                merged[third_cat][second_cat].append(first_code)
+                                merged[third_cat][second_cat].append(copy.deepcopy(first_code))
 
-                        # 处理删除的一阶编码
                         for first_code in second_modifications["deleted"]:
                             if first_code in merged[third_cat][second_cat]:
                                 merged[third_cat][second_cat].remove(first_code)

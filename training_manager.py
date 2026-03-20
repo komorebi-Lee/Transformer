@@ -6,6 +6,15 @@ import numpy as np
 from typing import Dict, List, Any, Optional, Callable, Tuple
 from PyQt5.QtCore import QThread, pyqtSignal
 from datetime import datetime
+
+try:
+    import torch
+    TORCH_AVAILABLE = True
+except ImportError:
+    TORCH_AVAILABLE = False
+    logging.warning("torch 未安装，GPU检测功能将受限")
+
+from config import Config
 # 修复 sklearn 导入
 
 logger = logging.getLogger(__name__)
@@ -26,26 +35,234 @@ except Exception as e:
 logger = logging.getLogger(__name__)
 
 
+def check_gpu_memory() -> bool:
+    """检查GPU内存是否足够进行BERT微调训练"""
+    if not TORCH_AVAILABLE:
+        logger.warning("torch未安装，无法检测GPU")
+        return False
+    
+    try:
+        if not torch.cuda.is_available():
+            logger.info("CUDA不可用，将使用CPU训练")
+            return True
+        
+        gpu_count = torch.cuda.device_count()
+        for i in range(gpu_count):
+            props = torch.cuda.get_device_properties(i)
+            total_memory = props.total_memory / (1024 ** 3)
+            reserved = torch.cuda.memory_reserved(i) / (1024 ** 3)
+            allocated = torch.cuda.memory_allocated(i) / (1024 ** 3)
+            free_memory = total_memory - reserved
+            
+            min_required_memory = 2.0
+            
+            logger.info(f"GPU {i}: {props.name}, 总显存: {total_memory:.2f}GB, "
+                       f"已用: {allocated:.2f}GB, 空闲: {free_memory:.2f}GB")
+            
+            if free_memory >= min_required_memory:
+                return True
+        
+        logger.warning("GPU显存不足，建议至少2GB空闲显存")
+        return False
+        
+    except Exception as e:
+        logger.error(f"GPU检测失败: {e}")
+        return False
+
+
+def check_transformers_available() -> bool:
+    """检查transformers库是否可用"""
+    try:
+        import transformers
+        logger.info(f"transformers版本: {transformers.__version__}")
+        return True
+    except ImportError:
+        logger.warning("transformers库未安装")
+        return False
+    except Exception as e:
+        logger.warning(f"transformers库检测异常: {e}")
+        return False
+
+
+def check_training_conditions() -> Tuple[bool, str]:
+    """
+    检查BERT微调训练条件是否满足
+    
+    Returns:
+        Tuple[bool, str]: (是否可训练, 原因说明)
+    """
+    if not check_transformers_available():
+        return False, "transformers库未安装或不可用，无法进行BERT微调训练"
+    
+    if not TORCH_AVAILABLE:
+        return False, "torch库未安装，无法进行BERT微调训练"
+    
+    if not SKLEARN_AVAILABLE:
+        return False, "scikit-learn库未安装，无法进行训练"
+    
+    if not check_gpu_memory():
+        return False, "GPU显存不足（建议至少2GB空闲显存），BERT微调训练可能失败"
+    
+    return True, "训练条件满足，可以进行BERT微调训练"
+
+
 class GroundedTheoryTrainingThread(QThread):
     """扎根理论训练线程 - 修复版本"""
 
     progress_updated = pyqtSignal(int)
     training_finished = pyqtSignal(bool, str)
+    fallback_triggered = pyqtSignal(str)
 
-    def __init__(self, training_data: Dict[str, Any], model_manager, standard_answers: Dict[str, Any], model_type: str = 'bert'):
+    def __init__(self, training_data: Dict[str, Any], model_manager, standard_answers: Dict[str, Any], 
+                 model_type: str = 'bert', training_mode: str = 'classifier', 
+                 fallback_to_classifier: bool = True,
+                 training_config: Optional[Dict[str, Any]] = None,
+                 incremental: bool = False):
         super().__init__()
         self.training_data = training_data
         self.model_manager = model_manager
         self.standard_answers = standard_answers
         self.model_type = model_type
+        self.training_mode = training_mode
+        self.fallback_to_classifier = fallback_to_classifier
+        self.training_config = training_config or {}
+        self.incremental = incremental
         self.trained_model_data = None
+        self.actual_training_mode = training_mode
 
     def run(self):
         try:
             self.progress_updated.emit(0)
-            logger.info("开始扎根理论模型训练...")
+            logger.info(f"开始扎根理论模型训练，训练模式: {self.training_mode}, 增量训练: {self.incremental}")
 
-            # 准备训练数据
+            # 增量训练模式：加载已有模型并合并数据
+            existing_model_data = None
+            existing_label_mapping = None
+            
+            if self.incremental:
+                logger.info("增量训练模式：尝试加载已有模型...")
+                load_success = self.model_manager.load_trained_model("grounded_theory_latest")
+                if load_success and self.model_manager.trained_model:
+                    existing_model_data = self.model_manager.trained_model
+                    existing_label_mapping = existing_model_data.get("label_mapping", {})
+                    logger.info(f"已加载已有模型，包含 {len(existing_label_mapping)} 个标签")
+                else:
+                    logger.warning("增量训练模式但未找到已有模型，将执行首次训练")
+
+            if self.training_mode == Config.TRAINING_MODE_BERT_FINETUNE:
+                can_train, reason = check_training_conditions()
+                if not can_train:
+                    if self.fallback_to_classifier:
+                        fallback_reason = f"BERT微调训练条件不满足: {reason}，已自动降级到分类器模式"
+                        logger.warning(fallback_reason)
+                        self.actual_training_mode = Config.TRAINING_MODE_CLASSIFIER
+                        self.fallback_triggered.emit(fallback_reason)
+                    else:
+                        self.training_finished.emit(False, f"训练条件不满足: {reason}")
+                        return
+
+            self.progress_updated.emit(10)
+            texts, labels, label_mapping = self.prepare_training_data()
+
+            # 增量训练：合并标签映射
+            if self.incremental and existing_label_mapping:
+                logger.info(f"合并标签映射: 已有 {len(existing_label_mapping)} 个, 新数据 {len(label_mapping)} 个")
+                # 保留已有标签映射，添加新标签
+                max_id = max(existing_label_mapping.values()) if existing_label_mapping else -1
+                merged_label_mapping = existing_label_mapping.copy()
+                
+                for label, _ in label_mapping.items():
+                    if label not in merged_label_mapping:
+                        max_id += 1
+                        merged_label_mapping[label] = max_id
+                        logger.info(f"添加新标签: {label} -> {max_id}")
+                
+                label_mapping = merged_label_mapping
+                logger.info(f"合并后标签映射: {len(label_mapping)} 个标签")
+
+            if len(texts) < 5:
+                self.training_finished.emit(False, "训练数据不足，至少需要5个样本")
+                return
+
+            self.progress_updated.emit(30)
+
+            embeddings = self.model_manager.get_embeddings(texts, model_type=self.model_type)
+            if embeddings is None or len(embeddings) == 0:
+                self.training_finished.emit(False, "生成嵌入向量失败")
+                return
+
+            self.progress_updated.emit(60)
+
+            # 增量训练：合并已有数据
+            if self.incremental and existing_model_data:
+                existing_texts = existing_model_data.get("texts", [])
+                existing_labels = existing_model_data.get("labels", [])
+                existing_embedding_model = existing_model_data.get("embedding_model", None)
+                
+                if existing_texts and existing_labels:
+                    logger.info(f"合并训练数据: 已有 {len(existing_texts)} 个, 新数据 {len(texts)} 个")
+                    existing_embeddings = self.model_manager.get_embeddings(existing_texts, model_type=self.model_type)
+                    
+                    if existing_embeddings is None or len(existing_embeddings) == 0:
+                        logger.warning("生成已有数据嵌入向量失败，仅使用新数据训练")
+                    else:
+                        texts = existing_texts + texts
+                        labels = existing_labels + labels
+                        embeddings = np.vstack([existing_embeddings, embeddings]) if len(existing_embeddings) > 0 else embeddings
+                        logger.info(f"合并后总数据: {len(texts)} 个样本")
+
+            if SKLEARN_AVAILABLE:
+                classifier, accuracy = self.train_classifier(embeddings, labels)
+            else:
+                classifier, accuracy = self.train_rule_based_classifier(embeddings, labels)
+
+            self.progress_updated.emit(80)
+
+            self.trained_model_data = {
+                "classifier": classifier,
+                "label_mapping": label_mapping,
+                "texts": texts,
+                "labels": labels,
+                "training_time": self.get_timestamp(),
+                "sample_count": len(texts),
+                "class_count": len(label_mapping),
+                "accuracy": accuracy,
+                "model_type": "grounded_theory_coder",
+                "embedding_model": self.model_type,
+                "training_mode": self.actual_training_mode,
+                "incremental": self.incremental
+            }
+
+            success = self.model_manager.save_trained_model(self.trained_model_data, "grounded_theory_latest")
+            self.progress_updated.emit(100)
+
+            if success:
+                mode_info = f"（训练模式: {self.actual_training_mode}）" if self.actual_training_mode != self.training_mode else ""
+                incremental_info = " [增量训练]" if self.incremental else ""
+                message = f"模型训练完成！共训练 {len(texts)} 个样本，{len(label_mapping)} 个类别，准确率: {accuracy:.3f}{incremental_info}{mode_info}"
+                self.training_finished.emit(True, message)
+            else:
+                self.training_finished.emit(False, "模型保存失败")
+
+        except Exception as e:
+            logger.error(f"训练失败: {e}")
+            if self.training_mode == Config.TRAINING_MODE_BERT_FINETUNE and self.fallback_to_classifier:
+                try:
+                    fallback_reason = f"BERT微调训练失败: {str(e)}，已自动降级到分类器模式"
+                    logger.warning(fallback_reason)
+                    self.actual_training_mode = Config.TRAINING_MODE_CLASSIFIER
+                    self.fallback_triggered.emit(fallback_reason)
+                    self._run_classifier_training()
+                    return
+                except Exception as fallback_error:
+                    logger.error(f"降级训练也失败: {fallback_error}")
+                    self.training_finished.emit(False, f"训练失败: {str(e)}，降级训练也失败: {str(fallback_error)}")
+                    return
+            self.training_finished.emit(False, f"训练失败: {str(e)}")
+
+    def _run_classifier_training(self):
+        """降级后运行分类器训练"""
+        try:
             self.progress_updated.emit(10)
             texts, labels, label_mapping = self.prepare_training_data()
 
@@ -55,7 +272,6 @@ class GroundedTheoryTrainingThread(QThread):
 
             self.progress_updated.emit(30)
 
-            # 生成嵌入向量
             embeddings = self.model_manager.get_embeddings(texts, model_type=self.model_type)
             if embeddings is None or len(embeddings) == 0:
                 self.training_finished.emit(False, "生成嵌入向量失败")
@@ -63,7 +279,6 @@ class GroundedTheoryTrainingThread(QThread):
 
             self.progress_updated.emit(60)
 
-            # 训练分类器
             if SKLEARN_AVAILABLE:
                 classifier, accuracy = self.train_classifier(embeddings, labels)
             else:
@@ -71,7 +286,6 @@ class GroundedTheoryTrainingThread(QThread):
 
             self.progress_updated.emit(80)
 
-            # 准备模型数据
             self.trained_model_data = {
                 "classifier": classifier,
                 "label_mapping": label_mapping,
@@ -83,22 +297,22 @@ class GroundedTheoryTrainingThread(QThread):
                 "class_count": len(label_mapping),
                 "accuracy": accuracy,
                 "model_type": "grounded_theory_coder",
-                "embedding_model": self.model_type
+                "embedding_model": self.model_type,
+                "training_mode": Config.TRAINING_MODE_CLASSIFIER
             }
 
-            # 保存模型
             success = self.model_manager.save_trained_model(self.trained_model_data, "grounded_theory_latest")
             self.progress_updated.emit(100)
 
             if success:
-                message = f"模型训练完成！共训练 {len(texts)} 个样本，{len(label_mapping)} 个类别，准确率: {accuracy:.3f}"
+                message = f"模型训练完成（降级模式）！共训练 {len(texts)} 个样本，{len(label_mapping)} 个类别，准确率: {accuracy:.3f}"
                 self.training_finished.emit(True, message)
             else:
                 self.training_finished.emit(False, "模型保存失败")
 
         except Exception as e:
-            logger.error(f"训练失败: {e}")
-            self.training_finished.emit(False, f"训练失败: {str(e)}")
+            logger.error(f"降级训练失败: {e}")
+            self.training_finished.emit(False, f"降级训练失败: {str(e)}")
 
     def prepare_training_data(self) -> Tuple[List[str], List[int], Dict[str, int]]:
         """准备训练数据"""
@@ -227,15 +441,48 @@ class EnhancedTrainingManager:
         self.training_thread = None
         self.standard_answer_manager = None
         self.training_history = []
+        self._fallback_callback = None
 
     def set_standard_answer_manager(self, manager):
         """设置标准答案管理器"""
         self.standard_answer_manager = manager
 
+    def set_fallback_callback(self, callback: Callable[[str], None]):
+        """设置降级回调函数"""
+        self._fallback_callback = callback
+
+    def handle_fallback(self, reason: str) -> None:
+        """
+        处理降级，显示弹窗提示用户
+        
+        Args:
+            reason: 降级原因说明
+        """
+        logger.warning(f"训练降级: {reason}")
+        
+        if self._fallback_callback:
+            self._fallback_callback(reason)
+        else:
+            from PyQt5.QtWidgets import QMessageBox
+            try:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Warning)
+                msg.setWindowTitle("训练模式降级提示")
+                msg.setText("训练模式已自动降级")
+                msg.setInformativeText(f"由于以下问题，已自动降级到分类器模式训练：\n\n{reason}")
+                msg.setStandardButtons(QMessageBox.Ok)
+                msg.exec_()
+            except Exception as e:
+                logger.error(f"显示降级弹窗失败: {e}")
+
     def train_grounded_theory_model(self, training_data: Dict[str, Any], model_manager,
                                     progress_callback: Optional[Callable] = None,
                                     finished_callback: Optional[Callable] = None,
-                                    model_type: str = 'bert'):
+                                    model_type: str = 'bert',
+                                    training_mode: str = 'classifier',
+                                    fallback_to_classifier: bool = True,
+                                    training_config: Optional[Dict[str, Any]] = None,
+                                    incremental: bool = False):
         """训练扎根理论模型"""
         if self.standard_answer_manager is None:
             if finished_callback:
@@ -248,13 +495,16 @@ class EnhancedTrainingManager:
                 finished_callback(False, "没有标准答案数据")
             return
 
-        # 停止之前的训练线程
         if self.training_thread and self.training_thread.isRunning():
             self.training_thread.terminate()
             self.training_thread.wait()
 
         self.training_thread = GroundedTheoryTrainingThread(
-            training_data, model_manager, standard_answers, model_type
+            training_data, model_manager, standard_answers, model_type,
+            training_mode=training_mode, 
+            fallback_to_classifier=fallback_to_classifier,
+            training_config=training_config,
+            incremental=incremental
         )
 
         if progress_callback:
@@ -263,11 +513,13 @@ class EnhancedTrainingManager:
         if finished_callback:
             self.training_thread.training_finished.connect(finished_callback)
 
-        # 记录训练历史
+        self.training_thread.fallback_triggered.connect(self.handle_fallback)
+
         training_record = {
             'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             'sample_count': self.standard_answer_manager.get_training_sample_count(),
             'model_type': model_type,
+            'training_mode': training_mode,
             'status': 'started'
         }
         self.training_history.append(training_record)

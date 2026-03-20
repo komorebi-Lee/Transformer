@@ -1,4 +1,5 @@
 import os
+import json
 from datetime import datetime
 
 import torch
@@ -7,6 +8,8 @@ import numpy as np
 import pickle
 from typing import Dict, List, Any, Optional, Tuple
 from config import Config
+from bert_finetuner import BERTFineTuner
+from bert_dataset import get_label_mapping
 
 # 先导入pyarrow，确保它被正确加载
 try:
@@ -266,3 +269,194 @@ class EnhancedModelManager:
     def get_timestamp(self):
         from datetime import datetime
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    def save_finetuned_bert(
+        self,
+        model_dir: str,
+        metadata: Dict[str, Any],
+        label_mapping: Dict[str, int]
+    ) -> bool:
+        """
+        保存微调后的BERT模型
+
+        Args:
+            model_dir: 模型保存目录
+            metadata: 训练元数据（训练时间、样本数、准确率等）
+            label_mapping: 标签映射关系
+
+        Returns:
+            保存是否成功
+        """
+        try:
+            os.makedirs(model_dir, exist_ok=True)
+
+            finetuner = getattr(self, '_bert_finetuner', None)
+            if finetuner is None or finetuner.model is None:
+                logger.error("没有可保存的微调BERT模型")
+                return False
+
+            finetuner.save_model(model_dir)
+
+            metadata_path = os.path.join(model_dir, 'training_metadata.json')
+            metadata_with_timestamp = metadata.copy()
+            metadata_with_timestamp['timestamp'] = self.get_timestamp()
+            metadata_with_timestamp['model_type'] = 'bert_finetune'
+            with open(metadata_path, 'w', encoding='utf-8') as f:
+                json.dump(metadata_with_timestamp, f, ensure_ascii=False, indent=2)
+            logger.info(f"训练元数据已保存到: {metadata_path}")
+
+            label_mapping_path = os.path.join(model_dir, 'label_mapping.json')
+            id_to_label = {str(v): k for k, v in label_mapping.items()}
+            with open(label_mapping_path, 'w', encoding='utf-8') as f:
+                json.dump({
+                    'label_to_id': label_mapping,
+                    'id_to_label': id_to_label
+                }, f, ensure_ascii=False, indent=2)
+            logger.info(f"标签映射已保存到: {label_mapping_path}")
+
+            logger.info(f"微调BERT模型已保存到: {model_dir}")
+            return True
+
+        except Exception as e:
+            logger.error(f"保存微调BERT模型失败: {e}")
+            return False
+
+    def load_finetuned_bert(self, model_dir: str) -> Tuple[Optional[Any], Optional[Dict[str, int]]]:
+        """
+        加载已微调的BERT模型
+
+        Args:
+            model_dir: 模型目录
+
+        Returns:
+            Tuple[加载的模型, 标签映射]: 返回模型和标签映射，失败返回 (None, None)
+        """
+        try:
+            if not os.path.exists(model_dir):
+                logger.error(f"模型目录不存在: {model_dir}")
+                return None, None
+
+            model_format = self.detect_model_format(model_dir)
+            if model_format != "bert_finetune":
+                logger.error(f"模型格式不正确，期望 bert_finetune，实际为: {model_format}")
+                return None, None
+
+            finetuner = BERTFineTuner(self)
+            success = finetuner.load_model(model_dir)
+
+            if not success:
+                logger.error("加载微调BERT模型失败")
+                return None, None
+
+            self._bert_finetuner = finetuner
+
+            label_mapping_path = os.path.join(model_dir, 'label_mapping.json')
+            label_mapping = None
+            if os.path.exists(label_mapping_path):
+                with open(label_mapping_path, 'r', encoding='utf-8') as f:
+                    mapping_data = json.load(f)
+                    label_mapping = mapping_data.get('label_to_id', {})
+                logger.info(f"标签映射已加载: {len(label_mapping)} 个标签")
+
+            logger.info(f"微调BERT模型已从 {model_dir} 加载成功")
+            return finetuner, label_mapping
+
+        except Exception as e:
+            logger.error(f"加载微调BERT模型失败: {e}")
+            return None, None
+
+    def predict_with_finetuned_bert(self, texts: List[str]) -> Tuple[np.ndarray, List[str]]:
+        """
+        使用微调后的BERT模型进行预测
+
+        Args:
+            texts: 待预测的文本列表
+
+        Returns:
+            Tuple[predictions, predicted_labels]: 预测结果数组和预测标签列表
+        """
+        try:
+            finetuner = getattr(self, '_bert_finetuner', None)
+            if finetuner is None or not finetuner.is_model_loaded():
+                raise ValueError("微调BERT模型未加载，请先调用 load_finetuned_bert()")
+
+            predicted_ids, predicted_labels, confidence_scores = finetuner.predict(texts)
+
+            predictions = np.array(predicted_ids)
+
+            return predictions, predicted_labels
+
+        except Exception as e:
+            logger.error(f"使用微调BERT模型预测失败: {e}")
+            raise
+
+    def is_finetuned_model_available(self) -> bool:
+        """
+        检查是否有可用的微调BERT模型
+
+        Returns:
+            是否有可用的微调模型
+        """
+        finetuner = getattr(self, '_bert_finetuner', None)
+        if finetuner is not None and finetuner.is_model_loaded():
+            return True
+
+        try:
+            model_files = [f for f in os.listdir(self.trained_model_dir)
+                          if os.path.isdir(os.path.join(self.trained_model_dir, f))]
+            for model_dir in model_files:
+                full_path = os.path.join(self.trained_model_dir, model_dir)
+                if self.detect_model_format(full_path) == "bert_finetune":
+                    return True
+        except Exception as e:
+            logger.debug(f"检查微调模型时出错: {e}")
+
+        return False
+
+    def detect_model_format(self, model_dir: str) -> str:
+        """
+        检测模型格式（区分分类器模型和BERT微调模型）
+
+        Args:
+            model_dir: 模型目录
+
+        Returns:
+            模型格式: "bert_finetune" 或 "classifier"
+        """
+        try:
+            if not os.path.exists(model_dir):
+                logger.warning(f"模型目录不存在: {model_dir}")
+                return "classifier"
+
+            config_path = os.path.join(model_dir, 'config.json')
+            pytorch_model_path = os.path.join(model_dir, 'pytorch_model.bin')
+            model_safetensors_path = os.path.join(model_dir, 'model.safetensors')
+            label_mapping_path = os.path.join(model_dir, 'label_mapping.json')
+            training_config_path = os.path.join(model_dir, 'training_config.json')
+
+            has_bert_config = os.path.exists(config_path)
+            has_bert_weights = os.path.exists(pytorch_model_path) or os.path.exists(model_safetensors_path)
+            has_label_mapping = os.path.exists(label_mapping_path)
+            has_training_config = os.path.exists(training_config_path)
+
+            if has_bert_config and has_bert_weights and has_label_mapping:
+                if has_training_config:
+                    with open(training_config_path, 'r', encoding='utf-8') as f:
+                        training_config = json.load(f)
+                        if 'training_config' in training_config:
+                            return "bert_finetune"
+
+                return "bert_finetune"
+
+            pkl_files = [f for f in os.listdir(model_dir) if f.endswith('.pkl')]
+            if pkl_files:
+                return "classifier"
+
+            if os.path.isfile(model_dir) and model_dir.endswith('.pkl'):
+                return "classifier"
+
+            return "classifier"
+
+        except Exception as e:
+            logger.error(f"检测模型格式失败: {e}")
+            return "classifier"

@@ -32,6 +32,35 @@ class Config:
     SIMILARITY_THRESHOLD = 0.6
     MIN_SENTENCE_LENGTH = 5
 
+    # BERT微调配置
+    FINETUNE_LEARNING_RATE = 2e-5
+    FINETUNE_EPOCHS = 3
+    FINETUNE_BATCH_SIZE = 16
+    FINETUNE_WARMUP_RATIO = 0.1
+    FINETUNE_WEIGHT_DECAY = 0.01
+    FINETUNE_EARLY_STOP_PATIENCE = 3
+    FINETUNE_MAX_GRAD_NORM = 1.0
+    FINETUNE_DROPOUT_RATE = 0.1
+
+    # 训练模式
+    TRAINING_MODE_CLASSIFIER = "classifier"
+    TRAINING_MODE_BERT_FINETUNE = "bert_finetune"
+    TRAINING_MODE_INCREMENTAL = "incremental"
+
+    # 超参数寻优配置
+    HYPERPARAM_SEARCH_SPACE = {
+        "learning_rate": [1e-5, 2e-5, 5e-5],
+        "batch_size": [8, 16, 32],
+        "epochs": [2, 3, 5],
+        "dropout_rate": [0.1, 0.2, 0.3]
+    }
+    HYPERPARAM_SEARCH_METHOD = "grid"
+    HYPERPARAM_CV_FOLDS = 3
+
+    # 增量训练配置
+    INCREMENTAL_LEARNING_RATE_RATIO = 0.5
+    INCREMENTAL_MIN_SAMPLES = 10
+
     @classmethod
     def init_directories(cls):
         """初始化必要的目录"""

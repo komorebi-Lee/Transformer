@@ -35,6 +35,9 @@ from manual_coding_dialog import ManualCodingDialog
 from excel_processor import ExcelProcessorDialog
 from config import Config
 from project_manager import ProjectManager
+from bert_finetuner import BERTFineTuner
+from bert_dataset import GroundedTheoryDataset, get_label_mapping
+from hyperparameter_optimizer import HyperparameterOptimizer
 import re
 
 logger = logging.getLogger(__name__)
@@ -85,6 +88,150 @@ class ModelInitializationThread(QThread):
         except Exception as e:
             logger.error(f"模型初始化线程失败: {e}")
             self.initialization_finished.emit(False, f"初始化失败: {str(e)}")
+
+
+class TrainingConfigDialog(QDialog):
+    """训练配置对话框"""
+
+    def __init__(self, parent=None, has_existing_model=False):
+        super().__init__(parent)
+        self.has_existing_model = has_existing_model
+        self.setWindowTitle("训练配置")
+        self.resize(550, 500)
+        self.setup_ui()
+
+    def setup_ui(self):
+        layout = QVBoxLayout(self)
+
+        training_mode_group = QGroupBox("训练模式")
+        mode_layout = QVBoxLayout(training_mode_group)
+
+        self.bert_finetune_radio = QRadioButton("BERT微调 - 完整微调BERT模型（推荐，效果最好）")
+        self.classifier_radio = QRadioButton("分类器训练 - 仅训练分类器层（速度快）")
+        self.incremental_radio = QRadioButton("增量训练 - 基于已有模型继续训练")
+
+        self.bert_finetune_radio.setChecked(True)
+
+        if not self.has_existing_model:
+            self.incremental_radio.setEnabled(False)
+            self.incremental_radio.setToolTip("需要已有训练模型才能使用增量训练")
+
+        mode_layout.addWidget(self.bert_finetune_radio)
+        mode_layout.addWidget(self.classifier_radio)
+        mode_layout.addWidget(self.incremental_radio)
+        layout.addWidget(training_mode_group)
+
+        hyperparam_group = QGroupBox("超参数寻优")
+        hyperparam_layout = QVBoxLayout(hyperparam_group)
+
+        self.enable_optimization_check = QCheckBox("启用超参数自动寻优")
+        self.enable_optimization_check.setToolTip("使用网格搜索或贝叶斯优化自动寻找最优超参数")
+        hyperparam_layout.addWidget(self.enable_optimization_check)
+
+        self.optimization_method_combo = QComboBox()
+        self.optimization_method_combo.addItems(["网格搜索", "贝叶斯优化"])
+        self.optimization_method_combo.setEnabled(False)
+        hyperparam_layout.addWidget(QLabel("寻优方法:"))
+        hyperparam_layout.addWidget(self.optimization_method_combo)
+
+        self.cv_folds_spin = QComboBox()
+        self.cv_folds_spin.addItems(["3", "5", "10"])
+        self.cv_folds_spin.setCurrentIndex(1)
+        self.cv_folds_spin.setEnabled(False)
+        hyperparam_layout.addWidget(QLabel("交叉验证折数:"))
+        hyperparam_layout.addWidget(self.cv_folds_spin)
+
+        self.enable_optimization_check.toggled.connect(self.on_optimization_toggled)
+        layout.addWidget(hyperparam_group)
+
+        params_group = QGroupBox("训练参数")
+        params_layout = QFormLayout(params_group)
+
+        self.learning_rate_edit = QLineEdit("2e-5")
+        self.learning_rate_edit.setToolTip("学习率，推荐范围: 1e-5 到 5e-5")
+        params_layout.addRow("学习率:", self.learning_rate_edit)
+
+        self.batch_size_combo = QComboBox()
+        self.batch_size_combo.addItems(["8", "16", "32", "64"])
+        self.batch_size_combo.setCurrentIndex(1)
+        self.batch_size_combo.setToolTip("批次大小，较大的值需要更多显存")
+        params_layout.addRow("批次大小:", self.batch_size_combo)
+
+        self.epochs_spin = QComboBox()
+        self.epochs_spin.addItems(["3", "5", "10", "20", "50"])
+        self.epochs_spin.setCurrentIndex(1)
+        self.epochs_spin.setToolTip("训练轮数，过多可能导致过拟合")
+        params_layout.addRow("训练轮数:", self.epochs_spin)
+
+        self.max_length_combo = QComboBox()
+        self.max_length_combo.addItems(["128", "256", "512"])
+        self.max_length_combo.setCurrentIndex(2)
+        self.max_length_combo.setToolTip("最大序列长度，较长的文本需要更多显存")
+        params_layout.addRow("最大序列长度:", self.max_length_combo)
+
+        self.warmup_ratio_edit = QLineEdit("0.1")
+        self.warmup_ratio_edit.setToolTip("预热比例，通常设为0.1")
+        params_layout.addRow("预热比例:", self.warmup_ratio_edit)
+
+        self.weight_decay_edit = QLineEdit("0.01")
+        self.weight_decay_edit.setToolTip("权重衰减，用于防止过拟合")
+        params_layout.addRow("权重衰减:", self.weight_decay_edit)
+
+        layout.addWidget(params_group)
+
+        advanced_group = QGroupBox("高级选项")
+        advanced_layout = QVBoxLayout(advanced_group)
+
+        self.early_stopping_check = QCheckBox("启用早停 (Early Stopping)")
+        self.early_stopping_check.setChecked(True)
+        advanced_layout.addWidget(self.early_stopping_check)
+
+        self.save_best_model_check = QCheckBox("保存最佳模型")
+        self.save_best_model_check.setChecked(True)
+        advanced_layout.addWidget(self.save_best_model_check)
+
+        layout.addWidget(advanced_group)
+
+        button_layout = QHBoxLayout()
+        self.ok_button = QPushButton("开始训练")
+        self.cancel_button = QPushButton("取消")
+        button_layout.addStretch()
+        button_layout.addWidget(self.cancel_button)
+        button_layout.addWidget(self.ok_button)
+        layout.addLayout(button_layout)
+
+        self.ok_button.clicked.connect(self.accept)
+        self.cancel_button.clicked.connect(self.reject)
+
+    def on_optimization_toggled(self, checked):
+        self.optimization_method_combo.setEnabled(checked)
+        self.cv_folds_spin.setEnabled(checked)
+
+        self.learning_rate_edit.setEnabled(not checked)
+        self.batch_size_combo.setEnabled(not checked)
+        self.epochs_spin.setEnabled(not checked)
+
+    def get_config(self):
+        training_mode = 'bert_finetune'
+        if self.classifier_radio.isChecked():
+            training_mode = 'classifier'
+        elif self.incremental_radio.isChecked():
+            training_mode = 'incremental'
+
+        return {
+            'training_mode': training_mode,
+            'enable_optimization': self.enable_optimization_check.isChecked(),
+            'optimization_method': 'grid' if self.optimization_method_combo.currentText() == '网格搜索' else 'bayesian',
+            'cv_folds': int(self.cv_folds_spin.currentText()),
+            'learning_rate': float(self.learning_rate_edit.text()),
+            'batch_size': int(self.batch_size_combo.currentText()),
+            'epochs': int(self.epochs_spin.currentText()),
+            'max_length': int(self.max_length_combo.currentText()),
+            'warmup_ratio': float(self.warmup_ratio_edit.text()),
+            'weight_decay': float(self.weight_decay_edit.text()),
+            'early_stopping': self.early_stopping_check.isChecked(),
+            'save_best_model': self.save_best_model_check.isChecked()
+        }
 
 
 class MainWindow(QMainWindow):
@@ -567,10 +714,14 @@ class MainWindow(QMainWindow):
 
         training_layout.addLayout(training_buttons_layout)
 
-        # 训练进度
         self.training_progress = QProgressBar()
         self.training_progress.setVisible(False)
         training_layout.addWidget(self.training_progress)
+
+        self.training_metrics_label = QLabel("")
+        self.training_metrics_label.setVisible(False)
+        self.training_metrics_label.setStyleSheet("color: #666; font-size: 11px;")
+        training_layout.addWidget(self.training_metrics_label)
 
         layout.addWidget(training_group)
 
@@ -2529,8 +2680,16 @@ class MainWindow(QMainWindow):
 
                 for k in range(second_item.childCount()):
                     first_item = second_item.child(k)
-                    first_content = first_item.text(0)
-                    self.structured_codes[third_name][second_name].append(first_content)
+                    # 优先获取完整的数据结构（字典格式）
+                    first_item_data = first_item.data(0, Qt.UserRole)
+                    if first_item_data and isinstance(first_item_data, dict):
+                        # 使用完整的数据结构
+                        import copy
+                        self.structured_codes[third_name][second_name].append(copy.deepcopy(first_item_data))
+                    else:
+                        # 后备方案：使用文本内容
+                        first_content = first_item.text(0)
+                        self.structured_codes[third_name][second_name].append(first_content)
 
     def start_training(self):
         """开始训练模型"""
@@ -2544,96 +2703,191 @@ class MainWindow(QMainWindow):
             return
 
         try:
-            # 模型选择对话框
-            dialog = QDialog(self)
-            dialog.setWindowTitle("选择训练模型")
-            dialog.resize(400, 200)
+            trained_models_dir = os.path.join(os.path.dirname(__file__), "trained_models")
+            has_existing_model = os.path.exists(os.path.join(trained_models_dir, "grounded_theory_latest.pkl"))
 
-            layout = QVBoxLayout(dialog)
-
-            # 添加说明
-            label = QLabel("请选择用于训练的嵌入模型:")
-            layout.addWidget(label)
-
-            # 模型选择
-            model_group = QGroupBox("模型选择")
-            model_layout = QVBoxLayout(model_group)
-
-            bert_radio = QRadioButton("BERT 模型 (默认)")
-            sentence_radio = QRadioButton("Sentence-Transformer 模型")
-            bert_radio.setChecked(True)
-
-            # 检查 Sentence-Transformer 模型是否可用
-            sentence_available = 'sentence' in self.model_manager.models
-            if not sentence_available:
-                sentence_radio.setEnabled(False)
-                sentence_radio.setToolTip("Sentence-Transformer 模型未加载")
-
-            model_layout.addWidget(bert_radio)
-            model_layout.addWidget(sentence_radio)
-            layout.addWidget(model_group)
-
-            # 按钮
-            button_layout = QHBoxLayout()
-            ok_button = QPushButton("确定")
-            cancel_button = QPushButton("取消")
-
-            button_layout.addWidget(ok_button)
-            button_layout.addWidget(cancel_button)
-            layout.addLayout(button_layout)
-
-            # 连接信号
-            selected_model = 'bert'  # 默认值
-
-            def on_ok():
-                nonlocal selected_model
-                if bert_radio.isChecked():
-                    selected_model = 'bert'
-                elif sentence_radio.isChecked():
-                    selected_model = 'sentence'
-                dialog.accept()
-
-            def on_cancel():
-                dialog.reject()
-
-            ok_button.clicked.connect(on_ok)
-            cancel_button.clicked.connect(on_cancel)
-
-            # 显示对话框
-            if dialog.exec_() != QDialog.Accepted:
+            config_dialog = TrainingConfigDialog(self, has_existing_model=has_existing_model)
+            if config_dialog.exec_() != QDialog.Accepted:
                 return
+
+            config = config_dialog.get_config()
+            logger.info(f"训练配置: {config}")
 
             self.training_progress.setVisible(True)
             self.train_model_btn.setEnabled(False)
+            self.training_progress.setFormat("准备训练数据... %p%")
+            self.training_progress.setValue(0)
 
-            # 准备训练数据
+            if hasattr(self, 'training_metrics_label') and self.training_metrics_label:
+                self.training_metrics_label.setVisible(True)
+                self.training_metrics_label.setText("准备中...")
+
             training_data = self.standard_answer_manager.export_for_training()
 
-            # 开始训练
-            self.enhanced_training_manager.train_grounded_theory_model(
-                training_data,
-                self.model_manager,
-                progress_callback=self.update_training_progress,
-                finished_callback=self.on_training_finished,
-                model_type=selected_model
-            )
+            training_mode = config['training_mode']
 
-            self.statusBar().showMessage(f"开始训练模型... 使用 {selected_model} 模型")
+            if training_mode == 'incremental':
+                self._start_incremental_training(config, training_data)
+            elif config['enable_optimization']:
+                self._start_training_with_optimization(config, training_data)
+            elif training_mode == 'bert_finetune':
+                self._start_bert_finetune_training(config, training_data)
+            else:
+                self._start_classifier_training(config, training_data)
+
+            mode_names = {
+                'bert_finetune': 'BERT微调',
+                'classifier': '分类器训练',
+                'incremental': '增量训练'
+            }
+            self.statusBar().showMessage(f"开始训练模型... 模式: {mode_names.get(training_mode, training_mode)}")
 
         except Exception as e:
             logger.error(f"开始训练失败: {e}")
             QMessageBox.critical(self, "训练错误", f"开始训练失败: {str(e)}")
             self.train_model_btn.setEnabled(True)
             self.training_progress.setVisible(False)
+            if hasattr(self, 'training_metrics_label') and self.training_metrics_label:
+                self.training_metrics_label.setVisible(False)
+
+    def _start_bert_finetune_training(self, config, training_data):
+        """启动BERT微调训练"""
+        try:
+            self.training_progress.setFormat("BERT微调训练中... %p%")
+
+            self.enhanced_training_manager.train_grounded_theory_model(
+                training_data,
+                self.model_manager,
+                progress_callback=lambda v: self.update_training_progress_with_stage(v, "BERT微调"),
+                finished_callback=self.on_training_finished,
+                model_type='bert',
+                training_mode='bert_finetune',
+                training_config=config
+            )
+        except Exception as e:
+            logger.error(f"BERT微调训练启动失败: {e}")
+            raise
+
+    def _start_classifier_training(self, config, training_data):
+        """启动分类器训练"""
+        try:
+            self.training_progress.setFormat("分类器训练中... %p%")
+
+            self.enhanced_training_manager.train_grounded_theory_model(
+                training_data,
+                self.model_manager,
+                progress_callback=lambda v: self.update_training_progress_with_stage(v, "分类器训练"),
+                finished_callback=self.on_training_finished,
+                model_type='bert',
+                training_mode='classifier',
+                training_config=config
+            )
+        except Exception as e:
+            logger.error(f"分类器训练启动失败: {e}")
+            raise
+
+    def _start_incremental_training(self, config, training_data):
+        """启动增量训练"""
+        try:
+            self.training_progress.setFormat("增量训练中... %p%")
+
+            self.enhanced_training_manager.train_grounded_theory_model(
+                training_data,
+                self.model_manager,
+                progress_callback=lambda v: self.update_training_progress_with_stage(v, "增量训练"),
+                finished_callback=self.on_training_finished,
+                model_type='bert',
+                training_mode='incremental',
+                training_config=config,
+                incremental=True
+            )
+        except Exception as e:
+            logger.error(f"增量训练启动失败: {e}")
+            raise
+
+    def _start_training_with_optimization(self, config, training_data):
+        """启动带超参数寻优的训练"""
+        try:
+            self.training_progress.setFormat("超参数寻优中... %p%")
+            self.training_progress.setValue(0)
+
+            optimizer = HyperparameterOptimizer(self.model_manager)
+
+            def progress_callback(current, total, params):
+                progress = int((current / total) * 100)
+                self.training_progress.setValue(progress)
+                self.training_progress.setFormat(f"寻优进度 {current}/{total}: {params}")
+                QApplication.processEvents()
+
+            if config['optimization_method'] == 'grid':
+                best_params = optimizer.grid_search(
+                    training_data,
+                    cv_folds=config['cv_folds'],
+                    progress_callback=progress_callback
+                )
+            else:
+                best_params = optimizer.bayesian_optimization(
+                    training_data,
+                    n_trials=20,
+                    cv_folds=config['cv_folds'],
+                    progress_callback=progress_callback
+                )
+
+            if best_params:
+                config.update(best_params)
+                QMessageBox.information(
+                    self,
+                    "寻优完成",
+                    f"找到最优参数:\n"
+                    f"学习率: {best_params.get('learning_rate', 'N/A')}\n"
+                    f"批次大小: {best_params.get('batch_size', 'N/A')}\n"
+                    f"训练轮数: {best_params.get('epochs', 'N/A')}\n\n"
+                    f"将使用最优参数开始训练..."
+                )
+
+                self._start_bert_finetune_training(config, training_data)
+            else:
+                raise Exception("超参数寻优失败，未找到有效参数")
+
+        except Exception as e:
+            logger.error(f"超参数寻优训练失败: {e}")
+            raise
+
+    def update_training_progress_with_stage(self, value, stage=""):
+        """更新训练进度（带阶段信息）"""
+        self.training_progress.setValue(value)
+        if stage:
+            self.training_progress.setFormat(f"{stage} - %p%")
+        self.statusBar().showMessage(f"训练进度: {value}% - {stage}")
 
     def update_training_progress(self, value):
         """更新训练进度"""
         self.training_progress.setValue(value)
 
+    def update_training_metrics(self, metrics: dict):
+        """更新训练指标显示"""
+        if hasattr(self, 'training_metrics_label') and self.training_metrics_label:
+            metrics_text = []
+            if 'loss' in metrics:
+                metrics_text.append(f"Loss: {metrics['loss']:.4f}")
+            if 'accuracy' in metrics:
+                metrics_text.append(f"Acc: {metrics['accuracy']:.2%}")
+            if 'f1' in metrics:
+                metrics_text.append(f"F1: {metrics['f1']:.4f}")
+            if 'epoch' in metrics:
+                metrics_text.append(f"Epoch: {metrics['epoch']}")
+            if 'eta' in metrics:
+                metrics_text.append(f"ETA: {metrics['eta']}")
+
+            self.training_metrics_label.setText(" | ".join(metrics_text))
+
     def on_training_finished(self, success, message):
         """训练完成"""
         self.train_model_btn.setEnabled(True)
         self.training_progress.setVisible(False)
+
+        if hasattr(self, 'training_metrics_label') and self.training_metrics_label:
+            self.training_metrics_label.setVisible(False)
 
         if success:
             self.statusBar().showMessage("模型训练完成")
@@ -2644,109 +2898,124 @@ class MainWindow(QMainWindow):
 
     def save_corrections(self):
         """保存修正到标准答案 - 使用增量保存"""
-        if not self.structured_codes:
-            QMessageBox.warning(self, "警告", "没有编码数据可保存")
-            return
-
-        # 显示修改确认对话框
-        confirmation_dialog = QDialog(self)
-        confirmation_dialog.setWindowTitle("确认保存修改")
-        confirmation_dialog.resize(500, 300)
-
-        layout = QVBoxLayout(confirmation_dialog)
-
-        # 显示修改统计
-        if self.standard_answer_manager.current_answers:
-            current_codes = self.standard_answer_manager.current_answers.get("structured_codes", {})
-            modifications = self.standard_answer_manager._analyze_modifications(current_codes, self.structured_codes)
-
-            if not modifications["has_changes"]:
-                QMessageBox.information(self, "提示", "没有检测到修改，无需保存")
+        try:
+            # 先从树形结构同步最新数据
+            self.update_structured_codes_from_tree()
+            
+            if not self.structured_codes:
+                QMessageBox.warning(self, "警告", "没有编码数据可保存")
                 return
 
-            summary = modifications["summary"]
-            stats_text = f"""
+            confirmation_dialog = QDialog(self)
+            confirmation_dialog.setWindowTitle("确认保存修改")
+            confirmation_dialog.resize(500, 300)
+
+            layout = QVBoxLayout(confirmation_dialog)
+
+            if self.standard_answer_manager.current_answers:
+                try:
+                    current_codes = self.standard_answer_manager.current_answers.get("structured_codes", {})
+                    modifications = self.standard_answer_manager._analyze_modifications(current_codes, self.structured_codes)
+
+                    if not modifications["has_changes"]:
+                        QMessageBox.information(self, "提示", "没有检测到修改，无需保存")
+                        return
+
+                    summary = modifications["summary"]
+                    stats_text = f"""
     修改统计:
     • 新增编码: {summary['added_codes']} 个
     • 修改编码: {summary['modified_codes']} 个  
     • 删除编码: {summary['deleted_codes']} 个
             """.strip()
 
-            stats_label = QLabel(stats_text)
-            layout.addWidget(stats_label)
-        else:
-            stats_label = QLabel("这将创建第一个标准答案版本")
-            layout.addWidget(stats_label)
-
-        # 描述输入
-        desc_label = QLabel("修改描述:")
-        layout.addWidget(desc_label)
-
-        desc_edit = QTextEdit()
-        desc_edit.setMaximumHeight(80)
-        desc_edit.setPlaceholderText("请描述本次修改的内容...")
-        layout.addWidget(desc_edit)
-
-        # 保存选项
-        options_group = QGroupBox("保存选项")
-        options_layout = QVBoxLayout(options_group)
-
-        incremental_radio = QRadioButton("增量保存（推荐）- 只保存修改和新增的内容")
-        full_radio = QRadioButton("完整保存 - 保存全部编码内容")
-        incremental_radio.setChecked(True)
-
-        options_layout.addWidget(incremental_radio)
-        options_layout.addWidget(full_radio)
-        layout.addWidget(options_group)
-
-        # 按钮
-        button_layout = QHBoxLayout()
-        save_btn = QPushButton("保存")
-        cancel_btn = QPushButton("取消")
-
-        button_layout.addWidget(save_btn)
-        button_layout.addWidget(cancel_btn)
-        layout.addLayout(button_layout)
-
-        def on_save():
-            description = desc_edit.toPlainText().strip() or "人工修正"
-
-            if incremental_radio.isChecked():
-                # 增量保存
-                version_id = self.standard_answer_manager.save_modifications_only(
-                    self.structured_codes, description
-                )
+                    stats_label = QLabel(stats_text)
+                    layout.addWidget(stats_label)
+                except Exception as e:
+                    logger.error(f"分析修改内容失败: {e}")
+                    stats_label = QLabel("无法分析修改统计，但可以继续保存")
+                    layout.addWidget(stats_label)
             else:
-                # 完整保存
-                version_id = self.standard_answer_manager.create_from_structured_codes(
-                    self.structured_codes, description
-                )
+                stats_label = QLabel("这将创建第一个标准答案版本")
+                layout.addWidget(stats_label)
 
-            if version_id:
-                self.update_training_data_label()
+            desc_label = QLabel("修改描述:")
+            layout.addWidget(desc_label)
 
-                # 显示保存成功信息
-                success_dialog = QMessageBox(self)
-                success_dialog.setWindowTitle("保存成功")
-                success_dialog.setText(f"修改已保存: {version_id}")
+            desc_edit = QTextEdit()
+            desc_edit.setMaximumHeight(80)
+            desc_edit.setPlaceholderText("请描述本次修改的内容...")
+            layout.addWidget(desc_edit)
 
-                if incremental_radio.isChecked():
-                    success_dialog.setInformativeText("已使用增量保存模式，只保存了修改和新增的内容。")
-                else:
-                    success_dialog.setInformativeText("已使用完整保存模式，保存了全部编码内容。")
+            options_group = QGroupBox("保存选项")
+            options_layout = QVBoxLayout(options_group)
 
-                success_dialog.exec_()
-                confirmation_dialog.accept()
-            else:
-                QMessageBox.critical(self, "错误", "保存修正失败")
+            incremental_radio = QRadioButton("增量保存（推荐）- 只保存修改和新增的内容")
+            full_radio = QRadioButton("完整保存 - 保存全部编码内容")
+            incremental_radio.setChecked(True)
 
-        def on_cancel():
-            confirmation_dialog.reject()
+            options_layout.addWidget(incremental_radio)
+            options_layout.addWidget(full_radio)
+            layout.addWidget(options_group)
 
-        save_btn.clicked.connect(on_save)
-        cancel_btn.clicked.connect(on_cancel)
+            button_layout = QHBoxLayout()
+            save_btn = QPushButton("保存")
+            cancel_btn = QPushButton("取消")
 
-        confirmation_dialog.exec_()
+            button_layout.addWidget(save_btn)
+            button_layout.addWidget(cancel_btn)
+            layout.addLayout(button_layout)
+
+            def on_save():
+                try:
+                    description = desc_edit.toPlainText().strip() or "人工修正"
+
+                    if incremental_radio.isChecked():
+                        version_id = self.standard_answer_manager.save_modifications_only(
+                            self.structured_codes, description
+                        )
+                    else:
+                        version_id = self.standard_answer_manager.create_from_structured_codes(
+                            self.structured_codes, description
+                        )
+
+                    if version_id:
+                        self.update_training_data_label()
+
+                        success_dialog = QMessageBox(self)
+                        success_dialog.setWindowTitle("保存成功")
+                        success_dialog.setText(f"修改已保存: {version_id}")
+
+                        if incremental_radio.isChecked():
+                            success_dialog.setInformativeText("已使用增量保存模式，只保存了修改和新增的内容。")
+                        else:
+                            success_dialog.setInformativeText("已使用完整保存模式，保存了全部编码内容。")
+
+                        success_dialog.exec_()
+                        confirmation_dialog.accept()
+                    else:
+                        QMessageBox.critical(self, "错误", "保存修正失败")
+                except Exception as e:
+                    logger.error(f"保存修正时发生错误: {e}", exc_info=True)
+                    try:
+                        QMessageBox.critical(self, "错误", f"保存修正失败: {str(e)}")
+                    except:
+                        pass
+
+            def on_cancel():
+                confirmation_dialog.reject()
+
+            save_btn.clicked.connect(on_save)
+            cancel_btn.clicked.connect(on_cancel)
+
+            confirmation_dialog.exec_()
+
+        except Exception as e:
+            logger.error(f"保存修正功能发生错误: {e}", exc_info=True)
+            try:
+                QMessageBox.critical(self, "错误", f"保存修正失败: {str(e)}")
+            except:
+                pass
 
     def update_training_data_label(self):
         """更新训练数据标签"""
@@ -2755,6 +3024,8 @@ class MainWindow(QMainWindow):
 
     def create_standard_answer(self):
         """创建标准答案"""
+        self.update_structured_codes_from_tree()
+        
         if not self.structured_codes:
             QMessageBox.warning(self, "警告", "没有编码数据可保存")
             return
