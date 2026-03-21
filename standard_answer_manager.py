@@ -281,9 +281,21 @@ class StandardAnswerManager:
         }
 
         try:
+            from collections import defaultdict
+
             def get_content_key(item):
+                """用于比较的一阶编码键值
+
+                优先使用 code_id + content 组合，保证像 A21/A22 这种
+                内容相似但编号不同的编码可以被单独识别和统计。
+                没有 code_id 的情况（手动新增的自由编码）退化为只用内容。
+                """
                 if isinstance(item, dict):
-                    return item.get('content', item.get('name', str(item)))
+                    content = item.get('content', item.get('name', str(item)))
+                    code_id = item.get('code_id')
+                    if code_id:
+                        return f"{code_id}||{content}"
+                    return content
                 return str(item)
 
             def get_content_dict(item):
@@ -291,37 +303,84 @@ class StandardAnswerManager:
                     return copy.deepcopy(item)
                 return {'content': str(item)}
 
-            original_dict = {}
+            # 使用列表映射处理重复项
+            original_map = defaultdict(list)
             for item in original_first:
                 try:
                     key = get_content_key(item)
-                    original_dict[key] = get_content_dict(item)
+                    original_map[key].append(get_content_dict(item))
                 except Exception as e:
                     logger.warning(f"处理原始一阶编码时出错: {e}")
 
-            modified_dict = {}
+            modified_map = defaultdict(list)
             for item in modified_first:
                 try:
                     key = get_content_key(item)
-                    modified_dict[key] = get_content_dict(item)
+                    modified_map[key].append(get_content_dict(item))
                 except Exception as e:
                     logger.warning(f"处理修改后一阶编码时出错: {e}")
 
-            original_keys = set(original_dict.keys())
-            modified_keys = set(modified_dict.keys())
+            all_keys = set(original_map.keys()) | set(modified_map.keys())
 
-            added_keys = modified_keys - original_keys
-            if added_keys:
-                modifications["added"] = [modified_dict[k] for k in added_keys]
-                modifications["summary"]["added_codes"] = len(added_keys)
+            for key in all_keys:
+                orig_items = original_map[key]
+                mod_items = modified_map[key]
 
-            deleted_keys = original_keys - modified_keys
-            if deleted_keys:
-                modifications["deleted"] = [original_dict[k] for k in deleted_keys]
-                modifications["summary"]["deleted_codes"] = len(deleted_keys)
+                # 计算数量差异（用于新增/删除统计）
+                diff = len(mod_items) - len(orig_items)
 
-            total_changes = len(added_keys) + len(deleted_keys)
+                if diff > 0:
+                    # 新增了 diff 个项目
+                    modifications["added"].extend(mod_items[-diff:])
+                    modifications["summary"]["added_codes"] += diff
+                elif diff < 0:
+                    # 删除了 abs(diff) 个项目
+                    count = abs(diff)
+                    modifications["deleted"].extend(orig_items[:count])
+                    modifications["summary"]["deleted_codes"] += count
+
+            # 额外检测：同一 code_id 下内容是否发生变化，计入 "修改编码"
+            try:
+                def get_code_id(item):
+                    if isinstance(item, dict):
+                        return item.get("code_id")
+                    return None
+
+                def get_content_text(item):
+                    if isinstance(item, dict):
+                        return str(item.get("content", item.get("name", "")))
+                    return str(item)
+
+                original_by_id = {}
+                for item in original_first:
+                    cid = get_code_id(item)
+                    if cid:
+                        original_by_id[cid] = item
+
+                modified_by_id = {}
+                for item in modified_first:
+                    cid = get_code_id(item)
+                    if cid:
+                        modified_by_id[cid] = item
+
+                common_ids = set(original_by_id.keys()) & set(modified_by_id.keys())
+
+                for cid in common_ids:
+                    o_item = original_by_id[cid]
+                    m_item = modified_by_id[cid]
+                    if get_content_text(o_item) != get_content_text(m_item):
+                        modifications["summary"]["modified_codes"] += 1
+            except Exception as e:
+                logger.warning(f"检测基于 code_id 的一阶编码修改失败 {category_path}: {e}")
+
+            total_changes = (modifications["summary"]["added_codes"] +
+                             modifications["summary"]["deleted_codes"] +
+                             modifications["summary"]["modified_codes"])
             modifications["has_changes"] = total_changes > 0
+            
+            # 添加日志，方便调试删除检测问题
+            if modifications["has_changes"]:
+                 logger.debug(f"Detected changes in {category_path}: Added={modifications['summary']['added_codes']}, Deleted={modifications['summary']['deleted_codes']}")
 
         except Exception as e:
             logger.error(f"分析一阶编码修改失败 {category_path}: {e}")
@@ -541,7 +600,7 @@ class StandardAnswerManager:
                 answer_files = [f for f in answer_files if f not in ['version_history.json', 'merge_history.json']]
                 if answer_files:
                     answer_files.sort(reverse=True)
-                    
+
                     # 尝试加载最新的文件，如果失败则尝试下一个
                     for file_name in answer_files:
                         if self.load_answers(file_name):
@@ -572,49 +631,49 @@ class StandardAnswerManager:
                 file_path_json = PathManager.join(self.standard_answers_dir, filename_json)
                 if PathManager.exists(file_path_json):
                     filename = filename_json
-            
+
             file_path = PathManager.join(self.standard_answers_dir, filename)
-            
+
             # 打印路径信息用于调试
             print(f"StandardAnswerManager 检查文件路径: {file_path}")
             print(f"文件是否存在: {PathManager.exists(file_path)}")
-            
+
             # 检查文件是否存在
             if not PathManager.exists(file_path):
                 logger.error(f"标准答案文件不存在: {file_path}")
                 return False
-            
+
             # 检查文件大小
             if os.path.getsize(file_path) == 0:
                 logger.error(f"标准答案文件为空: {file_path}")
                 return False
-            
+
             # 尝试打开和解析文件
             try:
                 with PathManager.safe_open(file_path, 'r', encoding='utf-8') as f:
                     content = f.read()
-                    
+
                 # 检查文件内容是否为空
                 if not content.strip():
                     logger.error(f"标准答案文件内容为空: {file_path}")
                     return False
-                
+
                 # 解析JSON
                 self.current_answers = json.loads(content)
-                
+
                 # 验证数据结构
                 if not isinstance(self.current_answers, dict):
                     logger.error(f"标准答案文件格式错误: 不是有效的JSON对象")
                     return False
-                
+
                 # 验证必要的字段
                 if "structured_codes" not in self.current_answers:
                     logger.warning(f"标准答案文件缺少 structured_codes 字段")
                     # 不返回False，因为可能是旧版本的文件
-                
+
                 logger.info(f"标准答案已加载: {filename}")
                 return True
-                
+
             except UnicodeDecodeError:
                 logger.error(f"标准答案文件编码错误: 不是UTF-8编码")
                 return False
@@ -624,7 +683,7 @@ class StandardAnswerManager:
             except Exception as e:
                 logger.error(f"加载标准答案文件失败: {e}")
                 return False
-                
+
         except Exception as e:
             logger.error(f"加载标准答案失败: {e}")
             return False
@@ -651,19 +710,19 @@ class StandardAnswerManager:
                 count += len(first_contents)
 
         return count
-    
+
     def export_for_training(self) -> Dict[str, Any]:
         """导出用于训练的数据"""
         if not self.current_answers:
             return {}
-        
+
         # 返回当前标准答案中的训练相关数据
         training_data = {
             "structured_codes": self.current_answers.get("structured_codes", {}),
             "metadata": self.current_answers.get("metadata", {}),
             "training_data": self.current_answers.get("training_data", {})
         }
-        
+
         return training_data
 
     def get_timestamp(self):

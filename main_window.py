@@ -19,6 +19,7 @@ from typing import Dict, List, Any, Optional
 import traceback
 import numpy as np
 import matplotlib
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
@@ -1773,7 +1774,9 @@ class MainWindow(QMainWindow):
             if sentence_details and len(sentence_details) > 0:
                 # 获取第一个句子的内容和编号
                 first_detail = sentence_details[0]
-                sent_content = first_detail.get('original_content', '') or first_detail.get('text', '') or first_detail.get('content', '')
+                sent_content = first_detail.get('original_content', '') or first_detail.get('text',
+                                                                                            '') or first_detail.get(
+                    'content', '')
                 sent_number = first_detail.get('sentence_id', '') or first_detail.get('code_id', '')
 
                 # 如果获取到的是编码标识符（如A01），则尝试从sentence_ids获取数字编号
@@ -1784,7 +1787,8 @@ class MainWindow(QMainWindow):
                     self.navigate_to_sentence_content(sent_content, sent_number)
             elif sentence_ids:
                 # 降级方案：仅使用第一个句子编号
-                self.highlight_single_sentence_by_id(sentence_ids[0] if isinstance(sentence_ids, list) else sentence_ids)
+                self.highlight_single_sentence_by_id(
+                    sentence_ids[0] if isinstance(sentence_ids, list) else sentence_ids)
             elif content:
                 # 最后的降级方案：使用内容匹配
                 self.navigate_to_sentence_content(content, "")
@@ -2235,8 +2239,6 @@ class MainWindow(QMainWindow):
         # 保存文本文档引用
         self.text_document = self.text_display.document()
 
-
-
     def perform_search(self):
         """执行搜索"""
         search_text = self.search_line_edit.text().strip()
@@ -2576,10 +2578,10 @@ class MainWindow(QMainWindow):
             # 删除前记录相关信息，用于后续更新统计
             deleted_content = content
             deleted_level = level
-            
+
             # 获取父节点信息，用于更新统计
             parent = current_item.parent()
-            
+
             # 从界面删除项目
             if parent:
                 parent.removeChild(current_item)
@@ -2589,10 +2591,10 @@ class MainWindow(QMainWindow):
 
             # 仅更新数据结构，避免重建整个树
             self.update_structured_codes_from_tree()
-            
+
             # 仅更新受影响的统计信息，而不重建整个树
             self.update_statistics_after_deletion(parent, deleted_level)
-            
+
             self.statusBar().showMessage(f"已删除{deleted_level}阶编码：{deleted_content}")
 
     def update_statistics_after_deletion(self, parent_item, deleted_level):
@@ -2604,10 +2606,10 @@ class MainWindow(QMainWindow):
             total_first = sum(len(contents) for cats in self.structured_codes.values() for contents in cats.values())
             self.statusBar().showMessage(f"编码结构: {total_third}三阶, {total_second}二阶, {total_first}一阶")
             return
-            
+
         # 递归更新父节点及其祖先节点的统计信息
         self.update_parent_statistics(parent_item)
-        
+
         # 更新总体统计
         total_third = len(self.structured_codes)
         total_second = sum(len(cats) for cats in self.structured_codes.values())
@@ -2618,18 +2620,18 @@ class MainWindow(QMainWindow):
         """更新指定项目及其父项目的统计信息"""
         if not item:
             return
-            
+
         item_data = item.data(0, Qt.UserRole)
         if not item_data:
             return
-            
+
         level = item_data.get("level", 0)
-        
+
         if level == 2:  # 二阶编码
             # 重新统计一阶编码数量和句子来源数
             child_count = item.childCount()
             total_sentence_count = 0
-            
+
             for i in range(child_count):
                 child_item = item.child(i)
                 sentence_count_text = child_item.text(4)
@@ -2638,20 +2640,20 @@ class MainWindow(QMainWindow):
                     total_sentence_count += sentence_count
                 except:
                     total_sentence_count += 1  # 默认值
-                    
+
             item.setText(2, str(child_count))  # 一阶编码数量
             item.setText(4, str(total_sentence_count))  # 句子来源数
-            
+
             # 递归更新父项目（三阶编码）
             parent_item = item.parent()
             if parent_item:
                 self.update_parent_statistics(parent_item)
-                
+
         elif level == 3:  # 三阶编码
             # 重新统计二阶编码数量和句子来源数
             child_count = item.childCount()
             total_sentence_count = 0
-            
+
             for i in range(child_count):
                 child_item = item.child(i)
                 sentence_count_text = child_item.text(4)
@@ -2660,7 +2662,7 @@ class MainWindow(QMainWindow):
                     total_sentence_count += sentence_count
                 except:
                     pass
-                    
+
             item.setText(2, str(child_count))  # 二阶编码数量
             item.setText(4, str(total_sentence_count))  # 句子来源数
 
@@ -2690,6 +2692,9 @@ class MainWindow(QMainWindow):
                         # 后备方案：使用文本内容
                         first_content = first_item.text(0)
                         self.structured_codes[third_name][second_name].append(first_content)
+
+        # 添加日志，方便调试
+        logger.info(f"Updated structured codes from tree. Total third: {len(self.structured_codes)}")
 
     def start_training(self):
         """开始训练模型"""
@@ -2901,7 +2906,7 @@ class MainWindow(QMainWindow):
         try:
             # 先从树形结构同步最新数据
             self.update_structured_codes_from_tree()
-            
+
             if not self.structured_codes:
                 QMessageBox.warning(self, "警告", "没有编码数据可保存")
                 return
@@ -2914,8 +2919,42 @@ class MainWindow(QMainWindow):
 
             if self.standard_answer_manager.current_answers:
                 try:
+                    # 调试：记录当前用于对比的标准答案版本
+                    try:
+                        meta = self.standard_answer_manager.current_answers.get("metadata", {})
+                        logger.info(f"save_corrections 基线版本: {meta.get('version')}")
+                    except Exception:
+                        pass
+
                     current_codes = self.standard_answer_manager.current_answers.get("structured_codes", {})
-                    modifications = self.standard_answer_manager._analyze_modifications(current_codes, self.structured_codes)
+
+                    # 调试：专门检查 A21/A22 所在路径的差异
+                    try:
+                        third = "组织管理与架构设计"
+                        second = "团队职责与架构"
+                        orig_list = current_codes.get(third, {}).get(second, [])
+                        new_list = self.structured_codes.get(third, {}).get(second, [])
+
+                        def _ids(lst):
+                            ids = []
+                            for it in lst:
+                                if isinstance(it, dict):
+                                    ids.append(it.get('code_id') or it.get('number') or it.get('id'))
+                                else:
+                                    ids.append(str(it)[:20])
+                            return ids
+
+                        logger.info(
+                            "save_corrections 路径[%s > %s] 原始数量=%d, 新数量=%d, 原始ID前20=%s, 新ID前20=%s",
+                            third, second,
+                            len(orig_list), len(new_list),
+                            _ids(orig_list)[:20], _ids(new_list)[:20],
+                        )
+                    except Exception as e:
+                        logger.warning(f"save_corrections 差异调试失败: {e}")
+
+                    modifications = self.standard_answer_manager._analyze_modifications(current_codes,
+                                                                                        self.structured_codes)
 
                     if not modifications["has_changes"]:
                         QMessageBox.information(self, "提示", "没有检测到修改，无需保存")
@@ -3025,7 +3064,7 @@ class MainWindow(QMainWindow):
     def create_standard_answer(self):
         """创建标准答案"""
         self.update_structured_codes_from_tree()
-        
+
         if not self.structured_codes:
             QMessageBox.warning(self, "警告", "没有编码数据可保存")
             return
@@ -3691,7 +3730,8 @@ class MainWindow(QMainWindow):
 
                     # 创建可点击的链接，只使用编号作为href，避免URL编码复杂问题
                     # HTML转义句子内容以防止XSS
-                    safe_content = sentence_content.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace(
+                    safe_content = sentence_content.replace('&', '&amp;').replace('<', '&lt;').replace('>',
+                                                                                                       '&gt;').replace(
                         '"', '&quot;').replace("'", '&#39;')
                     clickable_content = f"<a href='navigate:{key}' style='text-decoration: none; color: black; cursor: pointer;'>{safe_content}</a>"
 
@@ -3878,8 +3918,10 @@ class MainWindow(QMainWindow):
                         first_sentence = sentences_list[0]
                         new_sentence_details.append({
                             'text': first_sentence['text'],
-                            'code_id': first_code_number if first_code_number and first_code_number.isdigit() else first_sentence['number'],
-                            'sentence_id': first_code_number if first_code_number and first_code_number.isdigit() else first_sentence['number'],
+                            'code_id': first_code_number if first_code_number and first_code_number.isdigit() else
+                            first_sentence['number'],
+                            'sentence_id': first_code_number if first_code_number and first_code_number.isdigit() else
+                            first_sentence['number'],
                             'original_content': first_sentence['text']
                         })
 
@@ -3890,7 +3932,8 @@ class MainWindow(QMainWindow):
                             'text': sentence['text'],
                             'code_id': sentence['number'],
                             'sentence_id': sentence['number'],
-                            'original_content': sentence['original_text'] if sentence['original_text'] else sentence['text']
+                            'original_content': sentence['original_text'] if sentence['original_text'] else sentence[
+                                'text']
                         })
 
                     # 更新当前选中项的数据
@@ -3968,8 +4011,14 @@ class MainWindow(QMainWindow):
             except:
                 pass  # 如果连错误消息框都失败，也不要崩溃
 
-    def update_structured_codes_from_tree(self):
-        """从树形结构更新编码数据"""
+    def update_current_codes_from_tree(self):
+        """从树形结构更新 current_codes / 未分类编码
+
+        注意：真正用于保存/导出的结构化编码仍然由前面的
+        update_structured_codes_from_tree 填充 self.structured_codes。
+        之前这里函数名重复，导致覆盖了前面的实现，
+        使得保存修正时看不到树上的最新删除（比如 A21/A22）。
+        """
         self.current_codes = {}
         self.unclassified_first_codes = []
 
