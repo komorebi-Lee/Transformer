@@ -518,64 +518,105 @@ class StandardAnswerManager:
         }
 
     def _extract_training_data(self, structured_codes: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """提取训练数据，包括一阶编码文本和所有关联的拖拽文本"""
-        training_data = []
+        """提取训练数据，生成面向模型训练的结构化样本
+
+        目标结构示例：
+        {
+            "input_sentences": {
+                "original_content": "原语句",
+                "related_statement": ["句子1", "句子2"]
+            },
+            "target_abstract": "抽象重点（一阶编码）",
+            "target_second_category": "二级分类",
+            "target_third_category": "三级分类"
+        }
+        """
+
+        training_data: List[Dict[str, Any]] = []
+
         for third_cat, second_cats in structured_codes.items():
             for second_cat, first_contents in second_cats.items():
                 for content in first_contents:
-                    if isinstance(content, dict):
-                        # 提取一阶编码本身的文本内容
-                        if 'content' in content:
-                            text_content = content.get('content', '')
-                        elif 'name' in content:
-                            text_content = content.get('name', '')
-                        else:
-                            text_content = str(content)
+                    if not isinstance(content, dict):
+                        # 兼容字符串等简单形式
+                        abstract_text = str(content).strip()
+                        if not abstract_text:
+                            continue
 
-                        # 添加一阶编码本身的文本到训练数据
-                        if text_content.strip():
-                            training_data.append({
-                                "text": text_content.strip(),
-                                "third_category": third_cat,
-                                "second_category": second_cat,
-                                "full_category": f"{third_cat} > {second_cat}",
-                                "source": "first_level_code"
-                            })
+                        training_data.append({
+                            "input_sentences": {
+                                "original_content": abstract_text,
+                                "related_statement": []
+                            },
+                            "target_abstract": abstract_text,
+                            "target_second_category": second_cat,
+                            "target_third_category": third_cat
+                        })
+                        continue
 
-                        # 提取并添加所有关联的拖拽文本（sentence_details）
-                        sentence_details = content.get('sentence_details', [])
-                        for sentence in sentence_details:
-                            if isinstance(sentence, dict):
-                                # 获取拖拽文本的原始内容
-                                dragged_text = sentence.get('original_content', '') or sentence.get('text', '')
-                                if dragged_text.strip():
-                                    # 清理拖拽文本，移除可能的编号标记
-                                    import re
-                                    clean_dragged_text = re.sub(r'\s*\[[A-Z]\d+\]', '', dragged_text)
-                                    clean_dragged_text = re.sub(r'\s*\[\d+\]', '', clean_dragged_text)
-                                    clean_dragged_text = re.sub(r'^[A-Z]\d+\s+', '', clean_dragged_text).strip()
-
-                                    if clean_dragged_text:
-                                        training_data.append({
-                                            "text": clean_dragged_text,
-                                            "third_category": third_cat,
-                                            "second_category": second_cat,
-                                            "full_category": f"{third_cat} > {second_cat}",
-                                            "source": "dragged_text",
-                                            "sentence_id": sentence.get('sentence_id', ''),
-                                            "code_id": sentence.get('code_id', '')
-                                        })
+                    # 一阶编码的抽象文本（目标摘要）
+                    if "content" in content:
+                        target_abstract = (content.get("content") or "").strip()
+                    elif "name" in content:
+                        target_abstract = (content.get("name") or "").strip()
                     else:
-                        # 处理字符串内容
-                        text_content = str(content)
-                        if text_content.strip():
-                            training_data.append({
-                                "text": text_content.strip(),
-                                "third_category": third_cat,
-                                "second_category": second_cat,
-                                "full_category": f"{third_cat} > {second_cat}",
-                                "source": "first_level_code"
-                            })
+                        target_abstract = str(content).strip()
+
+                    # 原始语句：优先使用 original_sentence 列表中的 original_content
+                    original_content = ""
+                    original_sentences = content.get("original_sentence", [])
+                    if original_sentences and isinstance(original_sentences[0], dict):
+                        original_content = (
+                            original_sentences[0].get("original_content")
+                            or original_sentences[0].get("content", "")
+                        )
+
+                    if not original_content:
+                        # 回退到一阶编码的文本内容
+                        original_content = target_abstract
+
+                    original_content = (original_content or "").strip()
+
+                    # 关联句子：来自 sentence_details 中的拖拽文本
+                    related_statements: List[str] = []
+                    sentence_details = content.get("sentence_details", [])
+                    for sentence in sentence_details:
+                        if not isinstance(sentence, dict):
+                            continue
+
+                        dragged_text = (
+                            sentence.get("original_content", "")
+                            or sentence.get("text", "")
+                            or sentence.get("content", "")
+                        )
+                        dragged_text = (dragged_text or "").strip()
+                        if not dragged_text:
+                            continue
+
+                        # 清理尾部的 [A01] / [1] 等编号标记
+                        clean_dragged_text = re.sub(r"\s*\[[A-Z]\d+\]", "", dragged_text)
+                        clean_dragged_text = re.sub(r"\s*\[\d+\]", "", clean_dragged_text)
+                        clean_dragged_text = re.sub(r"^[A-Z]\d+\s+", "", clean_dragged_text).strip()
+
+                        if clean_dragged_text:
+                            related_statements.append(clean_dragged_text)
+
+                    if not target_abstract and not original_content and not related_statements:
+                        # 完全没有可用文本则跳过
+                        continue
+
+                    sample: Dict[str, Any] = {
+                        "input_sentences": {
+                            "original_content": original_content,
+                            "related_statement": related_statements,
+                        },
+                        "target_abstract": target_abstract or original_content,
+                        "target_second_category": second_cat,
+                        "target_third_category": third_cat,
+                    }
+
+                    training_data.append(sample)
+
         return training_data
 
     def _create_backup(self, version_id: str, data: Dict[str, Any]):

@@ -185,22 +185,48 @@ def create_dataset_from_standard_answers(
     labels = []
 
     for item in training_data:
-        if isinstance(item, dict):
-            text = item.get("text", "")
-            third_cat = item.get("third_category", "")
-            second_cat = item.get("second_category", "")
+        if not isinstance(item, dict):
+            continue
 
-            if text and third_cat and second_cat:
-                full_category = f"{third_cat} > {second_cat}"
-                if full_category in label_to_id:
-                    texts.append(text)
-                    labels.append(label_to_id[full_category])
+        # 兼容两种 training_data 结构：
+        # 1) 旧结构：直接包含 text / third_category / second_category
+        # 2) 新结构：input_sentences + target_abstract/second/third_category
+        text = item.get("text", "")
+        third_cat = item.get("third_category", "")
+        second_cat = item.get("second_category", "")
 
-                    if use_augmentation:
-                        augmented_text = augment_text(text)
-                        if augmented_text != text:
-                            texts.append(augmented_text)
-                            labels.append(label_to_id[full_category])
+        if not text and "input_sentences" in item:
+            input_sentences = item.get("input_sentences", {}) or {}
+            original_content = (input_sentences.get("original_content") or "").strip()
+            related_list = input_sentences.get("related_statement") or []
+
+            if isinstance(related_list, list):
+                related_part = " ".join([str(s).strip() for s in related_list if str(s).strip()])
+            else:
+                related_part = str(related_list).strip()
+
+            # 将原语句和关联句子拼接成一个输入序列
+            if original_content and related_part:
+                text = f"{original_content} {related_part}"
+            else:
+                text = original_content or related_part
+
+        if not third_cat and "target_third_category" in item:
+            third_cat = item.get("target_third_category", "")
+        if not second_cat and "target_second_category" in item:
+            second_cat = item.get("target_second_category", "")
+
+        if text and third_cat and second_cat:
+            full_category = f"{third_cat} > {second_cat}"
+            if full_category in label_to_id:
+                texts.append(text)
+                labels.append(label_to_id[full_category])
+
+                if use_augmentation:
+                    augmented_text = augment_text(text)
+                    if augmented_text != text:
+                        texts.append(augmented_text)
+                        labels.append(label_to_id[full_category])
 
     if not texts:
         raise ValueError("无法从标准答案中提取有效的训练数据")
