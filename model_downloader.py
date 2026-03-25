@@ -112,13 +112,54 @@ class ModelDownloader:
         return fallback_path
 
     def get_available_trained_models(self) -> list:
-        """获取所有训练过的模型"""
+        """获取所有训练过的模型（支持PKL和BERT微调两种格式）"""
         models = []
         if os.path.exists(self.trained_models_dir):
-            for file in os.listdir(self.trained_models_dir):
-                if file.endswith('.pkl'):
-                    models.append(file.replace('.pkl', ''))
-        return sorted(models, reverse=True)
+            for item in os.listdir(self.trained_models_dir):
+                item_path = os.path.join(self.trained_models_dir, item)
+                if item.endswith('.pkl'):
+                    models.append({
+                        'name': item.replace('.pkl', ''),
+                        'type': 'classifier',
+                        'path': item_path
+                    })
+                elif os.path.isdir(item_path):
+                    if self._is_bert_finetune_model(item_path):
+                        models.append({
+                            'name': item,
+                            'type': 'bert_finetune',
+                            'path': item_path
+                        })
+        return sorted(models, key=lambda x: x['name'], reverse=True)
+
+    def _is_bert_finetune_model(self, model_dir: str) -> bool:
+        """检查目录是否为BERT微调模型"""
+        try:
+            config_path = os.path.join(model_dir, 'config.json')
+            model_safetensors_path = os.path.join(model_dir, 'model.safetensors')
+            pytorch_model_path = os.path.join(model_dir, 'pytorch_model.bin')
+            label_mapping_path = os.path.join(model_dir, 'label_mapping.json')
+            
+            has_config = os.path.exists(config_path)
+            has_weights = os.path.exists(model_safetensors_path) or os.path.exists(pytorch_model_path)
+            has_label_mapping = os.path.exists(label_mapping_path)
+            
+            logger.info(f"检查BERT微调模型: {model_dir}")
+            logger.info(f"  config.json: {has_config}")
+            logger.info(f"  model.safetensors: {os.path.exists(model_safetensors_path)}")
+            logger.info(f"  pytorch_model.bin: {os.path.exists(pytorch_model_path)}")
+            logger.info(f"  label_mapping.json: {has_label_mapping}")
+            logger.info(f"  结果: {has_config and has_weights and has_label_mapping}")
+            
+            return has_config and has_weights and has_label_mapping
+        except Exception as e:
+            logger.error(f"检查BERT微调模型时出错: {e}")
+            return False
+
+    def get_available_trained_model_names(self) -> list:
+        """获取所有训练过的模型名称列表（用于UI显示）"""
+        models = self.get_available_trained_models()
+        return [f"{m['name']} ({'BERT微调' if m['type'] == 'bert_finetune' else '分类器'})" for m in models]
 
     def cleanup_old_models(self, keep_count: int = 5):
         """清理旧的训练模型，只保留最新的几个"""

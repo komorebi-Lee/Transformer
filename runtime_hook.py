@@ -2,6 +2,7 @@
 import sys
 import os
 import importlib
+import shutil
 
 # 检查是否在打包环境中运行
 if getattr(sys, 'frozen', False):
@@ -45,3 +46,22 @@ if getattr(sys, 'frozen', False):
             print("Successfully added mock split_torch_state_dict_into_shards function")
     except Exception as e:
         print(f"Error patching huggingface_hub: {e}")
+    
+    # 复制 coding_library.json 到 exe 所在目录
+    try:
+        # 获取 exe 所在目录
+        exe_dir = os.path.dirname(sys.executable)
+        # 获取临时目录中的 coding_library.json
+        temp_dir = os.path.dirname(os.path.abspath(__file__))
+        source_file = os.path.join(temp_dir, 'coding_library.json')
+        target_file = os.path.join(exe_dir, 'coding_library.json')
+        
+        # 检查源文件是否存在
+        if os.path.exists(source_file):
+            # 复制文件到 exe 所在目录
+            shutil.copy2(source_file, target_file)
+            print(f"Successfully copied coding_library.json to: {target_file}")
+        else:
+            print(f"coding_library.json not found in temp directory: {source_file}")
+    except Exception as e:
+        print(f"Error copying coding_library.json: {e}")

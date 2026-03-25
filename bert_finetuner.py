@@ -307,8 +307,8 @@ class BERTFineTuner:
             'evaluation_strategy': self.config.get('evaluation_strategy', 'epoch'),
             'save_strategy': self.config.get('save_strategy', 'epoch'),
             'load_best_model_at_end': self.config.get('load_best_model_at_end', True),
-            'metric_for_best_model': self.config.get('metric_for_best_model', 'eval_loss'),
-            'greater_is_better': self.config.get('greater_is_better', False),
+            'metric_for_best_model': self.config.get('metric_for_best_model', 'eval_f1'),
+            'greater_is_better': self.config.get('greater_is_better', True),
         }
 
         logger.info(f"训练配置: {self.training_config}")
@@ -637,14 +637,14 @@ class BERTFineTuner:
                 warmup_ratio=self.training_config['warmup_ratio'],
                 weight_decay=self.training_config['weight_decay'],
                 max_grad_norm=self.training_config['max_grad_norm'],
-                evaluation_strategy=self.training_config['evaluation_strategy'],
+                eval_strategy=self.training_config['evaluation_strategy'],
                 save_strategy=self.training_config['save_strategy'],
                 load_best_model_at_end=self.training_config['load_best_model_at_end'],
                 metric_for_best_model=self.training_config['metric_for_best_model'],
                 greater_is_better=self.training_config['greater_is_better'],
                 logging_dir=os.path.join(output_dir, 'logs'),
                 logging_steps=10,
-                save_total_limit=3,
+                save_total_limit=2,
                 fp16=torch.cuda.is_available(),
                 gradient_accumulation_steps=1,
                 dataloader_num_workers=0,
@@ -1002,12 +1002,13 @@ class BERTFineTuner:
             logger.error(f"加载模型失败: {e}")
             return False
 
-    def predict(self, texts: List[str]) -> Tuple[List[int], List[str], List[float]]:
+    def predict(self, texts: List[str], batch_size: int = 4) -> Tuple[List[int], List[str], List[float]]:
         """
         预测文本类别
 
         Args:
             texts: 文本列表
+            batch_size: 批处理大小，默认为4，可根据内存情况调整
 
         Returns:
             Tuple[predicted_ids, predicted_labels, confidence_scores]
@@ -1018,28 +1019,57 @@ class BERTFineTuner:
         try:
             self.model.eval()
 
-            encodings = self.tokenizer(
-                texts,
-                truncation=True,
-                padding=True,
-                max_length=self.training_config.get('max_length', 512),
-                return_tensors='pt'
-            )
+            # 批处理预测
+            all_predicted_ids = []
+            all_predicted_labels = []
+            all_confidence_scores = []
 
-            encodings = {k: v.to(self.device) for k, v in encodings.items()}
+            # 将文本分成批次
+            total_batches = (len(texts) + batch_size - 1) // batch_size
+            logger.info(f"开始预测，共 {len(texts)} 个文本，分 {total_batches} 批处理，每批 {batch_size} 个")
 
-            with torch.no_grad():
-                outputs = self.model(**encodings)
-                logits = outputs.logits
-                probabilities = torch.softmax(logits, dim=-1)
-                predictions = torch.argmax(logits, dim=-1)
-                confidence_scores = torch.max(probabilities, dim=-1).values
+            for i in range(0, len(texts), batch_size):
+                batch_texts = texts[i:i+batch_size]
+                batch_start = i + 1
+                batch_end = min(i + batch_size, len(texts))
+                logger.debug(f"处理批次 {batch_start}-{batch_end}/{len(texts)}")
+                
+                encodings = self.tokenizer(
+                    batch_texts,
+                    truncation=True,
+                    padding=True,
+                    max_length=self.training_config.get('max_length', 512),  # 恢复默认max_length
+                    return_tensors='pt'
+                )
 
-            predicted_ids = predictions.cpu().numpy().tolist()
-            predicted_labels = [self.id_to_label.get(pid, "未知") for pid in predicted_ids]
-            confidence_scores = confidence_scores.cpu().numpy().tolist()
+                encodings = {k: v.to(self.device) for k, v in encodings.items()}
 
-            return predicted_ids, predicted_labels, confidence_scores
+                with torch.no_grad():
+                    outputs = self.model(**encodings)
+                    logits = outputs.logits
+                    probabilities = torch.softmax(logits, dim=-1)
+                    predictions = torch.argmax(logits, dim=-1)
+                    confidence_scores = torch.max(probabilities, dim=-1).values
+
+                batch_predicted_ids = predictions.cpu().numpy().tolist()
+                batch_predicted_labels = [self.id_to_label.get(pid, "未知") for pid in batch_predicted_ids]
+                batch_confidence_scores = confidence_scores.cpu().numpy().tolist()
+
+                all_predicted_ids.extend(batch_predicted_ids)
+                all_predicted_labels.extend(batch_predicted_labels)
+                all_confidence_scores.extend(batch_confidence_scores)
+
+                # 清理内存
+                del encodings, outputs, logits, probabilities, predictions, confidence_scores
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                else:
+                    # 对于CPU，强制进行垃圾回收
+                    import gc
+                    gc.collect()
+
+            logger.info(f"预测完成，共处理 {len(all_predicted_ids)} 个文本")
+            return all_predicted_ids, all_predicted_labels, all_confidence_scores
 
         except Exception as e:
             logger.error(f"预测失败: {e}")

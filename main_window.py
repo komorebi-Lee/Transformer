@@ -335,6 +335,11 @@ class MainWindow(QMainWindow):
         model_buttons_layout.addWidget(self.load_model_btn)
         model_layout.addLayout(model_buttons_layout)
 
+        # 当前加载模型显示
+        self.current_model_label = QLabel("当前加载模型: 无")
+        self.current_model_label.setStyleSheet("color: #666; font-size: 9pt")
+        model_layout.addWidget(self.current_model_label)
+
         layout.addWidget(model_group)
 
         # 标准答案管理组
@@ -364,9 +369,502 @@ class MainWindow(QMainWindow):
 
         layout.addWidget(answer_group)
 
+        # 编码库管理组
+        coding_library_group = QGroupBox("编码库管理")
+        coding_library_layout = QVBoxLayout(coding_library_group)
+
+        self.coding_library_status_label = QLabel("编码库: 已加载")
+        coding_library_layout.addWidget(self.coding_library_status_label)
+
+        coding_library_buttons_layout = QHBoxLayout()
+        self.view_coding_library_btn = QPushButton("查看编码库")
+        self.view_coding_library_btn.clicked.connect(self.view_coding_library)
+        self.edit_coding_library_btn = QPushButton("编辑编码库")
+        self.edit_coding_library_btn.clicked.connect(self.edit_coding_library)
+
+        coding_library_buttons_layout.addWidget(self.view_coding_library_btn)
+        coding_library_buttons_layout.addWidget(self.edit_coding_library_btn)
+        coding_library_layout.addLayout(coding_library_buttons_layout)
+
+        layout.addWidget(coding_library_group)
+
         layout.addStretch()
 
         return panel
+
+    # def convert_to_training_data(self):
+    #     """将标准答案转换为训练数据"""
+    #     try:
+    #         # 检查是否已加载标准答案
+    #         if not hasattr(self, 'structured_codes') or not self.structured_codes:
+    #             QMessageBox.warning(self, "警告", "请先加载标准答案")
+    #             return
+    #
+    #         # 显示转换开始提示
+    #         self.statusBar().showMessage("正在转换标准答案为训练数据...")
+    #
+    #         # # 导入转换脚本
+    #         # import sys
+    #         # import os
+    #         # sys.path.append(os.path.join(os.path.dirname(__file__), 'scripts'))
+    #         # from scripts.convert_to_training_data import extract_training_data, save_training_data, get_statistics
+    #
+    #         # 获取当前加载的标准答案文件路径
+    #         current_answers = self.standard_answer_manager.get_current_answers()
+    #         if not current_answers:
+    #             QMessageBox.warning(self, "警告", "无法获取当前标准答案数据")
+    #             return
+    #
+    #         # 构建标准答案文件路径
+    #         base_dir = os.path.abspath(self.standard_answer_manager.standard_answers_dir)
+    #         current_version = self.standard_answer_manager.get_current_version()
+    #         if not current_version:
+    #             QMessageBox.warning(self, "警告", "无法获取当前标准答案版本")
+    #             return
+    #
+    #         file_path = os.path.join(base_dir, current_version)
+    #         if not file_path.endswith('.json'):
+    #             file_path_json = file_path + '.json'
+    #             if os.path.exists(file_path_json):
+    #                 file_path = file_path_json
+    #
+    #         if not os.path.exists(file_path):
+    #             QMessageBox.critical(self, "错误", f"标准答案文件不存在: {file_path}")
+    #             return
+    #
+    #         # 提取训练数据
+    #         self.statusBar().showMessage("正在提取训练数据...")
+    #         training_data = extract_training_data(file_path)
+    #
+    #         if not training_data:
+    #             QMessageBox.warning(self, "警告", "未提取到训练数据，请检查标准答案格式")
+    #             return
+    #
+    #         # 保存训练数据
+    #         self.statusBar().showMessage("正在保存训练数据...")
+    #         from datetime import datetime
+    #         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    #         output_dir = os.path.join(os.path.dirname(__file__), "training_data")
+    #         os.makedirs(output_dir, exist_ok=True)
+    #         output_path = os.path.join(output_dir, f"training_data_{timestamp}.json")
+    #
+    #         save_training_data(training_data, output_path)
+    #
+    #         # 获取统计信息
+    #         stats = get_statistics(training_data)
+    #
+    #         # 显示成功消息
+    #         success_message = f"转换成功！\n"\
+    #                        f"训练数据已保存到: {output_path}\n"\
+    #                        f"总样本数: {stats['total_samples']}\n"\
+    #                        f"三级分类数: {stats['unique_third_categories']}\n"\
+    #                        f"二级分类数: {stats['unique_second_categories']}\n"\
+    #                        f"唯一抽象重点数: {stats['unique_abstracts']}"
+    #
+    #         QMessageBox.information(self, "成功", success_message)
+    #         self.statusBar().showMessage(f"已成功转换标准答案为训练数据，保存至: {output_path}")
+    #
+    #     except Exception as e:
+    #         error_message = f"转换失败: {str(e)}\n\n可能的原因:\n1. 标准答案格式错误\n2. 文件权限问题\n3. 磁盘空间不足"
+    #         QMessageBox.critical(self, "错误", error_message)
+    #         self.statusBar().showMessage(f"转换失败: {str(e)}")
+
+    def view_coding_library(self):
+        """查看编码库内容"""
+        try:
+            from coding_library_manager import CodingLibraryManager
+            
+            # 初始化编码库管理器
+            coding_library = CodingLibraryManager()
+            
+            # 获取编码库信息
+            library_info = coding_library.get_library_info()
+            second_level_codes = coding_library.get_all_second_level_codes()
+            third_level_codes = coding_library.get_all_third_level_codes()
+            
+            # 构建显示内容
+            content = f"编码库信息:\n"
+            content += f"版本: {library_info.get('version', '1.0')}\n"
+            content += f"创建时间: {library_info.get('created_at', '')}\n"
+            content += f"描述: {library_info.get('description', '')}\n"
+            content += f"三阶编码数: {library_info.get('third_level_count', 0)}\n"
+            content += f"二阶编码数: {library_info.get('second_level_count', 0)}\n\n"
+            
+            content += "三阶编码:\n"
+            for third_level in third_level_codes:
+                content += f"- {third_level.get('name')}: {third_level.get('description')}\n"
+                second_levels = coding_library.get_second_level_codes_by_third_level(third_level.get('name'))
+                for second_level in second_levels:
+                    content += f"  * {second_level.get('name')}: {second_level.get('description')}\n"
+                content += "\n"
+            
+            # 显示编码库内容
+            from PyQt5.QtWidgets import QTextEdit, QDialog, QVBoxLayout, QPushButton
+            
+            dialog = QDialog(self)
+            dialog.setWindowTitle("编码库内容")
+            dialog.setGeometry(100, 100, 800, 600)
+            
+            layout = QVBoxLayout(dialog)
+            
+            text_edit = QTextEdit()
+            text_edit.setPlainText(content)
+            text_edit.setReadOnly(True)
+            layout.addWidget(text_edit)
+            
+            close_button = QPushButton("关闭")
+            close_button.clicked.connect(dialog.accept)
+            layout.addWidget(close_button)
+            
+            dialog.exec_()
+            
+        except Exception as e:
+            error_message = f"查看编码库失败: {str(e)}"
+            QMessageBox.critical(self, "错误", error_message)
+            self.statusBar().showMessage(f"查看编码库失败: {str(e)}")
+
+    def edit_coding_library(self):
+        """编辑编码库内容"""
+        try:
+            # 显示编辑编码库的对话框
+            from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton, QTabWidget, QWidget, QFormLayout, QLineEdit, QTextEdit, QComboBox, QListWidget, QHBoxLayout, QListWidgetItem
+            
+            dialog = QDialog(self)
+            dialog.setWindowTitle("编辑编码库")
+            dialog.setGeometry(100, 100, 900, 700)
+            
+            layout = QVBoxLayout(dialog)
+            
+            # 创建标签页
+            tab_widget = QTabWidget()
+            
+            # 三阶编码标签页
+            third_level_tab = QWidget()
+            third_level_layout = QVBoxLayout(third_level_tab)
+            
+            third_level_list = QListWidget()
+            third_level_layout.addWidget(third_level_list)
+            
+            third_level_form = QFormLayout()
+            third_level_id_edit = QLineEdit()
+            third_level_name_edit = QLineEdit()
+            third_level_desc_edit = QTextEdit()
+            third_level_desc_edit.setMinimumHeight(100)
+            
+            third_level_form.addRow("ID:", third_level_id_edit)
+            third_level_form.addRow("名称:", third_level_name_edit)
+            third_level_form.addRow("描述:", third_level_desc_edit)
+            
+            third_level_buttons = QHBoxLayout()
+            add_third_level_btn = QPushButton("添加")
+            update_third_level_btn = QPushButton("更新")
+            delete_third_level_btn = QPushButton("删除")
+            
+            third_level_buttons.addWidget(add_third_level_btn)
+            third_level_buttons.addWidget(update_third_level_btn)
+            third_level_buttons.addWidget(delete_third_level_btn)
+            
+            third_level_layout.addLayout(third_level_form)
+            third_level_layout.addLayout(third_level_buttons)
+            
+            tab_widget.addTab(third_level_tab, "三阶编码")
+            
+            # 二阶编码标签页
+            second_level_tab = QWidget()
+            second_level_layout = QVBoxLayout(second_level_tab)
+            
+            second_level_list = QListWidget()
+            second_level_layout.addWidget(second_level_list)
+            
+            second_level_form = QFormLayout()
+            second_level_id_edit = QLineEdit()
+            second_level_name_edit = QLineEdit()
+            second_level_desc_edit = QTextEdit()
+            second_level_desc_edit.setMinimumHeight(100)
+            third_level_combo = QComboBox()
+            
+            second_level_form.addRow("ID:", second_level_id_edit)
+            second_level_form.addRow("名称:", second_level_name_edit)
+            second_level_form.addRow("描述:", second_level_desc_edit)
+            second_level_form.addRow("所属三阶编码:", third_level_combo)
+            
+            second_level_buttons = QHBoxLayout()
+            add_second_level_btn = QPushButton("添加")
+            update_second_level_btn = QPushButton("更新")
+            delete_second_level_btn = QPushButton("删除")
+            
+            second_level_buttons.addWidget(add_second_level_btn)
+            second_level_buttons.addWidget(update_second_level_btn)
+            second_level_buttons.addWidget(delete_second_level_btn)
+            
+            second_level_layout.addLayout(second_level_form)
+            second_level_layout.addLayout(second_level_buttons)
+            
+            tab_widget.addTab(second_level_tab, "二阶编码")
+            
+            layout.addWidget(tab_widget)
+            
+            # 关闭按钮
+            close_button = QPushButton("关闭")
+            close_button.clicked.connect(dialog.accept)
+            layout.addWidget(close_button)
+            
+            # 加载编码库数据
+            from coding_library_manager import CodingLibraryManager
+            coding_library = CodingLibraryManager()
+            
+            # 加载三阶编码
+            third_level_codes = coding_library.get_all_third_level_codes()
+            for code in third_level_codes:
+                item = QListWidgetItem(f"{code.get('id')}: {code.get('name')}")
+                item.setData(Qt.UserRole, code)
+                third_level_list.addItem(item)
+                third_level_combo.addItem(code.get('name'), code.get('id'))
+            
+            # 加载二阶编码
+            second_level_codes = coding_library.get_all_second_level_codes()
+            for code in second_level_codes:
+                item = QListWidgetItem(f"{code.get('id')}: {code.get('name')} ({code.get('third_level')})")
+                item.setData(Qt.UserRole, code)
+                second_level_list.addItem(item)
+            
+            # 连接信号
+            def on_third_level_selected(item):
+                code = item.data(Qt.UserRole)
+                third_level_id_edit.setText(str(code.get('id')))
+                third_level_name_edit.setText(code.get('name'))
+                third_level_desc_edit.setPlainText(code.get('description'))
+            
+            third_level_list.itemClicked.connect(on_third_level_selected)
+            
+            def on_second_level_selected(item):
+                code = item.data(Qt.UserRole)
+                second_level_id_edit.setText(code.get('id'))
+                second_level_name_edit.setText(code.get('name'))
+                second_level_desc_edit.setPlainText(code.get('description'))
+                # 选择对应的三阶编码
+                index = third_level_combo.findText(code.get('third_level'))
+                if index != -1:
+                    third_level_combo.setCurrentIndex(index)
+            
+            second_level_list.itemClicked.connect(on_second_level_selected)
+            
+            def add_third_level():
+                try:
+                    code_id = int(third_level_id_edit.text())
+                    name = third_level_name_edit.text()
+                    description = third_level_desc_edit.toPlainText()
+                    
+                    if not name:
+                        QMessageBox.warning(dialog, "警告", "请输入编码名称")
+                        return
+                    
+                    success = coding_library.add_third_level_code(code_id, name, description)
+                    if success:
+                        # 更新列表和下拉框
+                        item = QListWidgetItem(f"{code_id}: {name}")
+                        item.setData(Qt.UserRole, {'id': code_id, 'name': name, 'description': description})
+                        third_level_list.addItem(item)
+                        third_level_combo.addItem(name, code_id)
+                        QMessageBox.information(dialog, "成功", "添加三阶编码成功")
+                    else:
+                        QMessageBox.warning(dialog, "警告", "添加三阶编码失败")
+                except Exception as e:
+                    QMessageBox.critical(dialog, "错误", f"添加三阶编码失败: {str(e)}")
+            
+            add_third_level_btn.clicked.connect(add_third_level)
+            
+            def add_second_level():
+                try:
+                    code_id = second_level_id_edit.text()
+                    name = second_level_name_edit.text()
+                    description = second_level_desc_edit.toPlainText()
+                    third_level_id = third_level_combo.currentData()
+                    
+                    if not name or not code_id or third_level_id is None:
+                        QMessageBox.warning(dialog, "警告", "请填写完整信息")
+                        return
+                    
+                    success = coding_library.add_second_level_code(third_level_id, code_id, name, description)
+                    if success:
+                        # 更新列表
+                        third_level_name = third_level_combo.currentText()
+                        item = QListWidgetItem(f"{code_id}: {name} ({third_level_name})")
+                        item.setData(Qt.UserRole, {'id': code_id, 'name': name, 'description': description, 'third_level': third_level_name})
+                        second_level_list.addItem(item)
+                        QMessageBox.information(dialog, "成功", "添加二阶编码成功")
+                    else:
+                        QMessageBox.warning(dialog, "警告", "添加二阶编码失败")
+                except Exception as e:
+                    QMessageBox.critical(dialog, "错误", f"添加二阶编码失败: {str(e)}")
+            
+            add_second_level_btn.clicked.connect(add_second_level)
+            
+            def delete_second_level():
+                try:
+                    selected_item = second_level_list.currentItem()
+                    if not selected_item:
+                        QMessageBox.warning(dialog, "警告", "请先选择要删除的二阶编码")
+                        return
+                    
+                    code = selected_item.data(Qt.UserRole)
+                    code_id = code.get('id')
+                    code_name = code.get('name')
+                    
+                    # 确认删除
+                    reply = QMessageBox.question(
+                        dialog, "确认删除", f"确定要删除二阶编码 '{code_name}' 吗？",
+                        QMessageBox.Yes | QMessageBox.No,
+                        QMessageBox.No
+                    )
+                    
+                    if reply == QMessageBox.Yes:
+                        success = coding_library.delete_second_level_code(code_id)
+                        if success:
+                            # 从列表中移除
+                            second_level_list.takeItem(second_level_list.currentRow())
+                            QMessageBox.information(dialog, "成功", "删除二阶编码成功")
+                        else:
+                            QMessageBox.warning(dialog, "警告", "删除二阶编码失败")
+                except Exception as e:
+                    QMessageBox.critical(dialog, "错误", f"删除二阶编码失败: {str(e)}")
+            
+            delete_second_level_btn.clicked.connect(delete_second_level)
+            
+            def delete_third_level():
+                try:
+                    selected_item = third_level_list.currentItem()
+                    if not selected_item:
+                        QMessageBox.warning(dialog, "警告", "请先选择要删除的三阶编码")
+                        return
+                    
+                    code = selected_item.data(Qt.UserRole)
+                    code_id = code.get('id')
+                    code_name = code.get('name')
+                    
+                    # 检查是否有关联的二阶编码
+                    second_levels = coding_library.get_second_level_codes_by_third_level(code_name)
+                    if second_levels:
+                        QMessageBox.warning(dialog, "警告", f"三阶编码 '{code_name}' 下还有 {len(second_levels)} 个二阶编码，无法删除")
+                        return
+                    
+                    # 确认删除
+                    reply = QMessageBox.question(
+                        dialog, "确认删除", f"确定要删除三阶编码 '{code_name}' 吗？",
+                        QMessageBox.Yes | QMessageBox.No,
+                        QMessageBox.No
+                    )
+                    
+                    if reply == QMessageBox.Yes:
+                        success = coding_library.delete_third_level_code(code_id)
+                        if success:
+                            # 从列表中移除
+                            third_level_list.takeItem(third_level_list.currentRow())
+                            # 从下拉框中移除
+                            index = third_level_combo.findText(code_name)
+                            if index != -1:
+                                third_level_combo.removeItem(index)
+                            QMessageBox.information(dialog, "成功", "删除三阶编码成功")
+                        else:
+                            QMessageBox.warning(dialog, "警告", "删除三阶编码失败")
+                except Exception as e:
+                    QMessageBox.critical(dialog, "错误", f"删除三阶编码失败: {str(e)}")
+            
+            delete_third_level_btn.clicked.connect(delete_third_level)
+            
+            def update_second_level():
+                try:
+                    selected_item = second_level_list.currentItem()
+                    if not selected_item:
+                        QMessageBox.warning(dialog, "警告", "请先选择要更新的二阶编码")
+                        return
+                    
+                    code = selected_item.data(Qt.UserRole)
+                    old_code_id = code.get('id')
+                    new_code_id = second_level_id_edit.text()
+                    name = second_level_name_edit.text()
+                    description = second_level_desc_edit.toPlainText()
+                    third_level_id = third_level_combo.currentData()
+                    
+                    if not name or not new_code_id or third_level_id is None:
+                        QMessageBox.warning(dialog, "警告", "请填写完整信息")
+                        return
+                    
+                    # 先删除旧编码
+                    delete_success = coding_library.delete_second_level_code(old_code_id)
+                    if not delete_success:
+                        QMessageBox.warning(dialog, "警告", "更新失败: 无法删除旧编码")
+                        return
+                    
+                    # 再添加新编码
+                    add_success = coding_library.add_second_level_code(third_level_id, new_code_id, name, description)
+                    if add_success:
+                        # 更新列表
+                        third_level_name = third_level_combo.currentText()
+                        selected_item.setText(f"{new_code_id}: {name} ({third_level_name})")
+                        selected_item.setData(Qt.UserRole, {'id': new_code_id, 'name': name, 'description': description, 'third_level': third_level_name})
+                        QMessageBox.information(dialog, "成功", "更新二阶编码成功")
+                    else:
+                        QMessageBox.warning(dialog, "警告", "更新失败: 无法添加新编码")
+                except Exception as e:
+                    QMessageBox.critical(dialog, "错误", f"更新二阶编码失败: {str(e)}")
+            
+            update_second_level_btn.clicked.connect(update_second_level)
+            
+            def update_third_level():
+                try:
+                    selected_item = third_level_list.currentItem()
+                    if not selected_item:
+                        QMessageBox.warning(dialog, "警告", "请先选择要更新的三阶编码")
+                        return
+                    
+                    code = selected_item.data(Qt.UserRole)
+                    old_code_id = code.get('id')
+                    new_code_id = int(third_level_id_edit.text())
+                    name = third_level_name_edit.text()
+                    description = third_level_desc_edit.toPlainText()
+                    
+                    if not name:
+                        QMessageBox.warning(dialog, "警告", "请输入编码名称")
+                        return
+                    
+                    # 检查是否有关联的二阶编码
+                    second_levels = coding_library.get_second_level_codes_by_third_level(code.get('name'))
+                    if second_levels:
+                        QMessageBox.warning(dialog, "警告", "三阶编码下还有二阶编码，无法更新")
+                        return
+                    
+                    # 先删除旧编码
+                    delete_success = coding_library.delete_third_level_code(old_code_id)
+                    if not delete_success:
+                        QMessageBox.warning(dialog, "警告", "更新失败: 无法删除旧编码")
+                        return
+                    
+                    # 再添加新编码
+                    add_success = coding_library.add_third_level_code(new_code_id, name, description)
+                    if add_success:
+                        # 更新列表
+                        selected_item.setText(f"{new_code_id}: {name}")
+                        selected_item.setData(Qt.UserRole, {'id': new_code_id, 'name': name, 'description': description})
+                        # 更新下拉框
+                        index = third_level_combo.findText(code.get('name'))
+                        if index != -1:
+                            third_level_combo.setItemText(index, name)
+                            third_level_combo.setItemData(index, new_code_id)
+                        QMessageBox.information(dialog, "成功", "更新三阶编码成功")
+                    else:
+                        QMessageBox.warning(dialog, "警告", "更新失败: 无法添加新编码")
+                except Exception as e:
+                    QMessageBox.critical(dialog, "错误", f"更新三阶编码失败: {str(e)}")
+            
+            update_third_level_btn.clicked.connect(update_third_level)
+            
+            dialog.exec_()
+            
+        except Exception as e:
+            error_message = f"编辑编码库失败: {str(e)}"
+            QMessageBox.critical(self, "错误", error_message)
+            self.statusBar().showMessage(f"编辑编码库失败: {str(e)}")
 
     def visualize_training_results(self):
         """读取训练模型并生成可视化结果图"""
@@ -1266,9 +1764,8 @@ class MainWindow(QMainWindow):
                             'end_pos': end_pos
                         })
                     else:
-                        # 匹配失败，记录警告
+                        # 匹配失败，不记录警告
                         pass
-                        logger.warning(f"无法在文本中找到句子: {clean_sentence[:50]}...")
 
                 # 保存到缓存
                 self.auto_coding_cache[file_path] = content_with_markers
@@ -2238,6 +2735,11 @@ class MainWindow(QMainWindow):
 
         # 保存文本文档引用
         self.text_document = self.text_display.document()
+        
+        # 显示当前加载的模型信息
+        model_info = self.model_manager.get_current_model_info()
+        if model_info['name'] != '无':
+            self.current_model_label.setText(f"当前加载模型: {model_info['name']} ({model_info['type']})")
 
     def perform_search(self):
         """执行搜索"""
@@ -3147,21 +3649,30 @@ class MainWindow(QMainWindow):
                                      f"加载标准答案失败: {actual_filename}\n可能的原因:\n1. 文件格式错误\n2. 文件编码错误\n3. 文件内容损坏")
 
     def load_trained_model(self):
-        """加载训练模型"""
-        available_models = self.model_downloader.get_available_trained_models()
-        if not available_models:
+        """加载训练模型（支持PKL分类器和BERT微调两种格式）"""
+        models_info = self.model_downloader.get_available_trained_models()
+        if not models_info:
             QMessageBox.information(self, "提示", "没有训练过的模型")
             return
 
+        model_names = self.model_downloader.get_available_trained_model_names()
         model_name, ok = QInputDialog.getItem(
-            self, "选择训练模型", "选择要加载的模型:", available_models, 0, False
+            self, "选择训练模型", "选择要加载的模型:", model_names, 0, False
         )
 
         if ok and model_name:
-            success = self.model_manager.load_trained_model(model_name)
+            selected_idx = model_names.index(model_name)
+            selected_model = models_info[selected_idx]
+            actual_name = selected_model['name']
+            model_type = selected_model['type']
+            
+            success = self.model_manager.load_model_auto(actual_name, model_type)
             if success:
+                type_display = "BERT微调模型" if model_type == "bert_finetune" else "分类器模型"
                 self.model_type_combo.setCurrentText("训练模型编码")
-                QMessageBox.information(self, "成功", f"已加载训练模型: {model_name}")
+                QMessageBox.information(self, "成功", f"已加载{type_display}: {actual_name}")
+                # 更新当前加载模型显示
+                self.current_model_label.setText(f"当前加载模型: {actual_name} ({type_display})")
             else:
                 QMessageBox.critical(self, "错误", "加载训练模型失败")
 

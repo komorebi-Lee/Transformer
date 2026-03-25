@@ -2195,13 +2195,11 @@ class ManualCodingDialog(QDialog):
             for item in selected_items:
                 item_data = item.data(0, Qt.UserRole)
                 if item_data and item_data.get("level") == 1:
-                    parent = item.parent()
-                    if parent and parent.data(0, Qt.UserRole) and parent.data(0, Qt.UserRole).get("level") == 2:
-                        first_item = item
-                        break
+                    first_item = item
+                    break
 
             if not first_item:
-                QMessageBox.warning(self, "警告", "请选中一个已归属于二阶编码的一阶编码")
+                QMessageBox.warning(self, "警告", "请选中一个一阶编码")
                 return
 
             old_parent = first_item.parent()
@@ -2299,8 +2297,16 @@ class ManualCodingDialog(QDialog):
 
                 new_parent = selected_second[0]
 
-                # 从旧父节点移除
-                old_parent.removeChild(first_item)
+                # 从旧父节点移除（如果有）
+                if old_parent:
+                    old_parent.removeChild(first_item)
+                else:
+                    # 从根节点移除
+                    root = self.coding_tree.invisibleRootItem()
+                    for i in range(root.childCount()):
+                        if root.child(i) == first_item:
+                            root.removeChild(first_item)
+                            break
 
                 # 添加到新父节点
                 new_parent.addChild(first_item)
@@ -2330,7 +2336,8 @@ class ManualCodingDialog(QDialog):
                 self.update_statistics_for_item(new_parent)
                 self.renumber_all_codes()
 
-                logger.info(f"已将一阶编码从「{old_parent.text(0)}」移动到「{new_parent.text(0)}」")
+                old_parent_name = old_parent.text(0) if old_parent else "根节点"
+                logger.info(f"已将一阶编码从「{old_parent_name}」移动到「{new_parent.text(0)}」")
                 QMessageBox.information(self, "成功",
                                         f"已将一阶编码移动到：{new_parent.text(0)}")
                 dialog.accept()
@@ -5003,6 +5010,12 @@ class ManualCodingDialog(QDialog):
                         move_first_action = QAction("修改一阶对应父节点(二阶)", self)
                         move_first_action.triggered.connect(self.move_first_to_new_parent_second)
                         menu.addAction(move_first_action)
+                # 一阶且无父节点（未分类）→ 可选择父节点(二阶)
+                elif clicked_level == 1 and not clicked_parent:
+                    menu.addSeparator()
+                    select_parent_action = QAction("选择一阶对应父节点（二阶）", self)
+                    select_parent_action.triggered.connect(self.move_first_to_new_parent_second)
+                    menu.addAction(select_parent_action)
 
                 # 二阶且有三阶父节点 → 可修改父节点(三阶)
                 elif clicked_level == 2 and clicked_parent:

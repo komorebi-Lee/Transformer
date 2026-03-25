@@ -26,6 +26,11 @@ for full_path, rel_path in model_files:
     else:
         datas.append((full_path, '.'))
 
+# 添加编码库文件
+coding_library_path = os.path.join(project_root, 'coding_library.json')
+if os.path.exists(coding_library_path):
+    datas.append((coding_library_path, '.'))
+
 # 添加 regex 包的元数据文件
 import regex
 import os
@@ -337,6 +342,13 @@ hiddenimports = [
     'pytz',
     'six',
     
+    # 超参数优化
+    'optuna',
+    'optuna.samplers',
+    'optuna.pruners',
+    'optuna.storages',
+    'optuna.trial',
+    
     # 项目内部模块
     'path_manager',
     'config',
@@ -359,6 +371,12 @@ hiddenimports = [
     'model_downloader',
     'enhanced_word_exporter',
     'download_models',
+    'bert_finetuner',
+    'bert_dataset',
+    'hyperparameter_optimizer',
+    'semantic_matcher',
+    'coding_library_manager',
+    'enhanced_manual_coding',
     
     # 额外的依赖
     'importlib_metadata',

@@ -212,6 +212,8 @@ class EnhancedModelManager:
                     logger.error(f"加载模型文件失败: {load_error}")
                     return False
 
+                self._bert_finetuner = None
+                self.is_model_loaded = True
                 logger.info(f"训练模型已加载: {version} 路径: {model_file}")
                 return True
 
@@ -221,6 +223,127 @@ class EnhancedModelManager:
         except Exception as e:
             logger.error(f"加载训练模型失败: {e}")
             return False
+
+    def load_model_auto(self, model_name: str, model_type: str = None) -> bool:
+        """
+        自动检测并加载模型（支持PKL分类器和BERT微调两种格式）
+        
+        Args:
+            model_name: 模型名称
+            model_type: 模型类型 ('classifier' 或 'bert_finetune')，如果为None则自动检测
+            
+        Returns:
+            加载是否成功
+        """
+        try:
+            model_path = os.path.join(self.trained_model_dir, model_name)
+            
+            if model_type is None:
+                model_type = self.detect_model_format(model_path)
+            
+            logger.info(f"加载模型: {model_name}, 类型: {model_type}")
+            
+            if model_type == "bert_finetune":
+                return self._load_bert_finetune_model(model_path)
+            else:
+                return self.load_trained_model(model_name)
+                
+        except Exception as e:
+            logger.error(f"自动加载模型失败: {e}")
+            return False
+
+    def _load_bert_finetune_model(self, model_dir: str) -> bool:
+        """
+        加载BERT微调模型
+        
+        Args:
+            model_dir: 模型目录路径
+            
+        Returns:
+            加载是否成功
+        """
+        try:
+            if not os.path.exists(model_dir):
+                logger.error(f"模型目录不存在: {model_dir}")
+                return False
+            
+            from bert_finetuner import BERTFineTuner
+            
+            finetuner = BERTFineTuner(self)
+            success = finetuner.load_model(model_dir)
+            
+            if not success:
+                logger.error("加载BERT微调模型失败")
+                return False
+            
+            self._bert_finetuner = finetuner
+            self._model_type = "bert_finetune"
+            
+            label_mapping_path = os.path.join(model_dir, 'label_mapping.json')
+            if os.path.exists(label_mapping_path):
+                with open(label_mapping_path, 'r', encoding='utf-8') as f:
+                    mapping_data = json.load(f)
+                    self._bert_label_mapping = mapping_data.get('label_to_id', {})
+                    self._bert_id_to_label = {int(k): v for k, v in mapping_data.get('id_to_label', {}).items()}
+                logger.info(f"BERT微调模型标签映射已加载: {len(self._bert_label_mapping)} 个标签")
+            
+            self.is_model_loaded = True
+            logger.info(f"BERT微调模型已从 {model_dir} 加载成功")
+            return True
+            
+        except Exception as e:
+            logger.error(f"加载BERT微调模型失败: {e}")
+            return False
+
+    def get_model_type(self) -> str:
+        """获取当前加载的模型类型"""
+        if hasattr(self, '_bert_finetuner') and self._bert_finetuner is not None:
+            return "bert_finetune"
+        elif self.trained_model is not None:
+            return "classifier"
+        else:
+            return "none"
+    
+    def get_current_model_info(self) -> Dict[str, Any]:
+        """获取当前加载的模型信息"""
+        model_type = self.get_model_type()
+        if model_type == "bert_finetune":
+            finetuner = getattr(self, '_bert_finetuner', None)
+            if finetuner:
+                # 尝试获取BERT微调模型的名称
+                # 这里可以根据实际情况获取模型名称
+                # 暂时返回类型信息
+                return {
+                    'type': 'BERT微调模型',
+                    'name': 'bert_finetuned_latest'  # 这里可以根据实际情况获取
+                }
+        elif model_type == "classifier":
+            if self.trained_model:
+                metadata = self.trained_model.get('metadata', {})
+                return {
+                    'type': '分类器模型',
+                    'name': metadata.get('version', 'unknown')
+                }
+        return {'type': '无', 'name': '无'}
+
+    def predict_with_loaded_model(self, texts: List[str]) -> Tuple[np.ndarray, List[str]]:
+        """
+        使用已加载的模型进行预测（自动选择模型类型）
+        
+        Args:
+            texts: 待预测的文本列表
+            
+        Returns:
+            Tuple[predictions, predicted_labels]
+        """
+        model_type = self.get_model_type()
+        
+        if model_type == "bert_finetune":
+            return self.predict_with_finetuned_bert(texts)
+        elif model_type == "classifier":
+            return self.predict_categories(texts)
+        else:
+            raise ValueError("没有加载任何模型")
 
     def predict_categories(self, texts: List[str]) -> Tuple[np.ndarray, List[str]]:
         """使用训练模型预测类别"""
@@ -264,7 +387,14 @@ class EnhancedModelManager:
 
     def is_trained_model_available(self) -> bool:
         """检查是否有可用的训练模型"""
-        return self.trained_model is not None
+        # 检查分类器模型
+        if self.trained_model is not None:
+            return True
+        # 检查BERT微调模型
+        finetuner = getattr(self, '_bert_finetuner', None)
+        if finetuner is not None and finetuner.is_model_loaded():
+            return True
+        return False
 
     def get_timestamp(self):
         from datetime import datetime

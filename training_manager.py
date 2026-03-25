@@ -135,7 +135,132 @@ class GroundedTheoryTrainingThread(QThread):
             self.progress_updated.emit(0)
             logger.info(f"开始扎根理论模型训练，训练模式: {self.training_mode}, 增量训练: {self.incremental}")
 
-            # 增量训练模式：加载已有模型并合并数据
+            if self.training_mode == Config.TRAINING_MODE_BERT_FINETUNE:
+                self._run_bert_finetune_training()
+            else:
+                self._run_classifier_training_internal()
+
+        except Exception as e:
+            logger.error(f"训练失败: {e}")
+            self.training_finished.emit(False, f"训练失败: {str(e)}")
+
+    def _run_bert_finetune_training(self):
+        """运行BERT微调训练"""
+        try:
+            can_train, reason = check_training_conditions()
+            if not can_train:
+                if self.fallback_to_classifier:
+                    fallback_reason = f"BERT微调训练条件不满足: {reason}，已自动降级到分类器模式"
+                    logger.warning(fallback_reason)
+                    self.actual_training_mode = Config.TRAINING_MODE_CLASSIFIER
+                    self.fallback_triggered.emit(fallback_reason)
+                    self._run_classifier_training_internal()
+                    return
+                else:
+                    self.training_finished.emit(False, f"训练条件不满足: {reason}")
+                    return
+
+            self.progress_updated.emit(10)
+            texts, labels, label_mapping = self.prepare_training_data()
+
+            if len(texts) < 5:
+                self.training_finished.emit(False, "训练数据不足，至少需要5个样本")
+                return
+
+            self.progress_updated.emit(20)
+            logger.info(f"准备BERT微调训练数据: {len(texts)} 个样本, {len(label_mapping)} 个类别")
+
+            from bert_finetuner import BERTFineTuner
+            from bert_dataset import GroundedTheoryDataset
+            from transformers import AutoTokenizer
+
+            local_model_path = os.path.join(Config.LOCAL_MODELS_DIR, Config.DEFAULT_MODEL_NAME)
+            if os.path.exists(local_model_path):
+                tokenizer = AutoTokenizer.from_pretrained(local_model_path)
+            else:
+                tokenizer = AutoTokenizer.from_pretrained(Config.DEFAULT_MODEL_NAME)
+
+            max_length = self.training_config.get('max_length', Config.MAX_SENTENCE_LENGTH)
+            dataset = GroundedTheoryDataset(texts, labels, tokenizer, max_length)
+            dataset.label_to_id = label_mapping
+            dataset.id_to_label = {v: k for k, v in label_mapping.items()}
+
+            self.progress_updated.emit(30)
+
+            output_dir = os.path.join(Config.TRAINED_MODELS_DIR, "bert_finetuned_latest")
+            
+            finetuner = BERTFineTuner(self.model_manager, config=self.training_config)
+
+            def progress_callback(current_step, total_steps, loss):
+                if total_steps > 0:
+                    progress = 30 + int((current_step / total_steps) * 60)
+                    self.progress_updated.emit(progress)
+
+            def finished_callback(success, message):
+                if success:
+                    self.progress_updated.emit(100)
+                    
+                    self.trained_model_data = {
+                        "model_path": output_dir,
+                        "label_mapping": label_mapping,
+                        "training_time": self.get_timestamp(),
+                        "sample_count": len(texts),
+                        "class_count": len(label_mapping),
+                        "model_type": "bert_finetune",
+                        "embedding_model": "bert",
+                        "training_mode": self.actual_training_mode,
+                        "incremental": self.incremental
+                    }
+                    
+                    msg = f"BERT微调训练完成！共训练 {len(texts)} 个样本，{len(label_mapping)} 个类别"
+                    self.training_finished.emit(True, msg)
+                else:
+                    if self.fallback_to_classifier:
+                        fallback_reason = f"BERT微调训练失败: {message}，已自动降级到分类器模式"
+                        logger.warning(fallback_reason)
+                        self.actual_training_mode = Config.TRAINING_MODE_CLASSIFIER
+                        self.fallback_triggered.emit(fallback_reason)
+                        self._run_classifier_training_internal()
+                    else:
+                        self.training_finished.emit(False, message)
+
+            success = finetuner.train(
+                dataset,
+                output_dir,
+                progress_callback=progress_callback,
+                finished_callback=finished_callback
+            )
+
+            if not success:
+                if self.fallback_to_classifier:
+                    fallback_reason = "BERT微调训练失败，已自动降级到分类器模式"
+                    logger.warning(fallback_reason)
+                    self.actual_training_mode = Config.TRAINING_MODE_CLASSIFIER
+                    self.fallback_triggered.emit(fallback_reason)
+                    self._run_classifier_training_internal()
+
+        except Exception as e:
+            logger.error(f"BERT微调训练失败: {e}")
+            if self.fallback_to_classifier:
+                try:
+                    fallback_reason = f"BERT微调训练失败: {str(e)}，已自动降级到分类器模式"
+                    logger.warning(fallback_reason)
+                    self.actual_training_mode = Config.TRAINING_MODE_CLASSIFIER
+                    self.fallback_triggered.emit(fallback_reason)
+                    self._run_classifier_training_internal()
+                    return
+                except Exception as fallback_error:
+                    logger.error(f"降级训练也失败: {fallback_error}")
+                    self.training_finished.emit(False, f"训练失败: {str(e)}，降级训练也失败: {str(fallback_error)}")
+                    return
+            self.training_finished.emit(False, f"BERT微调训练失败: {str(e)}")
+
+    def _run_classifier_training_internal(self):
+        """内部方法：运行分类器训练（分类器模式和增量训练）"""
+        try:
+            self.progress_updated.emit(0)
+            logger.info(f"开始分类器训练，增量训练: {self.incremental}")
+
             existing_model_data = None
             existing_label_mapping = None
             
@@ -149,25 +274,11 @@ class GroundedTheoryTrainingThread(QThread):
                 else:
                     logger.warning("增量训练模式但未找到已有模型，将执行首次训练")
 
-            if self.training_mode == Config.TRAINING_MODE_BERT_FINETUNE:
-                can_train, reason = check_training_conditions()
-                if not can_train:
-                    if self.fallback_to_classifier:
-                        fallback_reason = f"BERT微调训练条件不满足: {reason}，已自动降级到分类器模式"
-                        logger.warning(fallback_reason)
-                        self.actual_training_mode = Config.TRAINING_MODE_CLASSIFIER
-                        self.fallback_triggered.emit(fallback_reason)
-                    else:
-                        self.training_finished.emit(False, f"训练条件不满足: {reason}")
-                        return
-
             self.progress_updated.emit(10)
             texts, labels, label_mapping = self.prepare_training_data()
 
-            # 增量训练：合并标签映射
             if self.incremental and existing_label_mapping:
                 logger.info(f"合并标签映射: 已有 {len(existing_label_mapping)} 个, 新数据 {len(label_mapping)} 个")
-                # 保留已有标签映射，添加新标签
                 max_id = max(existing_label_mapping.values()) if existing_label_mapping else -1
                 merged_label_mapping = existing_label_mapping.copy()
                 
@@ -193,11 +304,9 @@ class GroundedTheoryTrainingThread(QThread):
 
             self.progress_updated.emit(60)
 
-            # 增量训练：合并已有数据
             if self.incremental and existing_model_data:
                 existing_texts = existing_model_data.get("texts", [])
                 existing_labels = existing_model_data.get("labels", [])
-                existing_embedding_model = existing_model_data.get("embedding_model", None)
                 
                 if existing_texts and existing_labels:
                     logger.info(f"合并训练数据: 已有 {len(existing_texts)} 个, 新数据 {len(texts)} 个")
@@ -245,74 +354,8 @@ class GroundedTheoryTrainingThread(QThread):
                 self.training_finished.emit(False, "模型保存失败")
 
         except Exception as e:
-            logger.error(f"训练失败: {e}")
-            if self.training_mode == Config.TRAINING_MODE_BERT_FINETUNE and self.fallback_to_classifier:
-                try:
-                    fallback_reason = f"BERT微调训练失败: {str(e)}，已自动降级到分类器模式"
-                    logger.warning(fallback_reason)
-                    self.actual_training_mode = Config.TRAINING_MODE_CLASSIFIER
-                    self.fallback_triggered.emit(fallback_reason)
-                    self._run_classifier_training()
-                    return
-                except Exception as fallback_error:
-                    logger.error(f"降级训练也失败: {fallback_error}")
-                    self.training_finished.emit(False, f"训练失败: {str(e)}，降级训练也失败: {str(fallback_error)}")
-                    return
-            self.training_finished.emit(False, f"训练失败: {str(e)}")
-
-    def _run_classifier_training(self):
-        """降级后运行分类器训练"""
-        try:
-            self.progress_updated.emit(10)
-            texts, labels, label_mapping = self.prepare_training_data()
-
-            if len(texts) < 5:
-                self.training_finished.emit(False, "训练数据不足，至少需要5个样本")
-                return
-
-            self.progress_updated.emit(30)
-
-            embeddings = self.model_manager.get_embeddings(texts, model_type=self.model_type)
-            if embeddings is None or len(embeddings) == 0:
-                self.training_finished.emit(False, "生成嵌入向量失败")
-                return
-
-            self.progress_updated.emit(60)
-
-            if SKLEARN_AVAILABLE:
-                classifier, accuracy = self.train_classifier(embeddings, labels)
-            else:
-                classifier, accuracy = self.train_rule_based_classifier(embeddings, labels)
-
-            self.progress_updated.emit(80)
-
-            self.trained_model_data = {
-                "classifier": classifier,
-                "label_mapping": label_mapping,
-                "embeddings": embeddings,
-                "texts": texts,
-                "labels": labels,
-                "training_time": self.get_timestamp(),
-                "sample_count": len(texts),
-                "class_count": len(label_mapping),
-                "accuracy": accuracy,
-                "model_type": "grounded_theory_coder",
-                "embedding_model": self.model_type,
-                "training_mode": Config.TRAINING_MODE_CLASSIFIER
-            }
-
-            success = self.model_manager.save_trained_model(self.trained_model_data, "grounded_theory_latest")
-            self.progress_updated.emit(100)
-
-            if success:
-                message = f"模型训练完成（降级模式）！共训练 {len(texts)} 个样本，{len(label_mapping)} 个类别，准确率: {accuracy:.3f}"
-                self.training_finished.emit(True, message)
-            else:
-                self.training_finished.emit(False, "模型保存失败")
-
-        except Exception as e:
-            logger.error(f"降级训练失败: {e}")
-            self.training_finished.emit(False, f"降级训练失败: {str(e)}")
+            logger.error(f"分类器训练失败: {e}")
+            self.training_finished.emit(False, f"分类器训练失败: {str(e)}")
 
     def prepare_training_data(self) -> Tuple[List[str], List[int], Dict[str, int]]:
         """准备训练数据"""
@@ -321,14 +364,31 @@ class GroundedTheoryTrainingThread(QThread):
         label_mapping = {}
         current_label_id = 0
 
-        # 从标准答案中提取训练数据
-        structured_codes = self.standard_answers.get("structured_codes", {})
+        # 首先尝试从standard_answers中获取training_data
+        training_data = self.standard_answers.get("training_data", {})
 
-        if not structured_codes:
-            # 尝试从training_data中提取
-            structured_codes = self.training_data.get("structured_codes", {})
+        if training_data:
+            # 使用training_data准备训练样本
+            logger.info(f"从training_data中提取训练数据")
+            
+            # 检查training_data的结构
+            if isinstance(training_data, dict):
+                # 处理不同格式的training_data
+                if "structured_codes" in training_data:
+                    # 如果training_data中包含structured_codes，使用它
+                    structured_codes = training_data["structured_codes"]
+                else:
+                    # 尝试直接处理training_data
+                    structured_codes = training_data
+        else:
+            # 如果没有training_data，尝试从standard_answers中获取structured_codes
+            structured_codes = self.standard_answers.get("structured_codes", {})
+            
+            if not structured_codes:
+                # 最后尝试从self.training_data中获取structured_codes
+                structured_codes = self.training_data.get("structured_codes", {})
 
-        logger.info(f"从结构化编码中提取训练数据，共 {len(structured_codes)} 个三阶编码")
+        logger.info(f"从训练数据中提取样本，共 {len(structured_codes)} 个三阶编码")
 
         for third_cat, second_cats in structured_codes.items():
             for second_cat, first_contents in second_cats.items():
@@ -494,6 +554,17 @@ class EnhancedTrainingManager:
             if finished_callback:
                 finished_callback(False, "没有标准答案数据")
             return
+
+        # 集成人工编码增强功能
+        try:
+            from enhanced_manual_coding import EnhancedManualCoding
+            enhanced_coding = EnhancedManualCoding()
+            # 处理标准答案中的编码信息
+            integration_result = enhanced_coding.integrate_with_model_training(standard_answers)
+            if not integration_result["success"]:
+                logger.warning(f"人工编码增强功能集成失败: {integration_result['message']}")
+        except Exception as e:
+            logger.error(f"集成人工编码增强功能失败: {e}")
 
         if self.training_thread and self.training_thread.isRunning():
             self.training_thread.terminate()

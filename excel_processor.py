@@ -2,6 +2,7 @@ import os
 import json
 import logging
 import pandas as pd
+from datetime import datetime
 from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, 
                             QFileDialog, QProgressBar, QMessageBox, QListWidget, 
                             QListWidgetItem, QSplitter, QTextEdit, QGroupBox)
@@ -196,22 +197,156 @@ class ExcelProcessor:
             if self.merged_data is None:
                 raise ValueError("没有合并的数据")
             
-            # 转换为标准答案格式
-            # 这里需要根据实际的标准答案格式进行调整
-            standard_answers = []
+            # 提取结构化编码
+            structured_codes = {}
             
+            # 尝试不同的列名组合
+            possible_columns = [
+                ['三阶编码', '二阶编码', '一阶编码'],
+                ['类别', '子类别', '内容'],
+                ['三级编码', '二级编码', '一级编码']
+            ]
+            
+            selected_columns = None
+            for column_set in possible_columns:
+                if all(col in self.merged_data.columns for col in column_set):
+                    selected_columns = column_set
+                    break
+            
+            if not selected_columns:
+                logger.error("无法找到合适的列名组合")
+                return False
+            
+            # 提取数据
+            code_id_counter = 1
             for _, row in self.merged_data.iterrows():
-                answer_item = {
-                    'content': str(row.get('内容', '')),
-                    'category': str(row.get('类别', '')),
-                    'subcategory': str(row.get('子类别', '')),
-                    'code': str(row.get('编码', ''))
+                third_level = str(row[selected_columns[0]]).strip()
+                second_level = str(row[selected_columns[1]]).strip()
+                first_level = str(row[selected_columns[2]]).strip()
+                
+                if third_level and second_level and first_level:
+                    if third_level not in structured_codes:
+                        structured_codes[third_level] = {}
+                    if second_level not in structured_codes[third_level]:
+                        structured_codes[third_level][second_level] = []
+                    
+                    # 创建符合标准格式的一阶编码字典
+                    first_level_dict = {
+                        'code_id': f"A{code_id_counter:02d}",
+                        'level': 1,
+                        'content': first_level,
+                        'sentence_count': 1,
+                        'sentence_details': [{
+                            'content': first_level,
+                            'code_position': '0',
+                            'file_name': 'excel_imported',
+                            'file_path': 'excel_imported',
+                            'line_number': 1,
+                            'sentence_index': 0,
+                            'text': first_level
+                        }],
+                        'file_path': 'excel_imported',
+                        'text': first_level
+                    }
+                    
+                    # 检查是否已存在相同内容的编码
+                    exists = False
+                    for item in structured_codes[third_level][second_level]:
+                        if isinstance(item, dict) and item.get('content') == first_level:
+                            exists = True
+                            break
+                        elif isinstance(item, str) and item == first_level:
+                            exists = True
+                            break
+                    
+                    if not exists:
+                        structured_codes[third_level][second_level].append(first_level_dict)
+                        code_id_counter += 1
+            
+            # 计算统计信息
+            def calculate_statistics(codes):
+                third_count = len(codes)
+                second_count = sum(len(categories) for categories in codes.values())
+                first_count = sum(
+                    len(contents)
+                    for categories in codes.values()
+                    for contents in categories.values()
+                )
+                return {
+                    "third_level_codes": third_count,
+                    "second_level_codes": second_count,
+                    "first_level_codes": first_count,
+                    "total_codes": first_count
                 }
-                standard_answers.append(answer_item)
+            
+            # 提取训练数据
+            def extract_training_data(codes):
+                training_data = []
+                for third_cat, second_cats in codes.items():
+                    for second_cat, first_contents in second_cats.items():
+                        for content in first_contents:
+                            if isinstance(content, dict):
+                                target_abstract = content.get('content', '').strip()
+                                original_content = target_abstract
+                                related_statements = []
+                                
+                                sentence_details = content.get('sentence_details', [])
+                                for sentence in sentence_details:
+                                    if isinstance(sentence, dict):
+                                        dragged_text = sentence.get('text', '').strip()
+                                        if dragged_text:
+                                            related_statements.append(dragged_text)
+                                
+                                if target_abstract:
+                                    training_data.append({
+                                        "input_sentences": {
+                                            "original_content": original_content,
+                                            "related_statement": related_statements,
+                                        },
+                                        "target_abstract": target_abstract,
+                                        "target_second_category": second_cat,
+                                        "target_third_category": third_cat,
+                                    })
+                            else:
+                                target_abstract = str(content).strip()
+                                if target_abstract:
+                                    training_data.append({
+                                        "input_sentences": {
+                                            "original_content": target_abstract,
+                                            "related_statement": [],
+                                        },
+                                        "target_abstract": target_abstract,
+                                        "target_second_category": second_cat,
+                                        "target_third_category": third_cat,
+                                    })
+                return training_data
+            
+            # 生成标准答案格式
+            version = f"v{len(os.listdir(self.standard_answers_dir)) + 1}"
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            version_id = f"{version}_{timestamp}"
+            
+            standard_answer = {
+                "metadata": {
+                    "version": version_id,
+                    "description": "从Excel数据转换的标准答案",
+                    "created_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "source": "excel_import",
+                    "code_statistics": calculate_statistics(structured_codes),
+                    "total_codes": sum(len(contents) for categories in structured_codes.values() for contents in categories.values())
+                },
+                "structured_codes": structured_codes,
+                "training_data": extract_training_data(structured_codes),
+                "export_formats": {
+                    "json": True,
+                    "excel": True,
+                    "word": False
+                }
+            }
             
             # 保存为JSON文件
             with open(output_json_path, 'w', encoding='utf-8') as f:
-                json.dump(standard_answers, f, ensure_ascii=False, indent=2)
+                json.dump(standard_answer, f, ensure_ascii=False, indent=2)
             
             logger.info(f"成功转换为标准答案并保存到: {output_json_path}")
             return True
@@ -469,6 +604,7 @@ class ExcelProcessorDialog(QDialog):
             return structured_codes
         
         # 提取数据
+        code_id_counter = 1
         for _, row in self.excel_processor.merged_data.iterrows():
             third_level = str(row[selected_columns[0]]).strip()
             second_level = str(row[selected_columns[1]]).strip()
@@ -479,8 +615,39 @@ class ExcelProcessorDialog(QDialog):
                     structured_codes[third_level] = {}
                 if second_level not in structured_codes[third_level]:
                     structured_codes[third_level][second_level] = []
-                if first_level not in structured_codes[third_level][second_level]:
-                    structured_codes[third_level][second_level].append(first_level)
+                
+                # 创建符合标准格式的一阶编码字典
+                first_level_dict = {
+                    'code_id': f"A{code_id_counter:02d}",
+                    'level': 1,
+                    'content': first_level,
+                    'sentence_count': 1,
+                    'sentence_details': [{
+                        'content': first_level,
+                        'code_position': '0',
+                        'file_name': 'excel_imported',
+                        'file_path': 'excel_imported',
+                        'line_number': 1,
+                        'sentence_index': 0,
+                        'text': first_level
+                    }],
+                    'file_path': 'excel_imported',
+                    'text': first_level
+                }
+                
+                # 检查是否已存在相同内容的编码
+                exists = False
+                for item in structured_codes[third_level][second_level]:
+                    if isinstance(item, dict) and item.get('content') == first_level:
+                        exists = True
+                        break
+                    elif isinstance(item, str) and item == first_level:
+                        exists = True
+                        break
+                
+                if not exists:
+                    structured_codes[third_level][second_level].append(first_level_dict)
+                    code_id_counter += 1
         
         return structured_codes
     
