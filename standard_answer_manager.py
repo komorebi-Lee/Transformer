@@ -391,31 +391,60 @@ class StandardAnswerManager:
         """合并修改到原始标准答案"""
         merged = copy.deepcopy(original)
 
+        # 处理新增的三阶类别（整块新增）
         for third_cat, second_cats in modifications["added"].items():
             merged[third_cat] = copy.deepcopy(second_cats)
 
+        # 处理被整体删除的三阶类别
         for third_cat in modifications["deleted"]:
             if third_cat in merged:
                 del merged[third_cat]
 
+        # 工具函数：用于一阶编码匹配，保证删除时更稳健
+        def _first_level_key(item: Any) -> str:
+            if isinstance(item, dict):
+                content = item.get("content", item.get("name", str(item)))
+                code_id = item.get("code_id")
+                if code_id:
+                    return f"{code_id}||{content}"
+                return str(content)
+            return str(item)
+
+        # 处理在现有三阶类别下的二阶/一阶修改
         for third_cat, third_modifications in modifications["modified"].items():
             if third_cat in merged:
+                # 新增完整的二阶类别
                 for second_cat, first_codes in third_modifications["added"].items():
-                    merged[third_cat][second_cat] = copy.deepcopy(first_codes)
+                    if second_cat not in merged[third_cat]:
+                        merged[third_cat][second_cat] = copy.deepcopy(first_codes)
+                    else:
+                        # 同一二阶下新增的一阶编码，追加到原列表
+                        merged[third_cat][second_cat].extend(copy.deepcopy(first_codes))
 
+                # 删除整个二阶类别
                 for second_cat in third_modifications["deleted"]:
                     if second_cat in merged[third_cat]:
                         del merged[third_cat][second_cat]
 
                 for second_cat, second_modifications in third_modifications["modified"].items():
                     if second_cat in merged[third_cat]:
-                        for first_code in second_modifications["added"]:
-                            if first_code not in merged[third_cat][second_cat]:
-                                merged[third_cat][second_cat].append(copy.deepcopy(first_code))
+                        # 处理一阶新增：基于 key 去重后追加
+                        existing_list = merged[third_cat][second_cat]
+                        existing_keys = {_first_level_key(item) for item in existing_list}
 
-                        for first_code in second_modifications["deleted"]:
-                            if first_code in merged[third_cat][second_cat]:
-                                merged[third_cat][second_cat].remove(first_code)
+                        for first_code in second_modifications["added"]:
+                            key = _first_level_key(first_code)
+                            if key not in existing_keys:
+                                existing_list.append(copy.deepcopy(first_code))
+                                existing_keys.add(key)
+
+                        # 处理一阶删除：按 key 过滤列表，确保真正移除
+                        if second_modifications["deleted"]:
+                            deleted_keys = {_first_level_key(item) for item in second_modifications["deleted"]}
+                            merged[third_cat][second_cat] = [
+                                item for item in existing_list
+                                if _first_level_key(item) not in deleted_keys
+                            ]
 
         return merged
 
