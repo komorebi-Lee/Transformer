@@ -110,14 +110,15 @@ class GroundedTheoryTrainingThread(QThread):
     """扎根理论训练线程 - 修复版本"""
 
     progress_updated = pyqtSignal(int)
-    training_finished = pyqtSignal(bool, str)
+    training_finished = pyqtSignal(bool, str, dict)
     fallback_triggered = pyqtSignal(str)
 
     def __init__(self, training_data: Dict[str, Any], model_manager, standard_answers: Dict[str, Any], 
                  model_type: str = 'bert', training_mode: str = 'classifier', 
                  fallback_to_classifier: bool = True,
                  training_config: Optional[Dict[str, Any]] = None,
-                 incremental: bool = False):
+                 incremental: bool = False,
+                 coding_processing_result: Optional[Dict[str, Any]] = None):
         super().__init__()
         self.training_data = training_data
         self.model_manager = model_manager
@@ -127,6 +128,7 @@ class GroundedTheoryTrainingThread(QThread):
         self.fallback_to_classifier = fallback_to_classifier
         self.training_config = training_config or {}
         self.incremental = incremental
+        self.coding_processing_result = coding_processing_result or {}
         self.trained_model_data = None
         self.actual_training_mode = training_mode
 
@@ -142,7 +144,7 @@ class GroundedTheoryTrainingThread(QThread):
 
         except Exception as e:
             logger.error(f"训练失败: {e}")
-            self.training_finished.emit(False, f"训练失败: {str(e)}")
+            self.training_finished.emit(False, f"训练失败: {str(e)}", self.coding_processing_result)
 
     def _run_bert_finetune_training(self):
         """运行BERT微调训练"""
@@ -157,14 +159,14 @@ class GroundedTheoryTrainingThread(QThread):
                     self._run_classifier_training_internal()
                     return
                 else:
-                    self.training_finished.emit(False, f"训练条件不满足: {reason}")
+                    self.training_finished.emit(False, f"训练条件不满足: {reason}", self.coding_processing_result)
                     return
 
             self.progress_updated.emit(10)
             texts, labels, label_mapping = self.prepare_training_data()
 
             if len(texts) < 5:
-                self.training_finished.emit(False, "训练数据不足，至少需要5个样本")
+                self.training_finished.emit(False, "训练数据不足，至少需要5个样本", self.coding_processing_result)
                 return
 
             self.progress_updated.emit(20)
@@ -213,7 +215,7 @@ class GroundedTheoryTrainingThread(QThread):
                     }
                     
                     msg = f"BERT微调训练完成！共训练 {len(texts)} 个样本，{len(label_mapping)} 个类别"
-                    self.training_finished.emit(True, msg)
+                    self.training_finished.emit(True, msg, self.coding_processing_result)
                 else:
                     if self.fallback_to_classifier:
                         fallback_reason = f"BERT微调训练失败: {message}，已自动降级到分类器模式"
@@ -222,7 +224,7 @@ class GroundedTheoryTrainingThread(QThread):
                         self.fallback_triggered.emit(fallback_reason)
                         self._run_classifier_training_internal()
                     else:
-                        self.training_finished.emit(False, message)
+                        self.training_finished.emit(False, message, self.coding_processing_result)
 
             success = finetuner.train(
                 dataset,
@@ -251,9 +253,9 @@ class GroundedTheoryTrainingThread(QThread):
                     return
                 except Exception as fallback_error:
                     logger.error(f"降级训练也失败: {fallback_error}")
-                    self.training_finished.emit(False, f"训练失败: {str(e)}，降级训练也失败: {str(fallback_error)}")
+                    self.training_finished.emit(False, f"训练失败: {str(e)}，降级训练也失败: {str(fallback_error)}", self.coding_processing_result)
                     return
-            self.training_finished.emit(False, f"BERT微调训练失败: {str(e)}")
+            self.training_finished.emit(False, f"BERT微调训练失败: {str(e)}", self.coding_processing_result)
 
     def _run_classifier_training_internal(self):
         """内部方法：运行分类器训练（分类器模式和增量训练）"""
@@ -292,14 +294,14 @@ class GroundedTheoryTrainingThread(QThread):
                 logger.info(f"合并后标签映射: {len(label_mapping)} 个标签")
 
             if len(texts) < 5:
-                self.training_finished.emit(False, "训练数据不足，至少需要5个样本")
+                self.training_finished.emit(False, "训练数据不足，至少需要5个样本", self.coding_processing_result)
                 return
 
             self.progress_updated.emit(30)
 
             embeddings = self.model_manager.get_embeddings(texts, model_type=self.model_type)
             if embeddings is None or len(embeddings) == 0:
-                self.training_finished.emit(False, "生成嵌入向量失败")
+                self.training_finished.emit(False, "生成嵌入向量失败", self.coding_processing_result)
                 return
 
             self.progress_updated.emit(60)
@@ -349,13 +351,13 @@ class GroundedTheoryTrainingThread(QThread):
                 mode_info = f"（训练模式: {self.actual_training_mode}）" if self.actual_training_mode != self.training_mode else ""
                 incremental_info = " [增量训练]" if self.incremental else ""
                 message = f"模型训练完成！共训练 {len(texts)} 个样本，{len(label_mapping)} 个类别，准确率: {accuracy:.3f}{incremental_info}{mode_info}"
-                self.training_finished.emit(True, message)
+                self.training_finished.emit(True, message, self.coding_processing_result)
             else:
-                self.training_finished.emit(False, "模型保存失败")
+                self.training_finished.emit(False, "模型保存失败", self.coding_processing_result)
 
         except Exception as e:
             logger.error(f"分类器训练失败: {e}")
-            self.training_finished.emit(False, f"分类器训练失败: {str(e)}")
+            self.training_finished.emit(False, f"分类器训练失败: {str(e)}", self.coding_processing_result)
 
     def prepare_training_data(self) -> Tuple[List[str], List[int], Dict[str, int]]:
         """准备训练数据"""
@@ -555,13 +557,17 @@ class EnhancedTrainingManager:
                 finished_callback(False, "没有标准答案数据")
             return
 
-        # 集成人工编码增强功能
+        # 集成人工编码增强功能 - 确保所有训练模式都会更新编码库
+        coding_processing_result = {}
         try:
             from enhanced_manual_coding import EnhancedManualCoding
             enhanced_coding = EnhancedManualCoding()
             # 处理标准答案中的编码信息
             integration_result = enhanced_coding.integrate_with_model_training(standard_answers)
-            if not integration_result["success"]:
+            if integration_result["success"]:
+                coding_processing_result = integration_result.get("processing_result", {})
+                logger.info("编码处理成功，继续模型训练")
+            else:
                 logger.warning(f"人工编码增强功能集成失败: {integration_result['message']}")
         except Exception as e:
             logger.error(f"集成人工编码增强功能失败: {e}")
@@ -575,14 +581,21 @@ class EnhancedTrainingManager:
             training_mode=training_mode, 
             fallback_to_classifier=fallback_to_classifier,
             training_config=training_config,
-            incremental=incremental
+            incremental=incremental,
+            coding_processing_result=coding_processing_result
         )
 
         if progress_callback:
             self.training_thread.progress_updated.connect(progress_callback)
 
         if finished_callback:
-            self.training_thread.training_finished.connect(finished_callback)
+            # 包装finished_callback，添加编码更新结果显示
+            def wrapped_finished_callback(success, message, coding_processing_result):
+                # 显示编码更新结果
+                self._show_coding_update_result(coding_processing_result)
+                # 调用原始回调
+                finished_callback(success, message)
+            self.training_thread.training_finished.connect(wrapped_finished_callback)
 
         self.training_thread.fallback_triggered.connect(self.handle_fallback)
 
@@ -600,3 +613,65 @@ class EnhancedTrainingManager:
     def get_training_history(self) -> List[Dict[str, Any]]:
         """获取训练历史"""
         return self.training_history
+
+    def _show_coding_update_result(self, coding_processing_result: Dict[str, Any]):
+        """
+        显示编码更新结果弹窗
+
+        Args:
+            coding_processing_result: 编码处理结果
+        """
+        try:
+            from PyQt5.QtWidgets import QMessageBox
+            
+            # 提取编码更新信息
+            added_third = coding_processing_result.get("added_third_level_codes", [])
+            updated_third = coding_processing_result.get("updated_third_level_codes", [])
+            added_second = coding_processing_result.get("added_second_level_codes", [])
+            updated_second = coding_processing_result.get("updated_second_level_codes", [])
+            
+            # 构建弹窗内容
+            content = "编码库更新结果：\n\n"
+            
+            if added_third:
+                content += f"新增三阶编码 ({len(added_third)} 个):\n" + "\n".join([f"- {code}" for code in added_third[:10]])
+                if len(added_third) > 10:
+                    content += f"\n... 等 {len(added_third) - 10} 个编码"
+                content += "\n\n"
+            else:
+                content += "新增三阶编码: 无\n\n"
+            
+            if updated_third:
+                content += f"更新三阶编码 ({len(updated_third)} 个):\n" + "\n".join([f"- {code}" for code in updated_third[:10]])
+                if len(updated_third) > 10:
+                    content += f"\n... 等 {len(updated_third) - 10} 个编码"
+                content += "\n\n"
+            else:
+                content += "更新三阶编码: 无\n\n"
+            
+            if added_second:
+                content += f"新增二阶编码 ({len(added_second)} 个):\n" + "\n".join([f"- {code}" for code in added_second[:10]])
+                if len(added_second) > 10:
+                    content += f"\n... 等 {len(added_second) - 10} 个编码"
+                content += "\n\n"
+            else:
+                content += "新增二阶编码: 无\n\n"
+            
+            if updated_second:
+                content += f"更新二阶编码 ({len(updated_second)} 个):\n" + "\n".join([f"- {code}" for code in updated_second[:10]])
+                if len(updated_second) > 10:
+                    content += f"\n... 等 {len(updated_second) - 10} 个编码"
+            else:
+                content += "更新二阶编码: 无"
+            
+            # 显示弹窗
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Information)
+            msg.setWindowTitle("编码库更新结果")
+            msg.setText("编码库更新完成")
+            msg.setInformativeText(content)
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.exec_()
+            
+        except Exception as e:
+            logger.error(f"显示编码更新结果弹窗失败: {e}")

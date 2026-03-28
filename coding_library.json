@@ -822,6 +822,70 @@
             "third_level": "技术迭代升级"
           }
         ]
+      },
+      {
+        "id": 37,
+        "name": "测试三阶编码1",
+        "description": "包含：测试二阶编码1、测试二阶编码2",
+        "second_level_codes": [
+          {
+            "id": "BCZORQM4",
+            "name": "测试二阶编码1",
+            "description": "包含：测试一阶编码1",
+            "third_level": "测试三阶编码1"
+          },
+          {
+            "id": "W7J8L9YR",
+            "name": "测试二阶编码2",
+            "description": "包含：测试一阶编码2",
+            "third_level": "测试三阶编码1"
+          }
+        ]
+      },
+      {
+        "id": 37,
+        "name": "测试三阶编码1",
+        "description": "包含：测试二阶编码1、测试二阶编码2",
+        "second_level_codes": [
+          {
+            "id": "BCZORQM4",
+            "name": "测试二阶编码1",
+            "description": "包含：测试一阶编码1",
+            "third_level": "测试三阶编码1"
+          },
+          {
+            "id": "W7J8L9YR",
+            "name": "测试二阶编码2",
+            "description": "包含：测试一阶编码2",
+            "third_level": "测试三阶编码1"
+          }
+        ]
+      },
+      {
+        "id": 38,
+        "name": "测试三阶编码2",
+        "description": "包含：测试二阶编码3",
+        "second_level_codes": [
+          {
+            "id": "PUVYAI0N",
+            "name": "测试二阶编码3",
+            "description": "包含：测试一阶编码3",
+            "third_level": "测试三阶编码2"
+          }
+        ]
+      },
+      {
+        "id": 38,
+        "name": "测试三阶编码2",
+        "description": "包含：测试二阶编码3",
+        "second_level_codes": [
+          {
+            "id": "PUVYAI0N",
+            "name": "测试二阶编码3",
+            "description": "包含：测试一阶编码3",
+            "third_level": "测试三阶编码2"
+          }
+        ]
       }
     ]
   },

@@ -2889,8 +2889,8 @@ class MainWindow(QMainWindow):
         # 定位到编码树中的一阶编码
         self.locate_and_select_code(result)
 
-        # 高亮文本内容
-        self.highlight_search_result(result)
+        # 高亮文本内容，优先使用original_content
+        self.highlight_search_result_with_original_content(result)
 
     def locate_and_select_code(self, result):
         """定位并选中编码树中的一阶编码"""
@@ -2902,19 +2902,33 @@ class MainWindow(QMainWindow):
 
     def find_and_select_first_level_code(self, third_cat, second_cat, content):
         """查找并选中一阶编码"""
+        # 遍历所有节点查找一阶编码
+        def search_in_tree(item):
+            if not item:
+                return False
+            
+            # 检查当前节点是否为一阶编码
+            item_data = item.data(0, Qt.UserRole)
+            if item_data and item_data.get('level') == 1:
+                # 检查内容是否匹配
+                item_content = item_data.get('content', '')
+                if item_content == content:
+                    self.coding_tree.setCurrentItem(item)
+                    # 确保可见
+                    self.coding_tree.scrollToItem(item)
+                    return True
+            
+            # 递归搜索子节点
+            for i in range(item.childCount()):
+                if search_in_tree(item.child(i)):
+                    return True
+            
+            return False
+        
+        # 从根节点开始搜索
         for i in range(self.coding_tree.topLevelItemCount()):
-            third_item = self.coding_tree.topLevelItem(i)
-            if third_item.text(0) == third_cat:
-                for j in range(third_item.childCount()):
-                    second_item = third_item.child(j)
-                    if second_item.text(0) == second_cat:
-                        for k in range(second_item.childCount()):
-                            first_item = second_item.child(k)
-                            if content in first_item.text(0):
-                                self.coding_tree.setCurrentItem(first_item)
-                                # 确保可见
-                                self.coding_tree.scrollToItem(first_item)
-                                return
+            if search_in_tree(self.coding_tree.topLevelItem(i)):
+                return
 
     def highlight_search_result(self, result):
         """高亮搜索结果 - 与手动编码界面一致的精确高亮"""
@@ -2929,6 +2943,30 @@ class MainWindow(QMainWindow):
 
             if clean_content:
                 self.navigate_to_sentence_content(clean_content, "")
+
+    def highlight_search_result_with_original_content(self, result):
+        """高亮搜索结果，优先使用original_content"""
+        # 尝试从content_obj中获取sentence_details，优先使用original_content
+        content_obj = result.get('content_obj')
+        if isinstance(content_obj, dict):
+            sentence_details = content_obj.get('sentence_details', [])
+            if sentence_details and len(sentence_details) > 0:
+                first_detail = sentence_details[0]
+                original_content = first_detail.get('text', '') or first_detail.get('original_content', '')
+                if original_content:
+                    # 清理内容
+                    import re
+                    clean_content = re.sub(r'\s*\[[A-Z]\d+\]', '', original_content)
+                    clean_content = re.sub(r'\s*\[\d+\]', '', clean_content)
+                    clean_content = re.sub(r'^[A-Z]\d+\s+', '', clean_content)
+                    clean_content = clean_content.strip()
+                    
+                    if clean_content:
+                        self.navigate_to_sentence_content(clean_content, "")
+                        return
+        
+        # 如果没有original_content，使用原始的高亮方法
+        self.highlight_search_result(result)
 
     def highlight_text_content(self, content):
         """在文本中高亮内容 - 与手动编码界面一致的精确高亮"""
@@ -4247,9 +4285,14 @@ class MainWindow(QMainWindow):
                 # 添加多个句子显示
                 for i, sentence in enumerate(sentences_list, 1):
                     if i == 1:
-                        # 句子1：显示一阶编码文本和对应的实际句子编号
-                        # 修复：确保句子内容不包含编码标识符，以便正确导航
-                        sentence_content = content_without_number
+                        # 句子1：显示原始句子内容(original_content)和对应的实际句子编号
+                        # 修复：确保句子内容是原始句子，而不是target_abstract
+                        sentence_content = sentences_list[0].get('text', content_without_number)
+                        # 清理句子内容，移除编号标记和编码标识符
+                        sentence_content = re.sub(r'\s*\[[A-Z]\d+\]', '', sentence_content)
+                        sentence_content = re.sub(r'\s*\[\d+\]', '', sentence_content)
+                        sentence_content = re.sub(r'^[A-Z]\d+\s+', '', sentence_content)  # 修复：移除开头编码标识符
+                        sentence_content = sentence_content.strip()
                         # 使用实际的句子编号而不是编码标识符(如A01)
                         sentence_number = first_code_number if first_code_number and first_code_number.isdigit() else ""
                         logger.info(f"弹出对话框句子1 - 编号: {sentence_number}, 内容前30字: {sentence_content[:30]}...")

@@ -31,10 +31,32 @@ class EnhancedManualCoding:
         try:
             logger.info("开始处理标准答案，提取编码元素")
 
-            structured_codes = standard_answer.get("structured_codes", {})
-            if not structured_codes:
-                logger.warning("标准答案中没有结构化编码")
-                return {"success": False, "message": "没有结构化编码可处理"}
+            # 优先从training_data获取编码信息
+            training_data = standard_answer.get("training_data", [])
+            structured_codes = {}
+            
+            if training_data:
+                logger.info("从training_data提取编码信息")
+                # 构建结构化编码数据
+                for item in training_data:
+                    if isinstance(item, dict):
+                        third_level = item.get("target_third_category")
+                        second_level = item.get("target_second_category")
+                        if third_level and second_level:
+                            if third_level not in structured_codes:
+                                structured_codes[third_level] = {}
+                            if second_level not in structured_codes[third_level]:
+                                structured_codes[third_level][second_level] = []
+                            # 添加一阶编码内容
+                            target_abstract = item.get("target_abstract", "")
+                            if target_abstract:
+                                structured_codes[third_level][second_level].append(target_abstract)
+            else:
+                # 回退到structured_codes
+                structured_codes = standard_answer.get("structured_codes", {})
+                if not structured_codes:
+                    logger.warning("标准答案中没有结构化编码")
+                    return {"success": False, "message": "没有结构化编码可处理"}
 
             # 提取并处理所有二阶和三阶编码
             processing_result = {
@@ -181,7 +203,7 @@ class EnhancedManualCoding:
 
     def _update_second_level_vector(self, second_level_code: Dict[str, Any], first_level_codes: List[Any]):
         """
-        更新二阶编码的向量表示
+        更新二阶编码的向量表示（增量更新）
 
         Args:
             second_level_code: 二阶编码信息
@@ -207,12 +229,22 @@ class EnhancedManualCoding:
                         embeddings.append(embedding)
 
                 if embeddings:
-                    average_embedding = sum(embeddings) / len(embeddings)
-                    # 这里可以将向量保存到数据库或缓存中
-                    # 目前我们使用语义匹配器的缓存机制
+                    # 计算新向量
+                    new_embedding = sum(embeddings) / len(embeddings)
+                    
+                    # 检查是否存在历史向量
                     combined_text = f"{second_level_code.get('name', '')} {second_level_code.get('description', '')}"
-                    self.semantic_matcher.embeddings_cache[combined_text] = average_embedding
-                    logger.debug(f"更新二阶编码向量: {second_level_code.get('name')}")
+                    if combined_text in self.semantic_matcher.embeddings_cache:
+                        # 增量更新：结合历史向量和新向量
+                        historical_embedding = self.semantic_matcher.embeddings_cache[combined_text]
+                        # 使用加权平均，给新向量更高权重
+                        updated_embedding = (historical_embedding * 0.7) + (new_embedding * 0.3)
+                        self.semantic_matcher.embeddings_cache[combined_text] = updated_embedding
+                        logger.debug(f"增量更新二阶编码向量: {second_level_code.get('name')}")
+                    else:
+                        # 新编码，直接使用新向量
+                        self.semantic_matcher.embeddings_cache[combined_text] = new_embedding
+                        logger.debug(f"新增二阶编码向量: {second_level_code.get('name')}")
                 else:
                     logger.warning(f"无法计算二阶编码 {second_level_code.get('name')} 的向量表示")
 
@@ -221,7 +253,7 @@ class EnhancedManualCoding:
 
     def _update_third_level_vector(self, third_level_code: Dict[str, Any], second_level_codes: Dict[str, Any]):
         """
-        更新三阶编码的向量表示
+        更新三阶编码的向量表示（增量更新）
 
         Args:
             third_level_code: 三阶编码信息
@@ -242,12 +274,22 @@ class EnhancedManualCoding:
                         embeddings.append(embedding)
 
                 if embeddings:
-                    average_embedding = sum(embeddings) / len(embeddings)
-                    # 这里可以将向量保存到数据库或缓存中
-                    # 目前我们使用语义匹配器的缓存机制
+                    # 计算新向量
+                    new_embedding = sum(embeddings) / len(embeddings)
+                    
+                    # 检查是否存在历史向量
                     combined_text = f"{third_level_code.get('name', '')} {third_level_code.get('description', '')}"
-                    self.semantic_matcher.embeddings_cache[combined_text] = average_embedding
-                    logger.debug(f"更新三阶编码向量: {third_level_code.get('name')}")
+                    if combined_text in self.semantic_matcher.embeddings_cache:
+                        # 增量更新：结合历史向量和新向量
+                        historical_embedding = self.semantic_matcher.embeddings_cache[combined_text]
+                        # 使用加权平均，给新向量更高权重
+                        updated_embedding = (historical_embedding * 0.7) + (new_embedding * 0.3)
+                        self.semantic_matcher.embeddings_cache[combined_text] = updated_embedding
+                        logger.debug(f"增量更新三阶编码向量: {third_level_code.get('name')}")
+                    else:
+                        # 新编码，直接使用新向量
+                        self.semantic_matcher.embeddings_cache[combined_text] = new_embedding
+                        logger.debug(f"新增三阶编码向量: {third_level_code.get('name')}")
                 else:
                     logger.warning(f"无法计算三阶编码 {third_level_code.get('name')} 的向量表示")
 
@@ -358,22 +400,24 @@ class EnhancedManualCoding:
             training_data: 训练数据
 
         Returns:
-            集成结果
+            集成结果，包含编码处理结果
         """
         try:
             logger.info("开始与模型训练流程集成")
 
             # 处理训练数据中的编码信息
-            if "structured_codes" in training_data:
-                # 处理编码信息
-                processing_result = self.process_standard_answer(training_data)
-                if processing_result["success"]:
-                    logger.info("编码处理成功，继续模型训练")
-                else:
-                    logger.warning(f"编码处理失败: {processing_result['message']}")
+            processing_result = self.process_standard_answer(training_data)
+            if processing_result["success"]:
+                logger.info("编码处理成功，继续模型训练")
+            else:
+                logger.warning(f"编码处理失败: {processing_result['message']}")
 
             logger.info("与模型训练流程集成完成")
-            return {"success": True, "message": "集成成功"}
+            return {
+                "success": True, 
+                "message": "集成成功",
+                "processing_result": processing_result.get("result", {})
+            }
 
         except Exception as e:
             logger.error(f"与模型训练流程集成失败: {e}")
