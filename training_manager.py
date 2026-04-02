@@ -162,6 +162,8 @@ class GroundedTheoryTrainingThread(QThread):
                     self.training_finished.emit(False, f"训练条件不满足: {reason}", self.coding_processing_result)
                     return
 
+
+
             self.progress_updated.emit(10)
             texts, labels, label_mapping = self.prepare_training_data()
 
@@ -226,12 +228,22 @@ class GroundedTheoryTrainingThread(QThread):
                     else:
                         self.training_finished.emit(False, message, self.coding_processing_result)
 
-            success = finetuner.train(
-                dataset,
-                output_dir,
-                progress_callback=progress_callback,
-                finished_callback=finished_callback
-            )
+            if self.incremental:
+                # 增量训练
+                success = finetuner.train_incremental(
+                    dataset,
+                    output_dir,
+                    progress_callback=progress_callback,
+                    finished_callback=finished_callback
+                )
+            else:
+                # 首次训练
+                success = finetuner.train(
+                    dataset,
+                    output_dir,
+                    progress_callback=progress_callback,
+                    finished_callback=finished_callback
+                )
 
             if not success:
                 if self.fallback_to_classifier:
@@ -573,6 +585,29 @@ class EnhancedTrainingManager:
                 finished_callback(False, "没有标准答案数据")
             return
 
+        # 增量训练时先检查是否有已加载的模型
+        if incremental and training_mode == Config.TRAINING_MODE_BERT_FINETUNE:
+            # 检查模型是否已经加载
+            if not model_manager.is_trained_model_available():
+                if finished_callback:
+                    finished_callback(False, "请加载最新模型")
+                return
+            
+            # 检查是否有可用的BERT微调模型文件
+            try:
+                from bert_finetuner import BERTFineTuner
+                finetuner = BERTFineTuner(model_manager, config=training_config)
+                latest_model_path = finetuner._find_latest_model()
+                if not latest_model_path or not os.path.exists(latest_model_path):
+                    if finished_callback:
+                        finished_callback(False, "请加载最新模型")
+                    return
+            except Exception as e:
+                logger.error(f"检查模型失败: {e}")
+                if finished_callback:
+                    finished_callback(False, "请加载最新模型")
+                return
+
         # 训练前创建编码库备份
         try:
             from enhanced_manual_coding import EnhancedManualCoding
@@ -620,8 +655,9 @@ class EnhancedTrainingManager:
         if finished_callback:
             # 包装finished_callback，添加编码更新结果显示
             def wrapped_finished_callback(success, message, coding_processing_result):
-                # 显示编码更新结果
-                self._show_coding_update_result(coding_processing_result)
+                # 只有训练成功时才显示编码更新结果
+                if success:
+                    self._show_coding_update_result(coding_processing_result)
                 # 调用原始回调
                 finished_callback(success, message)
             self.training_thread.training_finished.connect(wrapped_finished_callback)

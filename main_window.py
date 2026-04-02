@@ -3369,13 +3369,15 @@ class MainWindow(QMainWindow):
         try:
             self.training_progress.setFormat("增量训练中... %p%")
 
+            # 使用BERT_FINETUNE模式进行增量训练，设置fallback_to_classifier为False
             self.enhanced_training_manager.train_grounded_theory_model(
                 training_data,
                 self.model_manager,
                 progress_callback=lambda v: self.update_training_progress_with_stage(v, "增量训练"),
                 finished_callback=self.on_training_finished,
                 model_type='bert',
-                training_mode='incremental',
+                training_mode=Config.TRAINING_MODE_BERT_FINETUNE,
+                fallback_to_classifier=False,
                 training_config=config,
                 incremental=True
             )

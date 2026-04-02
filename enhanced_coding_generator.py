@@ -250,13 +250,12 @@ class EnhancedCodingGenerator:
         return first_level_codes
 
     def abstract_sentence(self, sentence: str) -> str:
-        """抽象提炼句子内容"""
+        """抽象提炼句子内容，生成15字以下的完整主谓宾句子"""
         # 检查缓存
         if sentence in self.abstract_cache:
             return self.abstract_cache[sentence]
 
         # 移除说话人标记（如 B：, 答：等）
-        # 使用正则表达式移除句子开头的说话人前缀，保留剩余部分
         abstracted = re.sub(r'^(?:[Bb]|答|回答|受访|被访)[:：]\s*', '', sentence)
 
         # 移除一阶编码标记（如 [A1], [A2] 等）
@@ -277,88 +276,208 @@ class EnhancedCodingGenerator:
         # 移除多余的空格
         abstracted = re.sub(r'\s+', ' ', abstracted).strip()
 
-        # 提取核心内容
-        if len(abstracted) > 50:
-            # 尝试提取句子的核心部分
-            # 查找关键动词
-            core_verbs = ['负责', '管理', '开发', '设计', '实现', '解决', '处理',
-                          '优化', '改进', '创新', '合作', '协调', '沟通',
-                          '规划', '执行', '监控', '评估', '分析', '研究',
-                          '建立', '构建', '创建', '制定', '实施', '推动',
-                          '提升', '增强', '提高', '降低', '减少', '增加',
-                          '探索', '尝试', '实践', '应用', '推广', '普及']
+        # 按句号分割句子
+        sentences = [s.strip() for s in abstracted.split('。') if s.strip()]
+        if not sentences:
+            # 缓存结果
+            self.abstract_cache[sentence] = abstracted
+            return abstracted
 
-            # 查找关键名词
-            core_nouns = ['团队', '部门', '项目', '任务', '工作', '职责',
-                         '流程', '制度', '标准', '规范', '方法', '技术',
-                         '产品', '服务', '客户', '用户', '市场', '需求',
-                         '问题', '挑战', '机会', '风险', '成果', '效果']
+        # 选择最合适的句子（优先选择包含主谓宾结构的句子）
+        best_sentence = sentences[0]
+        max_score = 0
 
-            # 优先基于关键动词提取核心内容
-            core_content = None
-            for verb in core_verbs:
-                if verb in abstracted:
-                    # 以关键动词为中心提取核心内容
-                    verb_index = abstracted.find(verb)
-                    # 向前查找句子边界
-                    start = max(0, abstracted.rfind('。', 0, verb_index))
-                    if start == 0:
-                        start = max(0, abstracted.rfind('，', 0, verb_index))
-                    # 向后查找句子边界
-                    end = abstracted.find('。', verb_index + len(verb))
-                    if end == -1:
-                        end = abstracted.find('，', verb_index + len(verb))
-                    if end == -1:
-                        end = len(abstracted)
+        for s in sentences:
+            score = self._calculate_sentence_score(s)
+            if score > max_score:
+                max_score = score
+                best_sentence = s
 
-                    core_content = abstracted[start:end].strip()
-                    if core_content:
-                        abstracted = core_content
-                    break
+        abstracted = best_sentence
 
-            # 如果没有找到关键动词，基于关键名词提取
-            if not core_content:
-                for noun in core_nouns:
-                    if noun in abstracted:
-                        # 以关键名词为中心提取核心内容
-                        noun_index = abstracted.find(noun)
-                        # 向前查找句子边界
-                        start = max(0, abstracted.rfind('。', 0, noun_index))
-                        if start == 0:
-                            start = max(0, abstracted.rfind('，', 0, noun_index))
-                        # 向后查找句子边界
-                        end = abstracted.find('。', noun_index + len(noun))
-                        if end == -1:
-                            end = abstracted.find('，', noun_index + len(noun))
-                        if end == -1:
-                            end = len(abstracted)
-
-                        core_content = abstracted[start:end].strip()
-                        if core_content:
-                            abstracted = core_content
-                        break
-
-            # 如果仍然没有提取到核心内容，使用段落分割
-            if not core_content:
-                # 按句号分割段落
-                sentences = abstracted.split('。')
-                # 选择最长的句子作为核心内容
-                if sentences:
-                    longest_sentence = max(sentences, key=len)
-                    abstracted = longest_sentence.strip()
-
-        # 确保内容长度合理
-        # 增加长度限制以保留更多完整内容（从 80 增加到 500）
-        if len(abstracted) > 500:
-            abstracted = abstracted[:500] + '...'
+        # 确保句子长度在15字以下
+        max_length = 15
+        while len(abstracted) > max_length:
+            # 尝试提取核心主谓宾结构
+            abstracted = self._extract_core_sentence(abstracted)
+            # 如果仍然超过长度，直接截断
+            if len(abstracted) > max_length:
+                abstracted = self._truncate_to_word(abstracted, max_length - 1)  # 留一个字符给句号
+        
+        # 确保句子以句号结尾
+        if abstracted and abstracted[-1] not in '。？！':
+            abstracted += '。'
+        
+        # 再次检查长度，确保不超过15字
+        if len(abstracted) > max_length:
+            abstracted = self._truncate_to_word(abstracted, max_length - 1) + '。'
 
         # 去除开头的标点符号
         abstracted = abstracted.lstrip('，。？！；："\'（）【】[]{}、')
+
+        # 确保句子以句号结尾
+        if abstracted and abstracted[-1] not in '。？！':
+            abstracted += '。'
 
         # 缓存结果
         self.abstract_cache[sentence] = abstracted
 
         return abstracted
+
+    def _calculate_sentence_score(self, sentence: str) -> int:
+        """计算句子得分，优先选择包含主谓宾结构的句子"""
+        score = 0
+        
+        # 检查是否包含关键动词（谓语）
+        core_verbs = ['负责', '管理', '开发', '设计', '实现', '解决', '处理',
+                      '优化', '改进', '创新', '合作', '协调', '沟通',
+                      '规划', '执行', '监控', '评估', '分析', '研究',
+                      '建立', '构建', '创建', '制定', '实施', '推动',
+                      '提升', '增强', '提高', '降低', '减少', '增加',
+                      '探索', '尝试', '实践', '应用', '推广', '普及']
+        
+        # 检查是否包含关键名词（主语或宾语）
+        core_nouns = ['团队', '部门', '项目', '任务', '工作', '职责',
+                     '流程', '制度', '标准', '规范', '方法', '技术',
+                     '产品', '服务', '客户', '用户', '市场', '需求',
+                     '问题', '挑战', '机会', '风险', '成果', '效果']
+        
+        # 检查是否包含主语标识
+        subjects = ['我们', '我', '公司', '团队', '部门', '企业', '组织']
+        
+        # 计算得分
+        for verb in core_verbs:
+            if verb in sentence:
+                score += 3  # 动词权重最高
+                break
+        
+        noun_count = 0
+        for noun in core_nouns:
+            if noun in sentence:
+                noun_count += 1
+        score += noun_count * 2  # 名词权重次之
+        
+        for subject in subjects:
+            if subject in sentence:
+                score += 2  # 主语权重
+                break
+        
+        # 长度得分（优先选择中等长度的句子）
+        if 8 <= len(sentence) <= 15:
+            score += 3
+        elif 5 <= len(sentence) < 8:
+            score += 2
+        elif len(sentence) < 5:
+            score += 1
+        
+        return score
+
+    def _extract_core_sentence(self, sentence: str) -> str:
+        """提取核心主谓宾结构"""
+        # 优先提取包含关键动词的部分
+        core_verbs = ['负责', '管理', '开发', '设计', '实现', '解决', '处理',
+                      '优化', '改进', '创新', '合作', '协调', '沟通',
+                      '规划', '执行', '监控', '评估', '分析', '研究',
+                      '建立', '构建', '创建', '制定', '实施', '推动',
+                      '提升', '增强', '提高', '降低', '减少', '增加',
+                      '探索', '尝试', '实践', '应用', '推广', '普及']
+        
+        for verb in core_verbs:
+            if verb in sentence:
+                # 找到动词位置
+                verb_index = sentence.find(verb)
+                
+                # 向前查找主语（寻找最近的名词或主语标识）
+                subjects = ['我们', '我', '公司', '团队', '部门', '企业', '组织']
+                start = 0
+                for i in range(verb_index - 1, -1, -1):
+                    if sentence[i] in '，。？！；：':
+                        start = i + 1
+                        break
+                
+                # 检查主语
+                subject_found = False
+                subject_start = start
+                for subject in subjects:
+                    if subject in sentence[start:verb_index]:
+                        subject_found = True
+                        subject_start = sentence.find(subject, start, verb_index)
+                        break
+                
+                if not subject_found:
+                    # 尝试找到名词作为主语
+                    core_nouns = ['团队', '部门', '项目', '任务', '工作', '职责',
+                                 '流程', '制度', '标准', '规范', '方法', '技术',
+                                 '产品', '服务', '客户', '用户', '市场', '需求']
+                    for noun in core_nouns:
+                        if noun in sentence[start:verb_index]:
+                            subject_found = True
+                            subject_start = sentence.find(noun, start, verb_index)
+                            break
+                
+                # 向后查找宾语
+                end = len(sentence)
+                for i in range(verb_index + len(verb), len(sentence)):
+                    if sentence[i] in '，。？！；：':
+                        end = i
+                        break
+                
+                # 提取主谓宾结构
+                core = sentence[subject_start:end].strip()
+                if core:
+                    # 确保长度不超过15字
+                    if len(core) > 15:
+                        # 尝试进一步简化
+                        # 只保留主语和谓语，或者主语+谓语+简单宾语
+                        # 找到第一个宾语
+                        obj_start = verb_index + len(verb)
+                        obj_end = end
+                        for i in range(obj_start, end):
+                            if sentence[i] in '，。？！；：':
+                                obj_end = i
+                                break
+                        
+                        # 尝试构建更简洁的句子
+                        simple_core = sentence[subject_start:obj_end].strip()
+                        if len(simple_core) <= 14:
+                            return simple_core
+                        else:
+                            # 只保留主语和谓语
+                            return sentence[subject_start:verb_index + len(verb)].strip()
+                    return core
+        
+        # 如果没有找到关键动词，返回原句的前15字
+        return self._truncate_to_word(sentence, 15)
+
+    def _truncate_to_word(self, text: str, max_length: int) -> str:
+        """截断文本到指定长度，确保是完整的词语"""
+        if len(text) <= max_length:
+            return text
+        
+        # 从开头截取到指定长度
+        truncated = text[:max_length]
+        
+        # 找到最后一个完整的词语边界
+        punctuation = '，。？！；："\'（）【】[]{}、'
+        for i in range(len(truncated) - 1, -1, -1):
+            if truncated[i] in punctuation:
+                # 去除结尾的逗号
+                if truncated[i] == '，':
+                    return truncated[:i].strip()
+                return truncated[:i+1].strip()
+        
+        # 如果没有标点，尝试找到最后一个词语的边界
+        # 检查最后一个字符是否是汉字
+        if truncated and '一' <= truncated[-1] <= '鿿':
+            return truncated.strip()
+        
+        # 尝试向前查找词语边界
+        for i in range(len(truncated) - 1, -1, -1):
+            if '一' <= truncated[i] <= '鿿':
+                return truncated[:i+1].strip()
+        
+        # 如果都不行，返回截断的文本
+        return truncated.strip()
 
     def generate_second_level_codes_improved(self, first_level_codes: Dict[str, List[str]]) -> Dict[str, List[str]]:
         """生成二阶编码"""

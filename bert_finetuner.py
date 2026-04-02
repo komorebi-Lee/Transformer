@@ -569,8 +569,9 @@ class BERTFineTuner:
                 underlying_dataset = underlying_dataset.dataset
 
             # 增量训练时保留已有标签映射，只添加新标签
+            original_label_count = len(self.label_to_id) if self.label_to_id else 0
             if self.model is not None and self.label_to_id:
-                logger.info(f"增量训练模式：保留已有标签映射 ({len(self.label_to_id)} 个标签)")
+                logger.info(f"增量训练模式：保留已有标签映射 ({original_label_count} 个标签)")
                 # 从新数据中提取标签，添加新标签到已有映射
                 if hasattr(underlying_dataset, 'label_to_id'):
                     new_label_to_id = underlying_dataset.label_to_id
@@ -616,8 +617,12 @@ class BERTFineTuner:
             num_labels = len(self.label_to_id)
             logger.info(f"标签数量: {num_labels}")
 
-            # 只有在模型未加载时才准备模型（增量训练时已加载）
-            if self.model is None:
+            # 检查是否需要更新模型（添加了新标签）
+            if self.model is not None and num_labels > original_label_count:
+                logger.info(f"添加了新标签，需要更新模型以适应新的标签数量: {original_label_count} -> {num_labels}")
+                # 重新创建模型以适应新的标签数量
+                self._prepare_model(num_labels, model_path=self.previous_model_path)
+            elif self.model is None:
                 logger.info("模型未加载，准备新模型")
                 self._prepare_model(num_labels)
             else:
