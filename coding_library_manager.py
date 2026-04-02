@@ -1,6 +1,7 @@
 import json
 import os
 import logging
+from datetime import datetime
 from typing import Dict, List, Any, Optional
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,10 @@ class CodingLibraryManager:
         self.third_level_codes: List[Dict[str, Any]] = []
         self.code_mappings: Dict[str, Dict[str, Any]] = {}
         self.semantic_matcher = semantic_matcher
+        # 备份相关设置
+        self.backup_dir = os.path.join(os.path.dirname(library_path), "backups")
+        # 确保备份目录存在
+        os.makedirs(self.backup_dir, exist_ok=True)
 
         self.load_library()
 
@@ -45,8 +50,11 @@ class CodingLibraryManager:
             self.second_level_codes = []
             for third_level in self.library_data.get('encoding_library', {}).get('third_level_codes', []):
                 third_level_name = third_level.get('name')
+                third_level_id = third_level.get('id')
                 for second_level in third_level.get('second_level_codes', []):
                     second_level['third_level'] = third_level_name
+                    if 'third_level_id' not in second_level and third_level_id:
+                        second_level['third_level_id'] = third_level_id
                     self.second_level_codes.append(second_level)
 
             # 提取所有三阶编码
@@ -153,7 +161,8 @@ class CodingLibraryManager:
                 'id': code_id,
                 'name': name,
                 'description': description,
-                'third_level': third_level.get('name')
+                'third_level': third_level.get('name'),
+                'third_level_id': third_level_id
             }
 
             # 添加到三阶编码的二阶编码列表
@@ -194,6 +203,9 @@ class CodingLibraryManager:
             for code in self.third_level_codes:
                 if code.get('id') == code_id:
                     logger.error(f"三阶编码ID {code_id} 已存在")
+                    return False
+                if code.get('name') == name:
+                    logger.error(f"三阶编码名称 {name} 已存在")
                     return False
 
             # 创建新的三阶编码
@@ -410,3 +422,141 @@ class CodingLibraryManager:
             'third_level_count': len(self.third_level_codes),
             'second_level_count': len(self.second_level_codes)
         }
+
+    def create_backup(self, reason: str = "自动备份") -> str:
+        """
+        创建编码库的备份
+
+        Args:
+            reason: 备份原因
+
+        Returns:
+            备份文件路径
+        """
+        try:
+            # 生成备份文件名，包含时间戳
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            backup_filename = f"coding_library_{timestamp}.json"
+            backup_path = os.path.join(self.backup_dir, backup_filename)
+            
+            # 读取当前编码库文件内容
+            if os.path.exists(self.library_path):
+                with open(self.library_path, 'r', encoding='utf-8') as f:
+                    current_content = f.read()
+                
+                # 保存到备份文件
+                with open(backup_path, 'w', encoding='utf-8') as f:
+                    f.write(current_content)
+                
+                # 记录备份信息
+                backup_info = {
+                    'timestamp': timestamp,
+                    'reason': reason,
+                    'file_path': backup_path,
+                    'third_level_count': len(self.third_level_codes),
+                    'second_level_count': len(self.second_level_codes)
+                }
+                
+                # 保存备份信息到备份目录的info文件
+                info_file = os.path.join(self.backup_dir, "backup_info.json")
+                backup_infos = []
+                if os.path.exists(info_file):
+                    with open(info_file, 'r', encoding='utf-8') as f:
+                        backup_infos = json.load(f)
+                
+                backup_infos.append(backup_info)
+                # 只保留最近20个备份
+                if len(backup_infos) > 20:
+                    backup_infos = backup_infos[-20:]
+                
+                with open(info_file, 'w', encoding='utf-8') as f:
+                    json.dump(backup_infos, f, ensure_ascii=False, indent=2)
+                
+                logger.info(f"编码库备份成功: {backup_path}")
+                return backup_path
+            else:
+                logger.error(f"编码库文件不存在: {self.library_path}")
+                return ""
+        except Exception as e:
+            logger.error(f"创建备份失败: {e}")
+            return ""
+
+    def get_backup_list(self) -> List[Dict[str, Any]]:
+        """
+        获取所有备份文件列表
+
+        Returns:
+            备份信息列表
+        """
+        try:
+            info_file = os.path.join(self.backup_dir, "backup_info.json")
+            if os.path.exists(info_file):
+                with open(info_file, 'r', encoding='utf-8') as f:
+                    backup_infos = json.load(f)
+                # 按时间戳降序排序
+                backup_infos.sort(key=lambda x: x['timestamp'], reverse=True)
+                return backup_infos
+            else:
+                return []
+        except Exception as e:
+            logger.error(f"获取备份列表失败: {e}")
+            return []
+
+    def restore_from_backup(self, backup_path: str) -> bool:
+        """
+        从备份文件恢复编码库
+
+        Args:
+            backup_path: 备份文件路径
+
+        Returns:
+            是否恢复成功
+        """
+        try:
+            if not os.path.exists(backup_path):
+                logger.error(f"备份文件不存在: {backup_path}")
+                return False
+            
+            # 先创建当前状态的备份
+            self.create_backup("恢复前备份")
+            
+            # 读取备份文件内容
+            with open(backup_path, 'r', encoding='utf-8') as f:
+                backup_content = f.read()
+            
+            # 写入到当前编码库文件
+            with open(self.library_path, 'w', encoding='utf-8') as f:
+                f.write(backup_content)
+            
+            # 重新加载编码库
+            success = self.load_library()
+            if success:
+                logger.info(f"从备份恢复编码库成功: {backup_path}")
+            else:
+                logger.error(f"从备份恢复编码库失败: 加载失败")
+            
+            return success
+        except Exception as e:
+            logger.error(f"从备份恢复失败: {e}")
+            return False
+
+    def save_library(self) -> bool:
+        """
+        保存编码库到文件
+
+        Returns:
+            是否保存成功
+        """
+        try:
+            # 保存前创建备份
+            self.create_backup("保存前备份")
+            
+            with open(self.library_path, 'w', encoding='utf-8') as f:
+                json.dump(self.library_data, f, ensure_ascii=False, indent=2)
+
+            logger.info(f"编码库已保存到: {self.library_path}")
+            return True
+
+        except Exception as e:
+            logger.error(f"保存编码库失败: {e}")
+            return False

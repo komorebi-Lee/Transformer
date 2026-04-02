@@ -1,0 +1,68 @@
+{
+  "system_info": {
+    "timestamp": "2026-03-31T20:19:24.973116",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "system": "Windows",
+    "release": "10",
+    "version": "10.0.26200",
+    "machine": "AMD64",
+    "processor": "AMD64 Family 25 Model 97 Stepping 2, AuthenticAMD",
+    "python_version": "3.9.10 (tags/v3.9.10:f2f3f53, Jan 17 2022, 15:14:21) [MSC v.1929 64 bit (AMD64)]",
+    "python_executable": "D:\\python\\python.exe"
+  },
+  "memory_info": {
+    "total_gb": 15.19,
+    "available_gb": 3.05,
+    "used_gb": 12.14,
+    "percent": 79.9
+  },
+  "gpu_info": [
+    {
+      "index": 0,
+      "name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "memory_total": "8188 MiB",
+      "memory_used": "0 MiB",
+      "memory_free": "7957 MiB",
+      "temperature": "44"
+    },
+    {
+      "torch_cuda_available": false
+    }
+  ],
+  "disk_space": [
+    {
+      "device": "C:\\",
+      "mountpoint": "C:\\",
+      "total_gb": 300.0,
+      "used_gb": 257.1,
+      "free_gb": 42.9,
+      "percent": 85.7
+    },
+    {
+      "device": "D:\\",
+      "mountpoint": "D:\\",
+      "total_gb": 651.64,
+      "used_gb": 528.28,
+      "free_gb": 123.36,
+      "percent": 81.1
+    }
+  ],
+  "python_packages": {
+    "torch": "2.8.0+cpu",
+    "tensorflow": "not installed",
+    "numpy": "2.0.2",
+    "pandas": "2.3.3",
+    "sentence-transformers": "not installed",
+    "transformers": "4.57.6",
+    "psutil": "7.2.2"
+  },
+  "training_logs": [],
+  "windows_event_logs": [
+    {
+      "system_errors": "\nTimeGenerated      Source                                     Message          \n-------------      ------                                     -------          \n2026/3/31 20:00:59 Service Control Manager                    VMUSBArbService  \n                                                              服务因下列错误而 \n                                                              停止:            \n                                                              %%2              \n2026/3/31 20:00:59 Service Control Manager                    由于下列错误，XLS\n                                                              ervicePlatform 服\n                                                              务启动失败:      \n                                                              %%1053           \n2026/3/31 20:00:59 Service Control Manager                    等待 XLServicePla\n                                                              tform 服务的连接 \n                                                              超时(120000 毫秒)\n                                                              。               \n2026/3/31 20:00:58 Service Control Manager                    由于下列错误，And\n                                                              rowsSvr 服务启动 \n                                                              失败:            \n                                                              %%2              \n2026/3/31 20:00:57 Microsoft-Windows-WER-SystemErrorReporting 无法找到源“Micro\n                                                              soft-Windows-WER-\n                                                              SystemErrorReport\n                                                              ing”中事件 ID“1\n                                                              001”的说明。  本\n                                                              地计算机可能没有 \n                                                              显示该消息所需的 \n                                                              注册表信息或消息 \n                                                              DLL 文件，或者您 \n                                                              可能无权访问它们 \n                                                              。  下列信息是该 \n                                                              事件的一部分:'0x0\n                                                              000010e (0x000000\n                                                              000000002d, 0xfff\n                                                              fc6006e1f4b50, 0x\n                                                              ffffc6006e2dd8c0,\n                                                               0xffffa98263c86a\n                                                              50)', 'C:\\WINDOWS\n                                                              \\Minidump\\033126-\n                                                              10718-01.dmp', 'a\n                                                              9fd7499-0646-4239\n                                                              -8ad6-b6edab22397\n                                                              2'               \n2026/3/31 20:00:49 volmgr                                     成功生成备份文件 \n                                                              。               \n2026/3/31 20:00:49 volmgr                                     转储文件创建失败 \n                                                              ，因为在创建转储 \n                                                              期间出错。BugChec\n                                                              kProgress 为： 0x\n                                                              00020063         \n2026/3/31 20:00:59 EventLog                                   上一次系统的 19:5\n                                                              9:06 在 ?2026/?3/\n                                                              ?31 上的关闭是意 \n                                                              外的。           \n2026/3/31 18:10:16 Microsoft-Windows-DeviceAssociationService 设备关联失败 - 枚\n                                                              举器。           \n2026/3/31 18:09:52 Microsoft-Windows-DeviceAssociationService 设备关联失败 - 枚\n                                                              举器。           \n\n\n"
+    },
+    {
+      "application_errors": "\nTimeGenerated      Source           Message                                    \n-------------      ------           -------                                    \n2026/3/31 17:57:28 Application Hang 程序Taskmgr.exe版本10.0.26100.7920停止与 Wi\n                                    ndows 交互并已关闭。若要查看有关此问题的详 \n                                    细信息是否可用，请查看安全性与维护控制面板 \n                                    中的问题历史记录。                         \n                                                                               \n2026/3/30 20:43:49 VSS              卷影复制服务信息: 无法启动 CLSID 为 {4e14fb\n                                    a2-2e22-11d1-9964-00c04fbbb345} 、名称为 CE\n                                    ventSystem 的 COM 服务器。[0x8007045b, 系统\n                                    正在关机。                                 \n                                    ]                                          \n                                                                               \n\n\n"
+    }
+  ]
+}

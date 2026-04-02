@@ -8,6 +8,15 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# 尝试导入psutil库用于内存监控
+psutil = None
+try:
+    import psutil
+    logger.info("psutil 库加载成功")
+except ImportError as e:
+    logger.warning(f"psutil 库加载失败: {e}")
+    logger.warning("内存监控功能将不可用")
+
 # 尝试导入 sentence-transformers
 SentenceTransformer = None
 try:
@@ -46,6 +55,8 @@ class SemanticMatcher:
         self.feedback_data: List[Dict[str, Any]] = []
         self.feedback_file = os.path.join(Config.LOCAL_MODELS_DIR, "feedback_data.json")
         self.code_weights: Dict[str, float] = {}
+        self.cache_size_limit = 10000  # 缓存大小限制
+        self.batch_size_limit = 1000   # 批处理大小限制
 
         # 加载历史反馈数据
         self.load_feedback_data()
@@ -100,6 +111,8 @@ class SemanticMatcher:
 
             # 缓存结果
             self.embeddings_cache[text] = embedding
+            # 管理缓存大小
+            self._manage_cache()
 
             return embedding
 
@@ -133,12 +146,17 @@ class SemanticMatcher:
                 else:
                     uncached_texts.append(text)
 
-            # 计算未缓存的文本
+            # 计算未缓存的文本（分批处理）
             if uncached_texts:
-                new_embeddings = self.model.encode(uncached_texts, show_progress_bar=False)
-                for text, embedding in zip(uncached_texts, new_embeddings):
-                    self.embeddings_cache[text] = embedding
-                    cached_embeddings[text] = embedding
+                # 分批处理，避免内存溢出
+                for i in range(0, len(uncached_texts), self.batch_size_limit):
+                    batch_texts = uncached_texts[i:i + self.batch_size_limit]
+                    new_embeddings = self.model.encode(batch_texts, show_progress_bar=False)
+                    for text, embedding in zip(batch_texts, new_embeddings):
+                        self.embeddings_cache[text] = embedding
+                        cached_embeddings[text] = embedding
+                    # 每批处理后管理缓存
+                    self._manage_cache()
 
             # 按原始顺序返回嵌入
             embeddings = np.array([cached_embeddings[text] for text in texts])
@@ -380,19 +398,30 @@ class SemanticMatcher:
                 logger.warning("反馈数据不足，需要至少10条反馈才能进行增量训练")
                 return False
             
-            # 准备训练数据
+            # 记录训练前内存使用
+            self._log_memory_usage("训练前")
+            
+            # 准备训练数据（分批处理）
             train_examples = []
-            for feedback in self.feedback_data:
-                first_level_text = feedback['first_level_text']
-                second_level_code = feedback['second_level_code']
-                second_level_text = f"{second_level_code.get('name', '')} {second_level_code.get('description', '')}"
+            batch_size_data = 1000  # 数据分批处理大小
+            
+            for i in range(0, len(self.feedback_data), batch_size_data):
+                batch_feedback = self.feedback_data[i:i + batch_size_data]
+                for feedback in batch_feedback:
+                    first_level_text = feedback['first_level_text']
+                    second_level_code = feedback['second_level_code']
+                    second_level_text = f"{second_level_code.get('name', '')} {second_level_code.get('description', '')}"
+                    
+                    if feedback['is_correct']:
+                        # 正例
+                        train_examples.append(InputExample(texts=[first_level_text, second_level_text], label=1.0))
+                    else:
+                        # 负例
+                        train_examples.append(InputExample(texts=[first_level_text, second_level_text], label=0.0))
                 
-                if feedback['is_correct']:
-                    # 正例
-                    train_examples.append(InputExample(texts=[first_level_text, second_level_text], label=1.0))
-                else:
-                    # 负例
-                    train_examples.append(InputExample(texts=[first_level_text, second_level_text], label=0.0))
+                # 每批数据处理后清理缓存
+                self._manage_cache()
+                self._log_memory_usage(f"处理第 {i//batch_size_data + 1} 批数据后")
             
             # 创建数据加载器
             train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=batch_size)
@@ -402,6 +431,8 @@ class SemanticMatcher:
             
             # 开始训练
             logger.info(f"开始增量训练，共 {len(train_examples)} 个样本，{epochs} 轮")
+            self._log_memory_usage("训练开始前")
+            
             self.model.fit(
                 train_objectives=[(train_dataloader, train_loss)],
                 epochs=epochs,
@@ -412,11 +443,14 @@ class SemanticMatcher:
             
             # 清除缓存，使用新模型
             self.clear_cache()
+            self._log_memory_usage("训练完成后")
             logger.info("增量训练完成，模型已更新")
             return True
             
         except Exception as e:
             logger.error(f"增量训练失败: {e}")
+            # 发生异常时清理缓存
+            self.clear_cache()
             return False
 
     def update_code_embeddings(self, second_level_codes: List[Dict[str, Any]]):
@@ -455,6 +489,19 @@ class SemanticMatcher:
         """
         return len(self.embeddings_cache)
 
+    def _manage_cache(self):
+        """
+        管理缓存大小，当超出限制时清理最旧的缓存
+        """
+        if len(self.embeddings_cache) >= self.cache_size_limit:
+            # 计算需要清理的数量
+            items_to_remove = len(self.embeddings_cache) - int(self.cache_size_limit * 0.8)
+            # 移除最旧的缓存项（基于插入顺序）
+            items = list(self.embeddings_cache.keys())[:items_to_remove]
+            for item in items:
+                del self.embeddings_cache[item]
+            logger.info(f"缓存已清理，当前大小: {len(self.embeddings_cache)}")
+
     def get_feedback_stats(self) -> Dict[str, Any]:
         """
         获取反馈统计信息
@@ -472,3 +519,31 @@ class SemanticMatcher:
             'incorrect_feedback': incorrect,
             'code_weights_count': len(self.code_weights)
         }
+
+    def _get_memory_usage(self) -> Dict[str, float]:
+        """
+        获取当前内存使用情况
+
+        Returns:
+            内存使用情况字典
+        """
+        if psutil:
+            process = psutil.Process(os.getpid())
+            memory_info = process.memory_info()
+            return {
+                'rss': memory_info.rss / 1024 / 1024,  # MB
+                'vms': memory_info.vms / 1024 / 1024,  # MB
+                'percent': process.memory_percent()
+            }
+        return {}
+
+    def _log_memory_usage(self, message: str):
+        """
+        记录内存使用情况
+
+        Args:
+            message: 日志消息
+        """
+        memory_usage = self._get_memory_usage()
+        if memory_usage:
+            logger.info(f"{message} - 内存使用: RSS={memory_usage['rss']:.2f}MB, 百分比={memory_usage['percent']:.2f}%")

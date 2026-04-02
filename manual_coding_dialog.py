@@ -107,6 +107,25 @@ class ManualCodingDialog(QDialog):
         self.unclassified_first_codes = []
         self.init_ui()
         self.load_existing_codes()
+        
+        # 显示打开时的确认弹窗
+        reply = QMessageBox.question(
+            self, "确认加载", "是否加载上一次的编码",
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+        )
+
+        if reply == QMessageBox.Yes:
+            # 查找并加载最新的手动编码文件
+            try:
+                latest_file = self.find_latest_manual_coding_file()
+                if latest_file:
+                    # 加载最新的编码文件
+                    self.load_latest_coding_file(latest_file)
+                else:
+                    QMessageBox.information(self, "提示", "没有找到历史保存的编码文件")
+            except Exception as e:
+                logger.error(f"加载上一次编码失败: {e}")
+                QMessageBox.critical(self, "错误", f"加载上一次编码失败: {str(e)}")
 
     def init_ui(self):
         self.setWindowTitle("手动编码工具 - 全屏版")
@@ -817,7 +836,7 @@ class ManualCodingDialog(QDialog):
             QMessageBox.critical(self, "错误", f"编辑自动编码失败: {str(e)}")
 
     def closeEvent(self, event):
-        """对话框关闭事件，保存编码标记状态"""
+        """对话框关闭事件，保存编码标记状态并显示确认弹窗"""
         try:
             # 保存当前文件的编码标记状态
             self.save_current_file_coding_marks()
@@ -825,8 +844,26 @@ class ManualCodingDialog(QDialog):
         except Exception as e:
             logger.error(f"关闭时保存编码标记失败: {e}")
 
-        # 调用父类的关闭事件
-        super().closeEvent(event)
+        # 显示确认弹窗
+        reply = QMessageBox.question(
+            self, "确认关闭", "是否保存当前编码",
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+        )
+
+        if reply == QMessageBox.Yes:
+            # 调用保存编码功能
+            try:
+                self.save_coding()
+                # 保存成功后关闭
+                super().closeEvent(event)
+            except Exception as e:
+                logger.error(f"保存编码失败: {e}")
+                QMessageBox.critical(self, "错误", f"保存编码失败: {str(e)}")
+                # 保存失败，不关闭窗口
+                event.ignore()
+        else:
+            # 直接关闭，不保存
+            super().closeEvent(event)
 
     def select_sentence_for_coding(self):
         """选择句子作为一阶编码 - 仅将文本复制到输入框"""
@@ -7832,3 +7869,77 @@ class ManualCodingDialog(QDialog):
 
         except Exception as e:
             logger.error(f"刷新所有文件显示失败: {e}")
+
+    def find_latest_manual_coding_file(self):
+        """查找最新的手动编码文件"""
+        try:
+            # 获取手动编码保存目录
+            save_dir = PathManager.get_manual_coding_save_dir()
+            
+            # 检查目录是否存在
+            if not os.path.exists(save_dir):
+                logger.info(f"手动编码保存目录不存在: {save_dir}")
+                return None
+            
+            # 获取目录中的所有JSON文件
+            import glob
+            json_files = glob.glob(os.path.join(save_dir, "手动编码_*.json"))
+            
+            if not json_files:
+                logger.info("没有找到手动编码文件")
+                return None
+            
+            # 按修改时间排序，获取最新的文件
+            json_files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+            latest_file = json_files[0]
+            
+            logger.info(f"找到最新的手动编码文件: {latest_file}")
+            return latest_file
+            
+        except Exception as e:
+            logger.error(f"查找最新手动编码文件失败: {e}")
+            return None
+
+    def load_latest_coding_file(self, file_path):
+        """加载最新的编码文件"""
+        try:
+            # 读取编码结果
+            with PathManager.safe_open(file_path, 'r', encoding='utf-8') as f:
+                coding_data = json.load(f)
+            
+            # 恢复编码数据
+            if 'coding_progress' in coding_data:
+                progress = coding_data['coding_progress']
+                # 恢复文件选择状态
+                if 'current_file' in progress:
+                    self.restore_file_selection(progress['current_file'])
+                # 恢复编码计数
+                if 'last_code_id' in progress:
+                    self.restore_code_counter(progress['last_code_id'])
+            
+            # 恢复编码树数据
+            if 'coding_data' in coding_data:
+                self.rebuild_tree_from_data(coding_data['coding_data'])
+            
+            # 恢复current_codes和unclassified_first_codes
+            if 'current_codes' in coding_data:
+                self.current_codes = coding_data['current_codes']
+            
+            if 'unclassified_first_codes' in coding_data:
+                self.unclassified_first_codes = coding_data['unclassified_first_codes']
+            
+            # 恢复文件的编码标记状态
+            if 'files_with_marks' in coding_data:
+                self.restore_files_with_coding_marks(coding_data['files_with_marks'])
+                logger.info(f"恢复了文件的编码标记状态")
+            
+            # 刷新所有文件显示（确保所有文件都能正确显示编码标记）
+            self.refresh_all_files_display()
+            
+            QMessageBox.information(self, "成功",
+                                    f"已加载上一次的编码结果\n\n文件: {os.path.basename(file_path)}")
+            logger.info(f"已加载上一次的编码结果: {file_path}")
+            
+        except Exception as e:
+            logger.error(f"加载编码文件失败: {e}")
+            QMessageBox.critical(self, "错误", f"加载编码文件失败: {str(e)}")

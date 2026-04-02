@@ -369,6 +369,8 @@ class GroundedTheoryTrainingThread(QThread):
         # 首先尝试从standard_answers中获取training_data
         training_data = self.standard_answers.get("training_data", {})
 
+        structured_codes = {}
+        
         if training_data:
             # 使用training_data准备训练样本
             logger.info(f"从training_data中提取训练数据")
@@ -382,6 +384,20 @@ class GroundedTheoryTrainingThread(QThread):
                 else:
                     # 尝试直接处理training_data
                     structured_codes = training_data
+            elif isinstance(training_data, list):
+                # 如果training_data是列表，从列表中构建structured_codes
+                logger.info(f"training_data是列表，包含 {len(training_data)} 个样本")
+                for item in training_data:
+                    if isinstance(item, dict):
+                        third_level = item.get("target_third_category")
+                        second_level = item.get("target_second_category")
+                        target_abstract = item.get("target_abstract", "")
+                        if third_level and second_level and target_abstract:
+                            if third_level not in structured_codes:
+                                structured_codes[third_level] = {}
+                            if second_level not in structured_codes[third_level]:
+                                structured_codes[third_level][second_level] = []
+                            structured_codes[third_level][second_level].append(target_abstract)
         else:
             # 如果没有training_data，尝试从standard_answers中获取structured_codes
             structured_codes = self.standard_answers.get("structured_codes", {})
@@ -556,6 +572,19 @@ class EnhancedTrainingManager:
             if finished_callback:
                 finished_callback(False, "没有标准答案数据")
             return
+
+        # 训练前创建编码库备份
+        try:
+            from enhanced_manual_coding import EnhancedManualCoding
+            enhanced_coding = EnhancedManualCoding()
+            # 创建编码库备份
+            backup_path = enhanced_coding.coding_library_manager.create_backup("训练前备份")
+            if backup_path:
+                logger.info(f"训练前编码库备份成功: {backup_path}")
+            else:
+                logger.warning("训练前编码库备份失败")
+        except Exception as e:
+            logger.error(f"创建编码库备份失败: {e}")
 
         # 集成人工编码增强功能 - 确保所有训练模式都会更新编码库
         coding_processing_result = {}
