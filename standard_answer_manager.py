@@ -506,20 +506,163 @@ class StandardAnswerManager:
                 standard_format[clean_third][clean_second] = []
 
                 for content in first_contents:
-                    # 保留完整的一阶编码数据结构，包括sentence_details
                     if isinstance(content, dict):
-                        # 确保content字段存在
-                        if 'content' not in content and 'name' in content:
-                            content['content'] = content['name']
-                        # 保留完整的字典结构，包括sentence_details
-                        standard_format[clean_third][clean_second].append(content)
+                        # 将自动/手动编码统一为一阶编码标准结构
+                        normalized = self._normalize_first_level_code(content, clean_second)
+                        standard_format[clean_third][clean_second].append(normalized)
                     else:
                         # 处理字符串内容
-                        clean_content = self._clean_first_level_content(str(content))
-                        if clean_content:
-                            standard_format[clean_third][clean_second].append(clean_content)
+                        normalized = self._normalize_first_level_code(
+                            {"content": str(content)},
+                            clean_second
+                        )
+                        if normalized.get("content"):
+                            standard_format[clean_third][clean_second].append(normalized)
 
         return standard_format
+
+    def _normalize_first_level_code(self, first_code: Dict[str, Any], second_category: str) -> Dict[str, Any]:
+        """归一化一阶编码结构，严格输出标准字段。"""
+        data = copy.deepcopy(first_code) if isinstance(first_code, dict) else {"content": str(first_code)}
+
+        content_text = str(
+            data.get("content")
+            or data.get("name")
+            or data.get("numbered_content")
+            or ""
+        ).strip()
+
+        if content_text:
+            content_text = self._clean_first_level_content(content_text)
+            content_text = self._clean_first_level_text(content_text)
+
+        code_id = str(data.get("code_id") or "").strip()
+        if not code_id:
+            # 兜底：尝试从编号内容中提取 Axx
+            numbered_text = str(data.get("numbered_content") or "")
+            match = re.match(r"^\s*(A\d+)", numbered_text)
+            if not match:
+                match = re.match(r"^\s*(A\d+)", content_text)
+            if match:
+                code_id = match.group(1)
+
+        # 始终根据清洗后的内容重建 numbered_content，避免残留前导标点/旧格式。
+        numbered_content = f"{code_id} {content_text}".strip() if code_id else content_text
+
+        raw_original = data.get("original_sentence", [])
+        original_sentence: List[Dict[str, Any]] = []
+
+        if isinstance(raw_original, list):
+            for item in raw_original:
+                if isinstance(item, dict):
+                    original_content = str(
+                        item.get("original_content")
+                        or item.get("content")
+                        or item.get("text")
+                        or ""
+                    ).strip()
+                    if original_content:
+                        original_sentence.append({"original_content": original_content})
+                elif isinstance(item, str) and item.strip():
+                    original_sentence.append({"original_content": item.strip()})
+        elif isinstance(raw_original, dict):
+            original_content = str(
+                raw_original.get("original_content")
+                or raw_original.get("content")
+                or raw_original.get("text")
+                or ""
+            ).strip()
+            if original_content:
+                original_sentence.append({"original_content": original_content})
+        elif isinstance(raw_original, str) and raw_original.strip():
+            original_sentence.append({"original_content": raw_original.strip()})
+
+        if not original_sentence:
+            for detail in data.get("sentence_details", []) if isinstance(data.get("sentence_details", []), list) else []:
+                if isinstance(detail, dict):
+                    original_content = str(
+                        detail.get("original_content")
+                        or detail.get("text")
+                        or detail.get("content")
+                        or ""
+                    ).strip()
+                    if original_content:
+                        original_sentence = [{"original_content": original_content}]
+                        break
+
+        if not original_sentence and content_text:
+            original_sentence = [{"original_content": content_text}]
+
+        raw_details = data.get("sentence_details", [])
+        sentence_details: List[Dict[str, Any]] = []
+
+        if isinstance(raw_details, list):
+            for detail in raw_details:
+                if isinstance(detail, dict):
+                    # 统一规则：sentence_details 的 code_id 对齐当前一阶编码 code_id。
+                    detail_code_id = str(code_id or detail.get("code_id") or "").strip()
+                    detail_filename = str(detail.get("filename") or "").strip()
+                    detail_sentence_id = str(detail.get("sentence_id") or "").strip()
+                    detail_text = str(
+                        detail.get("text")
+                        or detail.get("original_content")
+                        or detail.get("content")
+                        or ""
+                    ).strip()
+
+                    # 严格白名单：仅保留用户定义的四个字段
+                    sentence_details.append({
+                        "code_id": detail_code_id,
+                        "filename": detail_filename,
+                        "sentence_id": detail_sentence_id,
+                        "text": detail_text,
+                    })
+                elif isinstance(detail, str) and detail.strip():
+                    sentence_details.append({
+                        "code_id": code_id,
+                        "filename": "",
+                        "sentence_id": "",
+                        "text": detail.strip(),
+                    })
+
+        sentence_count = data.get("sentence_count")
+        if not isinstance(sentence_count, int) or sentence_count <= 0:
+            sentence_count = len(sentence_details) if sentence_details else len(original_sentence)
+            if sentence_count <= 0:
+                sentence_count = 1
+
+        parent_name = str(data.get("parent") or second_category).strip()
+        parent_name = self._clean_category_name(parent_name) if parent_name else second_category
+
+        # 严格白名单：仅保留用户要求的一阶字段。
+        normalized_first = {
+            "code_id": code_id,
+            "level": 1,
+            "name": content_text,
+            "numbered_content": numbered_content,
+            "parent": parent_name,
+            "original_sentence": original_sentence,
+            "sentence_count": sentence_count,
+            "sentence_details": sentence_details,
+            "content": content_text,
+        }
+
+        return normalized_first
+
+    def _clean_first_level_text(self, text: str) -> str:
+        """清洗一阶编码文本，去除前导说话人前缀和标点。"""
+        if not text:
+            return ""
+
+        cleaned = str(text).strip()
+
+        # 去掉常见说话人前缀，如 B：、A:、答：
+        cleaned = re.sub(r"^(?:[A-Za-z]|答|回答|受访者|采访者)\s*[：:]\s*", "", cleaned)
+
+        # 去掉前导标点，避免出现“，事情……”这类格式
+        cleaned = re.sub(r"^[\s，。！？；：、,.!?;:]+", "", cleaned)
+
+        return cleaned.strip()
 
     def _clean_category_name(self, name: str) -> str:
         """清理类别名称"""
