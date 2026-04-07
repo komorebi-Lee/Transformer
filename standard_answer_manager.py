@@ -768,7 +768,10 @@ class StandardAnswerManager:
                             # 清理尾部的 [A01] / [1] 等编号标记
                             clean_dragged_text = re.sub(r"\s*\[[A-Z]\d+\]", "", dragged_text)
                             clean_dragged_text = re.sub(r"\s*\[\d+\]", "", clean_dragged_text)
+                            # 清理开头的 A01 等编号
                             clean_dragged_text = re.sub(r"^[A-Z]\d+\s+", "", clean_dragged_text).strip()
+                            # 清理中间的 A01 等编号
+                            clean_dragged_text = re.sub(r"\s*[A-Z]\d+\s+", " ", clean_dragged_text).strip()
 
                             if clean_dragged_text:
                                 related_statements.append(clean_dragged_text)

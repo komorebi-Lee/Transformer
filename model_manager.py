@@ -394,6 +394,22 @@ class EnhancedModelManager:
         finetuner = getattr(self, '_bert_finetuner', None)
         if finetuner is not None and finetuner.is_model_loaded():
             return True
+        # 检查trained_models目录中是否存在训练模型文件
+        try:
+            if os.path.exists(self.trained_model_dir):
+                # 检查是否有.pkl文件（分类器模型）
+                pkl_files = [f for f in os.listdir(self.trained_model_dir) if f.endswith('.pkl')]
+                if pkl_files:
+                    return True
+                # 检查是否有目录（BERT微调模型）
+                dirs = [d for d in os.listdir(self.trained_model_dir) if os.path.isdir(os.path.join(self.trained_model_dir, d))]
+                for dir_name in dirs:
+                    dir_path = os.path.join(self.trained_model_dir, dir_name)
+                    # 检查是否是BERT微调模型目录
+                    if self.detect_model_format(dir_path) == "bert_finetune":
+                        return True
+        except Exception as e:
+            logger.debug(f"检查训练模型目录时出错: {e}")
         return False
 
     def get_timestamp(self):

@@ -339,6 +339,7 @@ class BERTFineTuner:
                     self.model = AutoModelForSequenceClassification.from_pretrained(
                         local_model_path,
                         num_labels=num_labels,
+                        ignore_mismatched_sizes=True,
                         problem_type="single_label_classification"
                     )
                 else:
@@ -347,6 +348,7 @@ class BERTFineTuner:
                     self.model = AutoModelForSequenceClassification.from_pretrained(
                         Config.DEFAULT_MODEL_NAME,
                         num_labels=num_labels,
+                        ignore_mismatched_sizes=True,
                         problem_type="single_label_classification"
                     )
 
@@ -706,6 +708,9 @@ class BERTFineTuner:
             if finished_callback:
                 finished_callback(True, "训练完成")
 
+            # 训练完成后清理资源
+            self.clear()
+
             return True
 
         except Exception as e:
@@ -713,7 +718,40 @@ class BERTFineTuner:
             logger.error(error_msg, exc_info=True)
             if finished_callback:
                 finished_callback(False, error_msg)
+            # 训练失败后清理资源
+            self.clear()
             return False
+
+    def clear(self):
+        """
+        清理模型和GPU内存
+        """
+        try:
+            # 释放模型和训练器
+            if hasattr(self, 'model') and self.model is not None:
+                del self.model
+                logger.info("模型已释放")
+            
+            if hasattr(self, 'trainer') and self.trainer is not None:
+                del self.trainer
+                logger.info("训练器已释放")
+            
+            # 释放其他可能的资源
+            if hasattr(self, 'tokenizer'):
+                del self.tokenizer
+                logger.info("分词器已释放")
+            
+            # 强制垃圾回收
+            import gc
+            gc.collect()
+            
+            # 清空CUDA缓存
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+                logger.info("CUDA缓存已清空")
+                logger.info(f"当前GPU内存使用: {torch.cuda.memory_allocated() / 1024**3:.2f} GB")
+        except Exception as e:
+            logger.error(f"清理资源时出错: {e}")
 
     def train_incremental(
         self,
@@ -833,6 +871,8 @@ class BERTFineTuner:
             logger.error(error_msg, exc_info=True)
             if finished_callback:
                 finished_callback(False, error_msg)
+            # 增量训练失败后清理资源
+            self.clear()
             return False
 
     def _find_latest_model(self) -> Optional[str]:

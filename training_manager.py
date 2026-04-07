@@ -436,7 +436,7 @@ class GroundedTheoryTrainingThread(QThread):
                     else:
                         text_content = str(content)
 
-                    if text_content and len(text_content.strip()) > 5:
+                    if text_content and len(text_content.strip()) > 1:
                         texts.append(text_content.strip())
                         labels.append(label_num)
 

@@ -218,7 +218,7 @@ class CodingLibraryManager:
 
             # 添加到编码库
             self.third_level_codes.append(new_third_level)
-            self.library_data.get('encoding_library', {}).get('third_level_codes', []).append(new_third_level)
+            # 不需要再次添加到library_data，因为self.third_level_codes是其引用
 
             # 保存到文件
             self.save_library()
@@ -396,7 +396,7 @@ class CodingLibraryManager:
 
             # 添加到编码库
             self.third_level_codes.append(new_third_level)
-            self.library_data.get('encoding_library', {}).get('third_level_codes', []).append(new_third_level)
+            # 不需要再次添加到library_data，因为self.third_level_codes是其引用
 
             # 保存到文件
             self.save_library()
