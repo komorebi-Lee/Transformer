@@ -31,6 +31,15 @@ class Config:
     MAX_SENTENCE_LENGTH = 512
     SIMILARITY_THRESHOLD = 0.6
     MIN_SENTENCE_LENGTH = 5
+    # 一阶编码最大长度：默认30；设为0表示不限制长度（便于对比是否仍出现断句）
+    FIRST_LEVEL_CODE_MAX_LENGTH = 30
+
+    # 一阶抽象（抽取式）重排序模型配置
+    # 该模型用于在“候选子句片段”中选择最接近人工抽象的一段（不负责改写）
+    ENABLE_ABSTRACT_RERANKER = False
+    ABSTRACT_RERANKER_DIRNAME = "abstract_reranker_latest"
+    ABSTRACT_RERANK_MAX_SPAN_LEN = 8
+    ABSTRACT_RERANK_NEGATIVE_SAMPLES = 4
 
     # BERT微调配置
     FINETUNE_LEARNING_RATE = 2e-5

@@ -4,6 +4,8 @@ import random
 import re
 from typing import Dict, List, Any, Optional, Tuple
 
+import difflib
+
 import torch
 from torch.utils.data import Dataset
 from transformers import BertTokenizer
@@ -70,6 +72,192 @@ class GroundedTheoryDataset(Dataset):
         except Exception as e:
             logger.error(f"处理样本 {idx} 时出错: {e}")
             raise
+
+
+class TextPairBinaryDataset(Dataset):
+    """文本对二分类数据集：输入为 (text_a, text_b)，标签为 0/1"""
+
+    def __init__(self, text_pairs: List[Tuple[str, str]], labels: List[int], tokenizer, max_length: int = 256):
+        if len(text_pairs) != len(labels):
+            raise ValueError(f"文本对数量({len(text_pairs)})与标签数量({len(labels)})不匹配")
+        self.text_pairs = text_pairs
+        self.labels = labels
+        self.tokenizer = tokenizer
+        self.max_length = max_length
+
+    def __len__(self) -> int:
+        return len(self.text_pairs)
+
+    def __getitem__(self, idx: int) -> Dict[str, torch.Tensor]:
+        if idx < 0 or idx >= len(self.text_pairs):
+            raise IndexError(f"索引 {idx} 超出范围 [0, {len(self.text_pairs)})")
+
+        text_a, text_b = self.text_pairs[idx]
+        label = int(self.labels[idx])
+
+        encoding = self.tokenizer(
+            text_a,
+            text_b,
+            max_length=self.max_length,
+            padding='max_length',
+            truncation=True,
+            return_tensors='pt'
+        )
+
+        return {
+            'input_ids': encoding['input_ids'].squeeze(0),
+            'attention_mask': encoding['attention_mask'].squeeze(0),
+            'labels': torch.tensor(label, dtype=torch.long)
+        }
+
+
+def _build_micro_span_candidates(text: str, max_span_len: int = 8) -> List[str]:
+    """把单句切成微子句，并组合连续区间，生成候选片段。"""
+    t = (text or '').strip()
+    if not t:
+        return []
+
+    # 先按句末标点切句，再按逗号切微子句
+    sentences = [p.strip() for p in re.split(r'[。！？；;]', t) if p.strip()]
+    if not sentences:
+        sentences = [t]
+
+    candidates: List[str] = []
+    seen = set()
+
+    def _norm(s: str) -> str:
+        return (s or '').strip().strip('，。？！；:"\'（）【】[]{}、')
+
+    for sent in sentences:
+        sent0 = _norm(sent)
+        if not sent0:
+            continue
+
+        micro = [p.strip() for p in re.split(r'[，,、]', sent0) if p.strip()]
+        if not micro:
+            micro = [sent0]
+
+        # 包含整句
+        key = sent0
+        if key and key not in seen:
+            seen.add(key)
+            candidates.append(key)
+
+        for i in range(len(micro)):
+            built = ''
+            for j in range(i, min(len(micro), i + max_span_len)):
+                built = micro[j] if not built else f"{built}，{micro[j]}"
+                built0 = _norm(built)
+                if not built0:
+                    continue
+                if built0 not in seen:
+                    seen.add(built0)
+                    candidates.append(built0)
+
+    return candidates
+
+
+def create_abstract_rerank_dataset_from_standard_answers(
+    standard_answer_manager,
+    tokenizer=None,
+    max_length: int = 256,
+    max_span_len: int = 8,
+    negative_samples: int = 4,
+    seed: int = 42,
+    min_text_len: int = 6,
+) -> TextPairBinaryDataset:
+    """从标准答案的 training_data 构建“一阶抽象候选重排序”二分类数据集。
+
+    训练样本形式：
+    - text_a: original_content（原句）
+    - text_b: candidate_span（候选片段）
+    - label: 1 表示该候选最接近人工 target_abstract，0 表示负样本
+    """
+    if standard_answer_manager is None:
+        raise ValueError("standard_answer_manager 不能为 None")
+
+    if isinstance(standard_answer_manager, dict):
+        current_answers = standard_answer_manager
+    else:
+        current_answers = standard_answer_manager.get_current_answers()
+
+    if not current_answers:
+        raise ValueError("没有可用的标准答案数据")
+
+    training_data = current_answers.get('training_data', [])
+    if not isinstance(training_data, list) or not training_data:
+        raise ValueError("标准答案中没有可用的 training_data 列表")
+
+    if tokenizer is None:
+        try:
+            from config import Config
+            from transformers import AutoTokenizer
+            local_model_path = os.path.join(Config.LOCAL_MODELS_DIR, Config.DEFAULT_MODEL_NAME)
+            tokenizer = AutoTokenizer.from_pretrained(local_model_path) if os.path.exists(local_model_path) else AutoTokenizer.from_pretrained(Config.DEFAULT_MODEL_NAME)
+        except Exception as e:
+            raise ValueError(f"无法加载 tokenizer: {e}")
+
+    rng = random.Random(seed)
+    text_pairs: List[Tuple[str, str]] = []
+    labels: List[int] = []
+
+    def _sim(a: str, b: str) -> float:
+        return difflib.SequenceMatcher(None, a or '', b or '').ratio()
+
+    kept = 0
+    skipped = 0
+
+    for item in training_data:
+        if not isinstance(item, dict):
+            skipped += 1
+            continue
+
+        input_sentences = item.get('input_sentences', {}) or {}
+        original = (input_sentences.get('original_content') or item.get('text') or '').strip()
+        target = (item.get('target_abstract') or '').strip()
+
+        if len(original) < min_text_len or len(target) < 2:
+            skipped += 1
+            continue
+
+        candidates = _build_micro_span_candidates(original, max_span_len=max_span_len)
+        candidates = [c for c in candidates if len(c) >= 2]
+        if not candidates:
+            skipped += 1
+            continue
+
+        # 选一个“最接近人工抽象”的候选作为正样本
+        best_idx = 0
+        best_score = -1.0
+        for i, c in enumerate(candidates):
+            s = _sim(c, target)
+            if s > best_score:
+                best_score = s
+                best_idx = i
+
+        pos = candidates[best_idx]
+        text_pairs.append((original, pos))
+        labels.append(1)
+
+        neg_pool = [c for i, c in enumerate(candidates) if i != best_idx]
+        if neg_pool:
+            rng.shuffle(neg_pool)
+            for neg in neg_pool[:max(1, int(negative_samples))]:
+                text_pairs.append((original, neg))
+                labels.append(0)
+
+        kept += 1
+
+    if not text_pairs:
+        raise ValueError("无法从标准答案中构建抽象重排序训练数据")
+
+    logger.info(f"抽象重排序数据集构建完成: 原样本 {kept}, 跳过 {skipped}, 训练对数 {len(text_pairs)}")
+
+    dataset = TextPairBinaryDataset(text_pairs, labels, tokenizer, max_length=max_length)
+    # 让上层训练器可推断 num_labels
+    dataset.label_to_id = {0: 0, 1: 1}
+    dataset.id_to_label = {0: 'neg', 1: 'pos'}
+    return dataset
 
 
 def get_label_mapping(standard_answer_manager) -> Tuple[Dict[str, int], Dict[int, str]]:

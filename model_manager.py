@@ -50,6 +50,10 @@ class EnhancedModelManager:
         self.trained_model = None
         self.is_model_loaded = False
 
+        # 一阶抽象重排序模型（可选，独立于分类模型）
+        self._abstract_reranker_model = None
+        self._abstract_reranker_tokenizer = None
+
         logger.info(f"使用设备: {self.device}")
 
     def initialize_models(self) -> bool:
@@ -227,27 +231,27 @@ class EnhancedModelManager:
     def load_model_auto(self, model_name: str, model_type: str = None) -> bool:
         """
         自动检测并加载模型（支持PKL分类器和BERT微调两种格式）
-        
+
         Args:
             model_name: 模型名称
             model_type: 模型类型 ('classifier' 或 'bert_finetune')，如果为None则自动检测
-            
+
         Returns:
             加载是否成功
         """
         try:
             model_path = os.path.join(self.trained_model_dir, model_name)
-            
+
             if model_type is None:
                 model_type = self.detect_model_format(model_path)
-            
+
             logger.info(f"加载模型: {model_name}, 类型: {model_type}")
-            
+
             if model_type == "bert_finetune":
                 return self._load_bert_finetune_model(model_path)
             else:
                 return self.load_trained_model(model_name)
-                
+
         except Exception as e:
             logger.error(f"自动加载模型失败: {e}")
             return False
@@ -255,10 +259,10 @@ class EnhancedModelManager:
     def _load_bert_finetune_model(self, model_dir: str) -> bool:
         """
         加载BERT微调模型
-        
+
         Args:
             model_dir: 模型目录路径
-            
+
         Returns:
             加载是否成功
         """
@@ -266,19 +270,19 @@ class EnhancedModelManager:
             if not os.path.exists(model_dir):
                 logger.error(f"模型目录不存在: {model_dir}")
                 return False
-            
+
             from bert_finetuner import BERTFineTuner
-            
+
             finetuner = BERTFineTuner(self)
             success = finetuner.load_model(model_dir)
-            
+
             if not success:
                 logger.error("加载BERT微调模型失败")
                 return False
-            
+
             self._bert_finetuner = finetuner
             self._model_type = "bert_finetune"
-            
+
             label_mapping_path = os.path.join(model_dir, 'label_mapping.json')
             if os.path.exists(label_mapping_path):
                 with open(label_mapping_path, 'r', encoding='utf-8') as f:
@@ -286,14 +290,80 @@ class EnhancedModelManager:
                     self._bert_label_mapping = mapping_data.get('label_to_id', {})
                     self._bert_id_to_label = {int(k): v for k, v in mapping_data.get('id_to_label', {}).items()}
                 logger.info(f"BERT微调模型标签映射已加载: {len(self._bert_label_mapping)} 个标签")
-            
+
             self.is_model_loaded = True
             logger.info(f"BERT微调模型已从 {model_dir} 加载成功")
             return True
-            
+
         except Exception as e:
             logger.error(f"加载BERT微调模型失败: {e}")
             return False
+
+    def load_abstract_reranker_model(self, model_dir: str = None) -> bool:
+        """加载一阶抽象重排序模型（BERT微调二分类）。
+
+        该模型用于对 (original, candidate_span) 打分，选择最接近人工抽象的候选片段。
+        """
+        try:
+            if not TRANSFORMERS_AVAILABLE:
+                logger.warning("transformers不可用，无法加载抽象重排序模型")
+                return False
+
+            if model_dir is None:
+                model_dir = os.path.join(self.trained_model_dir, getattr(Config, 'ABSTRACT_RERANKER_DIRNAME', 'abstract_reranker_latest'))
+            model_dir = os.path.normpath(model_dir)
+
+            if not os.path.exists(model_dir):
+                logger.warning(f"抽象重排序模型目录不存在: {model_dir}")
+                return False
+
+            from transformers import AutoTokenizer, AutoModelForSequenceClassification
+
+            self._abstract_reranker_tokenizer = AutoTokenizer.from_pretrained(model_dir)
+            self._abstract_reranker_model = AutoModelForSequenceClassification.from_pretrained(model_dir).to(self.device)
+            self._abstract_reranker_model.eval()
+            logger.info(f"抽象重排序模型已加载: {model_dir}")
+            return True
+
+        except Exception as e:
+            logger.error(f"加载抽象重排序模型失败: {e}")
+            self._abstract_reranker_model = None
+            self._abstract_reranker_tokenizer = None
+            return False
+
+    def is_abstract_reranker_available(self) -> bool:
+        return self._abstract_reranker_model is not None and self._abstract_reranker_tokenizer is not None
+
+    def score_abstract_candidates(self, original: str, candidates: List[str]) -> List[float]:
+        """对候选片段打分，返回每个候选为“正类(更像人工抽象)”的概率。"""
+        if not self.is_abstract_reranker_available():
+            raise ValueError("抽象重排序模型未加载")
+        if not candidates:
+            return []
+
+        tokenizer = self._abstract_reranker_tokenizer
+        model = self._abstract_reranker_model
+
+        inputs = tokenizer(
+            [original] * len(candidates),
+            candidates,
+            padding=True,
+            truncation=True,
+            max_length=getattr(Config, 'MAX_SENTENCE_LENGTH', 512),
+            return_tensors='pt'
+        ).to(self.device)
+
+        with torch.no_grad():
+            outputs = model(**inputs)
+            logits = outputs.logits
+            # 二分类：取 class=1 的 softmax 概率
+            probs = torch.softmax(logits, dim=-1)
+            if probs.size(-1) >= 2:
+                pos = probs[:, 1]
+            else:
+                pos = probs[:, 0]
+
+        return [float(x) for x in pos.detach().cpu().tolist()]
 
     def get_model_type(self) -> str:
         """获取当前加载的模型类型"""
@@ -303,7 +373,7 @@ class EnhancedModelManager:
             return "classifier"
         else:
             return "none"
-    
+
     def get_current_model_info(self) -> Dict[str, Any]:
         """获取当前加载的模型信息"""
         model_type = self.get_model_type()
@@ -329,15 +399,15 @@ class EnhancedModelManager:
     def predict_with_loaded_model(self, texts: List[str]) -> Tuple[np.ndarray, List[str]]:
         """
         使用已加载的模型进行预测（自动选择模型类型）
-        
+
         Args:
             texts: 待预测的文本列表
-            
+
         Returns:
             Tuple[predictions, predicted_labels]
         """
         model_type = self.get_model_type()
-        
+
         if model_type == "bert_finetune":
             return self.predict_with_finetuned_bert(texts)
         elif model_type == "classifier":
@@ -402,7 +472,8 @@ class EnhancedModelManager:
                 if pkl_files:
                     return True
                 # 检查是否有目录（BERT微调模型）
-                dirs = [d for d in os.listdir(self.trained_model_dir) if os.path.isdir(os.path.join(self.trained_model_dir, d))]
+                dirs = [d for d in os.listdir(self.trained_model_dir) if
+                        os.path.isdir(os.path.join(self.trained_model_dir, d))]
                 for dir_name in dirs:
                     dir_path = os.path.join(self.trained_model_dir, dir_name)
                     # 检查是否是BERT微调模型目录
@@ -417,10 +488,10 @@ class EnhancedModelManager:
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     def save_finetuned_bert(
-        self,
-        model_dir: str,
-        metadata: Dict[str, Any],
-        label_mapping: Dict[str, int]
+            self,
+            model_dir: str,
+            metadata: Dict[str, Any],
+            label_mapping: Dict[str, int]
     ) -> bool:
         """
         保存微调后的BERT模型
@@ -549,7 +620,7 @@ class EnhancedModelManager:
 
         try:
             model_files = [f for f in os.listdir(self.trained_model_dir)
-                          if os.path.isdir(os.path.join(self.trained_model_dir, f))]
+                           if os.path.isdir(os.path.join(self.trained_model_dir, f))]
             for model_dir in model_files:
                 full_path = os.path.join(self.trained_model_dir, model_dir)
                 if self.detect_model_format(full_path) == "bert_finetune":

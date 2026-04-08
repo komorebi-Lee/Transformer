@@ -815,7 +815,14 @@ class StandardAnswerManager:
                 # 排除历史文件
                 answer_files = [f for f in answer_files if f not in ['version_history.json', 'merge_history.json']]
                 if answer_files:
-                    answer_files.sort(reverse=True)
+                    def _version_key(name: str):
+                        # 期望格式: v{num}_{yyyymmdd_hhmmss}.json
+                        m = re.match(r'^v(\d+)_([0-9]{8}_[0-9]{6})\.json$', name)
+                        if not m:
+                            return (-1, '')
+                        return (int(m.group(1)), m.group(2))
+
+                    answer_files.sort(key=_version_key, reverse=True)
 
                     # 尝试加载最新的文件，如果失败则尝试下一个
                     for file_name in answer_files:
