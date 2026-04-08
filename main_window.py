@@ -476,6 +476,8 @@ class MainWindow(QMainWindow):
 
             # 初始化编码库管理器
             coding_library = CodingLibraryManager()
+            if not getattr(coding_library, 'load_success', True):
+                raise RuntimeError(f"编码库加载失败，请检查文件: {coding_library.library_path}")
 
             # 获取编码库信息
             library_info = coding_library.get_library_info()
@@ -1335,6 +1337,9 @@ class MainWindow(QMainWindow):
                 self.model_status_label.setText("模型状态: 已就绪")
                 self.statusBar().showMessage("模型初始化成功")
                 logger.info("模型初始化成功")
+
+                # 可选：启动即预加载“一阶抽象候选重排序”模型（独立于二/三阶分类模型）
+                self._preload_abstract_reranker_async()
             else:
                 # 模型初始化失败，尝试下载
                 self.statusBar().showMessage("模型不存在，尝试下载...")
@@ -1360,6 +1365,8 @@ class MainWindow(QMainWindow):
                         # 下载成功后重新初始化
                         model_success = self.model_manager.initialize_models()
                         if model_success:
+                            # 下载并初始化成功后，也尝试预加载抽象重排序模型
+                            self._preload_abstract_reranker_async()
                             # 使用信号更新UI
                             self._update_model_status_signal.emit(True, "模型下载并初始化成功")
                         else:
@@ -1378,6 +1385,31 @@ class MainWindow(QMainWindow):
             logger.error(f"启动模型下载失败: {e}")
             self.model_status_label.setText("模型状态: 下载失败")
             self.init_model_btn.setEnabled(True)
+
+    def _preload_abstract_reranker_async(self):
+        """可选预加载一阶抽象重排序模型（后台线程，避免卡UI）。"""
+        try:
+            if not bool(getattr(Config, 'ENABLE_ABSTRACT_RERANKER', False)):
+                return
+
+            import threading
+
+            def _load():
+                try:
+                    ok = self.model_manager.load_abstract_reranker_model()
+                    if ok:
+                        logger.info("抽象重排序模型预加载成功")
+                    else:
+                        logger.info("抽象重排序模型未加载（可能未训练/目录不存在/依赖不可用）")
+                except Exception as e:
+                    logger.warning(f"抽象重排序模型预加载异常: {e}")
+
+            t = threading.Thread(target=_load)
+            t.daemon = True
+            t.start()
+
+        except Exception as e:
+            logger.warning(f"启动抽象重排序模型预加载失败: {e}")
 
     # 添加信号处理
     def _on_model_initialization_finished(self, success, message):
@@ -2904,11 +2936,12 @@ class MainWindow(QMainWindow):
 
     def find_and_select_first_level_code(self, third_cat, second_cat, content):
         """查找并选中一阶编码"""
+
         # 遍历所有节点查找一阶编码
         def search_in_tree(item):
             if not item:
                 return False
-            
+
             # 检查当前节点是否为一阶编码
             item_data = item.data(0, Qt.UserRole)
             if item_data and item_data.get('level') == 1:
@@ -2919,14 +2952,14 @@ class MainWindow(QMainWindow):
                     # 确保可见
                     self.coding_tree.scrollToItem(item)
                     return True
-            
+
             # 递归搜索子节点
             for i in range(item.childCount()):
                 if search_in_tree(item.child(i)):
                     return True
-            
+
             return False
-        
+
         # 从根节点开始搜索
         for i in range(self.coding_tree.topLevelItemCount()):
             if search_in_tree(self.coding_tree.topLevelItem(i)):
@@ -2962,11 +2995,11 @@ class MainWindow(QMainWindow):
                     clean_content = re.sub(r'\s*\[\d+\]', '', clean_content)
                     clean_content = re.sub(r'^[A-Z]\d+\s+', '', clean_content)
                     clean_content = clean_content.strip()
-                    
+
                     if clean_content:
                         self.navigate_to_sentence_content(clean_content, "")
                         return
-        
+
         # 如果没有original_content，使用原始的高亮方法
         self.highlight_search_result(result)
 
@@ -3501,7 +3534,8 @@ class MainWindow(QMainWindow):
                 return
 
             # 弹出对话框让用户输入二阶编码名称
-            from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QTextEdit, QDialogButtonBox, QComboBox, QHBoxLayout
+            from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QTextEdit, QDialogButtonBox, QComboBox, \
+                QHBoxLayout
 
             dialog = QDialog(self)
             dialog.setWindowTitle("添加二阶编码作为父节点")
@@ -3622,7 +3656,8 @@ class MainWindow(QMainWindow):
                     second_item.setText(3, "")
                     second_item.setText(4, "0")
                     second_item.setText(5, second_code_id)
-                    second_item.setData(0, Qt.UserRole, {"level": 2, "name": clean_second, "code_id": second_code_id, "parent": third_item.text(0)})
+                    second_item.setData(0, Qt.UserRole, {"level": 2, "name": clean_second, "code_id": second_code_id,
+                                                         "parent": third_item.text(0)})
                     # 更新三阶编码的二阶编码数量
                     third_item.setText(2, str(third_item.childCount()))
             else:
@@ -3957,7 +3992,7 @@ class MainWindow(QMainWindow):
                             if root.child(i) == first_item:
                                 root.removeChild(first_item)
                                 break
-                    
+
                     # 添加到新父节点
                     new_second_item.addChild(first_item)
                     # 更新一阶编码的父节点信息

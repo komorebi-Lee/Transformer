@@ -40,6 +40,8 @@ class Config:
     ABSTRACT_RERANKER_DIRNAME = "abstract_reranker_latest"
     ABSTRACT_RERANK_MAX_SPAN_LEN = 8
     ABSTRACT_RERANK_NEGATIVE_SAMPLES = 4
+    # 抽象重排序训练策略：默认仅在模型缺失时训练（可大幅减少重复训练耗时）
+    ABSTRACT_RERANKER_ALWAYS_RETRAIN = False
 
     # BERT微调配置
     FINETUNE_LEARNING_RATE = 2e-5

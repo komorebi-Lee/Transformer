@@ -195,6 +195,9 @@ class EnhancedCodingGenerator:
         # 可选：用监督微调得到的“抽象重排序模型”在候选中再挑一次
         try:
             if Config and getattr(Config, 'ENABLE_ABSTRACT_RERANKER', False) and model_manager is not None:
+                # 兜底：若启用但还没加载，尝试一次懒加载（只尝试一次，避免循环卡顿）
+                if hasattr(model_manager, 'ensure_abstract_reranker_loaded'):
+                    model_manager.ensure_abstract_reranker_loaded()
                 if hasattr(model_manager, 'is_abstract_reranker_available') and model_manager.is_abstract_reranker_available():
                     # 过滤明显碎片候选，减少模型被“半句”干扰
                     filtered = []
@@ -422,10 +425,11 @@ class EnhancedCodingGenerator:
             return self.generate_codes_with_trained_model(processed_data, model_manager, progress_callback)
         else:
             # 使用原有的基于规则的编码生成
-            return self.generate_codes_with_rules(processed_data, progress_callback)
+            return self.generate_codes_with_rules(processed_data, progress_callback, model_manager=model_manager)
 
     def generate_codes_with_rules(self, processed_data: Dict[str, Any],
-                                  progress_callback: Optional[Callable] = None) -> Dict[str, Any]:
+                                  progress_callback: Optional[Callable] = None,
+                                  model_manager=None) -> Dict[str, Any]:
         """使用基于规则的编码生成"""
         try:
             if progress_callback:
@@ -443,8 +447,8 @@ class EnhancedCodingGenerator:
             if progress_callback:
                 progress_callback(30)
 
-            # 生成一阶编码
-            first_level_codes = self.generate_first_level_codes(all_sentences)
+            # 生成一阶编码（可选：使用模型对候选片段重排序）
+            first_level_codes = self.generate_first_level_codes(all_sentences, model_manager=model_manager)
             logger.info(f"生成 {len(first_level_codes)} 个一阶编码")
 
             if progress_callback:
@@ -481,7 +485,7 @@ class EnhancedCodingGenerator:
                 "三阶编码": {"错误": ["系统故障"]}
             }
 
-    def generate_first_level_codes(self, sentences: List[Dict[str, Any]]) -> Dict[str, List[Any]]:
+    def generate_first_level_codes(self, sentences: List[Dict[str, Any]], model_manager=None) -> Dict[str, List[Any]]:
         """生成一阶编码 - 优先抽象提炼受访者语句"""
         first_level_codes = {}
 
@@ -497,7 +501,7 @@ class EnhancedCodingGenerator:
                     code_key = f"FL_{i + 1:04d}"
 
                     first_level_codes[code_key] = [
-                        self.abstract_sentence(content),
+                        self.abstract_sentence(content, model_manager=model_manager),
                         [sentence],  # source_sentences
                         1,  # file_count
                         1,  # sentence_count

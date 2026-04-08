@@ -53,8 +53,29 @@ class EnhancedModelManager:
         # 一阶抽象重排序模型（可选，独立于分类模型）
         self._abstract_reranker_model = None
         self._abstract_reranker_tokenizer = None
+        self._abstract_reranker_load_attempted = False
 
         logger.info(f"使用设备: {self.device}")
+
+    def ensure_abstract_reranker_loaded(self) -> bool:
+        """确保抽象重排序模型已加载（仅尝试一次，避免在循环里反复加载）。
+
+        Returns:
+            bool: 当前是否可用（已加载且可推理）
+        """
+        if self.is_abstract_reranker_available():
+            return True
+        if self._abstract_reranker_load_attempted:
+            return False
+
+        self._abstract_reranker_load_attempted = True
+        if not bool(getattr(Config, 'ENABLE_ABSTRACT_RERANKER', False)):
+            return False
+
+        try:
+            return bool(self.load_abstract_reranker_model())
+        except Exception:
+            return False
 
     def initialize_models(self) -> bool:
         """初始化所有需要的模型"""
@@ -305,6 +326,9 @@ class EnhancedModelManager:
         该模型用于对 (original, candidate_span) 打分，选择最接近人工抽象的候选片段。
         """
         try:
+            if self.is_abstract_reranker_available():
+                return True
+
             if not TRANSFORMERS_AVAILABLE:
                 logger.warning("transformers不可用，无法加载抽象重排序模型")
                 return False

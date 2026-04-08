@@ -30,9 +30,23 @@ class GroundedTheoryDataset(Dataset):
             raise ValueError(f"文本数量({len(texts)})与标签数量({len(labels)})不匹配")
 
         self.texts = texts
-        self.labels = labels
+        self.labels = [int(x) for x in labels]
         self.tokenizer = tokenizer
-        self.max_length = max_length
+        self.max_length = int(max_length)
+
+        # 预分词缓存：显著减少训练时 CPU tokenizer 开销
+        try:
+            self.encodings = self.tokenizer(
+                self.texts,
+                max_length=self.max_length,
+                padding='max_length',
+                truncation=True,
+                return_tensors='pt'
+            )
+            logger.info(f"数据集预分词完成，共 {len(self.texts)} 个样本")
+        except Exception as e:
+            logger.warning(f"数据集预分词失败，将退回为按样本分词: {e}")
+            self.encodings = None
 
         logger.info(f"数据集初始化完成，共 {len(self.texts)} 个样本")
 
@@ -52,23 +66,25 @@ class GroundedTheoryDataset(Dataset):
         if idx < 0 or idx >= len(self.texts):
             raise IndexError(f"索引 {idx} 超出范围 [0, {len(self.texts)})")
 
-        text = self.texts[idx]
         label = self.labels[idx]
 
         try:
-            encoding = self.tokenizer(
-                text,
-                max_length=self.max_length,
-                padding='max_length',
-                truncation=True,
-                return_tensors='pt'
-            )
+            if self.encodings is not None:
+                item = {k: v[idx] for k, v in self.encodings.items()}
+            else:
+                text = self.texts[idx]
+                encoding = self.tokenizer(
+                    text,
+                    max_length=self.max_length,
+                    padding='max_length',
+                    truncation=True,
+                    return_tensors='pt'
+                )
+                item = {k: v.squeeze(0) for k, v in encoding.items()}
 
-            return {
-                'input_ids': encoding['input_ids'].squeeze(0),
-                'attention_mask': encoding['attention_mask'].squeeze(0),
-                'labels': torch.tensor(label, dtype=torch.long)
-            }
+            item['labels'] = torch.tensor(label, dtype=torch.long)
+            return item
+
         except Exception as e:
             logger.error(f"处理样本 {idx} 时出错: {e}")
             raise
@@ -81,9 +97,26 @@ class TextPairBinaryDataset(Dataset):
         if len(text_pairs) != len(labels):
             raise ValueError(f"文本对数量({len(text_pairs)})与标签数量({len(labels)})不匹配")
         self.text_pairs = text_pairs
-        self.labels = labels
+        self.labels = [int(x) for x in labels]
         self.tokenizer = tokenizer
-        self.max_length = max_length
+        self.max_length = int(max_length)
+
+        # 预分词缓存
+        try:
+            a_list = [a for a, _ in self.text_pairs]
+            b_list = [b for _, b in self.text_pairs]
+            self.encodings = self.tokenizer(
+                a_list,
+                b_list,
+                max_length=self.max_length,
+                padding='max_length',
+                truncation=True,
+                return_tensors='pt'
+            )
+            logger.info(f"文本对数据集预分词完成，共 {len(self.text_pairs)} 对")
+        except Exception as e:
+            logger.warning(f"文本对数据集预分词失败，将退回为按样本分词: {e}")
+            self.encodings = None
 
     def __len__(self) -> int:
         return len(self.text_pairs)
@@ -92,23 +125,24 @@ class TextPairBinaryDataset(Dataset):
         if idx < 0 or idx >= len(self.text_pairs):
             raise IndexError(f"索引 {idx} 超出范围 [0, {len(self.text_pairs)})")
 
-        text_a, text_b = self.text_pairs[idx]
         label = int(self.labels[idx])
 
-        encoding = self.tokenizer(
-            text_a,
-            text_b,
-            max_length=self.max_length,
-            padding='max_length',
-            truncation=True,
-            return_tensors='pt'
-        )
+        if self.encodings is not None:
+            item = {k: v[idx] for k, v in self.encodings.items()}
+        else:
+            text_a, text_b = self.text_pairs[idx]
+            encoding = self.tokenizer(
+                text_a,
+                text_b,
+                max_length=self.max_length,
+                padding='max_length',
+                truncation=True,
+                return_tensors='pt'
+            )
+            item = {k: v.squeeze(0) for k, v in encoding.items()}
 
-        return {
-            'input_ids': encoding['input_ids'].squeeze(0),
-            'attention_mask': encoding['attention_mask'].squeeze(0),
-            'labels': torch.tensor(label, dtype=torch.long)
-        }
+        item['labels'] = torch.tensor(label, dtype=torch.long)
+        return item
 
 
 def _build_micro_span_candidates(text: str, max_span_len: int = 8) -> List[str]:

@@ -9,12 +9,14 @@ from datetime import datetime
 
 try:
     import torch
+
     TORCH_AVAILABLE = True
 except ImportError:
     TORCH_AVAILABLE = False
     logging.warning("torch 未安装，GPU检测功能将受限")
 
 from config import Config
+
 # 修复 sklearn 导入
 
 logger = logging.getLogger(__name__)
@@ -23,6 +25,7 @@ try:
     from sklearn.metrics import accuracy_score
     from sklearn.cluster import KMeans
     import sklearn
+
     SKLEARN_AVAILABLE = True
     logger.info("scikit-learn 版本: %s", sklearn.__version__)
 except ImportError as e:
@@ -40,12 +43,12 @@ def check_gpu_memory() -> bool:
     if not TORCH_AVAILABLE:
         logger.warning("torch未安装，无法检测GPU")
         return False
-    
+
     try:
         if not torch.cuda.is_available():
             logger.info("CUDA不可用，将使用CPU训练")
             return True
-        
+
         gpu_count = torch.cuda.device_count()
         for i in range(gpu_count):
             props = torch.cuda.get_device_properties(i)
@@ -53,18 +56,18 @@ def check_gpu_memory() -> bool:
             reserved = torch.cuda.memory_reserved(i) / (1024 ** 3)
             allocated = torch.cuda.memory_allocated(i) / (1024 ** 3)
             free_memory = total_memory - reserved
-            
+
             min_required_memory = 2.0
-            
+
             logger.info(f"GPU {i}: {props.name}, 总显存: {total_memory:.2f}GB, "
-                       f"已用: {allocated:.2f}GB, 空闲: {free_memory:.2f}GB")
-            
+                        f"已用: {allocated:.2f}GB, 空闲: {free_memory:.2f}GB")
+
             if free_memory >= min_required_memory:
                 return True
-        
+
         logger.warning("GPU显存不足，建议至少2GB空闲显存")
         return False
-        
+
     except Exception as e:
         logger.error(f"GPU检测失败: {e}")
         return False
@@ -87,22 +90,22 @@ def check_transformers_available() -> bool:
 def check_training_conditions() -> Tuple[bool, str]:
     """
     检查BERT微调训练条件是否满足
-    
+
     Returns:
         Tuple[bool, str]: (是否可训练, 原因说明)
     """
     if not check_transformers_available():
         return False, "transformers库未安装或不可用，无法进行BERT微调训练"
-    
+
     if not TORCH_AVAILABLE:
         return False, "torch库未安装，无法进行BERT微调训练"
-    
+
     if not SKLEARN_AVAILABLE:
         return False, "scikit-learn库未安装，无法进行训练"
-    
+
     if not check_gpu_memory():
         return False, "GPU显存不足（建议至少2GB空闲显存），BERT微调训练可能失败"
-    
+
     return True, "训练条件满足，可以进行BERT微调训练"
 
 
@@ -113,8 +116,8 @@ class GroundedTheoryTrainingThread(QThread):
     training_finished = pyqtSignal(bool, str, dict)
     fallback_triggered = pyqtSignal(str)
 
-    def __init__(self, training_data: Dict[str, Any], model_manager, standard_answers: Dict[str, Any], 
-                 model_type: str = 'bert', training_mode: str = 'classifier', 
+    def __init__(self, training_data: Dict[str, Any], model_manager, standard_answers: Dict[str, Any],
+                 model_type: str = 'bert', training_mode: str = 'classifier',
                  fallback_to_classifier: bool = True,
                  training_config: Optional[Dict[str, Any]] = None,
                  incremental: bool = False,
@@ -131,11 +134,21 @@ class GroundedTheoryTrainingThread(QThread):
         self.coding_processing_result = coding_processing_result or {}
         self.trained_model_data = None
         self.actual_training_mode = training_mode
+        self.abstract_reranker_result: Dict[str, Any] = {
+            'enabled': bool(getattr(Config, 'ENABLE_ABSTRACT_RERANKER', False)),
+            'status': 'disabled' if not bool(getattr(Config, 'ENABLE_ABSTRACT_RERANKER', False)) else 'pending',
+            'output_dir': None,
+            'message': None,
+            'error': None,
+        }
 
     def run(self):
         try:
             self.progress_updated.emit(0)
             logger.info(f"开始扎根理论模型训练，训练模式: {self.training_mode}, 增量训练: {self.incremental}")
+
+            # 可选：在同一次“训练模型”中先训练一阶抽象重排序模型
+            self._maybe_train_abstract_reranker()
 
             if self.training_mode == Config.TRAINING_MODE_BERT_FINETUNE:
                 self._run_bert_finetune_training()
@@ -145,6 +158,112 @@ class GroundedTheoryTrainingThread(QThread):
         except Exception as e:
             logger.error(f"训练失败: {e}")
             self.training_finished.emit(False, f"训练失败: {str(e)}", self.coding_processing_result)
+
+    def _maybe_train_abstract_reranker(self) -> None:
+        """如启用配置，则在训练线程内训练抽象重排序模型。
+
+        注意：失败/缺样本不应阻断原有二/三阶训练。
+        """
+        if not bool(getattr(Config, 'ENABLE_ABSTRACT_RERANKER', False)):
+            self.abstract_reranker_result.update({'status': 'disabled'})
+            return
+
+        try:
+            from train_abstract_reranker import train_abstract_reranker
+
+            # 若模型已存在，则默认跳过重复训练（仍会尝试加载到内存）。
+            try:
+                reranker_dirname = self.training_config.get(
+                    'abstract_reranker_dirname',
+                    getattr(Config, 'ABSTRACT_RERANKER_DIRNAME', 'abstract_reranker_latest')
+                )
+                output_dir = os.path.join(Config.TRAINED_MODELS_DIR, reranker_dirname)
+                output_dir = os.path.normpath(output_dir)
+
+                always_retrain = bool(getattr(Config, 'ABSTRACT_RERANKER_ALWAYS_RETRAIN', False))
+                model_marker = os.path.join(output_dir, 'config.json')
+
+                if (not always_retrain) and os.path.exists(model_marker):
+                    self.abstract_reranker_result.update({
+                        'status': 'skipped',
+                        'output_dir': output_dir,
+                        'message': '抽象重排序模型已存在，跳过重复训练',
+                    })
+                    try:
+                        if hasattr(self.model_manager, 'load_abstract_reranker_model'):
+                            self.model_manager.load_abstract_reranker_model(output_dir)
+                    except Exception as load_err:
+                        logger.warning(f"抽象重排序模型存在但加载失败: {load_err}")
+                    return
+            except Exception as precheck_err:
+                logger.warning(f"抽象重排序训练前检查失败，将继续尝试训练: {precheck_err}")
+
+            self.abstract_reranker_result.update({'status': 'running'})
+            # 轻量提示一下：UI 的进度条会在后续训练阶段被重置，这里只做最小更新
+            try:
+                self.progress_updated.emit(1)
+            except Exception:
+                pass
+
+            def _progress_callback(cur, total, loss):
+                # 避免干扰主训练进度；这里不做细粒度进度映射
+                return
+
+            ok, output_dir, message = train_abstract_reranker(
+                self.standard_answers,
+                self.model_manager,
+                progress_callback=_progress_callback,
+                training_config=self.training_config,
+            )
+
+            if ok:
+                self.abstract_reranker_result.update({
+                    'status': 'trained',
+                    'output_dir': output_dir,
+                    'message': message,
+                })
+                # 训练后尝试加载到当前进程，便于训练完成后立即可用
+                try:
+                    if hasattr(self.model_manager, 'load_abstract_reranker_model'):
+                        self.model_manager.load_abstract_reranker_model(output_dir)
+                except Exception as load_err:
+                    logger.warning(f"抽象重排序模型训练成功但加载失败: {load_err}")
+            else:
+                self.abstract_reranker_result.update({
+                    'status': 'failed',
+                    'output_dir': output_dir,
+                    'message': message,
+                })
+
+        except ValueError as ve:
+            # 常见：标准答案缺少 original_content/target_abstract，或构建不出样本
+            self.abstract_reranker_result.update({
+                'status': 'skipped',
+                'error': str(ve),
+            })
+            logger.warning(f"跳过抽象重排序训练: {ve}")
+        except Exception as e:
+            self.abstract_reranker_result.update({
+                'status': 'failed',
+                'error': str(e),
+            })
+            logger.warning(f"抽象重排序训练失败（不中断主训练）: {e}")
+
+    def _abstract_reranker_summary(self) -> str:
+        """用于拼接到训练完成提示中。"""
+        if not bool(getattr(Config, 'ENABLE_ABSTRACT_RERANKER', False)):
+            return ""
+
+        status = (self.abstract_reranker_result or {}).get('status')
+        if status == 'trained':
+            return "；抽象重排序：已训练"
+        if status == 'skipped':
+            return "；抽象重排序：跳过"
+        if status == 'failed':
+            return "；抽象重排序：失败"
+        if status == 'running':
+            return "；抽象重排序：进行中"
+        return "；抽象重排序：未执行"
 
     def _run_bert_finetune_training(self):
         """运行BERT微调训练"""
@@ -161,8 +280,6 @@ class GroundedTheoryTrainingThread(QThread):
                 else:
                     self.training_finished.emit(False, f"训练条件不满足: {reason}", self.coding_processing_result)
                     return
-
-
 
             self.progress_updated.emit(10)
             texts, labels, label_mapping = self.prepare_training_data()
@@ -192,7 +309,7 @@ class GroundedTheoryTrainingThread(QThread):
             self.progress_updated.emit(30)
 
             output_dir = os.path.join(Config.TRAINED_MODELS_DIR, "bert_finetuned_latest")
-            
+
             finetuner = BERTFineTuner(self.model_manager, config=self.training_config)
 
             def progress_callback(current_step, total_steps, loss):
@@ -203,7 +320,7 @@ class GroundedTheoryTrainingThread(QThread):
             def finished_callback(success, message):
                 if success:
                     self.progress_updated.emit(100)
-                    
+
                     self.trained_model_data = {
                         "model_path": output_dir,
                         "label_mapping": label_mapping,
@@ -215,8 +332,9 @@ class GroundedTheoryTrainingThread(QThread):
                         "training_mode": self.actual_training_mode,
                         "incremental": self.incremental
                     }
-                    
+
                     msg = f"BERT微调训练完成！共训练 {len(texts)} 个样本，{len(label_mapping)} 个类别"
+                    msg += self._abstract_reranker_summary()
                     self.training_finished.emit(True, msg, self.coding_processing_result)
                 else:
                     if self.fallback_to_classifier:
@@ -265,7 +383,8 @@ class GroundedTheoryTrainingThread(QThread):
                     return
                 except Exception as fallback_error:
                     logger.error(f"降级训练也失败: {fallback_error}")
-                    self.training_finished.emit(False, f"训练失败: {str(e)}，降级训练也失败: {str(fallback_error)}", self.coding_processing_result)
+                    self.training_finished.emit(False, f"训练失败: {str(e)}，降级训练也失败: {str(fallback_error)}",
+                                                self.coding_processing_result)
                     return
             self.training_finished.emit(False, f"BERT微调训练失败: {str(e)}", self.coding_processing_result)
 
@@ -277,7 +396,7 @@ class GroundedTheoryTrainingThread(QThread):
 
             existing_model_data = None
             existing_label_mapping = None
-            
+
             if self.incremental:
                 logger.info("增量训练模式：尝试加载已有模型...")
                 load_success = self.model_manager.load_trained_model("grounded_theory_latest")
@@ -295,13 +414,13 @@ class GroundedTheoryTrainingThread(QThread):
                 logger.info(f"合并标签映射: 已有 {len(existing_label_mapping)} 个, 新数据 {len(label_mapping)} 个")
                 max_id = max(existing_label_mapping.values()) if existing_label_mapping else -1
                 merged_label_mapping = existing_label_mapping.copy()
-                
+
                 for label, _ in label_mapping.items():
                     if label not in merged_label_mapping:
                         max_id += 1
                         merged_label_mapping[label] = max_id
                         logger.info(f"添加新标签: {label} -> {max_id}")
-                
+
                 label_mapping = merged_label_mapping
                 logger.info(f"合并后标签映射: {len(label_mapping)} 个标签")
 
@@ -321,17 +440,18 @@ class GroundedTheoryTrainingThread(QThread):
             if self.incremental and existing_model_data:
                 existing_texts = existing_model_data.get("texts", [])
                 existing_labels = existing_model_data.get("labels", [])
-                
+
                 if existing_texts and existing_labels:
                     logger.info(f"合并训练数据: 已有 {len(existing_texts)} 个, 新数据 {len(texts)} 个")
                     existing_embeddings = self.model_manager.get_embeddings(existing_texts, model_type=self.model_type)
-                    
+
                     if existing_embeddings is None or len(existing_embeddings) == 0:
                         logger.warning("生成已有数据嵌入向量失败，仅使用新数据训练")
                     else:
                         texts = existing_texts + texts
                         labels = existing_labels + labels
-                        embeddings = np.vstack([existing_embeddings, embeddings]) if len(existing_embeddings) > 0 else embeddings
+                        embeddings = np.vstack([existing_embeddings, embeddings]) if len(
+                            existing_embeddings) > 0 else embeddings
                         logger.info(f"合并后总数据: {len(texts)} 个样本")
 
             if SKLEARN_AVAILABLE:
@@ -363,6 +483,7 @@ class GroundedTheoryTrainingThread(QThread):
                 mode_info = f"（训练模式: {self.actual_training_mode}）" if self.actual_training_mode != self.training_mode else ""
                 incremental_info = " [增量训练]" if self.incremental else ""
                 message = f"模型训练完成！共训练 {len(texts)} 个样本，{len(label_mapping)} 个类别，准确率: {accuracy:.3f}{incremental_info}{mode_info}"
+                message += self._abstract_reranker_summary()
                 self.training_finished.emit(True, message, self.coding_processing_result)
             else:
                 self.training_finished.emit(False, "模型保存失败", self.coding_processing_result)
@@ -382,11 +503,11 @@ class GroundedTheoryTrainingThread(QThread):
         training_data = self.standard_answers.get("training_data", {})
 
         structured_codes = {}
-        
+
         if training_data:
             # 使用training_data准备训练样本
             logger.info(f"从training_data中提取训练数据")
-            
+
             # 检查training_data的结构
             if isinstance(training_data, dict):
                 # 处理不同格式的training_data
@@ -413,7 +534,7 @@ class GroundedTheoryTrainingThread(QThread):
         else:
             # 如果没有training_data，尝试从standard_answers中获取structured_codes
             structured_codes = self.standard_answers.get("structured_codes", {})
-            
+
             if not structured_codes:
                 # 最后尝试从self.training_data中获取structured_codes
                 structured_codes = self.training_data.get("structured_codes", {})
@@ -544,12 +665,12 @@ class EnhancedTrainingManager:
     def handle_fallback(self, reason: str) -> None:
         """
         处理降级，显示弹窗提示用户
-        
+
         Args:
             reason: 降级原因说明
         """
         logger.warning(f"训练降级: {reason}")
-        
+
         if self._fallback_callback:
             self._fallback_callback(reason)
         else:
@@ -592,7 +713,7 @@ class EnhancedTrainingManager:
                 if finished_callback:
                     finished_callback(False, "请加载最新模型")
                 return
-            
+
             # 检查是否有可用的BERT微调模型文件
             try:
                 from bert_finetuner import BERTFineTuner
@@ -642,7 +763,7 @@ class EnhancedTrainingManager:
 
         self.training_thread = GroundedTheoryTrainingThread(
             training_data, model_manager, standard_answers, model_type,
-            training_mode=training_mode, 
+            training_mode=training_mode,
             fallback_to_classifier=fallback_to_classifier,
             training_config=training_config,
             incremental=incremental,
@@ -660,6 +781,7 @@ class EnhancedTrainingManager:
                     self._show_coding_update_result(coding_processing_result)
                 # 调用原始回调
                 finished_callback(success, message)
+
             self.training_thread.training_finished.connect(wrapped_finished_callback)
 
         self.training_thread.fallback_triggered.connect(self.handle_fallback)
@@ -688,16 +810,16 @@ class EnhancedTrainingManager:
         """
         try:
             from PyQt5.QtWidgets import QMessageBox
-            
+
             # 提取编码更新信息
             added_third = coding_processing_result.get("added_third_level_codes", [])
             updated_third = coding_processing_result.get("updated_third_level_codes", [])
             added_second = coding_processing_result.get("added_second_level_codes", [])
             updated_second = coding_processing_result.get("updated_second_level_codes", [])
-            
+
             # 构建弹窗内容
             content = "编码库更新结果：\n\n"
-            
+
             if added_third:
                 content += f"新增三阶编码 ({len(added_third)} 个):\n" + "\n".join([f"- {code}" for code in added_third[:10]])
                 if len(added_third) > 10:
@@ -705,15 +827,16 @@ class EnhancedTrainingManager:
                 content += "\n\n"
             else:
                 content += "新增三阶编码: 无\n\n"
-            
+
             if updated_third:
-                content += f"更新三阶编码 ({len(updated_third)} 个):\n" + "\n".join([f"- {code}" for code in updated_third[:10]])
+                content += f"更新三阶编码 ({len(updated_third)} 个):\n" + "\n".join(
+                    [f"- {code}" for code in updated_third[:10]])
                 if len(updated_third) > 10:
                     content += f"\n... 等 {len(updated_third) - 10} 个编码"
                 content += "\n\n"
             else:
                 content += "更新三阶编码: 无\n\n"
-            
+
             if added_second:
                 content += f"新增二阶编码 ({len(added_second)} 个):\n" + "\n".join([f"- {code}" for code in added_second[:10]])
                 if len(added_second) > 10:
@@ -721,14 +844,15 @@ class EnhancedTrainingManager:
                 content += "\n\n"
             else:
                 content += "新增二阶编码: 无\n\n"
-            
+
             if updated_second:
-                content += f"更新二阶编码 ({len(updated_second)} 个):\n" + "\n".join([f"- {code}" for code in updated_second[:10]])
+                content += f"更新二阶编码 ({len(updated_second)} 个):\n" + "\n".join(
+                    [f"- {code}" for code in updated_second[:10]])
                 if len(updated_second) > 10:
                     content += f"\n... 等 {len(updated_second) - 10} 个编码"
             else:
                 content += "更新二阶编码: 无"
-            
+
             # 显示弹窗
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Information)
@@ -737,6 +861,6 @@ class EnhancedTrainingManager:
             msg.setInformativeText(content)
             msg.setStandardButtons(QMessageBox.Ok)
             msg.exec_()
-            
+
         except Exception as e:
             logger.error(f"显示编码更新结果弹窗失败: {e}")
