@@ -134,11 +134,21 @@ class GroundedTheoryTrainingThread(QThread):
         self.coding_processing_result = coding_processing_result or {}
         self.trained_model_data = None
         self.actual_training_mode = training_mode
+        self.abstract_reranker_result: Dict[str, Any] = {
+            'enabled': bool(getattr(Config, 'ENABLE_ABSTRACT_RERANKER', False)),
+            'status': 'disabled' if not bool(getattr(Config, 'ENABLE_ABSTRACT_RERANKER', False)) else 'pending',
+            'output_dir': None,
+            'message': None,
+            'error': None,
+        }
 
     def run(self):
         try:
             self.progress_updated.emit(0)
             logger.info(f"开始扎根理论模型训练，训练模式: {self.training_mode}, 增量训练: {self.incremental}")
+
+            # 可选：在同一次“训练模型”中先训练一阶抽象重排序模型
+            self._maybe_train_abstract_reranker()
 
             if self.training_mode == Config.TRAINING_MODE_BERT_FINETUNE:
                 self._run_bert_finetune_training()
@@ -148,6 +158,112 @@ class GroundedTheoryTrainingThread(QThread):
         except Exception as e:
             logger.error(f"训练失败: {e}")
             self.training_finished.emit(False, f"训练失败: {str(e)}", self.coding_processing_result)
+
+    def _maybe_train_abstract_reranker(self) -> None:
+        """如启用配置，则在训练线程内训练抽象重排序模型。
+
+        注意：失败/缺样本不应阻断原有二/三阶训练。
+        """
+        if not bool(getattr(Config, 'ENABLE_ABSTRACT_RERANKER', False)):
+            self.abstract_reranker_result.update({'status': 'disabled'})
+            return
+
+        try:
+            from train_abstract_reranker import train_abstract_reranker
+
+            # 若模型已存在，则默认跳过重复训练（仍会尝试加载到内存）。
+            try:
+                reranker_dirname = self.training_config.get(
+                    'abstract_reranker_dirname',
+                    getattr(Config, 'ABSTRACT_RERANKER_DIRNAME', 'abstract_reranker_latest')
+                )
+                output_dir = os.path.join(Config.TRAINED_MODELS_DIR, reranker_dirname)
+                output_dir = os.path.normpath(output_dir)
+
+                always_retrain = bool(getattr(Config, 'ABSTRACT_RERANKER_ALWAYS_RETRAIN', False))
+                model_marker = os.path.join(output_dir, 'config.json')
+
+                if (not always_retrain) and os.path.exists(model_marker):
+                    self.abstract_reranker_result.update({
+                        'status': 'skipped',
+                        'output_dir': output_dir,
+                        'message': '抽象重排序模型已存在，跳过重复训练',
+                    })
+                    try:
+                        if hasattr(self.model_manager, 'load_abstract_reranker_model'):
+                            self.model_manager.load_abstract_reranker_model(output_dir)
+                    except Exception as load_err:
+                        logger.warning(f"抽象重排序模型存在但加载失败: {load_err}")
+                    return
+            except Exception as precheck_err:
+                logger.warning(f"抽象重排序训练前检查失败，将继续尝试训练: {precheck_err}")
+
+            self.abstract_reranker_result.update({'status': 'running'})
+            # 轻量提示一下：UI 的进度条会在后续训练阶段被重置，这里只做最小更新
+            try:
+                self.progress_updated.emit(1)
+            except Exception:
+                pass
+
+            def _progress_callback(cur, total, loss):
+                # 避免干扰主训练进度；这里不做细粒度进度映射
+                return
+
+            ok, output_dir, message = train_abstract_reranker(
+                self.standard_answers,
+                self.model_manager,
+                progress_callback=_progress_callback,
+                training_config=self.training_config,
+            )
+
+            if ok:
+                self.abstract_reranker_result.update({
+                    'status': 'trained',
+                    'output_dir': output_dir,
+                    'message': message,
+                })
+                # 训练后尝试加载到当前进程，便于训练完成后立即可用
+                try:
+                    if hasattr(self.model_manager, 'load_abstract_reranker_model'):
+                        self.model_manager.load_abstract_reranker_model(output_dir)
+                except Exception as load_err:
+                    logger.warning(f"抽象重排序模型训练成功但加载失败: {load_err}")
+            else:
+                self.abstract_reranker_result.update({
+                    'status': 'failed',
+                    'output_dir': output_dir,
+                    'message': message,
+                })
+
+        except ValueError as ve:
+            # 常见：标准答案缺少 original_content/target_abstract，或构建不出样本
+            self.abstract_reranker_result.update({
+                'status': 'skipped',
+                'error': str(ve),
+            })
+            logger.warning(f"跳过抽象重排序训练: {ve}")
+        except Exception as e:
+            self.abstract_reranker_result.update({
+                'status': 'failed',
+                'error': str(e),
+            })
+            logger.warning(f"抽象重排序训练失败（不中断主训练）: {e}")
+
+    def _abstract_reranker_summary(self) -> str:
+        """用于拼接到训练完成提示中。"""
+        if not bool(getattr(Config, 'ENABLE_ABSTRACT_RERANKER', False)):
+            return ""
+
+        status = (self.abstract_reranker_result or {}).get('status')
+        if status == 'trained':
+            return "；抽象重排序：已训练"
+        if status == 'skipped':
+            return "；抽象重排序：跳过"
+        if status == 'failed':
+            return "；抽象重排序：失败"
+        if status == 'running':
+            return "；抽象重排序：进行中"
+        return "；抽象重排序：未执行"
 
     def _run_bert_finetune_training(self):
         """运行BERT微调训练"""
@@ -218,6 +334,7 @@ class GroundedTheoryTrainingThread(QThread):
                     }
 
                     msg = f"BERT微调训练完成！共训练 {len(texts)} 个样本，{len(label_mapping)} 个类别"
+                    msg += self._abstract_reranker_summary()
                     self.training_finished.emit(True, msg, self.coding_processing_result)
                 else:
                     if self.fallback_to_classifier:
@@ -366,6 +483,7 @@ class GroundedTheoryTrainingThread(QThread):
                 mode_info = f"（训练模式: {self.actual_training_mode}）" if self.actual_training_mode != self.training_mode else ""
                 incremental_info = " [增量训练]" if self.incremental else ""
                 message = f"模型训练完成！共训练 {len(texts)} 个样本，{len(label_mapping)} 个类别，准确率: {accuracy:.3f}{incremental_info}{mode_info}"
+                message += self._abstract_reranker_summary()
                 self.training_finished.emit(True, message, self.coding_processing_result)
             else:
                 self.training_finished.emit(False, "模型保存失败", self.coding_processing_result)
@@ -407,12 +525,17 @@ class GroundedTheoryTrainingThread(QThread):
                         third_level = item.get("target_third_category")
                         second_level = item.get("target_second_category")
                         target_abstract = item.get("target_abstract", "")
+                        original_content = item.get("original_content", "")
                         if third_level and second_level and target_abstract:
                             if third_level not in structured_codes:
                                 structured_codes[third_level] = {}
                             if second_level not in structured_codes[third_level]:
                                 structured_codes[third_level][second_level] = []
-                            structured_codes[third_level][second_level].append(target_abstract)
+                            # 存储原始文本和一阶编码的关联
+                            structured_codes[third_level][second_level].append({
+                                'content': target_abstract,
+                                'original_content': original_content
+                            })
         else:
             # 如果没有training_data，尝试从standard_answers中获取structured_codes
             structured_codes = self.standard_answers.get("structured_codes", {})
@@ -436,12 +559,19 @@ class GroundedTheoryTrainingThread(QThread):
                 for content in first_contents:
                     if isinstance(content, dict):
                         text_content = content.get('content', '')
+                        original_content = content.get('original_content', '')
+                        # 如果有原始内容，使用原始内容作为输入，一阶编码作为标签
+                        if original_content and text_content:
+                            texts.append(original_content.strip())
+                            labels.append(label_num)
+                        elif text_content:
+                            texts.append(text_content.strip())
+                            labels.append(label_num)
                     else:
                         text_content = str(content)
-
-                    if text_content and len(text_content.strip()) > 1:
-                        texts.append(text_content.strip())
-                        labels.append(label_num)
+                        if text_content and len(text_content.strip()) > 1:
+                            texts.append(text_content.strip())
+                            labels.append(label_num)
 
         logger.info(f"准备训练数据: {len(texts)} 个样本, {len(label_mapping)} 个类别")
         return texts, labels, label_mapping

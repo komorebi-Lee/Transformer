@@ -5,12 +5,24 @@ import re
 import jieba
 from collections import Counter, defaultdict
 
+logger = logging.getLogger(__name__)
+
 try:
     from config import Config
 except Exception:  # pragma: no cover
     Config = None
 
-logger = logging.getLogger(__name__)
+try:
+    from coding_library_manager import CodingLibraryManager
+except Exception as e:
+    logger.warning(f"导入CodingLibraryManager失败: {e}")
+    CodingLibraryManager = None
+
+try:
+    from semantic_matcher import SemanticMatcher
+except Exception as e:
+    logger.warning(f"导入SemanticMatcher失败: {e}")
+    SemanticMatcher = None
 
 
 class EnhancedCodingGenerator:
@@ -23,6 +35,8 @@ class EnhancedCodingGenerator:
 
         self.max_first_level_length = getattr(Config, 'FIRST_LEVEL_CODE_MAX_LENGTH', 30) if Config else 30
         self.abstract_cache: Dict[str, str] = {}
+        # 相似度计算缓存，避免重复计算
+        self.similarity_cache: Dict[str, List[Tuple[Dict[str, Any], float]]] = {}
         # 明显不通顺/口语残留短语，后处理时尽量清理
         self.bad_phrase_patterns = [
             r'比如说', r'这?种我', r'我这种', r'然后', r'就是说', r'那个', r'这个',
@@ -31,6 +45,24 @@ class EnhancedCodingGenerator:
             r'^那么', r'^然后', r'^对[，,]?', r'^我自己来说的话[，,]?',
             r'^如果说是', r'\[[0-9]+\]$', r'对对$'
         ]
+        
+        # 初始化编码库管理器
+        self.coding_library = None
+        if CodingLibraryManager:
+            try:
+                self.coding_library = CodingLibraryManager()
+                logger.info("编码库管理器初始化成功")
+            except Exception as e:
+                logger.error(f"初始化编码库管理器失败: {e}")
+        
+        # 初始化语义匹配器
+        self.semantic_matcher = None
+        if SemanticMatcher:
+            try:
+                self.semantic_matcher = SemanticMatcher()
+                logger.info("语义匹配器初始化成功")
+            except Exception as e:
+                logger.error(f"初始化语义匹配器失败: {e}")
 
     def abstract_sentence(self, sentence: str, model_manager=None) -> str:
         """抽象提炼句子内容：优先输出连续、语义完整的片段；可配置长度上限。"""
@@ -47,6 +79,7 @@ class EnhancedCodingGenerator:
                 r'^那么', r'^然后', r'^对[，,]?', r'^我自己来说的话[，,]?',
                 r'^如果说是', r'\[[0-9]+\]$', r'对对$'
             ]
+
         s0 = (sentence or '').strip()
         if not s0:
             return ''
@@ -149,7 +182,12 @@ class EnhancedCodingGenerator:
 
         best_candidate = ''
         best_score = -1e18
-        max_span_len = getattr(Config, 'ABSTRACT_RERANK_MAX_SPAN_LEN', 8) if Config else 8
+        max_span_len = 8
+
+        # 收集候选，便于可选的模型重排序
+        collected_candidates: List[str] = []
+        collected_raw: List[str] = []
+        collected_seen = set()
 
         for sent in sentences:
             sent0 = strip_punct(sent)
@@ -172,12 +210,48 @@ class EnhancedCodingGenerator:
                         continue
                     if len(cand) > target_length:
                         continue
+
+                    # 收集候选（去重）
+                    if cand not in collected_seen:
+                        collected_seen.add(cand)
+                        collected_candidates.append(cand)
+                        collected_raw.append(built_raw)
+
                     s = span_score(cand, built_raw)
                     if (s > best_score) or (abs(s - best_score) < 1e-9 and len(cand) > len(best_candidate)):
                         best_score = s
                         best_candidate = cand
 
         compact = best_candidate or strip_punct(self._post_refine_phrase(abstracted))
+
+        # 可选：用监督微调得到的“抽象重排序模型”在候选中再挑一次
+        try:
+            if Config and getattr(Config, 'ENABLE_ABSTRACT_RERANKER', False) and model_manager is not None:
+                # 兜底：若启用但还没加载，尝试一次懒加载（只尝试一次，避免循环卡顿）
+                if hasattr(model_manager, 'ensure_abstract_reranker_loaded'):
+                    model_manager.ensure_abstract_reranker_loaded()
+                if hasattr(model_manager, 'is_abstract_reranker_available') and model_manager.is_abstract_reranker_available():
+                    # 过滤明显碎片候选，减少模型被“半句”干扰
+                    filtered = []
+                    for raw, cand in zip(collected_raw, collected_candidates):
+                        if not cand:
+                            continue
+                        if len(cand) > target_length:
+                            continue
+                        if looks_like_fragment(raw, cand):
+                            continue
+                        filtered.append(cand)
+
+                    if filtered:
+                        scores = model_manager.score_abstract_candidates(abstracted, filtered)
+                        if scores and len(scores) == len(filtered):
+                            best_i = int(max(range(len(scores)), key=lambda i: scores[i]))
+                            picked = filtered[best_i]
+                            if picked:
+                                compact = picked
+        except Exception:
+            # 模型可用性/推理失败时不影响规则抽取流程
+            pass
 
         # 若仍不完整，尝试从更短、更完整的片段中挑一个
         if compact and not self._is_semantically_complete(compact):
@@ -313,8 +387,8 @@ class EnhancedCodingGenerator:
             if progress_callback:
                 progress_callback(50)
 
-            # 使用已加载的模型预测（自动兼容：PKL分类器 / BERT微调模型）
-            predictions, predicted_labels = model_manager.predict_with_loaded_model(texts)
+            # 使用训练模型预测类别（作为参考）
+            predictions, predicted_labels = model_manager.predict_categories(texts)
 
             if progress_callback:
                 progress_callback(70)
@@ -324,28 +398,149 @@ class EnhancedCodingGenerator:
             second_level_mapping = {}
             third_level_mapping = {}
 
+            # 检查编码库和语义匹配器是否可用
+            use_semantic_matching = False
+            second_level_codes_list = []
+            third_level_codes_list = []
+
+            if self.coding_library and self.semantic_matcher:
+                try:
+                    second_level_codes_list = self.coding_library.get_all_second_level_codes()
+                    third_level_codes_list = self.coding_library.get_all_third_level_codes()
+                    if second_level_codes_list and third_level_codes_list:
+                        use_semantic_matching = True
+                        logger.info("使用语义相似度匹配进行编码")
+                except Exception as e:
+                    logger.error(f"获取编码库失败: {e}")
+
             for i, (text, label) in enumerate(zip(texts, predicted_labels)):
                 code_key = f"FL_{i + 1:04d}"
 
-                # 解析标签格式：三阶编码||二阶编码
-                if '||' in label:
-                    third_cat, second_cat = label.split('||', 1)
-                else:
-                    third_cat = "综合主题"
-                    second_cat = label if label else "其他"
-
-                # 存储映射关系
-                second_level_mapping[code_key] = second_cat
-                third_level_mapping[second_cat] = third_cat
-
                 # 构建一阶编码
+                abstracted = self.abstract_sentence(text, model_manager=model_manager)
                 first_level_codes[code_key] = [
-                    self.abstract_sentence(text, model_manager=model_manager),
+                    abstracted,
                     [filtered_sentences[i]],  # source_sentences
                     1,  # file_count
                     1,  # sentence_count
                     [filtered_sentences[i]]  # sentence_details
                 ]
+
+                # 确定二阶编码
+                if use_semantic_matching and abstracted:
+                    # 使用语义相似度匹配二阶编码（召回Top-k候选）
+                    top_k = 5  # 默认召回5个候选
+                    
+                    # 检查缓存中是否有结果
+                    cache_key = f"{abstracted}_{top_k}_0.3"
+                    if cache_key in self.similarity_cache:
+                        logger.info(f"使用缓存的相似度计算结果")
+                        matches = self.similarity_cache[cache_key]
+                    else:
+                        # 计算相似度
+                        matches = self.semantic_matcher.match_first_level_to_second_level(
+                            abstracted,
+                            second_level_codes_list,
+                            top_k=top_k,
+                            threshold=0.3  # 降低阈值以确保召回足够的候选
+                        )
+                        # 缓存结果
+                        self.similarity_cache[cache_key] = matches
+
+                    if matches:
+                        # 检查是否有加载的模型，如果没有则直接进行相似度匹配
+                        if model_manager and model_manager.is_trained_model_available():
+                            # 使用bert_finetuned模型进行重排
+                            logger.info(f"使用bert_finetuned模型对 {len(matches)} 个候选进行重排")
+                            # 准备候选编码
+                            candidate_codes = [match[0].get('name') for match in matches]
+                            # 使用模型对候选进行评分
+                            try:
+                                # 构建输入文本
+                                inputs = [f"{abstracted} [SEP] {code}" for code in candidate_codes]
+                                # 预测类别
+                                predictions, _ = model_manager.predict_categories(inputs)
+                                # 计算置信度
+                                confidences = []
+                                for pred in predictions:
+                                    if isinstance(pred, tuple):
+                                        confidences.append(pred[1])
+                                    else:
+                                        confidences.append(0.0)
+                                # 找到置信度最高的编码
+                                if confidences:
+                                    best_idx = confidences.index(max(confidences))
+                                    best_match, _ = matches[best_idx]
+                                    second_cat = best_match.get('name')
+                                    logger.info(f"bert_finetuned模型选择的二阶编码: '{second_cat}' (置信度: {max(confidences):.4f})")
+                                else:
+                                    # 回退到相似度最高的编码
+                                    best_match, similarity = matches[0]
+                                    second_cat = best_match.get('name')
+                                    logger.info(f"回退到相似度匹配: '{second_cat}' (相似度: {similarity:.4f})")
+                            except Exception as e:
+                                logger.warning(f"模型重排失败，回退到相似度匹配: {e}")
+                                # 回退到相似度最高的编码
+                                best_match, similarity = matches[0]
+                                second_cat = best_match.get('name')
+                                logger.info(f"回退到相似度匹配: '{second_cat}' (相似度: {similarity:.4f})")
+                        else:
+                            # 没有加载模型，直接进行相似度匹配
+                            best_match, similarity = matches[0]
+                            second_cat = best_match.get('name')
+                            logger.info(f"未加载训练模型，使用相似度匹配: '{second_cat}' (相似度: {similarity:.4f})")
+                    else:
+                        second_cat = "其他各类话题"
+                        logger.info(f"一阶编码 '{abstracted[:30]}...' 未找到匹配的二阶编码，归类为'其他各类话题'")
+                else:
+                    # 回退到使用训练模型的预测结果
+                    if '||' in label:
+                        third_cat_pred, second_cat = label.split('||', 1)
+                    else:
+                        second_cat = label if label else "其他"
+                    logger.info(f"使用训练模型预测的二阶编码: {second_cat}")
+
+                # 存储二阶编码映射
+                second_level_mapping[code_key] = second_cat
+
+                # 确定三阶编码
+                if use_semantic_matching:
+                    # 查找对应的二阶编码
+                    second_code = None
+                    for code in second_level_codes_list:
+                        if code.get('name') == second_cat:
+                            second_code = code
+                            break
+
+                    if second_code:
+                        # 使用语义相似度匹配三阶编码
+                        match = self.semantic_matcher.match_second_level_to_third_level(
+                            second_code,
+                            third_level_codes_list,
+                            threshold=0.5
+                        )
+
+                        if match:
+                            best_match, similarity = match
+                            third_cat = best_match.get('name')
+                            logger.info(f"二阶编码 '{second_cat}' 匹配到三阶编码 '{third_cat}' (相似度: {similarity:.4f})")
+                        else:
+                            third_cat = "其他重要维度"
+                            logger.info(f"二阶编码 '{second_cat}' 未找到匹配的三阶编码，归类为'其他重要维度'")
+                    else:
+                        # 如果找不到对应的二阶编码，使用规则匹配
+                        third_cat = "其他重要维度"
+                        logger.info(f"未找到对应的二阶编码，三阶编码归类为'其他重要维度'")
+                else:
+                    # 回退到使用训练模型的预测结果
+                    if '||' in label:
+                        third_cat, _ = label.split('||', 1)
+                    else:
+                        third_cat = "综合主题"
+                    logger.info(f"使用训练模型预测的三阶编码: {third_cat}")
+
+                # 存储三阶编码映射
+                third_level_mapping[second_cat] = third_cat
 
             if progress_callback:
                 progress_callback(85)
@@ -379,7 +574,6 @@ class EnhancedCodingGenerator:
                 "二阶编码": {"错误": ["请检查训练模型"]},
                 "三阶编码": {"错误": ["模型预测失败"]}
             }
-
     def generate_grounded_theory_codes_multi_files(self, processed_data: Dict[str, Any], model_manager,
                                                    progress_callback: Optional[Callable] = None,
                                                    use_trained_model: bool = False) -> Dict[str, Any]:
@@ -418,7 +612,7 @@ class EnhancedCodingGenerator:
                 progress_callback(60)
 
             # 将一阶编码分类为二阶编码
-            second_level_codes = self.generate_second_level_codes_improved(first_level_codes)
+            second_level_codes = self.generate_second_level_codes_improved(first_level_codes, model_manager=model_manager)
             logger.info(f"生成 {len(second_level_codes)} 个二阶编码")
 
             if progress_callback:
@@ -476,13 +670,118 @@ class EnhancedCodingGenerator:
 
         return first_level_codes
 
-    def generate_second_level_codes_improved(self, first_level_codes: Dict[str, List[str]]) -> Dict[str, List[str]]:
-        """生成二阶编码"""
+    def generate_second_level_codes_improved(self, first_level_codes: Dict[str, List[str]], model_manager=None) -> Dict[str, List[str]]:
+        """生成二阶编码 - 使用语义相似度匹配"""
         if not first_level_codes:
             return {"无内容": []}
 
         logger.info(f"开始二阶编码分类，共 {len(first_level_codes)} 个一阶编码")
 
+        # 检查编码库和语义匹配器是否可用
+        if not self.coding_library or not self.semantic_matcher:
+            logger.warning("编码库或语义匹配器不可用，回退到关键词匹配")
+            # 回退到关键词匹配
+            return self._generate_second_level_codes_keyword_based(first_level_codes)
+
+        # 从编码库获取二阶编码
+        second_level_codes_list = self.coding_library.get_all_second_level_codes()
+        if not second_level_codes_list:
+            logger.warning("编码库中没有二阶编码，回退到关键词匹配")
+            return self._generate_second_level_codes_keyword_based(first_level_codes)
+
+        # 构建二阶编码映射
+        second_level_map = {}
+        for code in second_level_codes_list:
+            code_name = code.get('name')
+            if code_name:
+                second_level_map[code_name] = code
+
+        categories = {code.get('name'): [] for code in second_level_codes_list}
+        categories["其他各类话题"] = []
+
+        for key, codes in first_level_codes.items():
+            content = codes[0] if codes else ""
+            if not content:
+                categories["其他各类话题"].append(key)
+                continue
+
+            # 使用语义匹配器召回Top-k二阶候选
+            top_k = 5  # 默认召回5个候选
+            
+            # 检查缓存中是否有结果
+            cache_key = f"{content}_{top_k}_0.3"
+            if cache_key in self.similarity_cache:
+                logger.info(f"使用缓存的相似度计算结果")
+                matches = self.similarity_cache[cache_key]
+            else:
+                # 计算相似度
+                matches = self.semantic_matcher.match_first_level_to_second_level(
+                    content,
+                    second_level_codes_list,
+                    top_k=top_k,
+                    threshold=0.3  # 降低阈值以确保召回足够的候选
+                )
+                # 缓存结果
+                self.similarity_cache[cache_key] = matches
+
+            if matches:
+                # 如果有模型管理器，使用bert_finetuned模型进行重排
+                if model_manager and model_manager.is_trained_model_available():
+                    logger.info(f"使用bert_finetuned模型对 {len(matches)} 个候选进行重排")
+                    # 准备候选编码
+                    candidate_codes = [match[0].get('name') for match in matches]
+                    # 使用模型对候选进行评分
+                    try:
+                        # 构建输入文本
+                        inputs = [f"{content} [SEP] {code}" for code in candidate_codes]
+                        # 预测类别
+                        predictions, _ = model_manager.predict_categories(inputs)
+                        # 计算置信度
+                        confidences = []
+                        for pred in predictions:
+                            if isinstance(pred, tuple):
+                                confidences.append(pred[1])
+                            else:
+                                confidences.append(0.0)
+                        # 找到置信度最高的编码
+                        if confidences:
+                            best_idx = confidences.index(max(confidences))
+                            best_match, _ = matches[best_idx]
+                            second_cat = best_match.get('name')
+                            logger.info(f"bert_finetuned模型选择的二阶编码: '{second_cat}' (置信度: {max(confidences):.4f})")
+                        else:
+                            # 回退到相似度最高的编码
+                            best_match, similarity = matches[0]
+                            second_cat = best_match.get('name')
+                            logger.info(f"回退到相似度匹配: '{second_cat}' (相似度: {similarity:.4f})")
+                    except Exception as e:
+                        logger.warning(f"模型重排失败，回退到相似度匹配: {e}")
+                        # 回退到相似度最高的编码
+                        best_match, similarity = matches[0]
+                        second_cat = best_match.get('name')
+                        logger.info(f"回退到相似度匹配: '{second_cat}' (相似度: {similarity:.4f})")
+                else:
+                    # 没有模型管理器，使用相似度最高的编码
+                    best_match, similarity = matches[0]
+                    second_cat = best_match.get('name')
+                    logger.info(f"一阶编码 '{content[:30]}...' 匹配到二阶编码 '{second_cat}' (相似度: {similarity:.4f})")
+
+                if second_cat in categories:
+                    categories[second_cat].append(key)
+                else:
+                    categories["其他各类话题"].append(key)
+            else:
+                logger.info(f"一阶编码 '{content[:30]}...' 未找到匹配的二阶编码，归类为'其他各类话题'")
+                categories["其他各类话题"].append(key)
+
+        logger.info(f"二阶编码完成: 共 {len(categories)} 个类别")
+
+        # 过滤空类别
+        result = {k: v for k, v in categories.items() if v}
+        return result
+
+    def _generate_second_level_codes_keyword_based(self, first_level_codes: Dict[str, List[str]]) -> Dict[str, List[str]]:
+        """基于关键词的二阶编码生成（回退方案）"""
         # 扩展关键词映射
         keyword_map = {
             "团队职责与架构": ['团队', '部门', '职责', '角色', '架构', '层级', '负责', '职能'],
@@ -511,19 +810,98 @@ class EnhancedCodingGenerator:
             if not categorized:
                 categories["其他各类话题"].append(key)
 
-        logger.info(f"二阶编码完成: 共 {len(categories)} 个类别")
-
         # 过滤空类别
         result = {k: v for k, v in categories.items() if v}
         return result
 
     def generate_third_level_codes_improved(self, second_level_codes: Dict[str, List[str]]) -> Dict[str, List[str]]:
-        """生成三阶编码"""
+        """生成三阶编码 - 使用语义相似度匹配"""
         if not second_level_codes:
             return {"核心主题": []}
 
         category_names = list(second_level_codes.keys())
         logger.info(f"开始三阶编码抽象，共 {len(category_names)} 个二阶编码")
+
+        # 检查编码库和语义匹配器是否可用
+        if not self.coding_library or not self.semantic_matcher:
+            logger.warning("编码库或语义匹配器不可用，回退到规则匹配")
+            # 回退到规则匹配
+            return self._generate_third_level_codes_rule_based(second_level_codes)
+
+        # 从编码库获取二阶和三阶编码
+        second_level_codes_list = self.coding_library.get_all_second_level_codes()
+        third_level_codes_list = self.coding_library.get_all_third_level_codes()
+        
+        if not second_level_codes_list or not third_level_codes_list:
+            logger.warning("编码库中没有二阶或三阶编码，回退到规则匹配")
+            return self._generate_third_level_codes_rule_based(second_level_codes)
+
+        # 构建二阶编码映射
+        second_level_map = {}
+        for code in second_level_codes_list:
+            code_name = code.get('name')
+            if code_name:
+                second_level_map[code_name] = code
+
+        # 构建三阶编码映射
+        third_level_map = {}
+        for code in third_level_codes_list:
+            code_name = code.get('name')
+            if code_name:
+                third_level_map[code_name] = code
+
+        # 构建三阶编码
+        third_level_categories = {}
+        for second_category in category_names:
+            if second_category == "其他各类话题":
+                # 直接归类为"其他重要维度"
+                if "其他重要维度" not in third_level_categories:
+                    third_level_categories["其他重要维度"] = []
+                third_level_categories["其他重要维度"].append(second_category)
+                continue
+
+            # 查找对应的二阶编码
+            second_code = second_level_map.get(second_category)
+            if not second_code:
+                # 如果找不到对应的二阶编码，使用规则匹配
+                if "其他重要维度" not in third_level_categories:
+                    third_level_categories["其他重要维度"] = []
+                third_level_categories["其他重要维度"].append(second_category)
+                continue
+
+            # 使用语义匹配器匹配三阶编码
+            match = self.semantic_matcher.match_second_level_to_third_level(
+                second_code,
+                third_level_codes_list,
+                threshold=0.5
+            )
+
+            if match:
+                best_match, similarity = match
+                third_cat = best_match.get('name')
+                logger.info(f"二阶编码 '{second_category}' 匹配到三阶编码 '{third_cat}' (相似度: {similarity:.4f})")
+                if third_cat not in third_level_categories:
+                    third_level_categories[third_cat] = []
+                third_level_categories[third_cat].append(second_category)
+            else:
+                logger.info(f"二阶编码 '{second_category}' 未找到匹配的三阶编码，归类为'其他重要维度'")
+                if "其他重要维度" not in third_level_categories:
+                    third_level_categories["其他重要维度"] = []
+                third_level_categories["其他重要维度"].append(second_category)
+
+        # 确保至少有1个三阶编码
+        if not third_level_categories:
+            third_level_categories["综合主题"] = category_names
+
+        logger.info(f"生成 {len(third_level_categories)} 个三阶编码")
+        return third_level_categories
+
+    def _generate_third_level_codes_rule_based(self, second_level_codes: Dict[str, List[str]]) -> Dict[str, List[str]]:
+        """基于规则的三阶编码生成（回退方案）"""
+        if not second_level_codes:
+            return {"核心主题": []}
+
+        category_names = list(second_level_codes.keys())
 
         # 更细致的分类映射
         organizational_related = [name for name in category_names if any(word in name for word in
@@ -557,5 +935,4 @@ class EnhancedCodingGenerator:
         if not result:
             result["综合主题"] = category_names
 
-        logger.info(f"生成 {len(result)} 个三阶编码")
         return result

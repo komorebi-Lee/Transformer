@@ -36,7 +36,7 @@ class Config:
 
     # 一阶抽象（抽取式）重排序模型配置
     # 该模型用于在“候选子句片段”中选择最接近人工抽象的一段（不负责改写）
-    ENABLE_ABSTRACT_RERANKER = False
+    ENABLE_ABSTRACT_RERANKER = True
     ABSTRACT_RERANKER_DIRNAME = "abstract_reranker_latest"
     ABSTRACT_RERANK_MAX_SPAN_LEN = 8
     ABSTRACT_RERANK_NEGATIVE_SAMPLES = 4

@@ -50,7 +50,37 @@ class EnhancedModelManager:
         self.trained_model = None
         self.is_model_loaded = False
 
+        # 一阶抽象重排序模型（可选，独立于分类模型）
+        self._abstract_reranker_model = None
+        self._abstract_reranker_tokenizer = None
+        self._abstract_reranker_load_attempted = False
+
+        # 模型加载缓存
+        self.model_cache = {}
+        # 嵌入向量缓存
+        self.embedding_cache = {}
+
         logger.info(f"使用设备: {self.device}")
+
+    def ensure_abstract_reranker_loaded(self) -> bool:
+        """确保抽象重排序模型已加载（仅尝试一次，避免在循环里反复加载）。
+
+        Returns:
+            bool: 当前是否可用（已加载且可推理）
+        """
+        if self.is_abstract_reranker_available():
+            return True
+        if self._abstract_reranker_load_attempted:
+            return False
+
+        self._abstract_reranker_load_attempted = True
+        if not bool(getattr(Config, 'ENABLE_ABSTRACT_RERANKER', False)):
+            return False
+
+        try:
+            return bool(self.load_abstract_reranker_model())
+        except Exception:
+            return False
 
     def initialize_models(self) -> bool:
         """初始化所有需要的模型"""
@@ -89,16 +119,26 @@ class EnhancedModelManager:
     def get_embeddings(self, texts: List[str], model_type: str = 'bert') -> np.ndarray:
         """获取文本嵌入"""
         try:
+            # 检查缓存
+            cache_key = f"{model_type}_{'_'.join(texts)}"
+            if cache_key in self.embedding_cache:
+                return self.embedding_cache[cache_key]
+
             if model_type == 'sentence' and 'sentence' in self.models:
                 # 使用sentence-transformer模型，无需加载tokenizer
                 model = self.models['sentence']
                 embeddings = model.encode(texts, show_progress_bar=False)
+                # 缓存结果
+                self.embedding_cache[cache_key] = embeddings
                 return embeddings
 
             # 默认使用BERT模型
             if not self.is_model_loaded:
                 logger.warning("模型未加载，使用降级模式")
-                return self.get_simple_embeddings(texts)
+                embeddings = self.get_simple_embeddings(texts)
+                # 缓存结果
+                self.embedding_cache[cache_key] = embeddings
+                return embeddings
 
             tokenizer = self.tokenizers['bert']
             model = self.models['bert']
@@ -115,11 +155,18 @@ class EnhancedModelManager:
                 outputs = model(**inputs)
                 embeddings = self.mean_pooling(outputs, inputs['attention_mask'])
 
-            return embeddings.cpu().numpy()
+            embeddings_np = embeddings.cpu().numpy()
+            # 缓存结果
+            self.embedding_cache[cache_key] = embeddings_np
+            return embeddings_np
 
         except Exception as e:
             logger.error(f"获取嵌入失败: {e}")
-            return self.get_simple_embeddings(texts)
+            embeddings = self.get_simple_embeddings(texts)
+            # 缓存结果
+            cache_key = f"{model_type}_{'_'.join(texts)}"
+            self.embedding_cache[cache_key] = embeddings
+            return embeddings
 
     def mean_pooling(self, model_output, attention_mask):
         """平均池化"""
@@ -295,6 +342,75 @@ class EnhancedModelManager:
             logger.error(f"加载BERT微调模型失败: {e}")
             return False
 
+    def load_abstract_reranker_model(self, model_dir: str = None) -> bool:
+        """加载一阶抽象重排序模型（BERT微调二分类）。
+
+        该模型用于对 (original, candidate_span) 打分，选择最接近人工抽象的候选片段。
+        """
+        try:
+            if self.is_abstract_reranker_available():
+                return True
+
+            if not TRANSFORMERS_AVAILABLE:
+                logger.warning("transformers不可用，无法加载抽象重排序模型")
+                return False
+
+            if model_dir is None:
+                model_dir = os.path.join(self.trained_model_dir, getattr(Config, 'ABSTRACT_RERANKER_DIRNAME', 'abstract_reranker_latest'))
+            model_dir = os.path.normpath(model_dir)
+
+            if not os.path.exists(model_dir):
+                logger.warning(f"抽象重排序模型目录不存在: {model_dir}")
+                return False
+
+            from transformers import AutoTokenizer, AutoModelForSequenceClassification
+
+            self._abstract_reranker_tokenizer = AutoTokenizer.from_pretrained(model_dir)
+            self._abstract_reranker_model = AutoModelForSequenceClassification.from_pretrained(model_dir).to(self.device)
+            self._abstract_reranker_model.eval()
+            logger.info(f"抽象重排序模型已加载: {model_dir}")
+            return True
+
+        except Exception as e:
+            logger.error(f"加载抽象重排序模型失败: {e}")
+            self._abstract_reranker_model = None
+            self._abstract_reranker_tokenizer = None
+            return False
+
+    def is_abstract_reranker_available(self) -> bool:
+        return self._abstract_reranker_model is not None and self._abstract_reranker_tokenizer is not None
+
+    def score_abstract_candidates(self, original: str, candidates: List[str]) -> List[float]:
+        """对候选片段打分，返回每个候选为“正类(更像人工抽象)”的概率。"""
+        if not self.is_abstract_reranker_available():
+            raise ValueError("抽象重排序模型未加载")
+        if not candidates:
+            return []
+
+        tokenizer = self._abstract_reranker_tokenizer
+        model = self._abstract_reranker_model
+
+        inputs = tokenizer(
+            [original] * len(candidates),
+            candidates,
+            padding=True,
+            truncation=True,
+            max_length=getattr(Config, 'MAX_SENTENCE_LENGTH', 512),
+            return_tensors='pt'
+        ).to(self.device)
+
+        with torch.no_grad():
+            outputs = model(**inputs)
+            logits = outputs.logits
+            # 二分类：取 class=1 的 softmax 概率
+            probs = torch.softmax(logits, dim=-1)
+            if probs.size(-1) >= 2:
+                pos = probs[:, 1]
+            else:
+                pos = probs[:, 0]
+
+        return [float(x) for x in pos.detach().cpu().tolist()]
+
     def get_model_type(self) -> str:
         """获取当前加载的模型类型"""
         if hasattr(self, '_bert_finetuner') and self._bert_finetuner is not None:
@@ -347,13 +463,13 @@ class EnhancedModelManager:
 
     def predict_categories(self, texts: List[str]) -> Tuple[np.ndarray, List[str]]:
         """使用训练模型预测类别"""
+        # 检查是否有BERT微调模型
+        finetuner = getattr(self, '_bert_finetuner', None)
+        if finetuner is not None and finetuner.is_model_loaded():
+            return self.predict_with_finetuned_bert(texts)
+        
+        # 检查是否有传统分类器模型
         if self.trained_model is None:
-            finetuner = getattr(self, '_bert_finetuner', None)
-            if finetuner is not None and finetuner.is_model_loaded():
-                raise ValueError(
-                    "当前加载的是BERT微调模型，无法使用 predict_categories()（该接口仅支持PKL分类器）。"
-                    "请改用 predict_with_loaded_model() 或 predict_with_finetuned_bert()"
-                )
             raise ValueError("没有训练过的模型可用")
 
         try:
@@ -365,7 +481,17 @@ class EnhancedModelManager:
             if classifier is None:
                 raise ValueError("训练模型中缺少分类器")
 
-            predictions = classifier.predict(embeddings)
+            # 尝试获取预测概率
+            if hasattr(classifier, 'predict_proba'):
+                # 对于支持概率预测的分类器
+                predictions_proba = classifier.predict_proba(embeddings)
+                predictions = predictions_proba.argmax(axis=1)
+                # 存储置信度分数
+                confidence_scores = predictions_proba.max(axis=1)
+            else:
+                # 对于不支持概率预测的分类器
+                predictions = classifier.predict(embeddings)
+                confidence_scores = np.ones(len(predictions))  # 默认为1.0
 
             # 转换回标签
             label_mapping = self.trained_model.get('label_mapping', {})
@@ -373,7 +499,8 @@ class EnhancedModelManager:
 
             predicted_labels = [reverse_mapping.get(pred, "未知") for pred in predictions]
 
-            return predictions, predicted_labels
+            # 返回预测结果、标签和置信度
+            return list(zip(predictions, confidence_scores)), predicted_labels
 
         except Exception as e:
             logger.error(f"预测类别失败: {e}")
@@ -392,31 +519,15 @@ class EnhancedModelManager:
         return np.array(embeddings)
 
     def is_trained_model_available(self) -> bool:
-        """检查是否有可用的训练模型"""
-        # 检查分类器模型
+        """检查是否有可用的训练模型（只检查已加载到内存中的模型）"""
+        # 检查分类器模型是否已加载
         if self.trained_model is not None:
             return True
-        # 检查BERT微调模型
+        # 检查BERT微调模型是否已加载
         finetuner = getattr(self, '_bert_finetuner', None)
         if finetuner is not None and finetuner.is_model_loaded():
             return True
-        # 检查trained_models目录中是否存在训练模型文件
-        try:
-            if os.path.exists(self.trained_model_dir):
-                # 检查是否有.pkl文件（分类器模型）
-                pkl_files = [f for f in os.listdir(self.trained_model_dir) if f.endswith('.pkl')]
-                if pkl_files:
-                    return True
-                # 检查是否有目录（BERT微调模型）
-                dirs = [d for d in os.listdir(self.trained_model_dir) if
-                        os.path.isdir(os.path.join(self.trained_model_dir, d))]
-                for dir_name in dirs:
-                    dir_path = os.path.join(self.trained_model_dir, dir_name)
-                    # 检查是否是BERT微调模型目录
-                    if self.detect_model_format(dir_path) == "bert_finetune":
-                        return True
-        except Exception as e:
-            logger.debug(f"检查训练模型目录时出错: {e}")
+        # 不检查文件是否存在，只检查是否已加载到内存中
         return False
 
     def get_timestamp(self):
@@ -535,7 +646,8 @@ class EnhancedModelManager:
 
             predicted_ids, predicted_labels, confidence_scores = finetuner.predict(texts)
 
-            predictions = np.array(predicted_ids)
+            # 返回预测结果和置信度的元组列表
+            predictions = list(zip(predicted_ids, confidence_scores))
 
             return predictions, predicted_labels
 
@@ -565,6 +677,153 @@ class EnhancedModelManager:
             logger.debug(f"检查微调模型时出错: {e}")
 
         return False
+
+    def evaluate_model(self, model_type: str, test_data: List[str], test_labels: List[str]) -> Dict[str, Any]:
+        """
+        评估模型性能
+
+        Args:
+            model_type: 模型类型 ('bert_finetune' 或 'abstract_reranker')
+            test_data: 测试数据
+            test_labels: 测试标签
+
+        Returns:
+            评估结果字典
+        """
+        try:
+            if model_type == 'bert_finetune':
+                return self._evaluate_bert_finetune_model(test_data, test_labels)
+            elif model_type == 'abstract_reranker':
+                return self._evaluate_abstract_reranker_model(test_data, test_labels)
+            else:
+                raise ValueError(f"不支持的模型类型: {model_type}")
+        except Exception as e:
+            logger.error(f"评估模型失败: {e}")
+            return {'error': str(e)}
+
+    def _evaluate_bert_finetune_model(self, test_data: List[str], test_labels: List[str]) -> Dict[str, Any]:
+        """
+        评估微调BERT模型性能
+
+        Args:
+            test_data: 测试数据
+            test_labels: 测试标签
+
+        Returns:
+            评估结果字典
+        """
+        try:
+            if not self.is_finetuned_model_available():
+                return {'error': '没有可用的微调BERT模型'}
+
+            predictions, predicted_labels = self.predict_categories(test_data)
+
+            # 计算准确率
+            correct = 0
+            for pred_label, true_label in zip(predicted_labels, test_labels):
+                if pred_label == true_label:
+                    correct += 1
+            accuracy = correct / len(test_labels) if test_labels else 0.0
+
+            # 计算其他指标
+            from sklearn.metrics import precision_score, recall_score, f1_score
+            precision = precision_score(test_labels, predicted_labels, average='weighted')
+            recall = recall_score(test_labels, predicted_labels, average='weighted')
+            f1 = f1_score(test_labels, predicted_labels, average='weighted')
+
+            return {
+                'model_type': 'bert_finetune',
+                'accuracy': accuracy,
+                'precision': precision,
+                'recall': recall,
+                'f1': f1,
+                'test_samples': len(test_data)
+            }
+        except Exception as e:
+            logger.error(f"评估微调BERT模型失败: {e}")
+            return {'error': str(e)}
+
+    def _evaluate_abstract_reranker_model(self, test_data: List[str], test_labels: List[str]) -> Dict[str, Any]:
+        """
+        评估抽象重排序模型性能
+
+        Args:
+            test_data: 测试数据 (list of tuples: (original_text, candidate_text))
+            test_labels: 测试标签 (0或1，表示候选是否为好的抽象)
+
+        Returns:
+            评估结果字典
+        """
+        try:
+            if not self.is_abstract_reranker_available():
+                return {'error': '没有可用的抽象重排序模型'}
+
+            scores = []
+            for original, candidate in test_data:
+                score = self.score_abstract_candidates(original, [candidate])[0]
+                scores.append(score)
+
+            # 计算准确率
+            correct = 0
+            for score, label in zip(scores, test_labels):
+                predicted = 1 if score > 0.5 else 0
+                if predicted == label:
+                    correct += 1
+            accuracy = correct / len(test_labels) if test_labels else 0.0
+
+            # 计算其他指标
+            from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score
+            predicted_labels = [1 if score > 0.5 else 0 for score in scores]
+            precision = precision_score(test_labels, predicted_labels)
+            recall = recall_score(test_labels, predicted_labels)
+            f1 = f1_score(test_labels, predicted_labels)
+            auc = roc_auc_score(test_labels, scores)
+
+            return {
+                'model_type': 'abstract_reranker',
+                'accuracy': accuracy,
+                'precision': precision,
+                'recall': recall,
+                'f1': f1,
+                'auc': auc,
+                'test_samples': len(test_data)
+            }
+        except Exception as e:
+            logger.error(f"评估抽象重排序模型失败: {e}")
+            return {'error': str(e)}
+
+    def compare_models(self, test_data: List[str], test_labels: List[str]) -> Dict[str, Any]:
+        """
+        比较两个模型的性能
+
+        Args:
+            test_data: 测试数据
+            test_labels: 测试标签
+
+        Returns:
+            比较结果字典
+        """
+        try:
+            results = {}
+
+            # 评估bert_finetune模型
+            if self.is_finetuned_model_available():
+                results['bert_finetune'] = self._evaluate_bert_finetune_model(test_data, test_labels)
+            else:
+                results['bert_finetune'] = {'error': '没有可用的微调BERT模型'}
+
+            # 评估abstract_reranker模型
+            # 注意：abstract_reranker需要不同格式的测试数据
+            # 这里假设test_data已经是正确的格式
+            if self.is_abstract_reranker_available():
+                results['abstract_reranker'] = self._evaluate_abstract_reranker_model(test_data, test_labels)
+            else:
+                results['abstract_reranker'] = {'error': '没有可用的抽象重排序模型'}
+
+            return results
+        except Exception as e:
+            logger.error(f"比较模型失败: {e}")
+            return {'error': str(e)}
 
     def detect_model_format(self, model_dir: str) -> str:
         """

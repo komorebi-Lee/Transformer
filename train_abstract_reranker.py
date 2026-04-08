@@ -31,11 +31,6 @@ def train_abstract_reranker(
     Returns:
         (success: bool, output_dir: str, message: str)
     """
-    raise RuntimeError(
-        "抽象重排序/打分模型功能已移除：主程序不再加载或使用该模型。"
-        "如需恢复该功能，请回滚相关代码变更。"
-    )
-
     training_config = training_config or {}
 
     dataset = create_abstract_rerank_dataset_from_standard_answers(
@@ -80,10 +75,6 @@ def train_abstract_reranker(
 
 def main():
     logging.basicConfig(level=logging.INFO)
-
-    raise SystemExit(
-        "抽象重排序/打分模型功能已移除：无需训练该模型。"
-    )
 
     manager = StandardAnswerManager()
     current_answers = manager.get_current_answers()
