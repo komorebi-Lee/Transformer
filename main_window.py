@@ -1337,9 +1337,6 @@ class MainWindow(QMainWindow):
                 self.model_status_label.setText("模型状态: 已就绪")
                 self.statusBar().showMessage("模型初始化成功")
                 logger.info("模型初始化成功")
-
-                # 可选：启动即预加载“一阶抽象候选重排序”模型（独立于二/三阶分类模型）
-                self._preload_abstract_reranker_async()
             else:
                 # 模型初始化失败，尝试下载
                 self.statusBar().showMessage("模型不存在，尝试下载...")
@@ -1365,8 +1362,6 @@ class MainWindow(QMainWindow):
                         # 下载成功后重新初始化
                         model_success = self.model_manager.initialize_models()
                         if model_success:
-                            # 下载并初始化成功后，也尝试预加载抽象重排序模型
-                            self._preload_abstract_reranker_async()
                             # 使用信号更新UI
                             self._update_model_status_signal.emit(True, "模型下载并初始化成功")
                         else:
@@ -1385,31 +1380,6 @@ class MainWindow(QMainWindow):
             logger.error(f"启动模型下载失败: {e}")
             self.model_status_label.setText("模型状态: 下载失败")
             self.init_model_btn.setEnabled(True)
-
-    def _preload_abstract_reranker_async(self):
-        """可选预加载一阶抽象重排序模型（后台线程，避免卡UI）。"""
-        try:
-            if not bool(getattr(Config, 'ENABLE_ABSTRACT_RERANKER', False)):
-                return
-
-            import threading
-
-            def _load():
-                try:
-                    ok = self.model_manager.load_abstract_reranker_model()
-                    if ok:
-                        logger.info("抽象重排序模型预加载成功")
-                    else:
-                        logger.info("抽象重排序模型未加载（可能未训练/目录不存在/依赖不可用）")
-                except Exception as e:
-                    logger.warning(f"抽象重排序模型预加载异常: {e}")
-
-            t = threading.Thread(target=_load)
-            t.daemon = True
-            t.start()
-
-        except Exception as e:
-            logger.warning(f"启动抽象重排序模型预加载失败: {e}")
 
     # 添加信号处理
     def _on_model_initialization_finished(self, success, message):

@@ -47,7 +47,6 @@ class EnhancedCodingGenerator:
                 r'^那么', r'^然后', r'^对[，,]?', r'^我自己来说的话[，,]?',
                 r'^如果说是', r'\[[0-9]+\]$', r'对对$'
             ]
-
         s0 = (sentence or '').strip()
         if not s0:
             return ''
@@ -150,12 +149,7 @@ class EnhancedCodingGenerator:
 
         best_candidate = ''
         best_score = -1e18
-        max_span_len = 8
-
-        # 收集候选，便于可选的模型重排序
-        collected_candidates: List[str] = []
-        collected_raw: List[str] = []
-        collected_seen = set()
+        max_span_len = getattr(Config, 'ABSTRACT_RERANK_MAX_SPAN_LEN', 8) if Config else 8
 
         for sent in sentences:
             sent0 = strip_punct(sent)
@@ -178,48 +172,12 @@ class EnhancedCodingGenerator:
                         continue
                     if len(cand) > target_length:
                         continue
-
-                    # 收集候选（去重）
-                    if cand not in collected_seen:
-                        collected_seen.add(cand)
-                        collected_candidates.append(cand)
-                        collected_raw.append(built_raw)
-
                     s = span_score(cand, built_raw)
                     if (s > best_score) or (abs(s - best_score) < 1e-9 and len(cand) > len(best_candidate)):
                         best_score = s
                         best_candidate = cand
 
         compact = best_candidate or strip_punct(self._post_refine_phrase(abstracted))
-
-        # 可选：用监督微调得到的“抽象重排序模型”在候选中再挑一次
-        try:
-            if Config and getattr(Config, 'ENABLE_ABSTRACT_RERANKER', False) and model_manager is not None:
-                # 兜底：若启用但还没加载，尝试一次懒加载（只尝试一次，避免循环卡顿）
-                if hasattr(model_manager, 'ensure_abstract_reranker_loaded'):
-                    model_manager.ensure_abstract_reranker_loaded()
-                if hasattr(model_manager, 'is_abstract_reranker_available') and model_manager.is_abstract_reranker_available():
-                    # 过滤明显碎片候选，减少模型被“半句”干扰
-                    filtered = []
-                    for raw, cand in zip(collected_raw, collected_candidates):
-                        if not cand:
-                            continue
-                        if len(cand) > target_length:
-                            continue
-                        if looks_like_fragment(raw, cand):
-                            continue
-                        filtered.append(cand)
-
-                    if filtered:
-                        scores = model_manager.score_abstract_candidates(abstracted, filtered)
-                        if scores and len(scores) == len(filtered):
-                            best_i = int(max(range(len(scores)), key=lambda i: scores[i]))
-                            picked = filtered[best_i]
-                            if picked:
-                                compact = picked
-        except Exception:
-            # 模型可用性/推理失败时不影响规则抽取流程
-            pass
 
         # 若仍不完整，尝试从更短、更完整的片段中挑一个
         if compact and not self._is_semantically_complete(compact):
@@ -341,8 +299,13 @@ class EnhancedCodingGenerator:
                 progress_callback(30)
 
             # 提取文本内容
-            texts = [sentence.get('content', '') for sentence in all_sentences]
-            texts = [text for text in texts if len(text.strip()) > 10]
+            filtered_sentences = []
+            texts = []
+            for sent in all_sentences:
+                t = (sent.get('content', '') or '').strip()
+                if len(t) > 10:
+                    filtered_sentences.append(sent)
+                    texts.append(t)
 
             if not texts:
                 raise ValueError("没有找到有效的文本内容")
@@ -350,8 +313,8 @@ class EnhancedCodingGenerator:
             if progress_callback:
                 progress_callback(50)
 
-            # 使用训练模型预测类别
-            predictions, predicted_labels = model_manager.predict_categories(texts)
+            # 使用已加载的模型预测（自动兼容：PKL分类器 / BERT微调模型）
+            predictions, predicted_labels = model_manager.predict_with_loaded_model(texts)
 
             if progress_callback:
                 progress_callback(70)
@@ -378,10 +341,10 @@ class EnhancedCodingGenerator:
                 # 构建一阶编码
                 first_level_codes[code_key] = [
                     self.abstract_sentence(text, model_manager=model_manager),
-                    [all_sentences[i]],  # source_sentences
+                    [filtered_sentences[i]],  # source_sentences
                     1,  # file_count
                     1,  # sentence_count
-                    [all_sentences[i]]  # sentence_details
+                    [filtered_sentences[i]]  # sentence_details
                 ]
 
             if progress_callback:

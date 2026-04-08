@@ -50,32 +50,7 @@ class EnhancedModelManager:
         self.trained_model = None
         self.is_model_loaded = False
 
-        # 一阶抽象重排序模型（可选，独立于分类模型）
-        self._abstract_reranker_model = None
-        self._abstract_reranker_tokenizer = None
-        self._abstract_reranker_load_attempted = False
-
         logger.info(f"使用设备: {self.device}")
-
-    def ensure_abstract_reranker_loaded(self) -> bool:
-        """确保抽象重排序模型已加载（仅尝试一次，避免在循环里反复加载）。
-
-        Returns:
-            bool: 当前是否可用（已加载且可推理）
-        """
-        if self.is_abstract_reranker_available():
-            return True
-        if self._abstract_reranker_load_attempted:
-            return False
-
-        self._abstract_reranker_load_attempted = True
-        if not bool(getattr(Config, 'ENABLE_ABSTRACT_RERANKER', False)):
-            return False
-
-        try:
-            return bool(self.load_abstract_reranker_model())
-        except Exception:
-            return False
 
     def initialize_models(self) -> bool:
         """初始化所有需要的模型"""
@@ -320,75 +295,6 @@ class EnhancedModelManager:
             logger.error(f"加载BERT微调模型失败: {e}")
             return False
 
-    def load_abstract_reranker_model(self, model_dir: str = None) -> bool:
-        """加载一阶抽象重排序模型（BERT微调二分类）。
-
-        该模型用于对 (original, candidate_span) 打分，选择最接近人工抽象的候选片段。
-        """
-        try:
-            if self.is_abstract_reranker_available():
-                return True
-
-            if not TRANSFORMERS_AVAILABLE:
-                logger.warning("transformers不可用，无法加载抽象重排序模型")
-                return False
-
-            if model_dir is None:
-                model_dir = os.path.join(self.trained_model_dir, getattr(Config, 'ABSTRACT_RERANKER_DIRNAME', 'abstract_reranker_latest'))
-            model_dir = os.path.normpath(model_dir)
-
-            if not os.path.exists(model_dir):
-                logger.warning(f"抽象重排序模型目录不存在: {model_dir}")
-                return False
-
-            from transformers import AutoTokenizer, AutoModelForSequenceClassification
-
-            self._abstract_reranker_tokenizer = AutoTokenizer.from_pretrained(model_dir)
-            self._abstract_reranker_model = AutoModelForSequenceClassification.from_pretrained(model_dir).to(self.device)
-            self._abstract_reranker_model.eval()
-            logger.info(f"抽象重排序模型已加载: {model_dir}")
-            return True
-
-        except Exception as e:
-            logger.error(f"加载抽象重排序模型失败: {e}")
-            self._abstract_reranker_model = None
-            self._abstract_reranker_tokenizer = None
-            return False
-
-    def is_abstract_reranker_available(self) -> bool:
-        return self._abstract_reranker_model is not None and self._abstract_reranker_tokenizer is not None
-
-    def score_abstract_candidates(self, original: str, candidates: List[str]) -> List[float]:
-        """对候选片段打分，返回每个候选为“正类(更像人工抽象)”的概率。"""
-        if not self.is_abstract_reranker_available():
-            raise ValueError("抽象重排序模型未加载")
-        if not candidates:
-            return []
-
-        tokenizer = self._abstract_reranker_tokenizer
-        model = self._abstract_reranker_model
-
-        inputs = tokenizer(
-            [original] * len(candidates),
-            candidates,
-            padding=True,
-            truncation=True,
-            max_length=getattr(Config, 'MAX_SENTENCE_LENGTH', 512),
-            return_tensors='pt'
-        ).to(self.device)
-
-        with torch.no_grad():
-            outputs = model(**inputs)
-            logits = outputs.logits
-            # 二分类：取 class=1 的 softmax 概率
-            probs = torch.softmax(logits, dim=-1)
-            if probs.size(-1) >= 2:
-                pos = probs[:, 1]
-            else:
-                pos = probs[:, 0]
-
-        return [float(x) for x in pos.detach().cpu().tolist()]
-
     def get_model_type(self) -> str:
         """获取当前加载的模型类型"""
         if hasattr(self, '_bert_finetuner') and self._bert_finetuner is not None:
@@ -442,6 +348,12 @@ class EnhancedModelManager:
     def predict_categories(self, texts: List[str]) -> Tuple[np.ndarray, List[str]]:
         """使用训练模型预测类别"""
         if self.trained_model is None:
+            finetuner = getattr(self, '_bert_finetuner', None)
+            if finetuner is not None and finetuner.is_model_loaded():
+                raise ValueError(
+                    "当前加载的是BERT微调模型，无法使用 predict_categories()（该接口仅支持PKL分类器）。"
+                    "请改用 predict_with_loaded_model() 或 predict_with_finetuned_bert()"
+                )
             raise ValueError("没有训练过的模型可用")
 
         try:
