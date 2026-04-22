@@ -3,6 +3,12 @@ import os
 import logging
 from datetime import datetime
 from typing import Dict, List, Any, Optional
+from config import Config
+
+try:
+    from rag_index import RagIndexManager
+except Exception:
+    RagIndexManager = None
 
 logger = logging.getLogger(__name__)
 
@@ -24,10 +30,17 @@ class CodingLibraryManager:
         self.third_level_codes: List[Dict[str, Any]] = []
         self.code_mappings: Dict[str, Dict[str, Any]] = {}
         self.semantic_matcher = semantic_matcher
+        self.rag_index_manager = None
         # 备份相关设置
         self.backup_dir = os.path.join(os.path.dirname(library_path), "backups")
         # 确保备份目录存在
         os.makedirs(self.backup_dir, exist_ok=True)
+
+        try:
+            if RagIndexManager and getattr(Config, "RAG_AUTO_REFRESH_INDEX", False):
+                self.rag_index_manager = RagIndexManager(self.library_path, Config.RAG_INDEX_DIR)
+        except Exception as e:
+            logger.debug(f"RAG索引管理器初始化跳过: {e}")
 
         self.load_library()
 
@@ -184,68 +197,6 @@ class CodingLibraryManager:
 
         except Exception as e:
             logger.error(f"添加二阶编码失败: {e}")
-            return False
-
-    def add_third_level_code(self, code_id: int, name: str, description: str) -> bool:
-        """
-        添加新的三阶编码
-
-        Args:
-            code_id: 三阶编码ID
-            name: 三阶编码名称
-            description: 三阶编码描述
-
-        Returns:
-            是否添加成功
-        """
-        try:
-            # 检查ID是否已存在
-            for code in self.third_level_codes:
-                if code.get('id') == code_id:
-                    logger.error(f"三阶编码ID {code_id} 已存在")
-                    return False
-                if code.get('name') == name:
-                    logger.error(f"三阶编码名称 {name} 已存在")
-                    return False
-
-            # 创建新的三阶编码
-            new_third_level = {
-                'id': code_id,
-                'name': name,
-                'description': description,
-                'second_level_codes': []
-            }
-
-            # 添加到编码库
-            self.third_level_codes.append(new_third_level)
-            # 不需要再次添加到library_data，因为self.third_level_codes是其引用
-
-            # 保存到文件
-            self.save_library()
-
-            logger.info(f"添加三阶编码成功: {name}")
-            return True
-
-        except Exception as e:
-            logger.error(f"添加三阶编码失败: {e}")
-            return False
-
-    def save_library(self) -> bool:
-        """
-        保存编码库到文件
-
-        Returns:
-            是否保存成功
-        """
-        try:
-            with open(self.library_path, 'w', encoding='utf-8') as f:
-                json.dump(self.library_data, f, ensure_ascii=False, indent=2)
-
-            logger.info(f"编码库已保存到: {self.library_path}")
-            return True
-
-        except Exception as e:
-            logger.error(f"保存编码库失败: {e}")
             return False
 
     def delete_second_level_code(self, code_id: str) -> bool:
@@ -531,6 +482,12 @@ class CodingLibraryManager:
             # 重新加载编码库
             success = self.load_library()
             if success:
+                if self.rag_index_manager:
+                    try:
+                        self.rag_index_manager.invalidate()
+                        logger.info("备份恢复后已标记派生RAG索引失效")
+                    except Exception as e:
+                        logger.warning(f"恢复后RAG索引失效标记失败: {e}")
                 logger.info(f"从备份恢复编码库成功: {backup_path}")
             else:
                 logger.error(f"从备份恢复编码库失败: 加载失败")
@@ -553,6 +510,13 @@ class CodingLibraryManager:
             
             with open(self.library_path, 'w', encoding='utf-8') as f:
                 json.dump(self.library_data, f, ensure_ascii=False, indent=2)
+
+            if self.rag_index_manager:
+                try:
+                    self.rag_index_manager.invalidate()
+                    logger.info("派生RAG索引已标记失效")
+                except Exception as e:
+                    logger.warning(f"派生RAG索引失效标记失败: {e}")
 
             logger.info(f"编码库已保存到: {self.library_path}")
             return True

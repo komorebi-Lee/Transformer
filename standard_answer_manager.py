@@ -36,17 +36,20 @@ class StandardAnswerManager:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             version_id = f"{version}_{timestamp}"
 
+            # 转换为标准格式
+            standard_codes = self._convert_to_standard_format(structured_codes)
+
             standard_answer = {
                 "metadata": {
                     "version": version_id,
                     "description": description,
                     "created_time": self.get_timestamp(),
                     "source": "manual_coding",
-                    "code_statistics": self._calculate_statistics(structured_codes),
-                    "total_codes": self._count_total_codes(structured_codes)
+                    "code_statistics": self._calculate_statistics(standard_codes),
+                    "total_codes": self._count_total_codes(standard_codes)
                 },
-                "structured_codes": self._convert_to_standard_format(structured_codes),
-                "training_data": self._extract_training_data(structured_codes),
+                "structured_codes": standard_codes,
+                "training_data": self._extract_training_data(standard_codes),
                 "export_formats": {
                     "json": True,
                     "excel": True,
@@ -104,6 +107,9 @@ class StandardAnswerManager:
 
             # 合并修改到当前标准答案
             merged_codes = self._merge_modifications(current_codes, modifications)
+
+            # 确保合并后的编码格式与手动编码新增的标准答案格式一致
+            merged_codes = self._convert_to_standard_format(merged_codes)
 
             # 创建新版本
             version = f"v{len(os.listdir(self.standard_answers_dir)) + 1}"
@@ -183,16 +189,20 @@ class StandardAnswerManager:
             logger.error(f"转换标准格式失败: {e}")
             return modifications
 
+        # 分析三阶编码的变化
         for third_cat in modified_standard:
             if third_cat not in original_standard:
+                # 新增三阶编码
                 modifications["added"][third_cat] = copy.deepcopy(modified_standard[third_cat])
                 modifications["summary"]["added_codes"] += self._count_codes_in_category(modified_standard[third_cat])
 
         for third_cat in original_standard:
             if third_cat not in modified_standard:
+                # 删除三阶编码
                 modifications["deleted"][third_cat] = copy.deepcopy(original_standard[third_cat])
                 modifications["summary"]["deleted_codes"] += self._count_codes_in_category(original_standard[third_cat])
 
+        # 分析现有三阶编码内的变化
         for third_cat in modified_standard:
             if third_cat in original_standard:
                 try:
@@ -215,6 +225,10 @@ class StandardAnswerManager:
                          modifications["summary"]["deleted_codes"])
         modifications["has_changes"] = total_changes > 0
 
+        # 记录详细的修改信息，便于调试和验证
+        if modifications["has_changes"]:
+            logger.info(f"修改分析完成: 新增={modifications['summary']['added_codes']}, 修改={modifications['summary']['modified_codes']}, 删除={modifications['summary']['deleted_codes']}")
+
         return modifications
 
     def _analyze_second_level_modifications(self, original_second: Dict[str, Any],
@@ -233,16 +247,19 @@ class StandardAnswerManager:
             "has_changes": False
         }
 
+        # 分析新增的二阶编码
         for second_cat in modified_second:
             if second_cat not in original_second:
                 modifications["added"][second_cat] = copy.deepcopy(modified_second[second_cat])
                 modifications["summary"]["added_codes"] += len(modified_second[second_cat])
 
+        # 分析删除的二阶编码
         for second_cat in original_second:
             if second_cat not in modified_second:
                 modifications["deleted"][second_cat] = copy.deepcopy(original_second[second_cat])
                 modifications["summary"]["deleted_codes"] += len(original_second[second_cat])
 
+        # 分析现有二阶编码内的一阶编码变化
         for second_cat in modified_second:
             if second_cat in original_second:
                 first_modifications = self._analyze_first_level_modifications(
@@ -303,6 +320,16 @@ class StandardAnswerManager:
                     return copy.deepcopy(item)
                 return {'content': str(item)}
 
+            def get_code_id(item):
+                if isinstance(item, dict):
+                    return item.get("code_id")
+                return None
+
+            def get_content_text(item):
+                if isinstance(item, dict):
+                    return str(item.get("content", item.get("name", "")))
+                return str(item)
+
             # 使用列表映射处理重复项
             original_map = defaultdict(list)
             for item in original_first:
@@ -320,6 +347,7 @@ class StandardAnswerManager:
                 except Exception as e:
                     logger.warning(f"处理修改后一阶编码时出错: {e}")
 
+            # 分析新增和删除的编码
             all_keys = set(original_map.keys()) | set(modified_map.keys())
 
             for key in all_keys:
@@ -339,49 +367,42 @@ class StandardAnswerManager:
                     modifications["deleted"].extend(orig_items[:count])
                     modifications["summary"]["deleted_codes"] += count
 
-            # 额外检测：同一 code_id 下内容是否发生变化，计入 "修改编码"
-            try:
-                def get_code_id(item):
-                    if isinstance(item, dict):
-                        return item.get("code_id")
-                    return None
+            # 检测基于 code_id 的一阶编码修改
+            original_by_id = {}
+            for item in original_first:
+                cid = get_code_id(item)
+                if cid:
+                    original_by_id[cid] = item
 
-                def get_content_text(item):
-                    if isinstance(item, dict):
-                        return str(item.get("content", item.get("name", "")))
-                    return str(item)
+            modified_by_id = {}
+            for item in modified_first:
+                cid = get_code_id(item)
+                if cid:
+                    modified_by_id[cid] = item
 
-                original_by_id = {}
-                for item in original_first:
-                    cid = get_code_id(item)
-                    if cid:
-                        original_by_id[cid] = item
+            common_ids = set(original_by_id.keys()) & set(modified_by_id.keys())
 
-                modified_by_id = {}
-                for item in modified_first:
-                    cid = get_code_id(item)
-                    if cid:
-                        modified_by_id[cid] = item
-
-                common_ids = set(original_by_id.keys()) & set(modified_by_id.keys())
-
-                for cid in common_ids:
-                    o_item = original_by_id[cid]
-                    m_item = modified_by_id[cid]
-                    if get_content_text(o_item) != get_content_text(m_item):
-                        modifications["summary"]["modified_codes"] += 1
-            except Exception as e:
-                logger.warning(f"检测基于 code_id 的一阶编码修改失败 {category_path}: {e}")
+            for cid in common_ids:
+                o_item = original_by_id[cid]
+                m_item = modified_by_id[cid]
+                if get_content_text(o_item) != get_content_text(m_item):
+                    modifications["summary"]["modified_codes"] += 1
+                    # 记录修改的编码详情
+                    modifications["modified"].append({
+                        "original": get_content_dict(o_item),
+                        "modified": get_content_dict(m_item)
+                    })
 
             total_changes = (modifications["summary"]["added_codes"] +
                              modifications["summary"]["deleted_codes"] +
                              modifications["summary"]["modified_codes"])
             modifications["has_changes"] = total_changes > 0
 
-            # 添加日志，方便调试删除检测问题
+            # 添加详细日志，方便调试
             if modifications["has_changes"]:
                 logger.debug(
-                    f"Detected changes in {category_path}: Added={modifications['summary']['added_codes']}, Deleted={modifications['summary']['deleted_codes']}")
+                    f"Detected changes in {category_path}: Added={modifications['summary']['added_codes']}, Modified={modifications['summary']['modified_codes']}, Deleted={modifications['summary']['deleted_codes']}"
+                )
 
         except Exception as e:
             logger.error(f"分析一阶编码修改失败 {category_path}: {e}")
@@ -427,6 +448,7 @@ class StandardAnswerManager:
                     if second_cat in merged[third_cat]:
                         del merged[third_cat][second_cat]
 
+                # 处理现有二阶类别内的一阶编码修改
                 for second_cat, second_modifications in third_modifications["modified"].items():
                     if second_cat in merged[third_cat]:
                         # 处理一阶新增：基于 key 去重后追加
@@ -446,6 +468,17 @@ class StandardAnswerManager:
                                 item for item in existing_list
                                 if _first_level_key(item) not in deleted_keys
                             ]
+
+                        # 处理一阶修改：更新现有编码的内容
+                        for modified_item in second_modifications["modified"]:
+                            original_item = modified_item.get("original")
+                            new_item = modified_item.get("modified")
+                            if original_item and new_item:
+                                original_key = _first_level_key(original_item)
+                                for i, item in enumerate(existing_list):
+                                    if _first_level_key(item) == original_key:
+                                        existing_list[i] = copy.deepcopy(new_item)
+                                        break
         return merged
 
     def _count_codes_in_category(self, category: Dict[str, Any]) -> int:
@@ -939,11 +972,17 @@ class StandardAnswerManager:
         if not self.current_answers:
             return {}
 
+        # 获取 training_data，确保是列表格式
+        raw_training_data = self.current_answers.get("training_data", [])
+        # 如果是字典，转换为空列表（后续会从 structured_codes 提取）
+        if isinstance(raw_training_data, dict):
+            raw_training_data = []
+
         # 返回当前标准答案中的训练相关数据
         training_data = {
             "structured_codes": self.current_answers.get("structured_codes", {}),
             "metadata": self.current_answers.get("metadata", {}),
-            "training_data": self.current_answers.get("training_data", {})
+            "training_data": raw_training_data
         }
 
         return training_data

@@ -872,3 +872,54 @@ class EnhancedModelManager:
         except Exception as e:
             logger.error(f"检测模型格式失败: {e}")
             return "classifier"
+
+    def release_model_resources(self):
+        """
+        释放模型资源，清理GPU内存
+        """
+        try:
+            logger.info("开始释放模型资源...")
+            
+            # 释放BERT微调模型
+            if hasattr(self, '_bert_finetuner') and self._bert_finetuner is not None:
+                logger.info("释放BERT微调模型...")
+                del self._bert_finetuner
+                self._bert_finetuner = None
+                logger.info("BERT微调模型已释放")
+            
+            # 释放抽象重排序模型
+            if hasattr(self, '_abstract_reranker_model') and self._abstract_reranker_model is not None:
+                logger.info("释放抽象重排序模型...")
+                del self._abstract_reranker_model
+                self._abstract_reranker_model = None
+                logger.info("抽象重排序模型已释放")
+            
+            # 释放tokenizer
+            if hasattr(self, '_abstract_reranker_tokenizer') and self._abstract_reranker_tokenizer is not None:
+                logger.info("释放抽象重排序tokenizer...")
+                del self._abstract_reranker_tokenizer
+                self._abstract_reranker_tokenizer = None
+                logger.info("抽象重排序tokenizer已释放")
+            
+            # 释放缓存
+            if hasattr(self, 'model_cache'):
+                self.model_cache.clear()
+            if hasattr(self, 'embedding_cache'):
+                self.embedding_cache.clear()
+            
+            # 清理PyTorch缓存
+            import torch
+            if torch.cuda.is_available():
+                logger.info("清理PyTorch GPU缓存...")
+                torch.cuda.empty_cache()
+                torch.cuda.ipc_collect()
+                logger.info("PyTorch GPU缓存已清理")
+            
+            # 重置模型状态
+            self.is_model_loaded = False
+            
+            logger.info("模型资源释放完成")
+            return True
+        except Exception as e:
+            logger.error(f"释放模型资源失败: {e}")
+            return False

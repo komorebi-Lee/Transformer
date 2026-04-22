@@ -136,11 +136,21 @@ class TrainingConfigDialog(QDialog):
         hyperparam_layout.addWidget(self.optimization_method_combo)
 
         self.cv_folds_spin = QComboBox()
-        self.cv_folds_spin.addItems(["3", "5", "10"])
-        self.cv_folds_spin.setCurrentIndex(1)
+        self.cv_folds_spin.addItems(["2", "3", "5"])
+        self.cv_folds_spin.setCurrentIndex(0)
         self.cv_folds_spin.setEnabled(False)
         hyperparam_layout.addWidget(QLabel("交叉验证折数:"))
         hyperparam_layout.addWidget(self.cv_folds_spin)
+
+        # 优化算法选择
+        self.optimization_algorithm_combo = QComboBox()
+        self.optimization_algorithm_combo.addItems(["TPE", "CMA-ES", "GP", "Random"])
+        self.optimization_algorithm_combo.setCurrentIndex(0)
+        self.optimization_algorithm_combo.setEnabled(False)
+        hyperparam_layout.addWidget(QLabel("优化算法:"))
+        hyperparam_layout.addWidget(self.optimization_algorithm_combo)
+
+
 
         self.enable_optimization_check.toggled.connect(self.on_optimization_toggled)
         layout.addWidget(hyperparam_group)
@@ -207,6 +217,7 @@ class TrainingConfigDialog(QDialog):
     def on_optimization_toggled(self, checked):
         self.optimization_method_combo.setEnabled(checked)
         self.cv_folds_spin.setEnabled(checked)
+        self.optimization_algorithm_combo.setEnabled(checked)
 
         self.learning_rate_edit.setEnabled(not checked)
         self.batch_size_combo.setEnabled(not checked)
@@ -219,10 +230,19 @@ class TrainingConfigDialog(QDialog):
         elif self.incremental_radio.isChecked():
             training_mode = 'incremental'
 
+        # 优化算法映射
+        algorithm_map = {
+            'TPE': 'tpe',
+            'CMA-ES': 'cmaes',
+            'GP': 'gp',
+            'Random': 'random'
+        }
+        
         return {
             'training_mode': training_mode,
             'enable_optimization': self.enable_optimization_check.isChecked(),
             'optimization_method': 'grid' if self.optimization_method_combo.currentText() == '网格搜索' else 'bayesian',
+            'optimization_algorithm': algorithm_map[self.optimization_algorithm_combo.currentText()],
             'cv_folds': int(self.cv_folds_spin.currentText()),
             'learning_rate': float(self.learning_rate_edit.text()),
             'batch_size': int(self.batch_size_combo.currentText()),
@@ -4605,6 +4625,7 @@ class MainWindow(QMainWindow):
                 finished_callback=self.on_training_finished,
                 model_type='bert',
                 training_mode='bert_finetune',
+                fallback_to_classifier=False,  # 禁用降级到分类器模式
                 training_config=config
             )
         except Exception as e:
@@ -4671,26 +4692,33 @@ class MainWindow(QMainWindow):
                     progress_callback=progress_callback
                 )
             else:
+                algorithm = config.get('optimization_algorithm', 'tpe')
                 best_params = optimizer.bayesian_optimization(
                     training_data,
                     n_trials=20,
                     cv_folds=config['cv_folds'],
-                    progress_callback=progress_callback
+                    progress_callback=progress_callback,
+                    algorithm=algorithm
                 )
 
             if best_params:
-                config.update(best_params)
+                # 从返回结果中提取 best_params
+                actual_best_params = best_params.get('best_params', best_params)
+                # 创建新的配置字典，禁用超参数寻优
+                new_config = config.copy()
+                new_config.update(actual_best_params)
+                new_config['enable_optimization'] = False  # 禁用超参数寻优，避免死循环
                 QMessageBox.information(
                     self,
                     "寻优完成",
                     f"找到最优参数:\n"
-                    f"学习率: {best_params.get('learning_rate', 'N/A')}\n"
-                    f"批次大小: {best_params.get('batch_size', 'N/A')}\n"
-                    f"训练轮数: {best_params.get('epochs', 'N/A')}\n\n"
+                    f"学习率: {actual_best_params.get('learning_rate', 'N/A')}\n"
+                    f"批次大小: {actual_best_params.get('batch_size', 'N/A')}\n"
+                    f"训练轮数: {actual_best_params.get('epochs', 'N/A')}\n\n"
                     f"将使用最优参数开始训练..."
                 )
 
-                self._start_bert_finetune_training(config, training_data)
+                self._start_bert_finetune_training(new_config, training_data)
             else:
                 raise Exception("超参数寻优失败，未找到有效参数")
 

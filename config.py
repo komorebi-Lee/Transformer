@@ -33,7 +33,29 @@ class Config:
     MIN_SENTENCE_LENGTH = 5
     # 一阶编码最大长度：默认30；设为0表示不限制长度（便于对比是否仍出现断句）
     FIRST_LEVEL_CODE_MAX_LENGTH = 30
-
+    # RAG 自动编码配置
+    ENABLE_RAG_CODING = True
+    RAG_INDEX_DIR = os.path.join(BASE_DIR, "cache", "rag_index")
+    RAG_TOKEN_TOP_K = 80
+    RAG_VECTOR_TOP_K = 10
+    RAG_FINAL_TOP_K = 5
+    RAG_SECOND_LEVEL_THRESHOLD = 0.62
+    RAG_SECOND_LEVEL_MARGIN = 0.08
+    RAG_THIRD_LEVEL_THRESHOLD = 0.58
+    RAG_THIRD_LEVEL_MARGIN = 0.06
+    RAG_MIN_CLUSTER_SUPPORT = 2
+    RAG_CLUSTER_SIMILARITY_THRESHOLD = 0.82
+    RAG_MAX_EMBEDDING_CACHE_SIZE = 10000
+    RAG_OTHER_SECOND_LEVEL_NAME = "其他各类话题"
+    RAG_OTHER_THIRD_LEVEL_NAME = "其他重要维度"
+    RAG_AUTO_REFRESH_INDEX = True
+    RAG_INDEX_REBUILD_MODE = "lazy"
+    RAG_RUNTIME_STRATEGY = "auto"
+    RAG_GPU_BATCH_SIZE = 128
+    RAG_CPU_BATCH_SIZE = 32
+    RAG_LIGHT_BATCH_SIZE = 8
+    RAG_LIGHT_TOKEN_TOP_K = 30
+    RAG_LIGHT_VECTOR_TOP_K = 5
     # 一阶抽象（抽取式）重排序模型配置
     # 该模型用于在“候选子句片段”中选择最接近人工抽象的一段（不负责改写）
     ENABLE_ABSTRACT_RERANKER = True
@@ -41,7 +63,7 @@ class Config:
     ABSTRACT_RERANK_MAX_SPAN_LEN = 8
     ABSTRACT_RERANK_NEGATIVE_SAMPLES = 4
     # 抽象重排序训练策略：默认仅在模型缺失时训练（可大幅减少重复训练耗时）
-    ABSTRACT_RERANKER_ALWAYS_RETRAIN = False
+    ABSTRACT_RERANKER_ALWAYS_RETRAIN = True
 
     # BERT微调配置
     FINETUNE_LEARNING_RATE = 2e-5
@@ -60,13 +82,14 @@ class Config:
 
     # 超参数寻优配置
     HYPERPARAM_SEARCH_SPACE = {
-        "learning_rate": [1e-5, 2e-5, 5e-5],
-        "batch_size": [8, 16, 32],
-        "epochs": [2, 3, 5],
-        "dropout_rate": [0.1, 0.2, 0.3]
+        "learning_rate": [1e-5, 3e-5],  # 使用范围搜索
+        "batch_size": [16, 32],  # 减少批大小选项
+        "epochs": [3],  # 固定训练轮数
+        "dropout_rate": [0.1, 0.2]  # 减少dropout选项
     }
-    HYPERPARAM_SEARCH_METHOD = "grid"
-    HYPERPARAM_CV_FOLDS = 3
+    HYPERPARAM_SEARCH_METHOD = "bayesian"
+    HYPERPARAM_CV_FOLDS = 2  # 减少交叉验证折数
+    HYPERPARAM_OPTIMIZATION_ALGORITHM = "tpe"  # 默认优化算法
 
     # 增量训练配置
     INCREMENTAL_LEARNING_RATE_RATIO = 0.5

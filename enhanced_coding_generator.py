@@ -24,6 +24,20 @@ except Exception as e:
     logger.warning(f"导入SemanticMatcher失败: {e}")
     SemanticMatcher = None
 
+try:
+    from runtime_strategy import RuntimeStrategyDetector
+    from rag_index import RagIndexManager
+    from rag_semantic_matcher import RAGSemanticMatcher
+    from first_level_clusterer import FirstLevelClusterer
+    from coding_decision_policy import CodingDecisionPolicy
+except Exception as e:
+    logger.warning(f"导入RAG组件失败: {e}")
+    RuntimeStrategyDetector = None
+    RagIndexManager = None
+    RAGSemanticMatcher = None
+    FirstLevelClusterer = None
+    CodingDecisionPolicy = None
+
 
 class EnhancedCodingGenerator:
     """增强的扎根理论编码生成器 - 支持训练模型预测"""
@@ -39,7 +53,7 @@ class EnhancedCodingGenerator:
         self.similarity_cache: Dict[str, List[Tuple[Dict[str, Any], float]]] = {}
         # 明显不通顺/口语残留短语，后处理时尽量清理
         self.bad_phrase_patterns = [
-            r'比如说', r'这?种我', r'我这种', r'然后', r'就是说', r'那个', r'这个',
+            r'比如说', r'这?种我', r'我这种', r'然后', r'就是说',
             r'还可以$', r'^不是', r'^就是', r'^所以',
             r'^这跳出来了', r'^我刚刚说的是', r'^我说的是', r'^其实',
             r'^那么', r'^然后', r'^对[，,]?', r'^我自己来说的话[，,]?',
@@ -63,6 +77,16 @@ class EnhancedCodingGenerator:
                 logger.info("语义匹配器初始化成功")
             except Exception as e:
                 logger.error(f"初始化语义匹配器失败: {e}")
+
+        # RAG 组件（默认关闭，初始化成功后开启）
+        self.rag_enabled = False
+        self.runtime_strategy = None
+        self.rag_matcher = None
+        self.decision_policy = None
+        self.first_level_clusterer = None
+        self.rag_index_manager = None
+        self._second_level_decision_meta: Dict[str, Dict[str, Any]] = {}
+        self._init_rag_components()
 
     def abstract_sentence(self, sentence: str, model_manager=None) -> str:
         """抽象提炼句子内容：优先输出连续、语义完整的片段；可配置长度上限。"""
@@ -97,7 +121,7 @@ class EnhancedCodingGenerator:
 
         # 温和去口语：只去掉明显语气词，保留关键语义词
         oral_expressions = [
-            '嗯', '啊', '呃', '这个', '那个', '对吧', '对不对', '就是说',
+            '嗯', '啊', '呃', '对吧', '对不对', '就是说',
             '然后呢', '总的来说', '某种程度上', '某种意义上',
             '我觉得', '我认为', '我感觉', '其实', '比如说'
         ]
@@ -117,6 +141,7 @@ class EnhancedCodingGenerator:
 
         abstracted = re.sub(r'(\w)\1{2,}', r'\1', abstracted)
         abstracted = re.sub(r'\s+', ' ', abstracted).strip()
+        abstracted = self._normalize_source_sentence(abstracted)
 
         if not abstracted:
             self.abstract_cache[s0] = ''
@@ -165,6 +190,21 @@ class EnhancedCodingGenerator:
             if looks_like_fragment(raw_span, c):
                 score -= 7.0
 
+            if self._is_question_like(raw_span) or self._is_question_like(c):
+                score -= 6.0
+
+            # 低信息口语/犹豫表达惩罚
+            if re.search(r'(不太清楚|不知道|不确定|可能|也许|好像|大概|说不好|不一定)', c):
+                score -= 4.0
+            if re.search(r'(还可以|还好|差不多|一般般?|就那样|也行)', c):
+                score -= 3.0
+
+            # 业务动作、限制、后果、频度信号加分
+            if re.search(r'(只能|不得不|被迫|受影响|影响|导致|拖慢|拖延|卡在|推进|上线|返工|协调|协同|审批|资源|客户|催促|催|借用)', c):
+                score += 2.5
+            if re.search(r'(经常|反复|一直|总是|每次|频繁)', c):
+                score += 1.2
+
             if re.search(r'^(没想过|可能没有|可能有|不知道|不清楚|算不算|有时候|大概|也许)', c):
                 score -= 3.0
 
@@ -206,23 +246,32 @@ class EnhancedCodingGenerator:
                         continue
 
                     cand = strip_punct(self._post_refine_phrase(built_raw))
-                    if not cand:
-                        continue
-                    if len(cand) > target_length:
-                        continue
+                    variants = []
+                    if cand:
+                        variants.append(cand)
+                    normalized_cand = self._normalize_candidate_for_first_level(cand)
+                    if normalized_cand and normalized_cand not in variants:
+                        variants.append(normalized_cand)
 
-                    # 收集候选（去重）
-                    if cand not in collected_seen:
-                        collected_seen.add(cand)
-                        collected_candidates.append(cand)
-                        collected_raw.append(built_raw)
+                    for variant in variants:
+                        if not variant:
+                            continue
+                        if len(variant) > target_length:
+                            continue
 
-                    s = span_score(cand, built_raw)
-                    if (s > best_score) or (abs(s - best_score) < 1e-9 and len(cand) > len(best_candidate)):
-                        best_score = s
-                        best_candidate = cand
+                        # 收集候选（去重）
+                        if variant not in collected_seen:
+                            collected_seen.add(variant)
+                            collected_candidates.append(variant)
+                            collected_raw.append(built_raw)
+
+                        s = span_score(variant, built_raw)
+                        if (s > best_score) or (abs(s - best_score) < 1e-9 and len(variant) > len(best_candidate)):
+                            best_score = s
+                            best_candidate = variant
 
         compact = best_candidate or strip_punct(self._post_refine_phrase(abstracted))
+        compact = self._normalize_candidate_for_first_level(compact)
 
         # 可选：用监督微调得到的“抽象重排序模型”在候选中再挑一次
         try:
@@ -265,9 +314,20 @@ class EnhancedCodingGenerator:
             if limited:
                 compact = limited
 
-        compact = strip_punct(compact)
+        compact = self._normalize_candidate_for_first_level(strip_punct(compact))
         self.abstract_cache[s0] = compact
         return compact
+
+    def _normalize_source_sentence(self, text: str) -> str:
+        normalized = str(text or "").strip()
+        if not normalized:
+            return ""
+
+        normalized = re.sub(r'^[，。？！；、,\.\?!;:\s]+', '', normalized)
+        normalized = re.sub(r'(?:\s*[?？]+)$', '。', normalized)
+        normalized = re.sub(r'(?:\s*[!！]+)$', '。', normalized)
+        normalized = re.sub(r'\s+', ' ', normalized)
+        return normalized.strip()
 
     def _post_refine_phrase(self, text: str) -> str:
         refined = (text or '')
@@ -286,17 +346,75 @@ class EnhancedCodingGenerator:
         refined = refined.strip('，。？！；:"\'（）【】[]{}、')
         return refined
 
+    def _is_question_like(self, text: str) -> bool:
+        t = str(text or "").strip()
+        if not t:
+            return False
+        return bool(
+            re.search(r'[?？吗呢么]$', t)
+            or re.search(r'(是不是|是否|能不能|可不可以|会不会|有没有|要不要)', t)
+            or re.search(r'^(为什么|怎么|咋|如何|哪|谁)', t)
+        )
+
+    def _normalize_candidate_for_first_level(self, text: str) -> str:
+        refined = str(text or '').strip()
+        if not refined:
+            return ''
+
+        refined = re.sub(r'^(你说|你看|如果说|如果|要是|假如|其实|但是|不过|所以|因此|然后|并且|而且|那么|不然)+', '', refined)
+        refined = re.sub(r'^(这个流程|这个问题|这件事|这个事情|这个情况)', '', refined)
+        refined = re.sub(r'，?(所以|因此|然后|不过|但是)', '，', refined)
+        refined = re.sub(r'(是不是|是否)', '', refined)
+        refined = re.sub(r'(能不能|可不可以|会不会|有没有|要不要)', '', refined)
+        refined = re.sub(r'^(为什么|怎么|咋)', '', refined)
+        refined = re.sub(r'的话', '', refined)
+        refined = re.sub(r'的时候', '', refined)
+        refined = re.sub(r'每次都', '经常', refined)
+        refined = re.sub(r'这里$', '', refined)
+        refined = re.sub(r'了(?=$|[，。？！；、])', '', refined)
+        refined = re.sub(r'(就很受影响|很受影响)', '受影响', refined)
+        refined = re.sub(r'我们就只能', '只能', refined)
+        refined = re.sub(r'我们只能', '只能', refined)
+        refined = re.sub(r'我们就', '', refined)
+        refined = re.sub(r'我们', '', refined)
+        refined = re.sub(r'只能先', '只能', refined)
+        refined = re.sub(r'先上线再修', '先上线后修', refined)
+        refined = re.sub(r'一直催', '催促', refined)
+        refined = re.sub(r'不够', '不足', refined)
+        refined = re.sub(r'太慢', '过慢', refined)
+        refined = re.sub(r'别的组的设备', '别组设备', refined)
+        refined = re.sub(r'借别组设备来做', '借用别组设备', refined)
+        refined = re.sub(r'借别组设备', '借用别组设备', refined)
+        refined = re.sub(r'来做$', '', refined)
+
+        impact_match = re.match(r'^(.+?)，(.+?)受影响$', refined)
+        if impact_match:
+            left = impact_match.group(1).strip('，。？！；、')
+            right = impact_match.group(2).strip('，。？！；、')
+            if left and right:
+                refined = f"{left}影响{right}"
+
+        refined = re.sub(r'\s+', '', refined)
+        refined = refined.strip('，。？！；:"\'（）【】[]{}、')
+        return refined
+
     def _is_semantically_complete(self, text: str) -> bool:
         t = (text or '').strip()
         if not t:
             return False
         if len(t) < 4:
             return False
+        if self._is_question_like(t):
+            return False
         if re.search(r'(对|怎么|会|在|到|里面|这里|这样|那样|这种|这些|那些|这类|那类)$', t):
             return False
         if re.search(r'^(因为|如果|即使|虽然|但是|不过|所以|因此|从而|然后|并且|而且|然而)$', t):
             return False
         if re.search(r'^(因为|如果|即使|虽然)', t) and not re.search(r'(所以|因此|导致|使得|从而|就|会|才)', t):
+            return False
+        if re.search(r'^(我|我们|你|你们)(也)?(不太清楚|不知道|不确定|说不好)', t):
+            return False
+        if re.search(r'^(还可以|还好|差不多|一般般?)$', t):
             return False
         return True
 
@@ -558,6 +676,10 @@ class EnhancedCodingGenerator:
             if progress_callback:
                 progress_callback(100)
 
+            # 编码生成完成，释放模型资源
+            if model_manager and hasattr(model_manager, 'release_model_resources'):
+                model_manager.release_model_resources()
+
             return {
                 "一阶编码": dict(first_level_codes),
                 "二阶编码": dict(second_level_codes),
@@ -569,6 +691,10 @@ class EnhancedCodingGenerator:
             logger.error(f"使用训练模型生成编码失败: {str(e)}")
             import traceback
             traceback.print_exc()
+            
+            # 即使出错，也尝试释放模型资源
+            if model_manager and hasattr(model_manager, 'release_model_resources'):
+                model_manager.release_model_resources()
             return {
                 "一阶编码": {"错误": [f"使用训练模型生成编码失败: {str(e)}"]},
                 "二阶编码": {"错误": ["请检查训练模型"]},
@@ -625,6 +751,10 @@ class EnhancedCodingGenerator:
             if progress_callback:
                 progress_callback(100)
 
+            # 编码生成完成，释放模型资源
+            if model_manager and hasattr(model_manager, 'release_model_resources'):
+                model_manager.release_model_resources()
+
             return {
                 "一阶编码": first_level_codes,
                 "二阶编码": second_level_codes,
@@ -636,6 +766,11 @@ class EnhancedCodingGenerator:
             logger.error(f"生成多文件编码失败: {str(e)}")
             import traceback
             traceback.print_exc()
+            
+            # 即使出错，也尝试释放模型资源
+            if model_manager and hasattr(model_manager, 'release_model_resources'):
+                model_manager.release_model_resources()
+                
             return {
                 "一阶编码": {"错误": ["生成编码时出现错误"]},
                 "二阶编码": {"错误": ["请检查输入文本"]},
@@ -670,12 +805,179 @@ class EnhancedCodingGenerator:
 
         return first_level_codes
 
+    def _init_rag_components(self):
+        """初始化RAG组件，失败时保持关闭并回退到旧流程。"""
+        try:
+            if not Config or not getattr(Config, "ENABLE_RAG_CODING", False):
+                return
+            if not (RuntimeStrategyDetector and RagIndexManager and RAGSemanticMatcher and FirstLevelClusterer and CodingDecisionPolicy):
+                return
+            if not self.coding_library:
+                return
+
+            self.runtime_strategy = RuntimeStrategyDetector().detect()
+            embedding_fn = None
+            if self.semantic_matcher and self.runtime_strategy.use_vector_clustering:
+                embedding_fn = self.semantic_matcher.get_embedding
+
+            self.rag_index_manager = RagIndexManager(
+                self.coding_library.library_path,
+                Config.RAG_INDEX_DIR,
+                embedding_fn=embedding_fn,
+            )
+            if not self.rag_index_manager.ensure_fresh():
+                logger.warning("RAG索引不可用，回退到传统语义匹配流程")
+                return
+
+            self.rag_matcher = RAGSemanticMatcher(
+                Config.RAG_INDEX_DIR,
+                embedding_fn=embedding_fn,
+            )
+            if not self.rag_matcher.documents:
+                logger.warning("RAG匹配器未加载到索引文档，回退到传统语义匹配流程")
+                return
+
+            second_name_map = self.rag_matcher.second_code_name_map()
+            third_name_map = self.rag_matcher.third_level_name_map()
+            self.decision_policy = CodingDecisionPolicy(
+                allowed_second_code_ids=list(second_name_map.keys()),
+                allowed_third_level_ids=list(third_name_map.keys()),
+                allowed_second_code_names=second_name_map,
+                allowed_third_level_names=third_name_map,
+            )
+            self.first_level_clusterer = FirstLevelClusterer(
+                embedding_fn=embedding_fn,
+                similarity_threshold=getattr(Config, "RAG_CLUSTER_SIMILARITY_THRESHOLD", 0.82),
+            )
+            self.rag_enabled = True
+            logger.info(f"RAG自动编码已启用，运行策略: {self.runtime_strategy.name}")
+        except Exception as e:
+            logger.warning(f"RAG组件初始化失败，回退旧流程: {e}")
+            self.rag_enabled = False
+
+    def _best_candidate_names(self, candidates: List[Dict[str, Any]]) -> Tuple[Optional[str], Optional[str]]:
+        token_best_name = None
+        vector_best_name = None
+        token_best = float("-inf")
+        vector_best = float("-inf")
+        for cand in candidates:
+            try:
+                token_score = float(cand.get("token_score", 0.0))
+            except (TypeError, ValueError):
+                token_score = 0.0
+            try:
+                vector_score = float(cand.get("vector_score", 0.0))
+            except (TypeError, ValueError):
+                vector_score = 0.0
+            name = cand.get("name")
+            if not name:
+                continue
+            if token_score > token_best:
+                token_best = token_score
+                token_best_name = name
+            if vector_score > vector_best:
+                vector_best = vector_score
+                vector_best_name = name
+        return token_best_name, vector_best_name
+
+    def _lookup_second_code_by_name(self, second_name: str) -> Optional[Dict[str, Any]]:
+        if not self.coding_library or not second_name:
+            return None
+        for code in self.coding_library.get_all_second_level_codes():
+            if code.get("name") == second_name:
+                normalized = dict(code)
+                normalized["level"] = "second"
+                normalized["code_id"] = str(code.get("id", "")).strip()
+                return normalized
+        return None
+
+    def _refresh_rag_matcher_if_needed(self):
+        """在运行时按需刷新派生索引与匹配器，确保编码库编辑后立即生效。"""
+        if not self.rag_enabled or not self.rag_index_manager:
+            return
+        try:
+            if self.rag_index_manager.is_fresh():
+                return
+            if not self.rag_index_manager.ensure_fresh():
+                logger.warning("RAG索引刷新失败，将继续使用旧匹配流程")
+                return
+
+            embedding_fn = None
+            if self.semantic_matcher and getattr(self.runtime_strategy, "use_vector_clustering", False):
+                embedding_fn = self.semantic_matcher.get_embedding
+            self.rag_matcher = RAGSemanticMatcher(
+                Config.RAG_INDEX_DIR,
+                embedding_fn=embedding_fn,
+            )
+            second_name_map = self.rag_matcher.second_code_name_map() if self.rag_matcher else {}
+            third_name_map = self.rag_matcher.third_level_name_map() if self.rag_matcher else {}
+            self.decision_policy = CodingDecisionPolicy(
+                allowed_second_code_ids=list(second_name_map.keys()),
+                allowed_third_level_ids=list(third_name_map.keys()),
+                allowed_second_code_names=second_name_map,
+                allowed_third_level_names=third_name_map,
+            )
+            logger.info("检测到编码库变更，已自动刷新RAG派生索引与匹配器")
+        except Exception as e:
+            logger.warning(f"RAG索引运行时刷新失败: {e}")
+
     def generate_second_level_codes_improved(self, first_level_codes: Dict[str, List[str]], model_manager=None) -> Dict[str, List[str]]:
         """生成二阶编码 - 使用语义相似度匹配"""
         if not first_level_codes:
             return {"无内容": []}
 
         logger.info(f"开始二阶编码分类，共 {len(first_level_codes)} 个一阶编码")
+        self._second_level_decision_meta = {}
+        self._refresh_rag_matcher_if_needed()
+
+        # 优先使用RAG聚类+门控决策
+        if self.rag_enabled and self.rag_matcher and self.decision_policy and self.first_level_clusterer:
+            try:
+                clusters = self.first_level_clusterer.cluster(first_level_codes)
+                categories = defaultdict(list)
+                top_k = max(1, int(getattr(Config, "RAG_FINAL_TOP_K", 5)))
+                token_top_k = max(
+                    1,
+                    int(
+                        getattr(
+                            self.runtime_strategy,
+                            "token_top_k",
+                            getattr(Config, "RAG_TOKEN_TOP_K", 80),
+                        )
+                    ),
+                )
+
+                for cluster in clusters:
+                    text = cluster.representative or ""
+                    if not text.strip():
+                        categories[self.decision_policy.other_second_name].extend(cluster.source_keys)
+                        continue
+
+                    candidates = self.rag_matcher.match_first_level_to_second_level(
+                        text,
+                        top_k=top_k,
+                        token_top_k=token_top_k,
+                    )
+                    token_best, vector_best = self._best_candidate_names(candidates)
+                    decision = self.decision_policy.decide_second_level(
+                        candidates=candidates,
+                        cluster_support=max(1, cluster.support),
+                        token_best_name=token_best,
+                        vector_best_name=vector_best,
+                    )
+                    categories[decision.name].extend(cluster.source_keys)
+                    if decision.name not in self._second_level_decision_meta:
+                        self._second_level_decision_meta[decision.name] = {
+                            "decision": decision.reason,
+                            "code": decision.code,
+                        }
+
+                result = {k: v for k, v in categories.items() if v}
+                if result:
+                    logger.info(f"RAG二阶编码完成: 共 {len(result)} 个类别")
+                    return result
+            except Exception as e:
+                logger.warning(f"RAG二阶匹配失败，回退旧流程: {e}")
 
         # 检查编码库和语义匹配器是否可用
         if not self.coding_library or not self.semantic_matcher:
@@ -821,6 +1123,30 @@ class EnhancedCodingGenerator:
 
         category_names = list(second_level_codes.keys())
         logger.info(f"开始三阶编码抽象，共 {len(category_names)} 个二阶编码")
+
+        # 优先使用二阶映射 + 决策兜底
+        if self.rag_enabled and self.decision_policy:
+            try:
+                third_level_categories = defaultdict(list)
+                for second_category in category_names:
+                    if second_category == self.decision_policy.other_second_name:
+                        third_level_categories[self.decision_policy.other_third_name].append(second_category)
+                        continue
+
+                    meta = self._second_level_decision_meta.get(second_category, {})
+                    second_code = meta.get("code") if isinstance(meta, dict) else None
+                    if not isinstance(second_code, dict):
+                        second_code = self._lookup_second_code_by_name(second_category)
+
+                    decision = self.decision_policy.decide_third_level(second_code)
+                    third_level_categories[decision.name].append(second_category)
+
+                result = {k: v for k, v in third_level_categories.items() if v}
+                if result:
+                    logger.info(f"RAG三阶编码完成: 共 {len(result)} 个类别")
+                    return result
+            except Exception as e:
+                logger.warning(f"RAG三阶匹配失败，回退旧流程: {e}")
 
         # 检查编码库和语义匹配器是否可用
         if not self.coding_library or not self.semantic_matcher:

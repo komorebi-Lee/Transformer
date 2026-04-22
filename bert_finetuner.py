@@ -681,6 +681,9 @@ class BERTFineTuner:
 
             metrics = train_result.metrics
             logger.info(f"训练完成，指标: {metrics}")
+            
+            # 保存训练指标
+            self.training_metrics = metrics
 
             self.save_model(output_dir)
 
