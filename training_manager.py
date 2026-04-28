@@ -267,6 +267,7 @@ class GroundedTheoryTrainingThread(QThread):
 
     def _run_bert_finetune_training(self):
         """运行BERT微调训练"""
+        finetuner = None
         try:
             can_train, reason = check_training_conditions()
             if not can_train:
@@ -387,6 +388,40 @@ class GroundedTheoryTrainingThread(QThread):
                                                 self.coding_processing_result)
                     return
             self.training_finished.emit(False, f"BERT微调训练失败: {str(e)}", self.coding_processing_result)
+        finally:
+            # 训练完成后清理资源
+            if finetuner:
+                try:
+                    finetuner.clear()
+                    logger.info("BERT微调训练器资源已清理")
+                except Exception as e:
+                    logger.error(f"清理BERT微调训练器资源失败: {e}")
+            
+            # 释放模型管理器资源
+            if hasattr(self.model_manager, 'release_model_resources'):
+                try:
+                    self.model_manager.release_model_resources()
+                    logger.info("模型管理器资源已释放")
+                except Exception as e:
+                    logger.error(f"释放模型管理器资源失败: {e}")
+            
+            # 清理PyTorch缓存
+            try:
+                import torch
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                    torch.cuda.ipc_collect()
+                    logger.info("PyTorch GPU缓存已清理")
+            except Exception as e:
+                logger.error(f"清理PyTorch缓存失败: {e}")
+            
+            # 强制垃圾回收
+            try:
+                import gc
+                gc.collect()
+                logger.info("垃圾回收完成")
+            except Exception as e:
+                logger.error(f"垃圾回收失败: {e}")
 
     def _run_classifier_training_internal(self):
         """内部方法：运行分类器训练（分类器模式和增量训练）"""
@@ -491,6 +526,33 @@ class GroundedTheoryTrainingThread(QThread):
         except Exception as e:
             logger.error(f"分类器训练失败: {e}")
             self.training_finished.emit(False, f"分类器训练失败: {str(e)}", self.coding_processing_result)
+        finally:
+            # 训练完成后清理资源
+            # 释放模型管理器资源
+            if hasattr(self.model_manager, 'release_model_resources'):
+                try:
+                    self.model_manager.release_model_resources()
+                    logger.info("模型管理器资源已释放")
+                except Exception as e:
+                    logger.error(f"释放模型管理器资源失败: {e}")
+            
+            # 清理PyTorch缓存
+            try:
+                import torch
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                    torch.cuda.ipc_collect()
+                    logger.info("PyTorch GPU缓存已清理")
+            except Exception as e:
+                logger.error(f"清理PyTorch缓存失败: {e}")
+            
+            # 强制垃圾回收
+            try:
+                import gc
+                gc.collect()
+                logger.info("垃圾回收完成")
+            except Exception as e:
+                logger.error(f"垃圾回收失败: {e}")
 
     def prepare_training_data(self) -> Tuple[List[str], List[int], Dict[str, int]]:
         """准备训练数据"""

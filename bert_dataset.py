@@ -321,7 +321,9 @@ def get_label_mapping(standard_answer_manager) -> Tuple[Dict[str, int], Dict[int
 
     for third_cat, second_cats in structured_codes.items():
         for second_cat, first_codes in second_cats.items():
-            full_category = f"{third_cat} > {second_cat}"
+            clean_third = _clean_category_label(third_cat)
+            clean_second = _clean_category_label(second_cat)
+            full_category = f"{clean_third} > {clean_second}"
             if full_category not in label_to_id:
                 label_to_id[full_category] = label_id
                 id_to_label[label_id] = full_category
@@ -330,6 +332,24 @@ def get_label_mapping(standard_answer_manager) -> Tuple[Dict[str, int], Dict[int
     logger.info(f"创建了 {len(label_to_id)} 个标签映射")
     return label_to_id, id_to_label
 
+
+def _clean_category_label(label: str) -> str:
+    """
+    清理分类标签，删除B0X和C0X格式的内容
+
+    Args:
+        label: 原始标签
+
+    Returns:
+        清理后的标签
+    """
+    if not label:
+        return label
+    # 移除B0X格式
+    label = re.sub(r'^B\d+\s*', '', label.strip())
+    # 移除C0X格式
+    label = re.sub(r'^C\d+\s*', '', label.strip())
+    return label
 
 def get_label_mapping_from_dict(current_answers: Dict[str, Any]) -> Tuple[Dict[str, int], Dict[int, str]]:
     """
@@ -344,24 +364,50 @@ def get_label_mapping_from_dict(current_answers: Dict[str, Any]) -> Tuple[Dict[s
     if not current_answers:
         raise ValueError("没有可用的标准答案数据")
 
-    structured_codes = current_answers.get("structured_codes", {})
-    if not structured_codes:
-        raise ValueError("标准答案中没有结构化编码数据")
-
     label_to_id = {}
     id_to_label = {}
     label_id = 0
 
-    for third_cat, second_cats in structured_codes.items():
-        for second_cat, first_codes in second_cats.items():
-            full_category = f"{third_cat} > {second_cat}"
-            if full_category not in label_to_id:
-                label_to_id[full_category] = label_id
-                id_to_label[label_id] = full_category
-                label_id += 1
-
-    logger.info(f"创建了 {len(label_to_id)} 个标签映射")
-    return label_to_id, id_to_label
+    # 优先从 training_data 中提取标签映射
+    training_data = current_answers.get("training_data", [])
+    if isinstance(training_data, list) and training_data:
+        logger.info(f"从 training_data 中提取标签映射，共 {len(training_data)} 个样本")
+        for item in training_data:
+            if isinstance(item, dict):
+                third_cat = _clean_category_label(item.get("target_third_category", ""))
+                second_cat = _clean_category_label(item.get("target_second_category", ""))
+                if third_cat and second_cat:
+                    full_category = f"{third_cat} > {second_cat}"
+                    if full_category not in label_to_id:
+                        label_to_id[full_category] = label_id
+                        id_to_label[label_id] = full_category
+                        label_id += 1
+        
+        if label_to_id:
+            logger.info(f"从 training_data 创建了 {len(label_to_id)} 个标签映射")
+            logger.info(f"标签示例: {list(label_to_id.keys())[:5]}")
+            return label_to_id, id_to_label
+    
+    # 如果 training_data 为空或没有有效标签，则从 structured_codes 中提取
+    structured_codes = current_answers.get("structured_codes", {})
+    if structured_codes:
+        logger.info(f"从 structured_codes 中提取标签映射")
+        for third_cat, second_cats in structured_codes.items():
+            for second_cat, first_codes in second_cats.items():
+                clean_third = _clean_category_label(third_cat)
+                clean_second = _clean_category_label(second_cat)
+                full_category = f"{clean_third} > {clean_second}"
+                if full_category not in label_to_id:
+                    label_to_id[full_category] = label_id
+                    id_to_label[label_id] = full_category
+                    label_id += 1
+        
+        if label_to_id:
+            logger.info(f"从 structured_codes 创建了 {len(label_to_id)} 个标签映射")
+            logger.info(f"标签示例: {list(label_to_id.keys())[:5]}")
+            return label_to_id, id_to_label
+    
+    raise ValueError("标准答案中没有有效的标签数据")
 
 
 def create_dataset_from_standard_answers(
@@ -396,18 +442,51 @@ def create_dataset_from_standard_answers(
         raise ValueError("没有可用的标准答案数据")
 
     training_data = current_answers.get("training_data", [])
+    logger.info(f"从 current_answers 获取的 training_data 类型: {type(training_data)}, 内容: {training_data if not isinstance(training_data, dict) else 'dict'}")
+    
+    # 处理 training_data 为字典的情况（从 export_for_training 返回的格式）
+    if isinstance(training_data, dict):
+        logger.info("检测到 training_data 为字典，尝试提取数据...")
+        # 尝试从字典中提取训练数据
+        if "training_data" in training_data and isinstance(training_data["training_data"], list):
+            training_data = training_data["training_data"]
+            logger.info(f"从 training_data['training_data'] 提取到 {len(training_data)} 条数据")
+        elif "structured_codes" in training_data:
+            training_data = _extract_training_data_from_codes(training_data["structured_codes"])
+            logger.info(f"从 training_data['structured_codes'] 提取到 {len(training_data)} 条数据")
+        else:
+            # 将字典转换为列表格式
+            extracted_data = []
+            for key, value in training_data.items():
+                if isinstance(value, list):
+                    extracted_data.extend(value)
+                elif isinstance(value, dict):
+                    extracted_data.append(value)
+            training_data = extracted_data
+            logger.info(f"从字典转换得到 {len(training_data)} 条数据")
+    
+    # 如果 training_data 为空，尝试从 structured_codes 提取
     if not training_data:
         structured_codes = current_answers.get("structured_codes", {})
-        training_data = _extract_training_data_from_codes(structured_codes)
+        if structured_codes:
+            logger.info(f"training_data 为空，尝试从 structured_codes 提取...")
+            training_data = _extract_training_data_from_codes(structured_codes)
+            logger.info(f"从 structured_codes 提取到 {len(training_data)} 条数据")
 
     if not training_data:
+        logger.error(f"无法提取训练数据。current_answers 键: {list(current_answers.keys())}")
         raise ValueError("没有可用的训练数据")
 
     texts = []
     labels = []
 
+    logger.info(f"label_to_id 包含 {len(label_to_id)} 个标签: {list(label_to_id.keys())[:5]}...")
+    
+    processed_count = 0
+    skipped_count = 0
     for item in training_data:
         if not isinstance(item, dict):
+            skipped_count += 1
             continue
 
         # 兼容两种 training_data 结构：
@@ -434,12 +513,14 @@ def create_dataset_from_standard_answers(
                 text = original_content or related_part
 
         if not third_cat and "target_third_category" in item:
-            third_cat = item.get("target_third_category", "")
+            third_cat = _clean_category_label(item.get("target_third_category", ""))
         if not second_cat and "target_second_category" in item:
-            second_cat = item.get("target_second_category", "")
+            second_cat = _clean_category_label(item.get("target_second_category", ""))
 
         if text and third_cat and second_cat:
+            processed_count += 1
             full_category = f"{third_cat} > {second_cat}"
+            
             if full_category in label_to_id:
                 texts.append(text)
                 labels.append(label_to_id[full_category])
@@ -449,8 +530,14 @@ def create_dataset_from_standard_answers(
                     if augmented_text != text:
                         texts.append(augmented_text)
                         labels.append(label_to_id[full_category])
+            else:
+                skipped_count += 1
+                logger.warning(f"标签 '{full_category}' 不在 label_to_id 中，已跳过")
+
+    logger.info(f"处理完成: {processed_count} 个有效样本, {skipped_count} 个跳过, 最终提取到 {len(texts)} 个样本")
 
     if not texts:
+        logger.error(f"无法提取训练数据。训练数据总数: {len(training_data)}, label_to_id: {list(label_to_id.keys())[:10]}")
         raise ValueError("无法从标准答案中提取有效的训练数据")
 
     if tokenizer is None:
@@ -482,10 +569,15 @@ def _extract_training_data_from_codes(structured_codes: Dict[str, Any]) -> List[
         训练数据列表
     """
     training_data = []
+    
+    logger.info(f"开始从 structured_codes 提取训练数据，共 {len(structured_codes)} 个三阶编码")
 
     for third_cat, second_cats in structured_codes.items():
         for second_cat, first_contents in second_cats.items():
             for content in first_contents:
+                text_content = None
+                
+                # 处理字典类型的 content
                 if isinstance(content, dict):
                     if 'content' in content:
                         text_content = content.get('content', '')
@@ -495,11 +587,13 @@ def _extract_training_data_from_codes(structured_codes: Dict[str, Any]) -> List[
                         text_content = str(content)
 
                     if text_content and text_content.strip():
+                        clean_third = _clean_category_label(third_cat)
+                        clean_second = _clean_category_label(second_cat)
                         training_data.append({
                             "text": text_content.strip(),
-                            "third_category": third_cat,
-                            "second_category": second_cat,
-                            "full_category": f"{third_cat} > {second_cat}",
+                            "third_category": clean_third,
+                            "second_category": clean_second,
+                            "full_category": f"{clean_third} > {clean_second}",
                             "source": "first_level_code"
                         })
 
@@ -510,12 +604,27 @@ def _extract_training_data_from_codes(structured_codes: Dict[str, Any]) -> List[
                                 if sentence_text and sentence_text.strip():
                                     training_data.append({
                                         "text": sentence_text.strip(),
-                                        "third_category": third_cat,
-                                        "second_category": second_cat,
-                                        "full_category": f"{third_cat} > {second_cat}",
+                                        "third_category": clean_third,
+                                        "second_category": clean_second,
+                                        "full_category": f"{clean_third} > {clean_second}",
                                         "source": "dragged_sentence"
                                     })
+                
+                # 处理字符串类型的 content
+                elif isinstance(content, str):
+                    text_content = content.strip()
+                    if text_content:
+                        clean_third = _clean_category_label(third_cat)
+                        clean_second = _clean_category_label(second_cat)
+                        training_data.append({
+                            "text": text_content,
+                            "third_category": clean_third,
+                            "second_category": clean_second,
+                            "full_category": f"{clean_third} > {clean_second}",
+                            "source": "first_level_code"
+                        })
 
+    logger.info(f"从 structured_codes 提取到 {len(training_data)} 条训练数据")
     return training_data
 
 

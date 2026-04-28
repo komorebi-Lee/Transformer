@@ -167,7 +167,8 @@ class HyperparameterOptimizer:
         n_trials: int = 20,
         search_space: Optional[Dict[str, List[Any]]] = None,
         progress_callback: Optional[Callable[[int, int, Dict[str, Any]], None]] = None,
-        cv_folds: int = 3
+        cv_folds: int = 3,
+        algorithm: str = 'tpe'
     ) -> Dict[str, Any]:
         """
         贝叶斯优化超参数（使用Optuna）
@@ -178,6 +179,7 @@ class HyperparameterOptimizer:
             search_space: 搜索空间
             progress_callback: 进度回调函数
             cv_folds: 交叉验证折数
+            algorithm: 优化算法，支持 'tpe' (默认), 'cmaes', 'gp', 'random'
 
         Returns:
             最优参数组合和评估结果
@@ -205,6 +207,34 @@ class HyperparameterOptimizer:
                 logger.warning(f"交叉验证折数({cv_folds})大于样本数量({actual_dataset_size})，自动调整为{actual_dataset_size}")
                 cv_folds = actual_dataset_size
 
+            # 选择采样器
+            sampler = None
+            if algorithm == 'tpe':
+                from optuna.samplers import TPESampler
+                sampler = TPESampler(n_startup_trials=5, n_ei_candidates=24)
+                logger.info("使用 TPE 算法进行优化")
+            elif algorithm == 'cmaes':
+                from optuna.samplers import CmaEsSampler
+                sampler = CmaEsSampler()
+                logger.info("使用 CMA-ES 算法进行优化")
+            elif algorithm == 'gp':
+                try:
+                    from optuna.samplers import GPSampler
+                    sampler = GPSampler()
+                    logger.info("使用 GP 算法进行优化")
+                except ImportError:
+                    logger.warning("GP 算法需要安装 scikit-learn，默认使用 TPE 算法")
+                    from optuna.samplers import TPESampler
+                    sampler = TPESampler(n_startup_trials=5, n_ei_candidates=24)
+            elif algorithm == 'random':
+                from optuna.samplers import RandomSampler
+                sampler = RandomSampler()
+                logger.info("使用 Random 算法进行优化")
+            else:
+                from optuna.samplers import TPESampler
+                sampler = TPESampler(n_startup_trials=5, n_ei_candidates=24)
+                logger.info(f"未知算法 {algorithm}，默认使用 TPE 算法")
+
             logger.info(f"开始贝叶斯优化，共 {n_trials} 次试验")
 
             self.optimization_history = []
@@ -219,9 +249,18 @@ class HyperparameterOptimizer:
                     progress_callback(trial_idx, n_trials, params)
 
                 try:
+                    # 为了支持剪枝，我们需要修改cross_validate方法，使其支持中间评估
+                    # 这里我们先使用简化版本，直接返回最终分数
                     score, metrics = self.cross_validate(
                         dataset, params, cv_folds
                     )
+
+                    # 报告最终分数
+                    trial.report(score, 0)
+                    
+                    # 检查是否需要剪枝
+                    if trial.should_prune():
+                        raise optuna.TrialPruned()
 
                     result = {
                         'trial': trial_idx,
@@ -236,13 +275,22 @@ class HyperparameterOptimizer:
 
                     return score
 
+                except optuna.TrialPruned:
+                    logger.info(f"试验 {trial_idx} 被剪枝")
+                    raise
                 except Exception as e:
                     logger.error(f"试验 {trial_idx} 失败: {e}")
                     return 0.0
 
+            # 添加剪枝器
+            from optuna.pruners import MedianPruner
+            pruner = MedianPruner(n_startup_trials=5, n_warmup_steps=3, interval_steps=2)
+            
             study = optuna.create_study(
                 direction='maximize',
-                study_name='hyperparameter_optimization'
+                study_name='hyperparameter_optimization',
+                sampler=sampler,
+                pruner=pruner
             )
 
             study.optimize(objective, n_trials=n_trials, show_progress_bar=False)
@@ -254,6 +302,7 @@ class HyperparameterOptimizer:
                 'best_params': study.best_params,
                 'best_score': study.best_value,
                 'n_trials': n_trials,
+                'algorithm': algorithm,
                 'optimization_history': self.optimization_history,
                 'study': study,
                 'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -285,22 +334,51 @@ class HyperparameterOptimizer:
                 continue
 
             if param_name == 'learning_rate':
-                params[param_name] = trial.suggest_categorical(
-                    param_name, param_values
-                )
+                # 对于学习率，使用对数空间搜索
+                if len(param_values) == 2:
+                    min_val, max_val = param_values
+                    params[param_name] = trial.suggest_float(
+                        param_name, min_val, max_val, log=True
+                    )
+                else:
+                    params[param_name] = trial.suggest_categorical(
+                        param_name, param_values
+                    )
             elif param_name == 'batch_size':
-                params[param_name] = trial.suggest_categorical(
-                    param_name, param_values
-                )
+                # 对于batch_size，使用整数搜索
+                if len(param_values) == 2:
+                    min_val, max_val = param_values
+                    params[param_name] = trial.suggest_int(
+                        param_name, min_val, max_val, step=8
+                    )
+                else:
+                    params[param_name] = trial.suggest_categorical(
+                        param_name, param_values
+                    )
             elif param_name == 'epochs':
-                params[param_name] = trial.suggest_categorical(
-                    param_name, param_values
-                )
+                # 对于epochs，使用整数搜索
+                if len(param_values) == 2:
+                    min_val, max_val = param_values
+                    params[param_name] = trial.suggest_int(
+                        param_name, min_val, max_val
+                    )
+                else:
+                    params[param_name] = trial.suggest_categorical(
+                        param_name, param_values
+                    )
             elif param_name == 'dropout_rate':
-                params[param_name] = trial.suggest_categorical(
-                    param_name, param_values
-                )
+                # 对于dropout_rate，使用浮点数搜索
+                if len(param_values) == 2:
+                    min_val, max_val = param_values
+                    params[param_name] = trial.suggest_float(
+                        param_name, min_val, max_val
+                    )
+                else:
+                    params[param_name] = trial.suggest_categorical(
+                        param_name, param_values
+                    )
             else:
+                # 其他参数使用分类搜索
                 params[param_name] = trial.suggest_categorical(
                     param_name, param_values
                 )
@@ -393,28 +471,45 @@ class HyperparameterOptimizer:
             )
             os.makedirs(temp_output_dir, exist_ok=True)
 
+            # 保存训练指标的变量
+            train_metrics = {}
+
+            def capture_metrics_callback(success: bool, message: str):
+                nonlocal train_metrics
+                if success:
+                    # 从finetuner获取训练指标
+                    if hasattr(finetuner, 'training_metrics'):
+                        train_metrics = finetuner.training_metrics
+
             finetuner = BERTFineTuner(self.model_manager, config=params)
 
             train_success = finetuner.train(
                 train_dataset,
                 temp_output_dir,
-                progress_callback=None
+                progress_callback=None,
+                finished_callback=capture_metrics_callback
             )
 
             if not train_success:
                 logger.warning("折训练失败，返回零指标")
+                self._cleanup_temp_dir(temp_output_dir)
                 return {'accuracy': 0.0, 'f1': 0.0, 'precision': 0.0, 'recall': 0.0}
 
-            metrics = finetuner.evaluate(val_dataset)
+            # 直接使用训练过程中记录的指标
+            if train_metrics:
+                logger.info(f"使用训练指标: {train_metrics}")
+                self._cleanup_temp_dir(temp_output_dir)
+                return {
+                    'accuracy': train_metrics.get('eval_accuracy', 0.0),
+                    'f1': train_metrics.get('eval_f1', 0.0),
+                    'precision': train_metrics.get('eval_precision', 0.0),
+                    'recall': train_metrics.get('eval_recall', 0.0)
+                }
 
+            # 如果没有训练指标，返回零指标
+            logger.warning("未获取到训练指标，返回零指标")
             self._cleanup_temp_dir(temp_output_dir)
-
-            return {
-                'accuracy': metrics.get('eval_accuracy', 0.0),
-                'f1': metrics.get('eval_f1', 0.0),
-                'precision': metrics.get('eval_precision', 0.0),
-                'recall': metrics.get('eval_recall', 0.0)
-            }
+            return {'accuracy': 0.0, 'f1': 0.0, 'precision': 0.0, 'recall': 0.0}
 
         except Exception as e:
             logger.error(f"评估折失败: {e}")

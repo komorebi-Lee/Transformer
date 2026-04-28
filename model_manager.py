@@ -411,6 +411,43 @@ class EnhancedModelManager:
 
         return [float(x) for x in pos.detach().cpu().tolist()]
 
+    def score_abstract_candidate_pairs(self, pairs: List[Tuple[str, str]], batch_size: int = None) -> List[float]:
+        """Score many (original, candidate) pairs in GPU-friendly batches."""
+        if not self.is_abstract_reranker_available():
+            raise ValueError("鎶借薄閲嶆帓搴忔ā鍨嬫湭鍔犺浇")
+        if not pairs:
+            return []
+
+        tokenizer = self._abstract_reranker_tokenizer
+        model = self._abstract_reranker_model
+        batch_size = int(batch_size or getattr(Config, 'ABSTRACT_RERANK_BATCH_SIZE', 128))
+        batch_size = max(1, batch_size)
+        scores: List[float] = []
+
+        for start in range(0, len(pairs), batch_size):
+            batch = pairs[start:start + batch_size]
+            originals = [item[0] for item in batch]
+            candidates = [item[1] for item in batch]
+            inputs = tokenizer(
+                originals,
+                candidates,
+                padding=True,
+                truncation=True,
+                max_length=getattr(Config, 'MAX_SENTENCE_LENGTH', 512),
+                return_tensors='pt'
+            ).to(self.device)
+
+            with torch.no_grad():
+                outputs = model(**inputs)
+                probs = torch.softmax(outputs.logits, dim=-1)
+                if probs.size(-1) >= 2:
+                    pos = probs[:, 1]
+                else:
+                    pos = probs[:, 0]
+            scores.extend(float(x) for x in pos.detach().cpu().tolist())
+
+        return scores
+
     def get_model_type(self) -> str:
         """获取当前加载的模型类型"""
         if hasattr(self, '_bert_finetuner') and self._bert_finetuner is not None:
@@ -872,3 +909,54 @@ class EnhancedModelManager:
         except Exception as e:
             logger.error(f"检测模型格式失败: {e}")
             return "classifier"
+
+    def release_model_resources(self):
+        """
+        释放模型资源，清理GPU内存
+        """
+        try:
+            logger.info("开始释放模型资源...")
+            
+            # 释放BERT微调模型
+            if hasattr(self, '_bert_finetuner') and self._bert_finetuner is not None:
+                logger.info("释放BERT微调模型...")
+                del self._bert_finetuner
+                self._bert_finetuner = None
+                logger.info("BERT微调模型已释放")
+            
+            # 释放抽象重排序模型
+            if hasattr(self, '_abstract_reranker_model') and self._abstract_reranker_model is not None:
+                logger.info("释放抽象重排序模型...")
+                del self._abstract_reranker_model
+                self._abstract_reranker_model = None
+                logger.info("抽象重排序模型已释放")
+            
+            # 释放tokenizer
+            if hasattr(self, '_abstract_reranker_tokenizer') and self._abstract_reranker_tokenizer is not None:
+                logger.info("释放抽象重排序tokenizer...")
+                del self._abstract_reranker_tokenizer
+                self._abstract_reranker_tokenizer = None
+                logger.info("抽象重排序tokenizer已释放")
+            
+            # 释放缓存
+            if hasattr(self, 'model_cache'):
+                self.model_cache.clear()
+            if hasattr(self, 'embedding_cache'):
+                self.embedding_cache.clear()
+            
+            # 清理PyTorch缓存
+            import torch
+            if torch.cuda.is_available():
+                logger.info("清理PyTorch GPU缓存...")
+                torch.cuda.empty_cache()
+                torch.cuda.ipc_collect()
+                logger.info("PyTorch GPU缓存已清理")
+            
+            # 重置模型状态
+            self.is_model_loaded = False
+            
+            logger.info("模型资源释放完成")
+            return True
+        except Exception as e:
+            logger.error(f"释放模型资源失败: {e}")
+            return False

@@ -1,4 +1,4 @@
-﻿import os
+﻿﻿import os
 import json
 import re
 from datetime import datetime
@@ -160,7 +160,7 @@ class ManualCodingDialog(QDialog):
         splitter.addWidget(right_panel)
 
         # 设置分割比例
-        splitter.setSizes([300, 600, 500])  # 与主窗口相似的分割比例
+        splitter.setSizes([400, 700, 500])  # 调整分割比例，左侧变宽
         layout.addWidget(splitter)
 
         # 按钮
@@ -172,12 +172,6 @@ class ManualCodingDialog(QDialog):
         export_btn = QPushButton("导出为标准答案")
         export_btn.clicked.connect(self.export_to_standard)
 
-        save_tree_btn = QPushButton("保存编码树")
-        save_tree_btn.clicked.connect(self.save_coding_tree)
-
-        import_tree_btn = QPushButton("导入编码树")
-        import_tree_btn.clicked.connect(self.import_coding_tree)
-
         import_coding_btn = QPushButton("导入编码结果")
         import_coding_btn.clicked.connect(self.import_coding_results)
 
@@ -186,8 +180,6 @@ class ManualCodingDialog(QDialog):
 
         button_layout.addWidget(save_btn)
         button_layout.addWidget(import_coding_btn)
-        button_layout.addWidget(save_tree_btn)
-        button_layout.addWidget(import_tree_btn)
         button_layout.addWidget(export_btn)
         button_layout.addStretch()
         button_layout.addWidget(close_btn)
@@ -200,37 +192,37 @@ class ManualCodingDialog(QDialog):
         # 不再自动弹出恢复编码进度对话框，用户可以通过导入功能手动恢复
         # self.check_and_restore_last_coding_position()
 
-        def changeEvent(self, event):
-            """拦截窗口状态变化：还原按鈕→半屏，最大化按鈕→全屏"""
-            from PyQt5.QtCore import QEvent, QTimer
-            if event.type() == QEvent.WindowStateChange:
-                if not getattr(self, '_handling_state_change', False):
-                    old_state = event.oldState()
-                    new_state = self.windowState()
-                    # 全屏 → 还原（点击还原按鈕）：改为半屏
-                    if (old_state & Qt.WindowMaximized) and not (new_state & Qt.WindowMaximized) \
-                            and not (new_state & Qt.WindowMinimized):
-                        if not getattr(self, '_is_half_screen', False):
-                            QTimer.singleShot(0, self._apply_half_screen)
-                    # 半屏 → 最大化（点击最大化按鈕）：恢复全屏，清除标记
-                    elif (new_state & Qt.WindowMaximized) and getattr(self, '_is_half_screen', False):
-                        self._is_half_screen = False
-            super().changeEvent(event)
+    def changeEvent(self, event):
+        """拦截窗口状态变化：还原按鈕→半屏，最大化按鈕→全屏"""
+        from PyQt5.QtCore import QEvent, QTimer
+        if event.type() == QEvent.WindowStateChange:
+            if not getattr(self, '_handling_state_change', False):
+                old_state = event.oldState()
+                new_state = self.windowState()
+                # 全屏 → 还原（点击还原按鈕）：改为半屏
+                if (old_state & Qt.WindowMaximized) and not (new_state & Qt.WindowMaximized) \
+                        and not (new_state & Qt.WindowMinimized):
+                    if not getattr(self, '_is_half_screen', False):
+                        QTimer.singleShot(0, self._apply_half_screen)
+                # 半屏 → 最大化（点击最大化按鈕）：恢复全屏，清除标记
+                elif (new_state & Qt.WindowMaximized) and getattr(self, '_is_half_screen', False):
+                    self._is_half_screen = False
+        super().changeEvent(event)
 
-        def _apply_half_screen(self):
-            """将窗口设置为屏幕一半大小并居中"""
-            self._handling_state_change = True
-            screen = QApplication.desktop().availableGeometry()
-            half_w = screen.width() // 2
-            half_h = screen.height() // 2
-            self.setGeometry(
-                screen.x() + half_w // 2,
-                screen.y() + half_h // 2,
-                half_w,
-                half_h
-            )
-            self._is_half_screen = True
-            self._handling_state_change = False
+    def _apply_half_screen(self):
+        """将窗口设置为屏幕一半大小并居中"""
+        self._handling_state_change = True
+        screen = QApplication.desktop().availableGeometry()
+        half_w = screen.width() // 2
+        half_h = screen.height() // 2
+        self.setGeometry(
+            screen.x() + half_w // 2,
+            screen.y() + half_h // 2,
+            half_w,
+            half_h
+        )
+        self._is_half_screen = True
+        self._handling_state_change = False
 
     def create_left_panel(self):
         panel = QWidget()
@@ -242,6 +234,8 @@ class ManualCodingDialog(QDialog):
 
         self.file_list = QListWidget()
         self.file_list.itemClicked.connect(self.on_file_selected)
+        # 设置文件列表的最小高度，使其变长
+        self.file_list.setMinimumHeight(200)
         file_layout.addWidget(self.file_list)
 
         # 加载文件到列表
@@ -259,7 +253,8 @@ class ManualCodingDialog(QDialog):
 
         self.text_display = QTextEdit()
         self.text_display.setPlaceholderText("选择文件查看文本内容...")
-        font = QFont("SimSun", 10)
+        # 放大字体
+        font = QFont("SimSun", 12)
         self.text_display.setFont(font)
         # 设置拖放模式为拖拽（DragDrop），确保拖拽操作为复制模式，不删除原文本
         self.text_display.setAcceptDrops(False)  # 不接受拖放，但允许拖出
@@ -267,14 +262,7 @@ class ManualCodingDialog(QDialog):
         self.text_display.installEventFilter(self)
         text_layout.addWidget(self.text_display)
 
-        # 文本选择按钮
-        select_buttons_layout = QHBoxLayout()
-        self.select_sentence_btn = QPushButton("选择句子进行一阶编码")
-        self.select_sentence_btn.clicked.connect(self.select_sentence_for_coding)
-        self.select_sentence_btn.setEnabled(False)
 
-        select_buttons_layout.addWidget(self.select_sentence_btn)
-        text_layout.addLayout(select_buttons_layout)
 
         layout.addWidget(text_group)
 
@@ -290,16 +278,24 @@ class ManualCodingDialog(QDialog):
 
         # 一阶编码内容
         self.first_content_edit = QTextEdit()
-        self.first_content_edit.setMinimumHeight(120)  # 增加最小高度
-        self.first_content_edit.setMaximumHeight(200)  # 设置最大高度，防止过大
+        self.first_content_edit.setMinimumHeight(50)  # 增加最小高度
+        self.first_content_edit.setMaximumHeight(400)  # 设置最大高度
         self.first_content_edit.setPlaceholderText("输入一阶编码内容或从左侧文本中选择...")
+        # 放大字体
+        font = QFont("SimSun", 12)
+        self.first_content_edit.setFont(font)
         first_layout.addWidget(self.first_content_edit)
 
-        # 添加一阶编码按钮
-        add_first_btn = QPushButton("添加一阶编码（未分类）")
-        add_first_btn.clicked.connect(self.add_first_level_direct)
-        add_first_btn.setToolTip("添加一阶编码到根部，稍后可组织层级")
-        first_layout.addWidget(add_first_btn)
+        # 选择句子进行一阶编码按钮
+        select_buttons_layout = QHBoxLayout()
+        self.select_sentence_btn = QPushButton("选择句子进行一阶编码")
+        self.select_sentence_btn.clicked.connect(self.select_sentence_for_coding)
+        self.select_sentence_btn.setEnabled(False)
+
+        select_buttons_layout.addWidget(self.select_sentence_btn)
+        first_layout.addLayout(select_buttons_layout)
+
+
 
         layout.addWidget(first_group)
 
@@ -866,7 +862,7 @@ class ManualCodingDialog(QDialog):
             super().closeEvent(event)
 
     def select_sentence_for_coding(self):
-        """选择句子作为一阶编码 - 仅将文本复制到输入框"""
+        """选择句子作为一阶编码 - 将文本复制到输入框并弹出编码弹窗"""
         try:
             cursor = self.text_display.textCursor()
             if cursor.hasSelection():
@@ -874,11 +870,11 @@ class ManualCodingDialog(QDialog):
                 logger.info(f"选择了文本: {selected_text[:50]}...")
 
                 if len(selected_text) > 0:  # 确保有意义的文本
-                    # 仅将文本复制到编码输入框，不进行任何其他操作
+                    # 将文本复制到编码输入框
                     self.first_content_edit.setPlainText(selected_text)
-
-                    # 提示用户（可选，这里使用状态栏提示比较轻量）
-                    self.statusBar().showMessage("文本已复制到输入框，请点击'添加一阶编码'按钮确认添加") if hasattr(self, 'statusBar') else None
+                    
+                    # 直接调用添加一阶编码的方法
+                    self.add_first_level_direct()
                 else:
                     QMessageBox.warning(self, "警告", "请选择有意义的文本（至少1个字符）")
             else:
@@ -4721,7 +4717,7 @@ class ManualCodingDialog(QDialog):
             # 创建对话框
             dialog = QDialog(self)
             dialog.setWindowTitle(f"编辑一阶编码")
-            dialog.resize(700, 600)
+            dialog.resize(1000, 900)
 
             layout = QVBoxLayout(dialog)
 
@@ -4746,8 +4742,8 @@ class ManualCodingDialog(QDialog):
                 """刷新查看模式的内容显示"""
                 # 首先构建一阶编码显示，按照用户要求的格式
                 display_html = f"""
-                <div style='font-family: "Microsoft YaHei", Arial, sans-serif; font-size: 16px; line-height: 1.8;'>
-                    <div style='font-weight: bold; font-size: 18px;'>一阶编码：{code_id}:</div>
+                <div style='font-family: "Microsoft YaHei", Arial, sans-serif; font-size: 18px; line-height: 1.8;'>
+                    <div style='font-weight: bold; font-size: 22px;'>一阶编码：{code_id}:</div>
                     <br>
                     <div>{content_without_number}</div>
                     <br>
@@ -4803,7 +4799,7 @@ class ManualCodingDialog(QDialog):
                     if i == 1:
                         # 句子1按照用户要求的格式显示
                         display_html += f"""
-                        <div style='font-weight: bold; font-size: 18px;'>句子 {i}：</div>
+                        <div style='font-weight: bold; font-size: 22px;'>句子 {i}：</div>
                         <br>
                         <div>编号：{sentence_number}</div>
                         <br>
@@ -4813,7 +4809,7 @@ class ManualCodingDialog(QDialog):
                     else:
                         # 后续句子保持原有格式
                         display_html += f"""
-                        <div style='font-weight: bold; font-size: 18px;'>句子 {i}:</div>
+                        <div style='font-weight: bold; font-size: 22px;'>句子 {i}:</div>
                         <br>
                         <div>编号: {sentence_number}</div>
                         <br>
@@ -6312,7 +6308,7 @@ class ManualCodingDialog(QDialog):
         return f"C{next_number:02d}"
 
     def save_coding(self):
-        """保存编码并记录编码进度"""
+        """保存编码并记录编码进度，同时保存编码树"""
         try:
             # 保存当前文件的编码标记状态（重要！）
             self.save_current_file_coding_marks()
@@ -6346,8 +6342,31 @@ class ManualCodingDialog(QDialog):
             # 保存最后编码位置信息（用于下次自动恢复）
             self.save_last_coding_position(progress_info)
 
-            QMessageBox.information(self, "成功", f"编码已保存到: {file_path}\n\n编码进度已记录，下次打开将自动恢复到当前位置。")
+            # 同时保存编码树到指定子目录
+            tree_save_dir = PathManager.join(save_dir, "手动编码编码树保存")
+            PathManager.ensure_dir(tree_save_dir)
+            tree_filename = f"编码树_{timestamp}.json"
+            tree_file_path = PathManager.join(tree_save_dir, tree_filename)
+            
+            # 从树形控件构建完整的数据结构
+            tree_data = self.extract_tree_data()
+            
+            # 构建完整保存数据（包含文件编码标记状态）
+            tree_save_data = {
+                "timestamp": datetime.now().isoformat(),
+                "tree_data": tree_data,
+                "files_with_marks": self.get_files_with_coding_marks(),  # 保存文件编码标记状态
+                "current_codes": self.current_codes,
+                "unclassified_first_codes": self.unclassified_first_codes
+            }
+            
+            # 保存完整的编码结构和文件状态
+            with PathManager.safe_open(tree_file_path, 'w', encoding='utf-8') as f:
+                json.dump(tree_save_data, f, ensure_ascii=False, indent=2)
+
+            QMessageBox.information(self, "成功", f"编码已保存到: {file_path}\n编码树已保存到: {tree_file_path}\n\n编码进度已记录，下次打开将自动恢复到当前位置。")
             logger.info(f"编码已保存: {file_path}")
+            logger.info(f"编码树已保存: {tree_file_path}")
             return True
 
         except Exception as e:

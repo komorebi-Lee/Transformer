@@ -190,7 +190,7 @@ class GroundedTheoryCoder:
 
         # 移除口语词但保持内容完整
         oral_words = ['我觉得', '我认为', '我感觉', '我想', '就是说', '然后',
-                      '那个', '这个', '就是', '就是說', '嗯', '啊', '对不对']
+                      '就是', '就是說', '嗯', '啊', '对不对']
 
         cleaned = content
         for word in oral_words:

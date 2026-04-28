@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import (QMainWindow, QVBoxLayout, QHBoxLayout, QWidget,
                              QTreeWidget, QTreeWidgetItem, QInputDialog,
                              QGroupBox, QSplitter, QMenu, QDialog, QDialogButtonBox,
                              QLineEdit, QFormLayout, QComboBox, QCheckBox, QTabWidget,
+                             QDoubleSpinBox,
                              QApplication)
 from PyQt5.QtCore import Qt, QSettings, QThread, pyqtSignal, QTimer, QRegularExpression
 from PyQt5.QtGui import QFont, QColor, QTextCursor, QIcon
@@ -52,17 +53,13 @@ class ModelInitializationThread(QThread):
 
     def __init__(self, model_downloader, model_manager):
         super().__init__()
-        # self.settings = settings
+        self.model_downloader = model_downloader
+        self.model_manager = model_manager
 
         # 添加自定义信号
         from PyQt5.QtCore import pyqtSignal
         self._update_model_status_signal = pyqtSignal(bool, str)
         self._update_model_status_signal.connect(self._on_model_initialization_finished)
-
-        self.setup_managers()
-        self.init_ui()
-        self.load_settings()
-        self.setup_connections()
 
     def run(self):
         try:
@@ -136,11 +133,21 @@ class TrainingConfigDialog(QDialog):
         hyperparam_layout.addWidget(self.optimization_method_combo)
 
         self.cv_folds_spin = QComboBox()
-        self.cv_folds_spin.addItems(["3", "5", "10"])
-        self.cv_folds_spin.setCurrentIndex(1)
+        self.cv_folds_spin.addItems(["2", "3", "5"])
+        self.cv_folds_spin.setCurrentIndex(0)
         self.cv_folds_spin.setEnabled(False)
         hyperparam_layout.addWidget(QLabel("交叉验证折数:"))
         hyperparam_layout.addWidget(self.cv_folds_spin)
+
+        # 优化算法选择
+        self.optimization_algorithm_combo = QComboBox()
+        self.optimization_algorithm_combo.addItems(["TPE", "CMA-ES", "GP", "Random"])
+        self.optimization_algorithm_combo.setCurrentIndex(0)
+        self.optimization_algorithm_combo.setEnabled(False)
+        hyperparam_layout.addWidget(QLabel("优化算法:"))
+        hyperparam_layout.addWidget(self.optimization_algorithm_combo)
+
+
 
         self.enable_optimization_check.toggled.connect(self.on_optimization_toggled)
         layout.addWidget(hyperparam_group)
@@ -207,6 +214,7 @@ class TrainingConfigDialog(QDialog):
     def on_optimization_toggled(self, checked):
         self.optimization_method_combo.setEnabled(checked)
         self.cv_folds_spin.setEnabled(checked)
+        self.optimization_algorithm_combo.setEnabled(checked)
 
         self.learning_rate_edit.setEnabled(not checked)
         self.batch_size_combo.setEnabled(not checked)
@@ -219,10 +227,19 @@ class TrainingConfigDialog(QDialog):
         elif self.incremental_radio.isChecked():
             training_mode = 'incremental'
 
+        # 优化算法映射
+        algorithm_map = {
+            'TPE': 'tpe',
+            'CMA-ES': 'cmaes',
+            'GP': 'gp',
+            'Random': 'random'
+        }
+        
         return {
             'training_mode': training_mode,
             'enable_optimization': self.enable_optimization_check.isChecked(),
             'optimization_method': 'grid' if self.optimization_method_combo.currentText() == '网格搜索' else 'bayesian',
+            'optimization_algorithm': algorithm_map[self.optimization_algorithm_combo.currentText()],
             'cv_folds': int(self.cv_folds_spin.currentText()),
             'learning_rate': float(self.learning_rate_edit.text()),
             'batch_size': int(self.batch_size_combo.currentText()),
@@ -1622,6 +1639,63 @@ class MainWindow(QMainWindow):
             logger.error(f"启动手动编码失败: {e}")
             QMessageBox.critical(self, "错误", f"启动手动编码失败: {str(e)}")
 
+    def _threshold_setting_value(self, key: str, default: float) -> float:
+        try:
+            return float(self.settings.value(key, default))
+        except (TypeError, ValueError):
+            return float(default)
+
+    def _create_threshold_spin_box(self, key: str, default: float) -> QDoubleSpinBox:
+        spin_box = QDoubleSpinBox()
+        spin_box.setRange(0.0, 1.0)
+        spin_box.setDecimals(2)
+        spin_box.setSingleStep(0.05)
+        spin_box.setValue(self._threshold_setting_value(key, default))
+        return spin_box
+
+    def prompt_auto_coding_thresholds(self) -> Optional[Dict[str, float]]:
+        dialog = QDialog(self)
+        dialog.setWindowTitle("自动编码相似度阈值")
+        layout = QFormLayout(dialog)
+
+        second_spin = self._create_threshold_spin_box(
+            "auto_coding/second_threshold",
+            getattr(Config, "RAG_SECOND_LEVEL_THRESHOLD", 0.62),
+        )
+        third_spin = self._create_threshold_spin_box(
+            "auto_coding/third_threshold",
+            getattr(Config, "RAG_THIRD_LEVEL_THRESHOLD", 0.58),
+        )
+        gpu_batch_check = QCheckBox("具备 GPU 条件，使用全局批量 rerank 加速一阶编码")
+        gpu_batch_check.setChecked(
+            str(self.settings.value("auto_coding/use_global_batch_rerank", "false")).lower() == "true"
+        )
+
+        hint = QLabel("二阶阈值用于一阶编码匹配二阶编码；三阶阈值只用于编码库缺少二阶-三阶明确映射时的旧兜底语义匹配。")
+        hint.setWordWrap(True)
+        layout.addRow(hint)
+        layout.addRow("二阶相似度阈值:", second_spin)
+        layout.addRow("三阶兜底相似度阈值:", third_spin)
+        layout.addRow(gpu_batch_check)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons.accepted.connect(dialog.accept)
+        buttons.rejected.connect(dialog.reject)
+        layout.addRow(buttons)
+
+        if dialog.exec_() != QDialog.Accepted:
+            return None
+
+        thresholds = {
+            "second_threshold": float(second_spin.value()),
+            "third_threshold": float(third_spin.value()),
+            "use_global_batch_rerank": bool(gpu_batch_check.isChecked()),
+        }
+        self.settings.setValue("auto_coding/second_threshold", thresholds["second_threshold"])
+        self.settings.setValue("auto_coding/third_threshold", thresholds["third_threshold"])
+        self.settings.setValue("auto_coding/use_global_batch_rerank", thresholds["use_global_batch_rerank"])
+        return thresholds
+
     def generate_codes_auto(self):
         """自动生成编码"""
         if not self.loaded_files:
@@ -1633,6 +1707,10 @@ class MainWindow(QMainWindow):
             return
 
         try:
+            coding_thresholds = self.prompt_auto_coding_thresholds()
+            if coding_thresholds is None:
+                return
+
             self.progress_bar.setVisible(True)
             self.progress_bar.setValue(0)
 
@@ -1660,7 +1738,8 @@ class MainWindow(QMainWindow):
             raw_codes = self.coding_generator.generate_grounded_theory_codes_multi_files(
                 processed_data, self.model_manager,
                 progress_callback=self.update_progress,
-                use_trained_model=use_trained_model
+                use_trained_model=use_trained_model,
+                coding_thresholds=coding_thresholds
             )
 
             self.progress_bar.setValue(70)
@@ -4605,6 +4684,7 @@ class MainWindow(QMainWindow):
                 finished_callback=self.on_training_finished,
                 model_type='bert',
                 training_mode='bert_finetune',
+                fallback_to_classifier=False,  # 禁用降级到分类器模式
                 training_config=config
             )
         except Exception as e:
@@ -4671,26 +4751,33 @@ class MainWindow(QMainWindow):
                     progress_callback=progress_callback
                 )
             else:
+                algorithm = config.get('optimization_algorithm', 'tpe')
                 best_params = optimizer.bayesian_optimization(
                     training_data,
                     n_trials=20,
                     cv_folds=config['cv_folds'],
-                    progress_callback=progress_callback
+                    progress_callback=progress_callback,
+                    algorithm=algorithm
                 )
 
             if best_params:
-                config.update(best_params)
+                # 从返回结果中提取 best_params
+                actual_best_params = best_params.get('best_params', best_params)
+                # 创建新的配置字典，禁用超参数寻优
+                new_config = config.copy()
+                new_config.update(actual_best_params)
+                new_config['enable_optimization'] = False  # 禁用超参数寻优，避免死循环
                 QMessageBox.information(
                     self,
                     "寻优完成",
                     f"找到最优参数:\n"
-                    f"学习率: {best_params.get('learning_rate', 'N/A')}\n"
-                    f"批次大小: {best_params.get('batch_size', 'N/A')}\n"
-                    f"训练轮数: {best_params.get('epochs', 'N/A')}\n\n"
+                    f"学习率: {actual_best_params.get('learning_rate', 'N/A')}\n"
+                    f"批次大小: {actual_best_params.get('batch_size', 'N/A')}\n"
+                    f"训练轮数: {actual_best_params.get('epochs', 'N/A')}\n\n"
                     f"将使用最优参数开始训练..."
                 )
 
-                self._start_bert_finetune_training(config, training_data)
+                self._start_bert_finetune_training(new_config, training_data)
             else:
                 raise Exception("超参数寻优失败，未找到有效参数")
 
@@ -5532,8 +5619,8 @@ class MainWindow(QMainWindow):
                 # 首先构建一阶编码显示
                 # 一阶编码标题始终使用A0X格式（code_id），而非TextNumbering编号
                 display_html = f"""
-                <div style='font-family: "Microsoft YaHei", Arial, sans-serif; font-size: 16px; line-height: 1.8;'>
-                    <div style='font-weight: bold; font-size: 18px;'>一阶编码: {code_id}:</div>
+                <div style='font-family: "Microsoft YaHei", Arial, sans-serif; font-size: 18px; line-height: 1.8;'>
+                    <div style='font-weight: bold; font-size: 22px;'>一阶编码: {code_id}:</div>
                     <br>
                 """
 
@@ -5590,7 +5677,7 @@ class MainWindow(QMainWindow):
                     clickable_content = f"<a href='navigate:{key}' style='text-decoration: none; color: black; cursor: pointer;'>{safe_content}</a>"
 
                     display_html += f"""
-                    <div style='font-weight: bold; font-size: 18px;'>句子 {i}:</div>
+                    <div style='font-weight: bold; font-size: 22px;'>句子 {i}:</div>
                     <br>
                     <div>编号: {sentence_number}</div>
                     <br>

@@ -202,18 +202,25 @@ class DataProcessor:
         """处理多个文件，返回统一的文本和文件映射"""
         all_texts = []
         file_sentence_mapping = {}
+        self._processing_sentence_counter = 0
 
         for file_path in file_paths:
             try:
                 # 读取文件
                 content = self.read_file(file_path)
                 filename = os.path.basename(file_path)
+                sentence_number_lookup = self._build_sentence_number_lookup(content)
 
                 # 智能识别段落（区分采访人和受访人）
                 paragraphs = self.identify_interview_paragraphs(content, filename)
 
                 # 提取受访人有意义的句子
-                respondent_sentences = self.extract_respondent_sentences(paragraphs, filename)
+                respondent_sentences = self.extract_respondent_sentences(
+                    paragraphs,
+                    filename,
+                    sentence_number_lookup=sentence_number_lookup,
+                    file_path=file_path,
+                )
 
                 # 建立文件到句子的映射
                 file_sentence_mapping[filename] = {
@@ -376,7 +383,54 @@ class DataProcessor:
 
         return len(line) > 35  # 较长的内容很可能是受访人
 
-    def extract_respondent_sentences(self, paragraphs: List[Dict[str, Any]], filename: str) -> List[Dict[str, Any]]:
+    def _normalize_for_sentence_lookup(self, text: str) -> str:
+        normalized = re.sub(r'\s*\[[A-Z]?\d+\]', '', str(text or ''))
+        normalized = re.sub(r'\s+', '', normalized)
+        return normalized.strip()
+
+    def _build_sentence_number_lookup(self, text: str) -> List[Tuple[int, str]]:
+        parts = re.split(r'([\u3002\uFF01\uFF1F!? \n\r])', str(text or ''))
+        sentences = []
+        for i in range(0, len(parts) - 1, 2):
+            sentence = parts[i]
+            if i + 1 < len(parts):
+                sentence += parts[i + 1]
+            sentence = sentence.strip()
+            if sentence:
+                sentences.append(sentence)
+        if len(parts) % 2 == 1:
+            last_part = parts[-1].strip()
+            if last_part:
+                if sentences:
+                    sentences[-1] += last_part
+                else:
+                    sentences.append(last_part)
+
+        lookup = []
+        for sentence in sentences:
+            self._processing_sentence_counter = getattr(self, '_processing_sentence_counter', 0) + 1
+            lookup.append((self._processing_sentence_counter, self._normalize_for_sentence_lookup(sentence)))
+        return lookup
+
+    def _lookup_sentence_number(self, sentence: str, sentence_number_lookup: List[Tuple[int, str]]) -> str:
+        target = self._normalize_for_sentence_lookup(sentence)
+        if not target:
+            return ''
+        for number, numbered_sentence in sentence_number_lookup or []:
+            if target == numbered_sentence:
+                return str(number)
+        for number, numbered_sentence in sentence_number_lookup or []:
+            if len(target) >= 8 and (target in numbered_sentence or numbered_sentence in target):
+                return str(number)
+        return ''
+
+    def extract_respondent_sentences(
+        self,
+        paragraphs: List[Dict[str, Any]],
+        filename: str,
+        sentence_number_lookup: Optional[List[Tuple[int, str]]] = None,
+        file_path: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
         """从受访人段落中提取有意义的句子"""
         respondent_sentences = []
 
@@ -392,7 +446,7 @@ class DataProcessor:
                         clean_sentence = clean_sentence.strip()
                         
                         if clean_sentence and len(clean_sentence) >= 5:
-                            respondent_sentences.append({
+                            sentence_info = {
                                 'content': clean_sentence,
                                 'original_content': clean_sentence,  # 保存清理后的内容
                                 'paragraph_content': content[:100] + '...' if len(content) > 100 else content,
@@ -400,7 +454,14 @@ class DataProcessor:
                                 'speaker': 'respondent',
                                 'start_position': 0,
                                 'end_position': len(clean_sentence)
-                            })
+                            }
+                            if file_path:
+                                sentence_info['file_path'] = file_path
+                            sentence_id = self._lookup_sentence_number(clean_sentence, sentence_number_lookup or [])
+                            if sentence_id:
+                                sentence_info['sentence_id'] = sentence_id
+                                sentence_info['code_id'] = sentence_id
+                            respondent_sentences.append(sentence_info)
 
         return respondent_sentences
     def split_into_sentences(self, text: str) -> List[str]:
