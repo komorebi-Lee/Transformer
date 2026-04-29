@@ -85,6 +85,95 @@ class StandardAnswerManager:
             logger.error(f"创建标准答案失败: {e}")
             return None
 
+    def merge_standard_answers(self, file_paths: List[str], description: str = "") -> Optional[str]:
+        """合并多个标准答案（简单拼接）"""
+        try:
+            if not file_paths:
+                return None
+
+            merged_codes: Dict[str, Any] = {}
+            source_files: List[str] = []
+
+            for file_path in file_paths:
+                if not file_path:
+                    continue
+
+                source_files.append(os.path.basename(file_path))
+                try:
+                    with PathManager.safe_open(file_path, 'r', encoding='utf-8') as f:
+                        answer_data = json.load(f)
+                except Exception as e:
+                    logger.error(f"读取标准答案失败 {file_path}: {e}")
+                    continue
+
+                structured_codes = answer_data.get("structured_codes", {})
+                if not isinstance(structured_codes, dict):
+                    continue
+
+                for third_cat, second_cats in structured_codes.items():
+                    if third_cat not in merged_codes:
+                        merged_codes[third_cat] = {}
+                    for second_cat, first_contents in second_cats.items():
+                        if second_cat not in merged_codes[third_cat]:
+                            merged_codes[third_cat][second_cat] = []
+                        if isinstance(first_contents, list):
+                            merged_codes[third_cat][second_cat].extend(copy.deepcopy(first_contents))
+                        else:
+                            merged_codes[third_cat][second_cat].append(copy.deepcopy(first_contents))
+
+            if not merged_codes:
+                logger.warning("没有可合并的标准答案内容")
+                return None
+
+            merged_codes = self._convert_to_standard_format(merged_codes)
+
+            version = f"v{len(os.listdir(self.standard_answers_dir)) + 1}"
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            version_id = f"{version}_{timestamp}"
+
+            standard_answer = {
+                "metadata": {
+                    "version": version_id,
+                    "description": description or "标准答案合并",
+                    "created_time": self.get_timestamp(),
+                    "source": "merge",
+                    "merge_sources": source_files,
+                    "code_statistics": self._calculate_statistics(merged_codes),
+                    "total_codes": self._count_total_codes(merged_codes)
+                },
+                "structured_codes": merged_codes,
+                "training_data": self._extract_training_data(merged_codes),
+                "export_formats": {
+                    "json": True,
+                    "excel": True,
+                    "word": False
+                }
+            }
+
+            file_path = PathManager.join(self.standard_answers_dir, f"{version_id}.json")
+            with PathManager.safe_open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(standard_answer, f, ensure_ascii=False, indent=2)
+
+            self._create_backup(version_id, standard_answer)
+
+            self.current_answers = standard_answer
+            self.version_history.append({
+                "version": version_id,
+                "description": description or "标准答案合并",
+                "timestamp": self.get_timestamp(),
+                "file_path": file_path,
+                "type": "merge",
+                "merge_sources": source_files
+            })
+
+            self._save_version_history()
+            logger.info(f"标准答案合并完成: {version_id}")
+            return version_id
+
+        except Exception as e:
+            logger.error(f"合并标准答案失败: {e}")
+            return None
+
     def save_modifications_only(self, modified_codes: Dict[str, Any], description: str = "") -> str:
         """只保存修改和新增的编码（增量保存）"""
         try:

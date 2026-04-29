@@ -375,9 +375,12 @@ class MainWindow(QMainWindow):
         self.create_answer_btn.clicked.connect(self.create_standard_answer)
         self.load_answer_btn = QPushButton("加载标准答案")
         self.load_answer_btn.clicked.connect(self.load_standard_answer)
+        self.merge_answer_btn = QPushButton("合并标准答案")
+        self.merge_answer_btn.clicked.connect(self.merge_standard_answers)
 
         answer_buttons_layout.addWidget(self.create_answer_btn)
         answer_buttons_layout.addWidget(self.load_answer_btn)
+        answer_buttons_layout.addWidget(self.merge_answer_btn)
         answer_layout.addLayout(answer_buttons_layout)
 
         self.visualize_training_btn = QPushButton("训练结果可视化")
@@ -3129,12 +3132,14 @@ class MainWindow(QMainWindow):
                         menu.addSeparator()
                         move_first_action = QAction("修改一阶对应父节点(二阶)", self)
                         move_first_action.triggered.connect(self.move_first_to_new_parent_second)
+                        self._configure_move_first_hover(menu, move_first_action)
                         menu.addAction(move_first_action)
                 # 一阶且无父节点（未分类）→ 也提供"修改一阶对应父节点(二阶)"功能
                 elif clicked_level == 1 and not clicked_parent:
                     menu.addSeparator()
                     move_first_unclassified_action = QAction("修改一阶对应父节点(二阶)", self)
                     move_first_unclassified_action.triggered.connect(self.move_first_to_new_parent_second)
+                    self._configure_move_first_hover(menu, move_first_unclassified_action)
                     menu.addAction(move_first_unclassified_action)
 
                 # 二阶且有三阶父节点 → 可修改父节点(三阶)
@@ -3153,6 +3158,137 @@ class MainWindow(QMainWindow):
                     menu.addAction(move_second_unclassified_action)
 
         menu.exec_(self.coding_tree.viewport().mapToGlobal(position))
+
+    def _configure_move_first_hover(self, menu, target_action):
+        """配置修改一阶父节点的悬停延时弹窗"""
+        self._hover_move_target_action = target_action
+        self._hover_move_menu = menu
+        self._hover_move_is_active = False
+
+        if not hasattr(self, "_hover_move_timer"):
+            self._hover_move_timer = QTimer(self)
+            self._hover_move_timer.setSingleShot(True)
+            self._hover_move_timer.timeout.connect(self._open_move_first_parent_dialog_from_timer)
+
+        menu.hovered.connect(self._on_move_first_menu_hovered)
+        menu.aboutToHide.connect(self._cancel_move_first_hover_timer)
+
+    def _on_move_first_menu_hovered(self, action):
+        if action == getattr(self, "_hover_move_target_action", None):
+            self._hover_move_is_active = True
+            self._hover_move_timer.stop()
+            self._hover_move_timer.start(5000)
+        else:
+            self._hover_move_is_active = False
+            self._hover_move_timer.stop()
+
+    def _cancel_move_first_hover_timer(self):
+        self._hover_move_is_active = False
+        if hasattr(self, "_hover_move_timer"):
+            self._hover_move_timer.stop()
+
+    def _open_move_first_parent_dialog_from_timer(self):
+        if getattr(self, "_hover_move_dialog_open", False):
+            return
+
+        menu = getattr(self, "_hover_move_menu", None)
+        if not menu or not menu.isVisible() or not getattr(self, "_hover_move_is_active", False):
+            return
+
+        self._hover_move_dialog_open = True
+        menu.close()
+        try:
+            self.move_first_to_new_parent_second()
+        finally:
+            self._hover_move_dialog_open = False
+
+    def merge_selected_first_level_codes(self):
+        """合并选中的一阶编码，保留第一个，其他作为关联文本"""
+        selected_items = self.coding_tree.selectedItems()
+        if len(selected_items) < 2:
+            QMessageBox.information(self, "提示", "请先选择至少两个一阶编码")
+            return
+
+        levels = []
+        for item in selected_items:
+            item_data = item.data(0, Qt.UserRole)
+            if not item_data:
+                QMessageBox.warning(self, "警告", "选中的编码数据无效")
+                return
+            levels.append(item_data.get("level"))
+
+        if not all(level == 1 for level in levels):
+            QMessageBox.warning(self, "警告", "仅支持合并一阶编码")
+            return
+
+        primary_item = selected_items[0]
+        primary_data = primary_item.data(0, Qt.UserRole) or {}
+        merged_details = list(primary_data.get("sentence_details", []))
+        merged_ids = [str(sid).strip() for sid in primary_data.get("sentence_ids", []) if str(sid).strip()]
+
+        def add_sentence_id(value):
+            if not value:
+                return
+            sid = str(value).strip().strip('[]')
+            if sid and sid not in merged_ids:
+                merged_ids.append(sid)
+
+        def add_details(details):
+            for detail in details:
+                if isinstance(detail, dict):
+                    merged_details.append(dict(detail))
+                    add_sentence_id(detail.get("sentence_id") or detail.get("code_id"))
+
+        for item in selected_items[1:]:
+            item_data = item.data(0, Qt.UserRole) or {}
+            item_details = item_data.get("sentence_details", [])
+            if item_details:
+                add_details(item_details)
+            else:
+                content = item_data.get("content") or item_data.get("name") or item.text(0)
+                sentence_ids = item_data.get("sentence_ids", [])
+                if not sentence_ids:
+                    associated = item.text(5)
+                    if associated:
+                        sentence_ids = [s.strip() for s in associated.split(',') if s.strip()]
+
+                if not sentence_ids:
+                    sentence_ids = [""]
+
+                for sid in sentence_ids:
+                    detail = {
+                        "text": content,
+                        "content": content,
+                        "original_content": content,
+                    }
+                    if sid:
+                        detail["sentence_id"] = str(sid).strip()
+                    merged_details.append(detail)
+                    add_sentence_id(sid)
+
+            parent = item.parent()
+            if parent:
+                parent.removeChild(item)
+            else:
+                root = self.coding_tree.invisibleRootItem()
+                root.removeChild(item)
+
+        primary_data["sentence_details"] = merged_details
+        if merged_ids:
+            primary_data["sentence_ids"] = merged_ids
+            primary_item.setText(5, ", ".join(merged_ids))
+
+        primary_data["sentence_count"] = len(merged_details) if merged_details else 1
+        primary_item.setText(4, str(primary_data["sentence_count"]))
+        primary_item.setData(0, Qt.UserRole, primary_data)
+
+        if primary_item.parent():
+            self.update_statistics_for_item(primary_item.parent())
+
+        self.update_structured_codes_from_tree()
+        self.coding_tree.setCurrentItem(primary_item)
+
+        QMessageBox.information(self, "成功", "一阶编码已合并，关联文本已保留")
 
     def edit_selected_code(self):
         """编辑选中的编码 - 增大弹窗"""
@@ -5072,6 +5208,96 @@ class MainWindow(QMainWindow):
             else:
                 QMessageBox.critical(self, "错误",
                                      f"加载标准答案失败: {actual_filename}\n可能的原因:\n1. 文件格式错误\n2. 文件编码错误\n3. 文件内容损坏")
+
+    def merge_standard_answers(self):
+        """合并多个标准答案（简单拼接）"""
+        base_dir = os.path.abspath(self.standard_answer_manager.standard_answers_dir)
+        file_paths, _ = QFileDialog.getOpenFileNames(
+            self,
+            "选择要合并的标准答案",
+            base_dir,
+            "JSON文件 (*.json)"
+        )
+
+        if not file_paths or len(file_paths) < 2:
+            QMessageBox.information(self, "提示", "请至少选择两个标准答案进行合并")
+            return
+
+        description, ok = QInputDialog.getText(self, "标准答案合并", "请输入合并说明:")
+        if not ok:
+            return
+
+        version_id = self.standard_answer_manager.merge_standard_answers(file_paths, description or "标准答案合并")
+        if not version_id:
+            QMessageBox.critical(self, "错误", "标准答案合并失败")
+            return
+
+        current_answers = self.standard_answer_manager.get_current_answers()
+        if current_answers and "structured_codes" in current_answers:
+            self.structured_codes = current_answers["structured_codes"]
+            self.update_coding_tree()
+            self.answer_status_label.setText(f"标准答案: {version_id}")
+            self.update_training_data_label()
+            self.statusBar().showMessage(f"已合并标准答案: {version_id}")
+
+        reply = QMessageBox.question(
+            self,
+            "手动合并",
+            "是否在编码内容框中手动调整合并结果？",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+
+        if reply == QMessageBox.Yes:
+            self.open_manual_merge_editor()
+
+    def open_manual_merge_editor(self):
+        """在编码内容框中手动调整合并结果"""
+        if not self.structured_codes:
+            QMessageBox.warning(self, "警告", "没有可编辑的合并结果")
+            return
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle("标准答案合并 - 手动调整")
+        dialog.resize(900, 700)
+
+        layout = QVBoxLayout(dialog)
+
+        tip = QLabel("可在下方编辑合并后的 structured_codes (JSON)，保存后会更新编码树。")
+        tip.setWordWrap(True)
+        layout.addWidget(tip)
+
+        text_edit = QTextEdit()
+        text_edit.setPlainText(json.dumps(self.structured_codes, ensure_ascii=False, indent=2))
+        layout.addWidget(text_edit)
+
+        button_layout = QHBoxLayout()
+        ok_button = QPushButton("保存")
+        cancel_button = QPushButton("取消")
+        button_layout.addStretch()
+        button_layout.addWidget(cancel_button)
+        button_layout.addWidget(ok_button)
+        layout.addLayout(button_layout)
+
+        def on_save():
+            try:
+                updated_codes = json.loads(text_edit.toPlainText().strip() or "{}")
+            except Exception as e:
+                QMessageBox.warning(dialog, "错误", f"JSON 解析失败: {str(e)}")
+                return
+
+            if not isinstance(updated_codes, dict):
+                QMessageBox.warning(dialog, "错误", "合并结果必须是 JSON 对象结构")
+                return
+
+            self.structured_codes = updated_codes
+            self.update_coding_tree()
+            dialog.accept()
+
+        ok_button.clicked.connect(on_save)
+        cancel_button.clicked.connect(dialog.reject)
+
+        dialog.exec_()
 
     def load_trained_model(self):
         """加载训练模型（支持PKL分类器和BERT微调两种格式）"""

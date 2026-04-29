@@ -1,4 +1,4 @@
-﻿﻿import os
+﻿import os
 import json
 import re
 from datetime import datetime
@@ -7,10 +7,10 @@ from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QFormLayout,
                              QListWidget, QListWidgetItem, QLabel, QMessageBox,
                              QTreeWidget, QTreeWidgetItem, QSplitter, QComboBox,
                              QInputDialog, QDialogButtonBox, QApplication, QMenu, QAction,
-                             QCheckBox)
+                             QCheckBox, QShortcut)
 from PyQt5.QtCore import Qt, QMimeData, QTimer, QEvent, QRegularExpression
 from PyQt5.QtGui import QTextDocument, QTextCursor
-from PyQt5.QtGui import QFont, QColor
+from PyQt5.QtGui import QFont, QColor, QKeySequence
 import logging
 from path_manager import PathManager
 
@@ -31,24 +31,20 @@ class DragDropTreeWidget(QTreeWidget):
 
     def dragEnterEvent(self, event):
         """处理拖拽进入事件"""
+        # 接受内部拖放（编码节点之间的拖拽）
+        if event.source() == self:
+            event.acceptProposedAction()
         # 接受文本拖放（从文本区域拖拽）
-        if event.mimeData().hasText():
+        elif event.mimeData().hasText():
             event.setDropAction(Qt.CopyAction)
             event.accept()
-        # 接受内部拖放（编码节点之间的拖拽）
-        elif event.source() == self:
-            event.acceptProposedAction()
         else:
             event.ignore()
 
     def dragMoveEvent(self, event):
         """处理拖拽移动事件"""
-        # 处理文本拖放
-        if event.mimeData().hasText():
-            event.setDropAction(Qt.CopyAction)
-            event.accept()
         # 处理内部拖放
-        elif event.source() == self:
+        if event.source() == self:
             # 检查拖拽的项目是否可以放到目标位置
             item = self.itemAt(event.pos())
             if item:
@@ -59,26 +55,37 @@ class DragDropTreeWidget(QTreeWidget):
                         event.ignore()
                         return
             event.acceptProposedAction()
+        # 处理文本拖放
+        elif event.mimeData().hasText():
+            event.setDropAction(Qt.CopyAction)
+            event.accept()
         else:
             event.ignore()
 
     def dropEvent(self, event):
         """处理拖放释放事件"""
+        # 处理内部拖放
+        if event.source() == self:
+            if self.dialog:
+                target_item = self.itemAt(event.pos())
+                selected_items = self.selectedItems()
+                if self.dialog.handle_first_level_drop(target_item, selected_items):
+                    event.acceptProposedAction()
+                    return
+
+            # 调用父类的dropEvent处理内部移动
+            super().dropEvent(event)
+            # 拖放完成后更新编码结构
+            if self.dialog:
+                self.dialog.update_structured_codes_from_tree()
         # 处理文本拖放
-        if event.mimeData().hasText():
+        elif event.mimeData().hasText():
             if self.dialog:
                 event.setDropAction(Qt.CopyAction)
                 self.dialog.handle_drop_on_tree(event)
                 event.accept()
             else:
                 event.ignore()
-        # 处理内部拖放
-        elif event.source() == self:
-            # 调用父类的dropEvent处理内部移动
-            super().dropEvent(event)
-            # 拖放完成后更新编码结构
-            if self.dialog:
-                self.dialog.update_structured_codes_from_tree()
         else:
             event.ignore()
 
@@ -185,6 +192,10 @@ class ManualCodingDialog(QDialog):
         button_layout.addWidget(close_btn)
 
         layout.addLayout(button_layout)
+
+        self._save_shortcut = QShortcut(QKeySequence("Ctrl+S"), self)
+        self._save_shortcut.setContext(Qt.WidgetWithChildrenShortcut)
+        self._save_shortcut.activated.connect(self.save_coding)
 
         # 保存文本文档引用
         self.text_document = self.text_display.document()
@@ -399,7 +410,7 @@ class ManualCodingDialog(QDialog):
 
         # 启用拖放功能
         self.coding_tree.setAcceptDrops(True)
-        self.coding_tree.setDragEnabled(False)  # 树本身不能拖出
+        self.coding_tree.setDragEnabled(True)
         self.coding_tree.setDropIndicatorShown(True)
         self.coding_tree.viewport().setAcceptDrops(True)
 
@@ -2332,57 +2343,17 @@ class ManualCodingDialog(QDialog):
 
                 new_parent = selected_second[0]
 
-                # 从旧父节点移除（如果有）
-
-
-                # 处理所有选中的一阶编码
-                for first_item in first_level_items:
-                    # 获取当前一阶编码的父节点
-                    current_old_parent = first_item.parent()
-
-                    # 从旧父节点移除
-                    if current_old_parent:
-                        current_old_parent.removeChild(first_item)
-                    else:
-                        index = self.coding_tree.indexOfTopLevelItem(first_item)
-                        if index >= 0:
-                            self.coding_tree.takeTopLevelItem(index)
-
-                    # 添加到新父节点
-                    new_parent.addChild(first_item)
-
-                    # 更新一阶编码数据中的parent信息
-                    fd = first_item.data(0, Qt.UserRole)
-                    new_parent_data = new_parent.data(0, Qt.UserRole)
-                    fd["category"] = new_parent_data.get("name", new_parent.text(0))
-
-                    # 更新 core_category（三阶）
-                    grandparent = new_parent.parent()
-                    if grandparent:
-                        gp_data = grandparent.data(0, Qt.UserRole)
-                        if gp_data and gp_data.get("level") == 3:
-                            import re as _re
-                            parts = grandparent.text(0).split(' ', 1)
-                            fd["core_category"] = parts[1] if len(parts) > 1 else grandparent.text(0)
-                        else:
-                            fd.pop("core_category", None)
-                    else:
-                        fd.pop("core_category", None)
-
-                    first_item.setData(0, Qt.UserRole, fd)
-
-                    # 更新旧父节点的统计信息
-                    if current_old_parent:
-                        self.update_statistics_for_item(current_old_parent)
-
-                # 更新统计并全局重新编号
-                self.update_statistics_for_item(new_parent)
-                self.renumber_all_codes()
-
-                old_parent_name = old_parent.text(0) if old_parent else "根节点"
-                logger.info(f"已将 {len(first_level_items)} 个一阶编码从「{old_parent_name}」移动到「{new_parent.text(0)}」")
-                QMessageBox.information(self, "成功",
-                                        f"已将 {len(first_level_items)} 个一阶编码移动到：{new_parent.text(0)}")
+                moved = self.move_first_items_to_second(first_level_items, new_parent, show_message=False)
+                if moved:
+                    old_parent_name = old_parent.text(0) if old_parent else "根节点"
+                    logger.info(
+                        f"已将 {len(first_level_items)} 个一阶编码从「{old_parent_name}」移动到「{new_parent.text(0)}」"
+                    )
+                    QMessageBox.information(
+                        self,
+                        "成功",
+                        f"已将 {len(first_level_items)} 个一阶编码移动到：{new_parent.text(0)}"
+                    )
                 dialog.accept()
 
             ok_btn.clicked.connect(on_ok)
@@ -5198,6 +5169,23 @@ class ManualCodingDialog(QDialog):
 
         menu = QMenu()
 
+        clicked_item = self.coding_tree.itemAt(position)
+        selected_items = self.coding_tree.selectedItems()
+        if clicked_item and len(selected_items) > 1:
+            clicked_data = clicked_item.data(0, Qt.UserRole)
+            if clicked_data and clicked_data.get("level") == 1:
+                selected_levels = []
+                for item in selected_items:
+                    item_data = item.data(0, Qt.UserRole)
+                    if item_data:
+                        selected_levels.append(item_data.get("level"))
+
+                if selected_levels and all(level == 1 for level in selected_levels):
+                    merge_first_action = QAction("合并", self)
+                    merge_first_action.triggered.connect(self.merge_selected_first_level_codes)
+                    menu.addAction(merge_first_action)
+                    menu.addSeparator()
+
         edit_action = QAction("编辑", self)
         edit_action.triggered.connect(self.edit_tree_item)
         menu.addAction(edit_action)
@@ -5217,7 +5205,6 @@ class ManualCodingDialog(QDialog):
         menu.addAction(add_third_action)
 
         # 根据当前选中节点动态添加"修改父节点"选项
-        clicked_item = self.coding_tree.itemAt(position)
         if clicked_item:
             clicked_data = clicked_item.data(0, Qt.UserRole)
             if clicked_data:
@@ -5231,12 +5218,14 @@ class ManualCodingDialog(QDialog):
                         menu.addSeparator()
                         move_first_action = QAction("修改一阶对应父节点(二阶)", self)
                         move_first_action.triggered.connect(self.move_first_to_new_parent_second)
+                        self._configure_move_first_hover(menu, move_first_action)
                         menu.addAction(move_first_action)
                 # 一阶且无父节点（未分类）→ 也提供“修改一阶对应父节点(二阶)”功能
                 elif clicked_level == 1 and not clicked_parent:
                     menu.addSeparator()
                     move_first_unclassified_action = QAction("修改一阶对应父节点(二阶)", self)
                     move_first_unclassified_action.triggered.connect(self.move_first_to_new_parent_second)
+                    self._configure_move_first_hover(menu, move_first_unclassified_action)
                     menu.addAction(move_first_unclassified_action)
 
                 # 二阶且有三阶父节点 → 可修改父节点(三阶)
@@ -5255,6 +5244,235 @@ class ManualCodingDialog(QDialog):
                     menu.addAction(move_second_unclassified_action)
 
         menu.exec_(self.coding_tree.viewport().mapToGlobal(position))
+
+    def _configure_move_first_hover(self, menu, target_action):
+        """配置修改一阶父节点的悬停延时弹窗"""
+        self._hover_move_target_action = target_action
+        self._hover_move_menu = menu
+        self._hover_move_is_active = False
+
+        if not hasattr(self, "_hover_move_timer"):
+            self._hover_move_timer = QTimer(self)
+            self._hover_move_timer.setSingleShot(True)
+            self._hover_move_timer.timeout.connect(self._open_move_first_parent_dialog_from_timer)
+
+        menu.hovered.connect(self._on_move_first_menu_hovered)
+        menu.aboutToHide.connect(self._cancel_move_first_hover_timer)
+
+    def _on_move_first_menu_hovered(self, action):
+        if action == getattr(self, "_hover_move_target_action", None):
+            self._hover_move_is_active = True
+            self._hover_move_timer.stop()
+            self._hover_move_timer.start(5000)
+        else:
+            self._hover_move_is_active = False
+            self._hover_move_timer.stop()
+
+    def _cancel_move_first_hover_timer(self):
+        self._hover_move_is_active = False
+        if hasattr(self, "_hover_move_timer"):
+            self._hover_move_timer.stop()
+
+    def _open_move_first_parent_dialog_from_timer(self):
+        if getattr(self, "_hover_move_dialog_open", False):
+            return
+
+        menu = getattr(self, "_hover_move_menu", None)
+        if not menu or not menu.isVisible() or not getattr(self, "_hover_move_is_active", False):
+            return
+
+        self._hover_move_dialog_open = True
+        menu.close()
+        try:
+            self.move_first_to_new_parent_second()
+        finally:
+            self._hover_move_dialog_open = False
+
+    def merge_selected_first_level_codes(self):
+        """合并选中的一阶编码，保留第一个，其他作为关联文本"""
+        selected_items = self.coding_tree.selectedItems()
+        if len(selected_items) < 2:
+            QMessageBox.information(self, "提示", "请先选择至少两个一阶编码")
+            return
+
+        levels = []
+        for item in selected_items:
+            item_data = item.data(0, Qt.UserRole)
+            if not item_data:
+                QMessageBox.warning(self, "警告", "选中的编码数据无效")
+                return
+            levels.append(item_data.get("level"))
+
+        if not all(level == 1 for level in levels):
+            QMessageBox.warning(self, "警告", "仅支持合并一阶编码")
+            return
+
+        primary_item = selected_items[0]
+        primary_data = primary_item.data(0, Qt.UserRole) or {}
+        merged_details = list(primary_data.get("sentence_details", []))
+        merged_ids = []
+
+        def add_sentence_id(value):
+            if not value:
+                return
+            sid = str(value).strip().strip('[]')
+            if sid and sid not in merged_ids:
+                merged_ids.append(sid)
+
+        def add_details(details):
+            for detail in details:
+                if isinstance(detail, dict):
+                    merged_details.append(dict(detail))
+                    add_sentence_id(detail.get("sentence_id") or detail.get("code_id"))
+
+        for item in selected_items:
+            item_data = item.data(0, Qt.UserRole) or {}
+            for sid in item_data.get("sentence_ids", []):
+                add_sentence_id(sid)
+
+            associated = item.text(5)
+            if associated:
+                for sid in [s.strip() for s in associated.split(',') if s.strip()]:
+                    add_sentence_id(sid)
+
+        for item in selected_items[1:]:
+            item_data = item.data(0, Qt.UserRole) or {}
+            item_details = item_data.get("sentence_details", [])
+            if item_details:
+                add_details(item_details)
+            else:
+                content = item_data.get("content") or item_data.get("name") or item.text(0)
+                sentence_ids = item_data.get("sentence_ids", [])
+                if not sentence_ids:
+                    associated = item.text(5)
+                    if associated:
+                        sentence_ids = [s.strip() for s in associated.split(',') if s.strip()]
+
+                if not sentence_ids:
+                    sentence_ids = [""]
+
+                for sid in sentence_ids:
+                    detail = {
+                        "text": content,
+                        "content": content,
+                        "original_content": content,
+                    }
+                    if sid:
+                        detail["sentence_id"] = str(sid).strip()
+                    merged_details.append(detail)
+                    add_sentence_id(sid)
+
+            parent = item.parent()
+            if parent:
+                parent.removeChild(item)
+            else:
+                index = self.coding_tree.indexOfTopLevelItem(item)
+                if index >= 0:
+                    self.coding_tree.takeTopLevelItem(index)
+
+        primary_data["sentence_details"] = merged_details
+        if merged_ids:
+            primary_data["sentence_ids"] = merged_ids
+            primary_item.setText(5, ", ".join(merged_ids))
+
+        primary_data["sentence_count"] = len(merged_details) if merged_details else 1
+        primary_item.setText(4, str(primary_data["sentence_count"]))
+        primary_item.setData(0, Qt.UserRole, primary_data)
+
+        if primary_item.parent():
+            self.update_statistics_for_item(primary_item.parent())
+
+        self.update_structured_codes_from_tree()
+        self.coding_tree.setCurrentItem(primary_item)
+
+        QMessageBox.information(self, "成功", "一阶编码已合并，关联文本已保留")
+
+    def handle_first_level_drop(self, target_item, selected_items):
+        """处理一阶编码拖拽到二阶编码"""
+        if not target_item or not selected_items:
+            return False
+
+        def get_level(item):
+            item_data = item.data(0, Qt.UserRole)
+            return item_data.get("level") if item_data else None
+
+        if not all(get_level(item) == 1 for item in selected_items):
+            return False
+
+        target_level = get_level(target_item)
+        if target_level == 2:
+            target_second = target_item
+        elif target_level == 1 and target_item.parent() and get_level(target_item.parent()) == 2:
+            target_second = target_item.parent()
+        else:
+            return False
+
+        return self.move_first_items_to_second(selected_items, target_second, show_message=False)
+
+    def move_first_items_to_second(self, first_level_items, new_parent, show_message=True):
+        """将多个一阶编码移动到指定二阶编码下"""
+        if not first_level_items or not new_parent:
+            return False
+
+        new_parent_data = new_parent.data(0, Qt.UserRole) or {}
+        new_parent_name = new_parent_data.get("name")
+        if not new_parent_name:
+            parts = new_parent.text(0).split(" ", 1)
+            new_parent_name = parts[1] if len(parts) > 1 else new_parent.text(0)
+
+        moved_count = 0
+        for first_item in first_level_items:
+            if first_item.parent() is new_parent:
+                continue
+
+            current_old_parent = first_item.parent()
+            if current_old_parent:
+                current_old_parent.removeChild(first_item)
+            else:
+                index = self.coding_tree.indexOfTopLevelItem(first_item)
+                if index >= 0:
+                    self.coding_tree.takeTopLevelItem(index)
+
+            new_parent.addChild(first_item)
+            moved_count += 1
+
+            fd = first_item.data(0, Qt.UserRole) or {}
+            fd["classified"] = True
+            fd["category"] = new_parent_name
+
+            grandparent = new_parent.parent()
+            if grandparent:
+                gp_data = grandparent.data(0, Qt.UserRole)
+                if gp_data and gp_data.get("level") == 3:
+                    parts = grandparent.text(0).split(" ", 1)
+                    fd["core_category"] = parts[1] if len(parts) > 1 else grandparent.text(0)
+                else:
+                    fd.pop("core_category", None)
+            else:
+                fd.pop("core_category", None)
+
+            first_item.setData(0, Qt.UserRole, fd)
+
+            if current_old_parent:
+                self.update_statistics_for_item(current_old_parent)
+
+        if moved_count == 0:
+            return False
+
+        self.update_statistics_for_item(new_parent)
+        self.renumber_all_codes()
+
+        if show_message:
+            QMessageBox.information(
+                self,
+                "成功",
+                f"已将 {moved_count} 个一阶编码移动到：{new_parent.text(0)}"
+            )
+
+        logger.info(
+            f"已将 {moved_count} 个一阶编码移动到：{new_parent.text(0)}"
+        )
+        return True
 
     def edit_tree_item(self):
         """编辑树节点"""
