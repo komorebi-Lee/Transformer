@@ -44,6 +44,17 @@ class DataProcessor:
             self.numbering_manager = TextNumberingManager()
         else:
             self.numbering_manager = None
+        
+        # 集成精准受访者提取（SpeakerRoleExtractor）
+        try:
+            from speaker_role_extractor import SpeakerRoleExtractor
+            self.speaker_extractor = SpeakerRoleExtractor(use_qa_classifier=True)
+            self.use_advanced_extraction = True
+            logger.info("已启用精准受访者提取（SpeakerRoleExtractor + QA分类器）")
+        except ImportError as e:
+            self.speaker_extractor = None
+            self.use_advanced_extraction = False
+            logger.info(f"使用原有的段落识别（SpeakerRoleExtractor不可用: {e}）")
 
     def read_doc_file(self, file_path: str) -> str:
         """读取.doc文件，使用多种备选方法"""
@@ -198,8 +209,14 @@ class DataProcessor:
         else:
             return self.read_text_file(file_path)
 
-    def process_multiple_files(self, file_paths: List[str]) -> Dict[str, Any]:
-        """处理多个文件，返回统一的文本和文件映射"""
+    def process_multiple_files(self, file_paths: List[str], number_mappings: Dict[str, Dict[int, str]] = None) -> Dict[str, Any]:
+        """
+        处理多个文件，返回统一的文本和文件映射
+        
+        Args:
+            file_paths: 文件路径列表
+            number_mappings: TextNumbering 编号映射 {filename: {number: text}}
+        """
         all_texts = []
         file_sentence_mapping = {}
         self._processing_sentence_counter = 0
@@ -211,6 +228,11 @@ class DataProcessor:
                 filename = os.path.basename(file_path)
                 sentence_number_lookup = self._build_sentence_number_lookup(content)
 
+                # 获取这个文件的 TextNumbering 编号映射
+                text_number_mapping = None
+                if number_mappings:
+                    text_number_mapping = number_mappings.get(filename)
+
                 # 智能识别段落（区分采访人和受访人）
                 paragraphs = self.identify_interview_paragraphs(content, filename)
 
@@ -220,6 +242,7 @@ class DataProcessor:
                     filename,
                     sentence_number_lookup=sentence_number_lookup,
                     file_path=file_path,
+                    text_number_mapping=text_number_mapping,  # ← 传递编号映射
                 )
 
                 # 建立文件到句子的映射
@@ -250,7 +273,48 @@ class DataProcessor:
         }
 
     def identify_interview_paragraphs(self, content: str, filename: str) -> List[Dict[str, Any]]:
-        """智能识别采访段落，区分采访人和受访人"""
+        """智能识别采访段落，区分采访人和受访人（支持精准提取）"""
+        
+        # 如果启用了精准提取，使用 SpeakerRoleExtractor
+        if self.use_advanced_extraction and self.speaker_extractor:
+            return self._identify_paragraphs_advanced(content, filename)
+        
+        return self._identify_paragraphs_simple(content, filename)
+
+
+    def _identify_paragraphs_advanced(self, content: str, filename: str) -> List[Dict[str, Any]]:
+        """使用 SpeakerRoleExtractor 进行精准提取"""
+        try:
+            # 使用 SpeakerRoleExtractor 提取受访者语句
+            interviewee_segments = self.speaker_extractor.extract_interviewee_sentences(
+                content,
+                return_metadata=True
+            )
+            
+            # 转换为 data_processor 的格式
+            paragraphs = []
+            for i, seg in enumerate(interviewee_segments):
+                paragraphs.append({
+                    'speaker': 'respondent',  # 只返回受访者
+                    'content': seg['text'],
+                    'start_line': i,
+                    'end_line': i + 1,
+                    'filename': filename,
+                    'confidence': seg.get('confidence', 1.0),
+                    'method': seg.get('method', 'advanced')
+                })
+            
+            logger.info(f"精准提取: {filename} - {len(paragraphs)} 个受访者段落")
+            return paragraphs
+            
+        except Exception as e:
+            logger.error(f"精准提取失败，降级到原有逻辑: {e}")
+            # 降级到原有逻辑
+            self.use_advanced_extraction = False
+            return self._identify_paragraphs_simple(content, filename)
+    
+    def _identify_paragraphs_simple(self, content: str, filename: str) -> List[Dict[str, Any]]:
+        """原有的简单段落识别（兼容）"""
         paragraphs = []
         lines = content.split('\n')
 
@@ -275,11 +339,10 @@ class DataProcessor:
                     current_speaker = None
                 continue
 
-            # 检测说话人
-            speaker = self.detect_speaker(line)
+            # 仅根据行首明确标记切换说话人；无标记续行继承当前说话人
+            speaker = self.detect_explicit_speaker(line)
 
-            if speaker and current_speaker != speaker:
-                # 保存上一个段落
+            if speaker:
                 if current_paragraph and current_speaker:
                     paragraph_text = '\n'.join(current_paragraph)
                     paragraphs.append({
@@ -289,12 +352,10 @@ class DataProcessor:
                         'end_line': i,
                         'filename': filename
                     })
-
-                # 开始新段落
                 current_paragraph = [line]
                 current_speaker = speaker
                 paragraph_start_line = i
-            else:
+            elif current_speaker:
                 current_paragraph.append(line)
 
         # 添加最后一个段落
@@ -310,36 +371,36 @@ class DataProcessor:
 
         return paragraphs
 
-    def detect_speaker(self, line: str) -> Optional[str]:
-        """检测说话人"""
-        # 采访人模式
+    def detect_explicit_speaker(self, line: str) -> Optional[str]:
+        """仅根据行首明确说话人标记检测，续行无标记时返回 None（由段落逻辑继承）。"""
         interviewer_patterns = [
             r'^[问Qq][：:]', r'^[Aa][：:]', r'^提问[：:]', r'^采访[：:]', r'^访谈[：:]',
-            r'^主持人[：:]', r'^记者[：:]', r'^访员[：:]', r'^请问',
-            r'^您觉得', r'^您认为', r'^你们', r'^公司', r'^团队'
+            r'^主持人[：:]', r'^记者[：:]', r'^访员[：:]', r'^采访者[：:]',
         ]
-
-        # 受访人模式
         respondent_patterns = [
             r'^[答][：:]', r'^[Bb][：:]', r'^回答[：:]', r'^受访[：:]', r'^被访[：:]',
-            r'^嘉宾[：:]', r'^专家[：:]', r'^我们', r'^我的', r'^我觉得',
-            r'^我认为', r'^我们的', r'^负责', r'^管理', r'^开发'
+            r'^嘉宾[：:]', r'^专家[：:]', r'^受访者[：:]',
         ]
 
-        # 检查采访人模式
         for pattern in interviewer_patterns:
             if re.search(pattern, line):
                 return "interviewer"
 
-        # 检查受访人模式
         for pattern in respondent_patterns:
             if re.search(pattern, line):
                 return "respondent"
 
-        # 基于内容判断
+        return None
+
+    def detect_speaker(self, line: str) -> Optional[str]:
+        """检测说话人（含内容启发式，供其他模块使用；段落分组请用 detect_explicit_speaker）。"""
+        explicit = self.detect_explicit_speaker(line)
+        if explicit:
+            return explicit
+
         if self.is_interviewer_line(line):
             return "interviewer"
-        elif self.is_respondent_line(line):
+        if self.is_respondent_line(line):
             return "respondent"
 
         return None
@@ -381,7 +442,7 @@ class DataProcessor:
         if len(line) > 25 and content_indicators:
             return True
 
-        return len(line) > 35  # 较长的内容很可能是受访人
+        return False  # 不再仅凭长度判定，避免采访者续行被误判
 
     def _normalize_for_sentence_lookup(self, text: str) -> str:
         normalized = re.sub(r'\s*\[[A-Z]?\d+\]', '', str(text or ''))
@@ -421,7 +482,11 @@ class DataProcessor:
                 return str(number)
         for number, numbered_sentence in sentence_number_lookup or []:
             if len(target) >= 8 and (target in numbered_sentence or numbered_sentence in target):
-                return str(number)
+                shorter = min(len(target), len(numbered_sentence))
+                longer = max(len(target), len(numbered_sentence))
+                overlap_ratio = shorter / max(1, longer)
+                if overlap_ratio >= 0.75:
+                    return str(number)
         return ''
 
     def extract_respondent_sentences(
@@ -430,6 +495,7 @@ class DataProcessor:
         filename: str,
         sentence_number_lookup: Optional[List[Tuple[int, str]]] = None,
         file_path: Optional[str] = None,
+        text_number_mapping: Optional[Dict[int, str]] = None,
     ) -> List[Dict[str, Any]]:
         """从受访人段落中提取有意义的句子"""
         respondent_sentences = []
@@ -437,30 +503,72 @@ class DataProcessor:
         for paragraph in paragraphs:
             if paragraph['speaker'] == 'respondent':
                 content = paragraph['content']
+                
+                # 清理角色标记（关键！）
+                # 1. 清理标准标记
+                content = content.replace("受访者：", "").replace("采访者：", "").strip()
+                
+                # 2. 清理数字编号的说话人标记（如：里弄管家4：、受访者1：）
+                content = re.sub(r'^[\w\u4e00-\u9fa5]+\d+[：:]?\s*', '', content)
+                
+                # 3. 清理其他常见说话人标记
+                content = re.sub(r'^(问|答|Q|A)[：:]\s*', '', content)
+                
+                # 4. 清理特殊符号（●○◆◇■□▲△等）
+                content = content.replace('●', '').replace('○', '').replace('◆', '').replace('◇', '')
+                content = content.replace('■', '').replace('□', '').replace('▲', '').replace('△', '')
+                
+                # 5. 清理时间戳（如 00:14, 01:23:45）
+                content = re.sub(r'\d{2}:\d{2}(?::\d{2})?', '', content)
+                
+                # 6. 清理多余的空白
+                content = re.sub(r'\s+', ' ', content)
+                
+                content = content.strip()
+                
                 sentences = self.split_into_sentences(content)
 
                 for sentence in sentences:
                     if self.is_meaningful_sentence(sentence):
+                        original_sentence = sentence  # 保存原始文本（未清理）
                         # 移除一阶编码标记（如 [A1], [A2] 等）
                         clean_sentence = re.sub(r'\s*\[A\d+\]', '', sentence)
                         clean_sentence = clean_sentence.strip()
                         
                         if clean_sentence and len(clean_sentence) >= 5:
+                            # 查找对应的 TextNumbering 编号
+                            text_number = None
+                            numbered_sentence = clean_sentence
+                            if text_number_mapping:
+                                text_number = self._find_text_number(original_sentence, text_number_mapping)
+                                if text_number:
+                                    numbered_sentence = f"{clean_sentence} [{text_number}]"
+                            
+                            # sentence_id 统一为全文 TextNumbering 主键；仅在缺失时回退到本地 lookup
+                            stable_sentence_id = None
+                            if text_number is not None:
+                                stable_sentence_id = str(text_number)
+                            else:
+                                lookup_sentence_id = self._lookup_sentence_number(clean_sentence, sentence_number_lookup or [])
+                                if lookup_sentence_id:
+                                    stable_sentence_id = lookup_sentence_id
+                            
                             sentence_info = {
                                 'content': clean_sentence,
-                                'original_content': clean_sentence,  # 保存清理后的内容
+                                'original_content': original_sentence,  # 保存清理后的内容
                                 'paragraph_content': content[:100] + '...' if len(content) > 100 else content,
                                 'filename': filename,
                                 'speaker': 'respondent',
                                 'start_position': 0,
-                                'end_position': len(clean_sentence)
+                                'end_position': len(clean_sentence),
+                                'text_number': text_number,  # TextNumbering 编号
+                                'numbered_sentence': numbered_sentence,  # 带编号的句子
                             }
                             if file_path:
                                 sentence_info['file_path'] = file_path
-                            sentence_id = self._lookup_sentence_number(clean_sentence, sentence_number_lookup or [])
-                            if sentence_id:
-                                sentence_info['sentence_id'] = sentence_id
-                                sentence_info['code_id'] = sentence_id
+                            if stable_sentence_id:
+                                sentence_info['sentence_id'] = stable_sentence_id
+                                sentence_info['code_id'] = stable_sentence_id
                             respondent_sentences.append(sentence_info)
 
         return respondent_sentences
@@ -662,7 +770,7 @@ class DataProcessor:
         if len(line) > 25 and content_indicators:
             return True
 
-        return len(line) > 35  # 较长的内容很可能是受访人
+        return False  # 不再仅凭长度判定，避免采访者续行被误判
 
     def merge_coding_data(self, standard_answers: Dict[str, Any], current_codes: Dict[str, Any]) -> Dict[str, Any]:
         """合并标准答案和当前编码数据"""
@@ -822,3 +930,83 @@ class DataProcessor:
     def get_timestamp(self) -> str:
         """获取时间戳"""
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    def _find_text_number(self, text: str, text_number_mapping: Dict[int, str]) -> Optional[int]:
+        """
+        查找文本对应的 TextNumbering 编号（平衡版：保证样本量的同时提高准确性）
+        
+        Args:
+            text: 句子文本
+            text_number_mapping: {number: text} 映射
+        
+        Returns:
+            编号或None
+        """
+        if not text_number_mapping:
+            return None
+        
+        # 1. 精确匹配
+        for num, mapped_text in text_number_mapping.items():
+            if text == mapped_text or text == mapped_text.strip():
+                return num
+        
+        # 2. 去除句号后精确匹配
+        text_no_punct = text.rstrip('。！？!?')
+        for num, mapped_text in text_number_mapping.items():
+            mapped_no_punct = mapped_text.rstrip('。！？!?')
+            if text_no_punct == mapped_no_punct:
+                return num
+        
+        # 3. 去除空格和标点后精确匹配
+        text_clean = text.replace(' ', '').replace('\n', '').replace('\t', '').rstrip('。！？!?')
+        for num, mapped_text in text_number_mapping.items():
+            mapped_clean = mapped_text.replace(' ', '').replace('\n', '').replace('\t', '').rstrip('。！？!?')
+            if text_clean == mapped_clean:
+                return num
+        
+        # 4. 智能相似度匹配（平衡准确性和样本量）
+        if len(text_clean) > 10:  # 降低最小长度要求
+            best_match = None
+            best_similarity = 0.0
+            
+            for num, mapped_text in text_number_mapping.items():
+                mapped_clean = mapped_text.replace(' ', '').replace('\n', '').replace('\t', '').rstrip('。！？!?')
+                
+                if len(mapped_clean) > 0:
+                    # 计算字符集合相似度
+                    common_chars = len(set(text_clean) & set(mapped_clean))
+                    total_chars = max(len(text_clean), len(mapped_clean))
+                    char_similarity = common_chars / total_chars
+                    
+                    # 计算长度相似度
+                    length_ratio = min(len(text_clean), len(mapped_clean)) / max(len(text_clean), len(mapped_clean))
+                    
+                    # 计算子串匹配度（新增）
+                    substring_match = 0.0
+                    if text_clean in mapped_clean:
+                        substring_match = len(text_clean) / len(mapped_clean)
+                    elif mapped_clean in text_clean:
+                        substring_match = len(mapped_clean) / len(text_clean)
+                    
+                    # 综合评分（考虑多个因素）
+                    # 如果有子串匹配，降低其他要求
+                    if substring_match > 0.7:
+                        # 子串匹配度高，说明很可能是正确的
+                        if char_similarity > 0.7 and length_ratio > 0.6:
+                            similarity = (char_similarity + length_ratio + substring_match) / 3
+                            if similarity > best_similarity:
+                                best_similarity = similarity
+                                best_match = num
+                    else:
+                        # 没有明显子串匹配，要求更严格
+                        if char_similarity > 0.85 and length_ratio > 0.75:
+                            similarity = (char_similarity + length_ratio) / 2
+                            if similarity > best_similarity:
+                                best_similarity = similarity
+                                best_match = num
+            
+            if best_match is not None:
+                return best_match
+        
+        return None
+

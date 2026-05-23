@@ -1,0 +1,79 @@
+{
+  "total_files": 7,
+  "total_sentences": 631,
+  "has_coding": 551,
+  "empty_coding": 80,
+  "avg_confidence": 0.8497622820919227,
+  "file_stats": [
+    {
+      "file": "陶阳里 管理层3（里弄管家）.docx",
+      "total": 233,
+      "has_coding": 195,
+      "empty": 38,
+      "avg_conf": 0.800000000000002,
+      "methods": {
+        "rule_inferred": 233
+      }
+    },
+    {
+      "file": "陶阳里 非遗手艺人11.docx",
+      "total": 93,
+      "has_coding": 90,
+      "empty": 3,
+      "avg_conf": 1.0,
+      "methods": {
+        "rule_explicit": 93
+      }
+    },
+    {
+      "file": "陶阳里 非遗手艺人12.docx",
+      "total": 16,
+      "has_coding": 13,
+      "empty": 3,
+      "avg_conf": 0.8000000000000002,
+      "methods": {
+        "rule_inferred": 16
+      }
+    },
+    {
+      "file": "陶溪川 游客8.docx",
+      "total": 18,
+      "has_coding": 15,
+      "empty": 3,
+      "avg_conf": 0.8000000000000003,
+      "methods": {
+        "rule_inferred": 18
+      }
+    },
+    {
+      "file": "陶阳里 非遗人10.docx",
+      "total": 170,
+      "has_coding": 149,
+      "empty": 21,
+      "avg_conf": 0.7999999999999987,
+      "methods": {
+        "rule_inferred": 170
+      }
+    },
+    {
+      "file": "陶阳里 非遗手艺人 9.docx",
+      "total": 37,
+      "has_coding": 29,
+      "empty": 8,
+      "avg_conf": 0.8000000000000004,
+      "methods": {
+        "rule_inferred": 37
+      }
+    },
+    {
+      "file": "陶溪川 景漂6 广州美术学院_润色版.docx",
+      "total": 64,
+      "has_coding": 60,
+      "empty": 4,
+      "avg_conf": 1.0,
+      "methods": {
+        "rule_explicit": 64
+      }
+    }
+  ]
+}

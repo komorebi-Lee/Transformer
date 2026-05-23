@@ -18,9 +18,37 @@ class Config:
     DATA_DIR = PathManager.get_data_dir()
     PROJECTS_DIR = PathManager.get_projects_dir()
 
-    # 模型配置
-    DEFAULT_MODEL_NAME = "bert-base-chinese"
-    SENTENCE_MODEL_NAME = "paraphrase-multilingual-MiniLM-L12-v2"
+    # =========================================================================
+    # 模型配置 — 研发即交付：直接在轻量架构上训练，跳过蒸馏
+    # =========================================================================
+    # 策略：用 bert-base-chinese 的 embedding + 前4层构建轻量 BERT，直接微调；
+    #       sentence 用 bge-small-zh-v1.5，中文语义更强、推理更快。
+    #       model_builder.py 负责一次性构建这些模型。
+    # -----------------------------------------------------------------
+    RERANKER_MODEL_NAME = "custom_bert_4layer"          # 4 层 BERT（~120MB）
+    SENTENCE_MODEL_NAME  = "bge-small-zh-v1.5"          # BGE 中文小模型（~95MB）
+    # 构建 4 层 BERT 时用的基座（仅用于提取 config + embedding + 前 N 层）
+    BERT_BUILDER_SOURCE = "bert-base-chinese"
+    CUSTOM_BERT_NUM_LAYERS = 4
+    # -----------------------------------------------------------------
+    # 向下兼容
+    # -----------------------------------------------------------------
+    DEFAULT_MODEL_NAME = RERANKER_MODEL_NAME
+    # 蒸馏相关配置（保留但不再使用，仅防旧代码引用崩溃）
+    MODEL_TIER = "standard"
+    ENHANCED_RERANKER_MODEL = RERANKER_MODEL_NAME
+    ENHANCED_SENTENCE_MODEL = SENTENCE_MODEL_NAME
+    STANDARD_RERANKER_MODEL = RERANKER_MODEL_NAME
+    STANDARD_SENTENCE_MODEL = SENTENCE_MODEL_NAME
+    LIGHT_RERANKER_MODEL = RERANKER_MODEL_NAME
+    LIGHT_SENTENCE_MODEL = SENTENCE_MODEL_NAME
+    DISTILL_STUDENT_LAYERS = 3
+    DISTILL_TEMPERATURE = 4.0
+    DISTILL_ALPHA = 0.7
+    DISTILL_EPOCHS = 5
+    DISTILL_BATCH_SIZE = 16
+    DISTILL_LEARNING_RATE = 3e-5
+    DISTILL_OUTPUT_DIRNAME = "distilled_models"
 
     # 训练配置
     TRAINING_EPOCHS = 10
@@ -64,6 +92,21 @@ class Config:
     ABSTRACT_RERANK_TOP_N = 6
     ABSTRACT_RERANK_BATCH_SIZE = 128
     ABSTRACT_RERANK_NEGATIVE_SAMPLES = 4
+    # 一阶召回增强（A/B 开关）
+    FIRST_LEVEL_RECALL_ENHANCED = False
+    FIRST_LEVEL_USE_LABEL_RECALL_CANDIDATES = False
+    FIRST_LEVEL_BASE_MAX_SPAN = 8
+    FIRST_LEVEL_ENHANCED_MAX_SPAN = 12
+    FIRST_LEVEL_SEMANTIC_RECALL_TOP_N = 300
+    FIRST_LEVEL_SEMANTIC_RECALL_MIN_SCORE = 0.35
+    FIRST_LEVEL_RECALL_BANK_FILES = ["standard_train_optimized.csv", "standard.csv", "standard2.csv", "standard_train.csv"]
+    # 一阶原型样本：默认关闭；如需项目域适配，可临时设置为辅助样本文件
+    FIRST_LEVEL_PROTOTYPE_FILES = []
+    FIRST_LEVEL_FUSED_RANKING = False
+    FIRST_LEVEL_RECALL_SCORE_WEIGHT = 1.8
+    FIRST_LEVEL_RULE_SCORE_WEIGHT = 0.18
+    FIRST_LEVEL_GLOBAL_RERANK_TOP_N = 24
+    FIRST_LEVEL_SHORT_LABEL_BONUS = 2.5
     # 抽象重排序训练策略：默认仅在模型缺失时训练（可大幅减少重复训练耗时）
     ABSTRACT_RERANKER_ALWAYS_RETRAIN = True
 
