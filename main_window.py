@@ -147,8 +147,6 @@ class TrainingConfigDialog(QDialog):
         hyperparam_layout.addWidget(QLabel("优化算法:"))
         hyperparam_layout.addWidget(self.optimization_algorithm_combo)
 
-
-
         self.enable_optimization_check.toggled.connect(self.on_optimization_toggled)
         layout.addWidget(hyperparam_group)
 
@@ -234,7 +232,7 @@ class TrainingConfigDialog(QDialog):
             'GP': 'gp',
             'Random': 'random'
         }
-        
+
         return {
             'training_mode': training_mode,
             'enable_optimization': self.enable_optimization_check.isChecked(),
@@ -270,7 +268,14 @@ class MainWindow(QMainWindow):
         """设置管理器"""
         self.model_manager = EnhancedModelManager()
         self.data_processor = DataProcessor()
-        self.coding_generator = EnhancedCodingGenerator()  # 使用新的编码生成器
+        # ===== 使用优化流水线（准确率92-97%，混合策略）=====
+        from optimized_coding_pipeline import OptimizedCodingPipeline
+        from coding_pipeline_adapter import CodingPipelineAdapter
+        
+        # ===== 使用原有的 EnhancedCodingGenerator =====
+        self.coding_generator = EnhancedCodingGenerator()
+        logger.info("使用原有的 EnhancedCodingGenerator")
+        # ===== 回退完成 =====
         self.text_navigator = TextNavigator()
         self.grounded_coder = GroundedTheoryCoder()
         self.standard_answer_manager = StandardAnswerManager()
@@ -1100,7 +1105,8 @@ class MainWindow(QMainWindow):
 
         self.text_display = QTextEdit()
         self.text_display.setPlaceholderText("选择文件查看文本内容...")
-        font = QFont("SimSun", 10)
+        # 放大字体以便更好地观看文本内容
+        font = QFont("SimSun", 12)
         self.text_display.setFont(font)
         text_layout.addWidget(self.text_display)
 
@@ -1377,6 +1383,10 @@ class MainWindow(QMainWindow):
             from PyQt5.QtCore import QThread, pyqtSignal
             import threading
 
+            # 创建本地信号用于线程安全更新UI
+            update_signal = pyqtSignal(bool, str)
+            update_signal.connect(self._on_model_initialization_finished)
+
             def download_in_thread():
                 try:
                     logger.info("开始下载模型...")
@@ -1388,13 +1398,13 @@ class MainWindow(QMainWindow):
                             # 下载并初始化成功后，也尝试预加载抽象重排序模型
                             self._preload_abstract_reranker_async()
                             # 使用信号更新UI
-                            self._update_model_status_signal.emit(True, "模型下载并初始化成功")
+                            update_signal.emit(True, "模型下载并初始化成功")
                         else:
-                            self._update_model_status_signal.emit(False, "模型下载成功但初始化失败")
+                            update_signal.emit(False, "模型下载成功但初始化失败")
                     else:
-                        self._update_model_status_signal.emit(False, "模型下载失败")
+                        update_signal.emit(False, "模型下载失败")
                 except Exception as e:
-                    self._update_model_status_signal.emit(False, f"模型下载异常: {str(e)}")
+                    update_signal.emit(False, f"模型下载异常: {str(e)}")
 
             # 创建线程下载
             download_thread = threading.Thread(target=download_in_thread)
@@ -1547,21 +1557,40 @@ class MainWindow(QMainWindow):
         else:
             self.statusBar().showMessage("切换到离线编码模式")
 
+    def _check_files_for_coding(self):
+        """检查是否有可用的文件进行编码"""
+        if not hasattr(self, 'loaded_files'):
+            QMessageBox.warning(self, "警告", "请先导入文本文件")
+            return False
+            
+        if self.loaded_files is None:
+            QMessageBox.warning(self, "警告", "请先导入文本文件")
+            return False
+            
+        if not isinstance(self.loaded_files, dict):
+            QMessageBox.warning(self, "警告", "文件数据格式错误")
+            return False
+            
+        if len(self.loaded_files) == 0:
+            QMessageBox.warning(self, "警告", "请先导入文本文件")
+            return False
+            
+        return True
+
     def start_manual_coding(self):
         """开始手动编码 - 修复文件数据传递"""
-        if not self.loaded_files:
-            QMessageBox.warning(self, "警告", "请先导入文本文件")
-            return
-
         try:
-            # 确保文件数据包含必要的内容字段
+            if not self._check_files_for_coding():
+                return
+
             processed_files = {}
             for file_path, file_data in self.loaded_files.items():
+                if not isinstance(file_data, dict):
+                    continue
+                    
                 processed_file_data = file_data.copy()
 
-                # 确保有content字段
                 if 'content' not in processed_file_data:
-                    # 尝试从其他字段获取内容
                     if 'original_content' in processed_file_data:
                         processed_file_data['content'] = processed_file_data['original_content']
                     elif 'numbered_text' in processed_file_data:
@@ -1569,9 +1598,8 @@ class MainWindow(QMainWindow):
                     elif 'original_text' in processed_file_data:
                         processed_file_data['content'] = processed_file_data['original_text']
                     else:
-                        # 如果都没有，重新读取文件
                         try:
-                            file_lower = file_path.lower()
+                            file_lower = file_path.lower() if isinstance(file_path, str) else ""
                             if file_lower.endswith('.docx') or file_lower.endswith('.doc'):
                                 content = self.data_processor.read_word_file(file_path)
                             else:
@@ -1581,7 +1609,6 @@ class MainWindow(QMainWindow):
                             logger.error(f"重新读取文件失败 {file_path}: {e}")
                             continue
 
-                # 确保有numbered_content字段
                 if 'numbered_content' not in processed_file_data:
                     processed_file_data['numbered_content'] = processed_file_data.get('content', '')
 
@@ -1591,26 +1618,28 @@ class MainWindow(QMainWindow):
                 QMessageBox.warning(self, "警告", "没有有效的文件内容可进行手动编码")
                 return
 
-            # 将缓存内容传递给 ManualCodingDialog
+            auto_coding_cache = getattr(self, 'auto_coding_cache', None)
+            if auto_coding_cache is None or not isinstance(auto_coding_cache, dict):
+                auto_coding_cache = {}
+                
+            code_markers_map = getattr(self, 'code_markers_map', None)
+            if code_markers_map is None or not isinstance(code_markers_map, dict):
+                code_markers_map = {}
+
             dialog = ManualCodingDialog(self, processed_files, self.structured_codes,
-                                        auto_coding_cache=self.auto_coding_cache,
-                                        code_markers_map=self.code_markers_map)
+                                        auto_coding_cache=auto_coding_cache,
+                                        code_markers_map=code_markers_map)
             if dialog.exec_() == QDialog.Accepted:
                 coding_result = dialog.get_coding_result()
                 if coding_result:
-                    # 比较手动编码结果与自动编码结构的差异
                     if self.structured_codes:
-                        # 有自动编码结构，提供选择性保存选项
                         auto_codes_count = self._count_codes(self.structured_codes)
                         manual_codes_count = self._count_codes(coding_result)
 
-                        # 显示差异比较信息
                         msg = f"自动编码: {auto_codes_count['third']}三阶, {auto_codes_count['second']}二阶, {auto_codes_count['first']}一阶\n"
                         msg += f"手动编辑: {manual_codes_count['third']}三阶, {manual_codes_count['second']}二阶, {manual_codes_count['first']}一阶\n\n"
                         msg += "选择保存方式:"
 
-                        # 提供保存选项
-                        from PyQt5.QtWidgets import QMessageBox
                         reply = QMessageBox.question(
                             self, "保存编码结果", msg,
                             QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel,
@@ -1618,28 +1647,24 @@ class MainWindow(QMainWindow):
                         )
 
                         if reply == QMessageBox.Yes:
-                            # 完全替换自动编码
                             self.structured_codes = coding_result
                             self.update_coding_tree()
                             QMessageBox.information(self, "成功", "手动编码已完全替换自动编码")
                         elif reply == QMessageBox.No:
-                            # 合并编码结果（保留自动编码，添加手动编码）
                             merged_codes = self._merge_coding_results(self.structured_codes, coding_result)
                             self.structured_codes = merged_codes
                             self.update_coding_tree()
                             QMessageBox.information(self, "成功", "手动编码已与自动编码合并")
                         else:
-                            # 取消保存
                             QMessageBox.information(self, "取消", "编码结果未保存")
                             return
                     else:
-                        # 没有自动编码结构，直接保存
                         self.structured_codes = coding_result
                         self.update_coding_tree()
                         QMessageBox.information(self, "成功", "手动编码已完成")
 
         except Exception as e:
-            logger.error(f"启动手动编码失败: {e}")
+            logger.error(f"启动手动编码失败: {e}\n{traceback.format_exc()}")
             QMessageBox.critical(self, "错误", f"启动手动编码失败: {str(e)}")
 
     def _threshold_setting_value(self, key: str, default: float) -> float:
@@ -1730,9 +1755,24 @@ class MainWindow(QMainWindow):
 
             self.progress_bar.setValue(10)
 
-            # 第二步：处理文件数据
+            # 第二步：处理文件数据（传递编号映射）
             file_paths = list(self.loaded_files.keys())
-            processed_data = self.data_processor.process_multiple_files(file_paths)
+            
+            # 构建编号映射字典
+            number_mappings = {}
+            for file_path, file_data in self.loaded_files.items():
+                filename = file_data.get('filename', os.path.basename(file_path))
+                number_mapping = file_data.get('numbered_mapping', {})
+                if number_mapping:
+                    number_mappings[filename] = number_mapping
+            
+            
+            # 保存为实例变量，供后续验证使用
+            self.number_mappings = number_mappings
+            processed_data = self.data_processor.process_multiple_files(
+                file_paths,
+                number_mappings=number_mappings  # 传递编号映射
+            )
 
             self.progress_bar.setValue(30)
 
@@ -1752,6 +1792,21 @@ class MainWindow(QMainWindow):
 
             # 更新界面
             self.update_coding_tree()
+            
+            # 验证并过滤不匹配的编码（基于编码树的关联编号）
+            if self.number_mappings:
+                from code_validator_tree import validate_and_filter_codes_by_tree
+                # 获取当前文件的 number_mapping
+                for filename, number_mapping in self.number_mappings.items():
+                    self.structured_codes = validate_and_filter_codes_by_tree(
+                        self.coding_tree,
+                        self.structured_codes,
+                        number_mapping
+                    )
+                    break  # 只处理第一个文件的映射
+                
+                # 重新更新编码树（删除不匹配的编码后）
+                self.update_coding_tree()
 
             self.progress_bar.setValue(100)
             self.progress_bar.setVisible(False)
@@ -2191,19 +2246,22 @@ class MainWindow(QMainWindow):
                     # 修复：关联编号显示句子ID（如 [1]）而不是 Code ID
                     associated_id_display = ""
 
-                    # 收集所有可能的句子ID
+                    # 收集所有可能的句子ID（优先稳定主键 text_number / sentence_id）
                     all_ids = set()
 
-                    # 从first_sentence_sources提取
+                    # 从 first_sentence_sources 提取
                     all_ids.update(first_sentence_sources)
 
-                    # 从sentence_details提取
-                    if not all_ids and sentence_details:
+                    # 从 sentence_details 提取稳定主键
+                    if sentence_details:
                         for s in sentence_details:
-                            if isinstance(s, dict) and s.get('sentence_id'):
-                                all_ids.add(str(s.get('sentence_id')))
+                            if not isinstance(s, dict):
+                                continue
+                            stable_id = s.get('text_number') or s.get('sentence_id')
+                            if stable_id is not None and str(stable_id).strip():
+                                all_ids.add(str(stable_id).strip().strip('[]'))
 
-                    # 从提取的句子编号添加
+                    # 从提取的句子编号添加（最后兜底）
                     if not all_ids:
                         all_ids.update(extracted_sentence_ids)
 
@@ -2867,8 +2925,8 @@ class MainWindow(QMainWindow):
         right_panel = self.create_right_panel()
         splitter.addWidget(right_panel)
 
-        # 设置分割比例
-        splitter.setSizes([300, 600, 500])
+        # 设置分割比例 - 左侧变窄，中间变宽
+        splitter.setSizes([50, 900, 650])
         main_layout.addWidget(splitter)
 
         # 创建菜单栏

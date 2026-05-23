@@ -1,0 +1,1811 @@
+2026-05-22 17:38:53,298 - root - INFO - 基础路径已设置: D:\zthree2 (打包模式: False)
+2026-05-22 17:38:56,478 - semantic_matcher - INFO - psutil 库加载成功
+2026-05-22 17:38:58,317 - numexpr.utils - INFO - Note: NumExpr detected 32 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
+2026-05-22 17:38:58,317 - numexpr.utils - INFO - NumExpr defaulting to 16 threads.
+2026-05-22 17:39:01,507 - semantic_matcher - INFO - sentence-transformers 库加载成功
+2026-05-22 17:39:39,495 - root - INFO - 基础路径已设置: D:\zthree2 (打包模式: False)
+2026-05-22 17:39:41,581 - semantic_matcher - INFO - psutil 库加载成功
+2026-05-22 17:39:42,828 - numexpr.utils - INFO - Note: NumExpr detected 32 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
+2026-05-22 17:39:42,829 - numexpr.utils - INFO - NumExpr defaulting to 16 threads.
+2026-05-22 17:39:44,901 - semantic_matcher - INFO - sentence-transformers 库加载成功
+2026-05-22 17:40:30,921 - root - INFO - 基础路径已设置: D:\zthree2 (打包模式: False)
+2026-05-22 17:40:33,019 - semantic_matcher - INFO - psutil 库加载成功
+2026-05-22 17:40:34,259 - numexpr.utils - INFO - Note: NumExpr detected 32 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
+2026-05-22 17:40:34,260 - numexpr.utils - INFO - NumExpr defaulting to 16 threads.
+2026-05-22 17:40:36,278 - semantic_matcher - INFO - sentence-transformers 库加载成功
+2026-05-22 17:40:53,303 - root - INFO - 基础路径已设置: D:\zthree2 (打包模式: False)
+2026-05-22 17:40:55,533 - semantic_matcher - INFO - psutil 库加载成功
+2026-05-22 17:40:56,872 - numexpr.utils - INFO - Note: NumExpr detected 32 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
+2026-05-22 17:40:56,872 - numexpr.utils - INFO - NumExpr defaulting to 16 threads.
+2026-05-22 17:40:58,958 - semantic_matcher - INFO - sentence-transformers 库加载成功
+2026-05-22 17:41:13,406 - root - INFO - 基础路径已设置: D:\zthree2 (打包模式: False)
+2026-05-22 17:41:15,703 - semantic_matcher - INFO - psutil 库加载成功
+2026-05-22 17:41:17,364 - numexpr.utils - INFO - Note: NumExpr detected 32 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
+2026-05-22 17:41:17,365 - numexpr.utils - INFO - NumExpr defaulting to 16 threads.
+2026-05-22 17:41:20,530 - semantic_matcher - INFO - sentence-transformers 库加载成功
+2026-05-22 17:41:20,554 - coding_library_manager - INFO - 编码库加载成功，包含 2000 个三阶编码和 2975 个二阶编码
+2026-05-22 17:41:20,555 - enhanced_coding_generator - INFO - 编码库管理器初始化成功
+2026-05-22 17:41:20,555 - enhanced_coding_generator - DEBUG - HighQualitySampleLearner 类是否存在: <class 'high_quality_sample_learner.HighQualitySampleLearner'>
+2026-05-22 17:41:20,555 - enhanced_coding_generator - DEBUG - 高质量样本文件路径: D:\zthree2\csv\standard_train_optimized.csv
+2026-05-22 17:41:20,556 - enhanced_coding_generator - DEBUG - 高质量样本文件是否存在: True
+2026-05-22 17:41:20,556 - high_quality_sample_learner - DEBUG - load_samples 方法被调用
+2026-05-22 17:41:20,561 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2026-05-22 17:41:20,561 - jieba - DEBUG - Loading model from cache C:\Users\Lenovo\AppData\Local\Temp\jieba.cache
+2026-05-22 17:41:21,057 - jieba - DEBUG - Loading model cost 0.496 seconds.
+2026-05-22 17:41:21,057 - jieba - DEBUG - Prefix dict has been built successfully.
+2026-05-22 17:41:21,133 - high_quality_sample_learner - INFO - 加载了 942 个高质量样本 (encoding=gb18030)
+2026-05-22 17:41:21,133 - enhanced_coding_generator - INFO - 高质量样本学习器初始化成功
+2026-05-22 17:41:21,210 - semantic_matcher - INFO - 正在加载sentence-transformer模型: D:\zthree2\local_models\sentence-transformer
+2026-05-22 17:41:21,214 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cuda:0
+2026-05-22 17:41:21,214 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\sentence-transformer
+2026-05-22 17:41:23,620 - semantic_matcher - INFO - 模型加载成功，使用设备: cuda
+2026-05-22 17:41:23,620 - enhanced_coding_generator - INFO - 语义匹配器初始化成功
+2026-05-22 17:41:23,827 - enhanced_coding_generator - INFO - RAG自动编码已启用，运行策略: gpu
+2026-05-22 17:44:10,678 - root - INFO - 基础路径已设置: D:\zthree2 (打包模式: False)
+2026-05-22 17:44:11,231 - root - INFO - 目录已确保存在: D:\zthree2\projects
+2026-05-22 17:44:11,232 - root - INFO - 目录已确保存在: D:\zthree2\data
+2026-05-22 17:44:11,233 - root - INFO - 目录已确保存在: D:\zthree2\local_models
+2026-05-22 17:44:11,233 - root - INFO - 目录已确保存在: D:\zthree2\trained_models
+2026-05-22 17:44:11,233 - root - INFO - 目录已确保存在: D:\zthree2\standard_answers
+2026-05-22 17:44:11,233 - root - INFO - 目录已确保存在: D:\zthree2\output
+2026-05-22 17:44:11,233 - root - INFO - 目录已确保存在: D:\zthree2\cache
+2026-05-22 17:44:11,235 - root - INFO - 目录已确保存在: D:\zthree2\logs
+2026-05-22 17:44:11,235 - root - INFO - 目录已确保存在: D:\zthree2\standard_answers\backups
+2026-05-22 17:44:11,235 - root - INFO - 目录已确保存在: D:\zthree2\standard_answers\modifications
+2026-05-22 17:44:11,236 - root - INFO - 目录已确保存在: D:\zthree2\projects\手动编码保存编码
+2026-05-22 17:44:11,236 - root - INFO - 目录已确保存在: D:\zthree2\projects\手动编码编码树保存
+2026-05-22 17:44:11,236 - __main__ - INFO - 环境初始化成功
+2026-05-22 17:44:17,541 - numexpr.utils - INFO - Note: NumExpr detected 32 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
+2026-05-22 17:44:17,541 - numexpr.utils - INFO - NumExpr defaulting to 16 threads.
+2026-05-22 17:44:18,601 - root - INFO - pyarrow 15.0.0 导入成功
+2026-05-22 17:44:18,944 - semantic_matcher - INFO - psutil 库加载成功
+2026-05-22 17:44:19,064 - semantic_matcher - INFO - sentence-transformers 库加载成功
+2026-05-22 17:44:19,205 - training_manager - INFO - scikit-learn 版本: 1.7.1
+2026-05-22 17:44:19,334 - model_manager - INFO - 使用设备: cuda
+2026-05-22 17:44:19,337 - data_processor - INFO - 已启用精准受访者提取（SpeakerRoleExtractor + QA分类器）
+2026-05-22 17:44:19,348 - coding_library_manager - INFO - 编码库加载成功，包含 2000 个三阶编码和 2975 个二阶编码
+2026-05-22 17:44:19,348 - enhanced_coding_generator - INFO - 编码库管理器初始化成功
+2026-05-22 17:44:19,352 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2026-05-22 17:44:19,353 - jieba - DEBUG - Loading model from cache C:\Users\Lenovo\AppData\Local\Temp\jieba.cache
+2026-05-22 17:44:19,668 - jieba - DEBUG - Loading model cost 0.315 seconds.
+2026-05-22 17:44:19,668 - jieba - DEBUG - Prefix dict has been built successfully.
+2026-05-22 17:44:19,731 - high_quality_sample_learner - INFO - 加载了 942 个高质量样本 (encoding=gb18030)
+2026-05-22 17:44:19,731 - enhanced_coding_generator - INFO - 高质量样本学习器初始化成功
+2026-05-22 17:44:19,731 - semantic_matcher - INFO - 正在加载sentence-transformer模型: D:\zthree2\local_models\sentence-transformer
+2026-05-22 17:44:19,733 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cuda:0
+2026-05-22 17:44:19,733 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\sentence-transformer
+2026-05-22 17:44:21,342 - semantic_matcher - INFO - 模型加载成功，使用设备: cuda
+2026-05-22 17:44:21,342 - enhanced_coding_generator - INFO - 语义匹配器初始化成功
+2026-05-22 17:44:21,605 - enhanced_coding_generator - INFO - RAG自动编码已启用，运行策略: gpu
+2026-05-22 17:44:21,605 - main_window - INFO - 使用原有的 EnhancedCodingGenerator
+2026-05-22 17:44:21,641 - standard_answer_manager - INFO - 标准答案已加载: v57_20260409_085422.json
+2026-05-22 17:44:21,642 - standard_answer_manager - INFO - 成功加载最新的标准答案: v57_20260409_085422.json
+2026-05-22 17:44:21,793 - model_manager - INFO - 加载本地BERT模型
+2026-05-22 17:44:22,599 - model_manager - INFO - BERT模型初始化成功
+2026-05-22 17:44:22,599 - model_manager - INFO - 加载本地sentence-transformer模型
+2026-05-22 17:44:22,602 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cuda:0
+2026-05-22 17:44:22,602 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\sentence-transformer
+2026-05-22 17:44:23,338 - model_manager - INFO - sentence-transformer初始化成功
+2026-05-22 17:44:23,338 - model_manager - INFO - 模型初始化完成
+2026-05-22 17:44:23,338 - main_window - INFO - 模型初始化成功
+2026-05-22 17:44:23,382 - __main__ - INFO - 扎根理论编码分析系统启动成功，主窗口已显示
+2026-05-22 17:44:24,020 - model_manager - INFO - 抽象重排序模型已加载: D:\zthree2\trained_models\abstract_reranker_latest
+2026-05-22 17:44:24,020 - model_manager - INFO - 加载本地BERT模型
+2026-05-22 17:44:24,020 - main_window - INFO - 抽象重排序模型预加载成功
+2026-05-22 17:44:24,235 - model_manager - INFO - BERT模型初始化成功
+2026-05-22 17:44:24,235 - model_manager - INFO - 加载本地sentence-transformer模型
+2026-05-22 17:44:24,238 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cuda:0
+2026-05-22 17:44:24,238 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\sentence-transformer
+2026-05-22 17:44:25,000 - model_manager - INFO - sentence-transformer初始化成功
+2026-05-22 17:44:25,001 - model_manager - INFO - 模型初始化完成
+2026-05-22 17:44:25,001 - main_window - INFO - 模型初始化成功
+2026-05-22 17:44:25,002 - main_window - INFO - 抽象重排序模型预加载成功
+2026-05-22 17:45:04,677 - __main__ - INFO - 应用程序正常退出
+2026-05-22 18:02:04,990 - root - INFO - 基础路径已设置: D:\zthree2 (打包模式: False)
+2026-05-22 18:02:05,420 - root - INFO - 目录已确保存在: D:\zthree2\projects
+2026-05-22 18:02:05,420 - root - INFO - 目录已确保存在: D:\zthree2\data
+2026-05-22 18:02:05,420 - root - INFO - 目录已确保存在: D:\zthree2\local_models
+2026-05-22 18:02:05,420 - root - INFO - 目录已确保存在: D:\zthree2\trained_models
+2026-05-22 18:02:05,420 - root - INFO - 目录已确保存在: D:\zthree2\standard_answers
+2026-05-22 18:02:05,420 - root - INFO - 目录已确保存在: D:\zthree2\output
+2026-05-22 18:02:05,420 - root - INFO - 目录已确保存在: D:\zthree2\cache
+2026-05-22 18:02:05,420 - root - INFO - 目录已确保存在: D:\zthree2\logs
+2026-05-22 18:02:05,420 - root - INFO - 目录已确保存在: D:\zthree2\standard_answers\backups
+2026-05-22 18:02:05,422 - root - INFO - 目录已确保存在: D:\zthree2\standard_answers\modifications
+2026-05-22 18:02:05,422 - root - INFO - 目录已确保存在: D:\zthree2\projects\手动编码保存编码
+2026-05-22 18:02:05,422 - root - INFO - 目录已确保存在: D:\zthree2\projects\手动编码编码树保存
+2026-05-22 18:02:05,422 - __main__ - INFO - 环境初始化成功
+2026-05-22 18:02:11,184 - numexpr.utils - INFO - Note: NumExpr detected 32 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
+2026-05-22 18:02:11,184 - numexpr.utils - INFO - NumExpr defaulting to 16 threads.
+2026-05-22 18:02:12,156 - root - INFO - pyarrow 15.0.0 导入成功
+2026-05-22 18:02:12,465 - semantic_matcher - INFO - psutil 库加载成功
+2026-05-22 18:02:12,593 - semantic_matcher - INFO - sentence-transformers 库加载成功
+2026-05-22 18:02:12,759 - training_manager - INFO - scikit-learn 版本: 1.7.1
+2026-05-22 18:02:12,891 - model_manager - INFO - 使用设备: cuda
+2026-05-22 18:02:12,893 - data_processor - INFO - 已启用精准受访者提取（SpeakerRoleExtractor + QA分类器）
+2026-05-22 18:02:12,905 - coding_library_manager - INFO - 编码库加载成功，包含 2000 个三阶编码和 2975 个二阶编码
+2026-05-22 18:02:12,905 - enhanced_coding_generator - INFO - 编码库管理器初始化成功
+2026-05-22 18:02:12,910 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2026-05-22 18:02:12,910 - jieba - DEBUG - Loading model from cache C:\Users\Lenovo\AppData\Local\Temp\jieba.cache
+2026-05-22 18:02:13,227 - jieba - DEBUG - Loading model cost 0.318 seconds.
+2026-05-22 18:02:13,227 - jieba - DEBUG - Prefix dict has been built successfully.
+2026-05-22 18:02:13,292 - high_quality_sample_learner - INFO - 加载了 942 个高质量样本 (encoding=gb18030)
+2026-05-22 18:02:13,292 - enhanced_coding_generator - INFO - 高质量样本学习器初始化成功
+2026-05-22 18:02:13,292 - semantic_matcher - INFO - 正在加载sentence-transformer模型: D:\zthree2\local_models\sentence-transformer
+2026-05-22 18:02:13,295 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cuda:0
+2026-05-22 18:02:13,295 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\sentence-transformer
+2026-05-22 18:02:14,974 - semantic_matcher - INFO - 模型加载成功，使用设备: cuda
+2026-05-22 18:02:14,974 - enhanced_coding_generator - INFO - 语义匹配器初始化成功
+2026-05-22 18:02:15,234 - enhanced_coding_generator - INFO - RAG自动编码已启用，运行策略: gpu
+2026-05-22 18:02:15,235 - main_window - INFO - 使用原有的 EnhancedCodingGenerator
+2026-05-22 18:02:15,260 - standard_answer_manager - INFO - 标准答案已加载: v57_20260409_085422.json
+2026-05-22 18:02:15,261 - standard_answer_manager - INFO - 成功加载最新的标准答案: v57_20260409_085422.json
+2026-05-22 18:02:15,414 - model_manager - INFO - 加载本地BERT模型
+2026-05-22 18:02:16,247 - model_manager - INFO - BERT模型初始化成功
+2026-05-22 18:02:16,248 - model_manager - INFO - 加载本地sentence-transformer模型
+2026-05-22 18:02:16,251 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cuda:0
+2026-05-22 18:02:16,251 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\sentence-transformer
+2026-05-22 18:02:17,043 - model_manager - INFO - sentence-transformer初始化成功
+2026-05-22 18:02:17,043 - model_manager - INFO - 模型初始化完成
+2026-05-22 18:02:17,043 - main_window - INFO - 模型初始化成功
+2026-05-22 18:02:17,069 - __main__ - INFO - 扎根理论编码分析系统启动成功，主窗口已显示
+2026-05-22 18:02:17,696 - model_manager - INFO - 加载本地BERT模型
+2026-05-22 18:02:17,829 - model_manager - INFO - 抽象重排序模型已加载: D:\zthree2\trained_models\abstract_reranker_latest
+2026-05-22 18:02:17,829 - main_window - INFO - 抽象重排序模型预加载成功
+2026-05-22 18:02:18,043 - model_manager - INFO - BERT模型初始化成功
+2026-05-22 18:02:18,043 - model_manager - INFO - 加载本地sentence-transformer模型
+2026-05-22 18:02:18,046 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cuda:0
+2026-05-22 18:02:18,046 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\sentence-transformer
+2026-05-22 18:02:18,859 - model_manager - INFO - sentence-transformer初始化成功
+2026-05-22 18:02:18,859 - model_manager - INFO - 模型初始化完成
+2026-05-22 18:02:18,860 - main_window - INFO - 模型初始化成功
+2026-05-22 18:02:18,860 - main_window - INFO - 抽象重排序模型预加载成功
+2026-05-22 18:02:32,201 - data_processor - INFO - 成功读取Word文档: D:/c盘/新文本/1/陶溪川 景漂6 广州美术学院_润色版.docx
+2026-05-22 18:02:32,201 - main_window - INFO - 成功导入文件: 陶溪川 景漂6 广州美术学院_润色版.docx
+2026-05-22 18:02:32,215 - data_processor - INFO - 成功读取Word文档: D:/c盘/新文本/1/陶溪川 游客8.docx
+2026-05-22 18:02:32,215 - main_window - INFO - 成功导入文件: 陶溪川 游客8.docx
+2026-05-22 18:02:32,257 - data_processor - INFO - 成功读取Word文档: D:/c盘/新文本/1/陶阳里 非遗人10.docx
+2026-05-22 18:02:32,257 - main_window - INFO - 成功导入文件: 陶阳里 非遗人10.docx
+2026-05-22 18:02:32,268 - data_processor - INFO - 成功读取Word文档: D:/c盘/新文本/1/陶阳里 非遗手艺人 9.docx
+2026-05-22 18:02:32,268 - main_window - INFO - 成功导入文件: 陶阳里 非遗手艺人 9.docx
+2026-05-22 18:02:32,297 - data_processor - INFO - 成功读取Word文档: D:/c盘/新文本/1/陶阳里 非遗手艺人11.docx
+2026-05-22 18:02:32,297 - main_window - INFO - 成功导入文件: 陶阳里 非遗手艺人11.docx
+2026-05-22 18:02:32,304 - data_processor - INFO - 成功读取Word文档: D:/c盘/新文本/1/陶阳里 非遗手艺人12.docx
+2026-05-22 18:02:32,304 - main_window - INFO - 成功导入文件: 陶阳里 非遗手艺人12.docx
+2026-05-22 18:02:32,353 - data_processor - INFO - 成功读取Word文档: D:/c盘/新文本/1/陶阳里 管理层3（里弄管家）.docx
+2026-05-22 18:02:32,353 - main_window - INFO - 成功导入文件: 陶阳里 管理层3（里弄管家）.docx
+2026-05-22 18:02:36,320 - text_numbering - INFO - 为文件 陶溪川 景漂6 广州美术学院_润色版.docx 中的 508 个句子进行了编号
+2026-05-22 18:02:36,320 - text_numbering - INFO - 为文件 陶溪川 游客8.docx 中的 224 个句子进行了编号
+2026-05-22 18:02:36,321 - text_numbering - INFO - 为文件 陶阳里 非遗人10.docx 中的 1029 个句子进行了编号
+2026-05-22 18:02:36,322 - text_numbering - INFO - 为文件 陶阳里 非遗手艺人 9.docx 中的 307 个句子进行了编号
+2026-05-22 18:02:36,322 - text_numbering - INFO - 为文件 陶阳里 非遗手艺人11.docx 中的 763 个句子进行了编号
+2026-05-22 18:02:36,323 - text_numbering - INFO - 为文件 陶阳里 非遗手艺人12.docx 中的 46 个句子进行了编号
+2026-05-22 18:02:36,324 - text_numbering - INFO - 为文件 陶阳里 管理层3（里弄管家）.docx 中的 1107 个句子进行了编号
+2026-05-22 18:02:36,345 - data_processor - INFO - 成功读取Word文档: D:/c盘/新文本/1/陶溪川 景漂6 广州美术学院_润色版.docx
+2026-05-22 18:02:36,351 - data_processor - INFO - 精准提取: 陶溪川 景漂6 广州美术学院_润色版.docx - 1 个受访者段落
+2026-05-22 18:02:36,356 - data_processor - INFO - 处理文件 陶溪川 景漂6 广州美术学院_润色版.docx: 识别 1 个段落，提取 5 个受访人句子
+2026-05-22 18:02:36,368 - data_processor - INFO - 成功读取Word文档: D:/c盘/新文本/1/陶溪川 游客8.docx
+2026-05-22 18:02:36,368 - data_processor - INFO - 精准提取: 陶溪川 游客8.docx - 0 个受访者段落
+2026-05-22 18:02:36,368 - data_processor - INFO - 处理文件 陶溪川 游客8.docx: 识别 0 个段落，提取 0 个受访人句子
+2026-05-22 18:02:36,406 - data_processor - INFO - 成功读取Word文档: D:/c盘/新文本/1/陶阳里 非遗人10.docx
+2026-05-22 18:02:36,410 - data_processor - INFO - 精准提取: 陶阳里 非遗人10.docx - 0 个受访者段落
+2026-05-22 18:02:36,410 - data_processor - INFO - 处理文件 陶阳里 非遗人10.docx: 识别 0 个段落，提取 0 个受访人句子
+2026-05-22 18:02:36,420 - data_processor - INFO - 成功读取Word文档: D:/c盘/新文本/1/陶阳里 非遗手艺人 9.docx
+2026-05-22 18:02:36,422 - data_processor - INFO - 精准提取: 陶阳里 非遗手艺人 9.docx - 1 个受访者段落
+2026-05-22 18:02:36,424 - data_processor - INFO - 处理文件 陶阳里 非遗手艺人 9.docx: 识别 1 个段落，提取 10 个受访人句子
+2026-05-22 18:02:36,452 - data_processor - INFO - 成功读取Word文档: D:/c盘/新文本/1/陶阳里 非遗手艺人11.docx
+2026-05-22 18:02:36,455 - data_processor - INFO - 精准提取: 陶阳里 非遗手艺人11.docx - 93 个受访者段落
+2026-05-22 18:02:36,491 - data_processor - INFO - 处理文件 陶阳里 非遗手艺人11.docx: 识别 93 个段落，提取 353 个受访人句子
+2026-05-22 18:02:36,497 - data_processor - INFO - 成功读取Word文档: D:/c盘/新文本/1/陶阳里 非遗手艺人12.docx
+2026-05-22 18:02:36,497 - data_processor - INFO - 精准提取: 陶阳里 非遗手艺人12.docx - 17 个受访者段落
+2026-05-22 18:02:36,500 - data_processor - INFO - 处理文件 陶阳里 非遗手艺人12.docx: 识别 17 个段落，提取 22 个受访人句子
+2026-05-22 18:02:36,546 - data_processor - INFO - 成功读取Word文档: D:/c盘/新文本/1/陶阳里 管理层3（里弄管家）.docx
+2026-05-22 18:02:36,562 - data_processor - INFO - 精准提取: 陶阳里 管理层3（里弄管家）.docx - 53 个受访者段落
+2026-05-22 18:02:36,595 - data_processor - INFO - 处理文件 陶阳里 管理层3（里弄管家）.docx: 识别 53 个段落，提取 215 个受访人句子
+2026-05-22 18:02:40,714 - enhanced_coding_generator - INFO - 生成 63 个一阶编码
+2026-05-22 18:02:40,715 - enhanced_coding_generator - INFO - 开始二阶编码分类，共 63 个一阶编码
+2026-05-22 18:02:41,617 - enhanced_coding_generator - INFO - RAG二阶编码完成: 共 1 个类别
+2026-05-22 18:02:41,617 - enhanced_coding_generator - INFO - 生成 1 个二阶编码
+2026-05-22 18:02:41,618 - enhanced_coding_generator - INFO - 开始三阶编码抽象，共 1 个二阶编码
+2026-05-22 18:02:41,618 - enhanced_coding_generator - INFO - RAG三阶编码完成: 共 1 个类别
+2026-05-22 18:02:41,618 - enhanced_coding_generator - INFO - 生成 1 个三阶编码
+2026-05-22 18:02:41,618 - model_manager - INFO - 开始释放模型资源...
+2026-05-22 18:02:41,618 - model_manager - INFO - 释放抽象重排序模型...
+2026-05-22 18:02:41,618 - model_manager - INFO - 抽象重排序模型已释放
+2026-05-22 18:02:41,618 - model_manager - INFO - 释放抽象重排序tokenizer...
+2026-05-22 18:02:41,620 - model_manager - INFO - 抽象重排序tokenizer已释放
+2026-05-22 18:02:41,620 - model_manager - INFO - 清理PyTorch GPU缓存...
+2026-05-22 18:02:41,629 - model_manager - INFO - PyTorch GPU缓存已清理
+2026-05-22 18:02:41,630 - model_manager - INFO - 模型资源释放完成
+2026-05-22 18:02:41,630 - grounded_theory_coder - INFO - 开始构建编码结构: 一阶63, 二阶1, 三阶1
+2026-05-22 18:02:41,636 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 总觉得什么年份
+2026-05-22 18:02:41,640 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 正因为景德镇有这么多特点
+2026-05-22 18:02:41,643 - grounded_theory_coder - INFO - 自动编号完成: 共1个三阶编码
+2026-05-22 18:02:41,643 - grounded_theory_coder - INFO - 构建了扎根理论编码结构: 1个三阶编码
+2026-05-22 18:02:41,756 - code_validator_tree - INFO - 所有编码都匹配，无需删除
+2026-05-22 18:02:41,941 - main_window - INFO - 已保存自动编码内容到缓存: 陶溪川 景漂6 广州美术学院_润色版.docx
+2026-05-22 18:02:41,942 - main_window - INFO - 已保存自动编码内容到缓存: 陶溪川 游客8.docx
+2026-05-22 18:02:41,942 - main_window - INFO - 已保存自动编码内容到缓存: 陶阳里 非遗人10.docx
+2026-05-22 18:02:41,942 - main_window - INFO - 已保存自动编码内容到缓存: 陶阳里 非遗手艺人 9.docx
+2026-05-22 18:02:41,943 - main_window - INFO - 已保存自动编码内容到缓存: 陶阳里 非遗手艺人11.docx
+2026-05-22 18:02:41,945 - main_window - INFO - 已保存自动编码内容到缓存: 陶阳里 非遗手艺人12.docx
+2026-05-22 18:02:41,946 - main_window - INFO - 已保存自动编码内容到缓存: 陶阳里 管理层3（里弄管家）.docx
+2026-05-22 18:02:47,088 - main_window - INFO - 导航请求: Content='如果是走传统的话可能比较卷，因为是太多了...', Number='499'
+2026-05-22 18:02:47,093 - main_window - INFO - 搜索内容: 如果是走传统的话可能比较卷，因为是太多了...
+2026-05-22 18:02:47,094 - main_window - INFO - 成功高亮编码内容
+2026-05-22 18:02:51,873 - main_window - INFO - 导航请求: Content='所以最近这几年，最开始很多老艺人，像画的...', Number='2937'
+2026-05-22 18:02:51,943 - main_window - INFO - 搜索内容: 所以最近这几年，最开始很多老艺人，像画的、做坯的、立坯的，他们那时候也不理解什么叫非遗...
+2026-05-22 18:02:51,944 - main_window - INFO - 成功高亮编码内容
+2026-05-22 18:02:51,991 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 2937
+2026-05-22 18:02:51,991 - main_window - INFO - 最终确定的一阶编码句子编号: 2937
+2026-05-22 18:02:51,991 - main_window - INFO - 关联编号完整列表: ['2937']
+2026-05-22 18:02:51,992 - main_window - INFO - sentence_details数量: 1
+2026-05-22 18:02:51,992 - main_window - INFO - 弹出对话框句子1 - 编号: 2937, 内容前30字: 所以最近这几年，最开始很多老艺人，像画的、做坯的、立坯的，他...
+2026-05-22 18:03:01,141 - main_window - INFO - 导航请求: Content='因为我们手绘本来就是有风险的...', Number='2182'
+2026-05-22 18:03:01,366 - main_window - INFO - 搜索内容: 因为我们手绘本来就是有风险的...
+2026-05-22 18:03:01,372 - main_window - INFO - 成功高亮编码内容
+2026-05-22 18:03:01,372 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 2182
+2026-05-22 18:03:01,372 - main_window - INFO - 最终确定的一阶编码句子编号: 2182
+2026-05-22 18:03:01,372 - main_window - INFO - 关联编号完整列表: ['2182']
+2026-05-22 18:03:01,372 - main_window - INFO - sentence_details数量: 1
+2026-05-22 18:03:01,372 - main_window - INFO - 弹出对话框句子1 - 编号: 2182, 内容前30字: 因为我们手绘本来就是有风险的...
+2026-05-22 18:03:06,112 - main_window - INFO - 导航请求: Content='如果说让他们做精致、经典的，做这种装饰陶...', Number='2928'
+2026-05-22 18:03:06,131 - main_window - INFO - 搜索内容: 如果说让他们做精致、经典的，做这种装饰陶瓷，他们做不了...
+2026-05-22 18:03:06,131 - main_window - INFO - 成功高亮编码内容
+2026-05-22 18:03:06,163 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 2928
+2026-05-22 18:03:06,163 - main_window - INFO - 最终确定的一阶编码句子编号: 2928
+2026-05-22 18:03:06,163 - main_window - INFO - 关联编号完整列表: ['2928']
+2026-05-22 18:03:06,163 - main_window - INFO - sentence_details数量: 1
+2026-05-22 18:03:06,163 - main_window - INFO - 弹出对话框句子1 - 编号: 2928, 内容前30字: 如果说让他们做精致、经典的，做这种装饰陶瓷，他们做不了...
+2026-05-22 18:03:17,013 - main_window - INFO - 导航请求: Content='可以说这是陶阳里给我们最大的一个平台，也...', Number='2317'
+2026-05-22 18:03:17,034 - main_window - INFO - 搜索内容: 可以说这是陶阳里给我们最大的一个平台，也是给整个景德镇一个很大的平台...
+2026-05-22 18:03:17,038 - main_window - INFO - 成功高亮编码内容
+2026-05-22 18:03:17,081 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 2317
+2026-05-22 18:03:17,081 - main_window - INFO - 最终确定的一阶编码句子编号: 2317
+2026-05-22 18:03:17,081 - main_window - INFO - 关联编号完整列表: ['2317']
+2026-05-22 18:03:17,081 - main_window - INFO - sentence_details数量: 1
+2026-05-22 18:03:17,081 - main_window - INFO - 弹出对话框句子1 - 编号: 2317, 内容前30字: 可以说这是陶阳里给我们最大的一个平台，也是给整个景德镇一个很...
+2026-05-22 18:03:23,097 - main_window - INFO - 导航请求: Content='这个釉里红的效果虽然是一种颜色，但最后呈...', Number='2831'
+2026-05-22 18:03:23,105 - main_window - INFO - 搜索内容: 这个釉里红的效果虽然是一种颜色，但最后呈现出来还是不同的...
+2026-05-22 18:03:23,105 - main_window - INFO - 成功高亮编码内容
+2026-05-22 18:03:23,162 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 2831
+2026-05-22 18:03:23,162 - main_window - INFO - 最终确定的一阶编码句子编号: 2831
+2026-05-22 18:03:23,162 - main_window - INFO - 关联编号完整列表: ['2831']
+2026-05-22 18:03:23,162 - main_window - INFO - sentence_details数量: 1
+2026-05-22 18:03:23,162 - main_window - INFO - 弹出对话框句子1 - 编号: 2831, 内容前30字: 这个釉里红的效果虽然是一种颜色，但最后呈现出来还是不同的...
+2026-05-22 18:03:27,187 - main_window - INFO - 导航请求: Content='这个釉里红的效果虽然是一种颜色，但最后呈...', Number='2831'
+2026-05-22 18:03:27,196 - main_window - INFO - 搜索内容: 这个釉里红的效果虽然是一种颜色，但最后呈现出来还是不同的...
+2026-05-22 18:03:27,197 - main_window - INFO - 成功高亮编码内容
+2026-05-22 18:03:27,459 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 2831
+2026-05-22 18:03:27,459 - main_window - INFO - 最终确定的一阶编码句子编号: 2831
+2026-05-22 18:03:27,459 - main_window - INFO - 关联编号完整列表: ['2831']
+2026-05-22 18:03:27,459 - main_window - INFO - sentence_details数量: 1
+2026-05-22 18:03:27,460 - main_window - INFO - 弹出对话框句子1 - 编号: 2831, 内容前30字: 这个釉里红的效果虽然是一种颜色，但最后呈现出来还是不同的...
+2026-05-22 18:09:42,769 - __main__ - INFO - 应用程序正常退出
+2026-05-23 13:56:32,100 - root - INFO - 基础路径已设置: D:\zthree2 (打包模式: False)
+2026-05-23 13:56:32,823 - root - INFO - 目录已确保存在: D:\zthree2\projects
+2026-05-23 13:56:32,823 - root - INFO - 目录已确保存在: D:\zthree2\data
+2026-05-23 13:56:32,823 - root - INFO - 目录已确保存在: D:\zthree2\local_models
+2026-05-23 13:56:32,823 - root - INFO - 目录已确保存在: D:\zthree2\trained_models
+2026-05-23 13:56:32,823 - root - INFO - 目录已确保存在: D:\zthree2\standard_answers
+2026-05-23 13:56:32,823 - root - INFO - 目录已确保存在: D:\zthree2\output
+2026-05-23 13:56:32,825 - root - INFO - 目录已确保存在: D:\zthree2\cache
+2026-05-23 13:56:32,825 - root - INFO - 目录已确保存在: D:\zthree2\logs
+2026-05-23 13:56:32,825 - root - INFO - 目录已确保存在: D:\zthree2\standard_answers\backups
+2026-05-23 13:56:32,825 - root - INFO - 目录已确保存在: D:\zthree2\standard_answers\modifications
+2026-05-23 13:56:32,825 - root - INFO - 目录已确保存在: D:\zthree2\projects\手动编码保存编码
+2026-05-23 13:56:32,825 - root - INFO - 目录已确保存在: D:\zthree2\projects\手动编码编码树保存
+2026-05-23 13:56:32,825 - __main__ - WARNING - BERT模型不存在，将使用降级模式
+2026-05-23 13:57:08,056 - numexpr.utils - INFO - Note: NumExpr detected 32 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
+2026-05-23 13:57:08,056 - numexpr.utils - INFO - NumExpr defaulting to 16 threads.
+2026-05-23 13:57:10,284 - root - INFO - pyarrow 15.0.0 导入成功
+2026-05-23 13:57:10,809 - semantic_matcher - INFO - psutil 库加载成功
+2026-05-23 13:57:10,942 - semantic_matcher - INFO - sentence-transformers 库加载成功
+2026-05-23 13:57:12,181 - training_manager - INFO - scikit-learn 版本: 1.7.1
+2026-05-23 13:57:12,449 - model_manager - INFO - 使用设备: cuda
+2026-05-23 13:57:12,453 - data_processor - INFO - 已启用精准受访者提取（SpeakerRoleExtractor + QA分类器）
+2026-05-23 13:57:12,464 - coding_library_manager - INFO - 编码库加载成功，包含 2000 个三阶编码和 2975 个二阶编码
+2026-05-23 13:57:12,464 - enhanced_coding_generator - INFO - 编码库管理器初始化成功
+2026-05-23 13:57:12,468 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2026-05-23 13:57:12,468 - jieba - DEBUG - Loading model from cache C:\Users\Lenovo\AppData\Local\Temp\jieba.cache
+2026-05-23 13:57:12,788 - jieba - DEBUG - Loading model cost 0.320 seconds.
+2026-05-23 13:57:12,788 - jieba - DEBUG - Prefix dict has been built successfully.
+2026-05-23 13:57:12,846 - high_quality_sample_learner - INFO - 加载了 942 个高质量样本 (encoding=gb18030)
+2026-05-23 13:57:12,846 - enhanced_coding_generator - INFO - 高质量样本学习器初始化成功
+2026-05-23 13:57:12,846 - semantic_matcher - INFO - 正在加载sentence-transformer模型: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 13:57:12,848 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cuda:0
+2026-05-23 13:57:12,848 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 13:57:13,383 - semantic_matcher - INFO - 模型加载成功，使用设备: cuda
+2026-05-23 13:57:13,383 - enhanced_coding_generator - INFO - 语义匹配器初始化成功
+2026-05-23 13:57:13,664 - enhanced_coding_generator - INFO - RAG自动编码已启用，运行策略: gpu
+2026-05-23 13:57:13,664 - main_window - INFO - 使用原有的 EnhancedCodingGenerator
+2026-05-23 13:57:13,690 - standard_answer_manager - INFO - 标准答案已加载: v57_20260409_085422.json
+2026-05-23 13:57:13,690 - standard_answer_manager - INFO - 成功加载最新的标准答案: v57_20260409_085422.json
+2026-05-23 13:57:13,998 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-23 13:57:13,998 - model_manager - ERROR - Reranker 模型不存在: D:\zthree2\local_models\custom_bert_4layer
+2026-05-23 13:57:13,998 - model_manager - ERROR - 请先运行: python model_builder.py
+2026-05-23 13:57:13,999 - main_window - INFO - 开始下载模型...
+2026-05-23 13:57:14,920 - __main__ - INFO - 扎根理论编码分析系统启动成功，主窗口已显示
+2026-05-23 13:57:14,923 - model_builder - INFO - ============================================================
+2026-05-23 13:57:14,923 - model_builder - INFO - 开始构建部署模型
+2026-05-23 13:57:14,923 - model_builder - INFO -   Reranker:  custom_bert_4layer (4层 BERT)
+2026-05-23 13:57:14,923 - model_builder - INFO -   Sentence:  bge-small-zh-v1.5
+2026-05-23 13:57:14,923 - model_builder - INFO -   目标体积:  ~215MB
+2026-05-23 13:57:14,923 - model_builder - INFO - ============================================================
+2026-05-23 13:57:14,923 - model_builder - INFO - 
+[1/3] 下载基座模型 (bert-base-chinese)
+2026-05-23 13:57:14,923 - model_builder - INFO - 基座模型已存在: D:\zthree2\local_models\bert-base-chinese
+2026-05-23 13:57:14,923 - model_builder - INFO - 
+[2/3] 构建自定义 BERT
+2026-05-23 13:57:14,924 - model_builder - INFO - 构建 4 层 BERT → custom_bert_4layer
+2026-05-23 13:57:14,924 - model_builder - INFO -   加载源模型...
+2026-05-23 13:57:15,522 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-23 13:57:15,522 - model_manager - ERROR - Reranker 模型不存在: D:\zthree2\local_models\custom_bert_4layer
+2026-05-23 13:57:15,522 - model_manager - ERROR - 请先运行: python model_builder.py
+2026-05-23 13:57:15,523 - main_window - INFO - 开始下载模型...
+2026-05-23 13:57:15,523 - model_builder - INFO - ============================================================
+2026-05-23 13:57:15,523 - model_builder - INFO - 开始构建部署模型
+2026-05-23 13:57:15,523 - model_builder - INFO -   Reranker:  custom_bert_4layer (4层 BERT)
+2026-05-23 13:57:15,523 - model_builder - INFO -   Sentence:  bge-small-zh-v1.5
+2026-05-23 13:57:15,523 - model_builder - INFO -   目标体积:  ~215MB
+2026-05-23 13:57:15,524 - model_builder - INFO - ============================================================
+2026-05-23 13:57:15,524 - model_builder - INFO - 
+[1/3] 下载基座模型 (bert-base-chinese)
+2026-05-23 13:57:15,524 - model_builder - INFO - 基座模型已存在: D:\zthree2\local_models\bert-base-chinese
+2026-05-23 13:57:15,524 - model_builder - INFO - 
+[2/3] 构建自定义 BERT
+2026-05-23 13:57:15,524 - model_builder - INFO - 构建 4 层 BERT → custom_bert_4layer
+2026-05-23 13:57:15,524 - model_builder - INFO -   加载源模型...
+2026-05-23 13:57:15,672 - model_builder - INFO -   ✓ embedding 已 warm-start
+2026-05-23 13:57:15,781 - model_builder - INFO -   ✓ 前 4 层已 warm-start
+2026-05-23 13:57:15,781 - model_builder - INFO -   ✓ pooler 已复制
+2026-05-23 13:57:15,946 - model_builder - INFO -   ✓ embedding 已 warm-start
+2026-05-23 13:57:15,970 - model_builder - INFO -   ✓ 前 4 层已 warm-start
+2026-05-23 13:57:15,970 - model_builder - INFO -   ✓ pooler 已复制
+2026-05-23 13:57:17,137 - model_builder - INFO -   ✓ 已保存: D:\zthree2\local_models\custom_bert_4layer (174MB)
+2026-05-23 13:57:17,146 - model_builder - INFO -   ✓ 已保存: D:\zthree2\local_models\custom_bert_4layer (174MB)
+2026-05-23 13:57:17,154 - model_builder - INFO - 
+[3/3] 下载 Sentence 模型
+2026-05-23 13:57:17,154 - model_builder - INFO - Sentence 模型已存在: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 13:57:17,155 - model_builder - INFO -   custom_bert_4layer: 174MB
+2026-05-23 13:57:17,158 - model_builder - INFO -   bge-small-zh-v1.5: 275MB
+2026-05-23 13:57:17,158 - model_builder - INFO - ============================================================
+2026-05-23 13:57:17,158 - model_builder - INFO - 构建完成！总大小: 450MB
+2026-05-23 13:57:17,158 - model_builder - INFO - 现在可以正常训练和使用了。
+2026-05-23 13:57:17,158 - model_builder - INFO - ============================================================
+2026-05-23 13:57:17,158 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-23 13:57:17,169 - model_builder - INFO - 
+[3/3] 下载 Sentence 模型
+2026-05-23 13:57:17,171 - model_builder - INFO - Sentence 模型已存在: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 13:57:17,174 - model_builder - INFO -   custom_bert_4layer: 174MB
+2026-05-23 13:57:17,185 - model_builder - INFO -   bge-small-zh-v1.5: 275MB
+2026-05-23 13:57:17,188 - model_builder - INFO - ============================================================
+2026-05-23 13:57:17,188 - model_builder - INFO - 构建完成！总大小: 450MB
+2026-05-23 13:57:17,188 - model_builder - INFO - 现在可以正常训练和使用了。
+2026-05-23 13:57:17,188 - model_builder - INFO - ============================================================
+2026-05-23 13:57:17,188 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-23 13:57:17,340 - model_manager - INFO - Reranker 加载成功: custom_bert_4layer (174MB)
+2026-05-23 13:57:17,340 - model_manager - INFO - Reranker 加载成功: custom_bert_4layer (174MB)
+2026-05-23 13:57:17,342 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cuda:0
+2026-05-23 13:57:17,342 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 13:57:17,342 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cuda:0
+2026-05-23 13:57:17,342 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 13:57:17,439 - model_manager - INFO - Sentence 加载成功 (275MB) from D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 13:57:17,440 - model_manager - INFO - 模型初始化完成
+2026-05-23 13:57:17,803 - model_manager - INFO - Sentence 加载成功 (275MB) from D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 13:57:17,804 - model_manager - INFO - 模型初始化完成
+2026-05-23 13:57:18,228 - model_manager - INFO - 抽象重排序模型已加载: D:\zthree2\trained_models\abstract_reranker_latest
+2026-05-23 13:57:18,228 - main_window - INFO - 抽象重排序模型预加载成功
+2026-05-23 13:57:18,299 - model_manager - INFO - 抽象重排序模型已加载: D:\zthree2\trained_models\abstract_reranker_latest
+2026-05-23 13:57:18,300 - main_window - INFO - 抽象重排序模型预加载成功
+2026-05-23 13:57:34,481 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈 4（董国祥）.docx
+2026-05-23 13:57:34,481 - main_window - INFO - 成功导入文件: 康圣访谈 4（董国祥）.docx
+2026-05-23 13:57:34,502 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈 9（肖雄峰）.docx
+2026-05-23 13:57:34,502 - main_window - INFO - 成功导入文件: 康圣访谈 9（肖雄峰）.docx
+2026-05-23 13:57:34,527 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈 13（张桂）.docx
+2026-05-23 13:57:34,527 - main_window - INFO - 成功导入文件: 康圣访谈 13（张桂）.docx
+2026-05-23 13:57:34,537 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈1（蒋风情）.docx
+2026-05-23 13:57:34,537 - main_window - INFO - 成功导入文件: 康圣访谈1（蒋风情）.docx
+2026-05-23 13:57:34,543 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈2（张思婷）.docx
+2026-05-23 13:57:34,543 - main_window - INFO - 成功导入文件: 康圣访谈2（张思婷）.docx
+2026-05-23 13:57:34,568 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈3（谢文英）.docx
+2026-05-23 13:57:34,568 - main_window - INFO - 成功导入文件: 康圣访谈3（谢文英）.docx
+2026-05-23 13:57:34,589 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈5翟圣.docx
+2026-05-23 13:57:34,589 - main_window - INFO - 成功导入文件: 康圣访谈5翟圣.docx
+2026-05-23 13:57:34,607 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈6黄军涛.docx
+2026-05-23 13:57:34,607 - main_window - INFO - 成功导入文件: 康圣访谈6黄军涛.docx
+2026-05-23 13:57:34,623 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈7吴天.docx
+2026-05-23 13:57:34,625 - main_window - INFO - 成功导入文件: 康圣访谈7吴天.docx
+2026-05-23 13:57:34,639 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈8任作非.docx
+2026-05-23 13:57:34,640 - main_window - INFO - 成功导入文件: 康圣访谈8任作非.docx
+2026-05-23 13:57:34,658 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈10（黄志利）.docx
+2026-05-23 13:57:34,658 - main_window - INFO - 成功导入文件: 康圣访谈10（黄志利）.docx
+2026-05-23 13:57:34,685 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈11秦园.docx
+2026-05-23 13:57:34,685 - main_window - INFO - 成功导入文件: 康圣访谈11秦园.docx
+2026-05-23 13:57:34,699 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈12余桂俊.docx
+2026-05-23 13:57:34,700 - main_window - INFO - 成功导入文件: 康圣访谈12余桂俊.docx
+2026-05-23 13:57:34,718 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈14（李续图）.docx
+2026-05-23 13:57:34,718 - main_window - INFO - 成功导入文件: 康圣访谈14（李续图）.docx
+2026-05-23 13:57:34,731 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈15（陈进科）.docx
+2026-05-23 13:57:34,732 - main_window - INFO - 成功导入文件: 康圣访谈15（陈进科）.docx
+2026-05-23 13:57:34,741 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈16.（李妮）.docx
+2026-05-23 13:57:34,741 - main_window - INFO - 成功导入文件: 康圣访谈16.（李妮）.docx
+2026-05-23 13:57:34,752 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈17.（贾梦思）.docx
+2026-05-23 13:57:34,752 - main_window - INFO - 成功导入文件: 康圣访谈17.（贾梦思）.docx
+2026-05-23 13:57:34,767 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈18.（杨伟红）.docx
+2026-05-23 13:57:34,767 - main_window - INFO - 成功导入文件: 康圣访谈18.（杨伟红）.docx
+2026-05-23 13:57:34,781 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈19.（吴妍）.docx
+2026-05-23 13:57:34,781 - main_window - INFO - 成功导入文件: 康圣访谈19.（吴妍）.docx
+2026-05-23 13:57:34,793 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈20.（王珮鑫）.docx
+2026-05-23 13:57:34,793 - main_window - INFO - 成功导入文件: 康圣访谈20.（王珮鑫）.docx
+2026-05-23 13:57:34,810 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈21.docx
+2026-05-23 13:57:34,810 - main_window - INFO - 成功导入文件: 康圣访谈21.docx
+2026-05-23 13:57:34,822 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈22.docx
+2026-05-23 13:57:34,822 - main_window - INFO - 成功导入文件: 康圣访谈22.docx
+2026-05-23 13:57:34,835 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈23.docx
+2026-05-23 13:57:34,835 - main_window - INFO - 成功导入文件: 康圣访谈23.docx
+2026-05-23 13:57:34,847 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈24.docx
+2026-05-23 13:57:34,847 - main_window - INFO - 成功导入文件: 康圣访谈24.docx
+2026-05-23 13:57:34,858 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈25.docx
+2026-05-23 13:57:34,858 - main_window - INFO - 成功导入文件: 康圣访谈25.docx
+2026-05-23 13:57:34,867 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈26.docx
+2026-05-23 13:57:34,867 - main_window - INFO - 成功导入文件: 康圣访谈26.docx
+2026-05-23 13:57:34,891 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈27.docx
+2026-05-23 13:57:34,891 - main_window - INFO - 成功导入文件: 康圣访谈27.docx
+2026-05-23 13:57:34,907 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈28.docx
+2026-05-23 13:57:34,907 - main_window - INFO - 成功导入文件: 康圣访谈28.docx
+2026-05-23 13:57:34,922 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈29.docx
+2026-05-23 13:57:34,922 - main_window - INFO - 成功导入文件: 康圣访谈29.docx
+2026-05-23 13:57:34,939 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈30.docx
+2026-05-23 13:57:34,939 - main_window - INFO - 成功导入文件: 康圣访谈30.docx
+2026-05-23 13:57:34,951 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈31.docx
+2026-05-23 13:57:34,951 - main_window - INFO - 成功导入文件: 康圣访谈31.docx
+2026-05-23 13:57:34,976 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈32.docx
+2026-05-23 13:57:34,976 - main_window - INFO - 成功导入文件: 康圣访谈32.docx
+2026-05-23 13:57:34,992 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈33.docx
+2026-05-23 13:57:34,992 - main_window - INFO - 成功导入文件: 康圣访谈33.docx
+2026-05-23 13:57:35,011 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈34.docx
+2026-05-23 13:57:35,011 - main_window - INFO - 成功导入文件: 康圣访谈34.docx
+2026-05-23 13:57:35,034 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈35.docx
+2026-05-23 13:57:35,034 - main_window - INFO - 成功导入文件: 康圣访谈35.docx
+2026-05-23 13:57:35,063 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈36.docx
+2026-05-23 13:57:35,063 - main_window - INFO - 成功导入文件: 康圣访谈36.docx
+2026-05-23 13:57:35,081 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈37.docx
+2026-05-23 13:57:35,081 - main_window - INFO - 成功导入文件: 康圣访谈37.docx
+2026-05-23 13:57:35,099 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈38.docx
+2026-05-23 13:57:35,099 - main_window - INFO - 成功导入文件: 康圣访谈38.docx
+2026-05-23 13:57:35,131 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈39.docx
+2026-05-23 13:57:35,131 - main_window - INFO - 成功导入文件: 康圣访谈39.docx
+2026-05-23 13:57:35,142 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈40.docx
+2026-05-23 13:57:35,142 - main_window - INFO - 成功导入文件: 康圣访谈40.docx
+2026-05-23 13:57:35,158 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈41.docx
+2026-05-23 13:57:35,158 - main_window - INFO - 成功导入文件: 康圣访谈41.docx
+2026-05-23 13:57:35,188 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈42.docx
+2026-05-23 13:57:35,188 - main_window - INFO - 成功导入文件: 康圣访谈42.docx
+2026-05-23 15:21:40,842 - root - INFO - 基础路径已设置: D:\zthree2 (打包模式: False)
+2026-05-23 15:21:41,341 - root - INFO - 目录已确保存在: D:\zthree2\projects
+2026-05-23 15:21:41,341 - root - INFO - 目录已确保存在: D:\zthree2\data
+2026-05-23 15:21:41,341 - root - INFO - 目录已确保存在: D:\zthree2\local_models
+2026-05-23 15:21:41,342 - root - INFO - 目录已确保存在: D:\zthree2\trained_models
+2026-05-23 15:21:41,342 - root - INFO - 目录已确保存在: D:\zthree2\standard_answers
+2026-05-23 15:21:41,342 - root - INFO - 目录已确保存在: D:\zthree2\output
+2026-05-23 15:21:41,342 - root - INFO - 目录已确保存在: D:\zthree2\cache
+2026-05-23 15:21:41,342 - root - INFO - 目录已确保存在: D:\zthree2\logs
+2026-05-23 15:21:41,343 - root - INFO - 目录已确保存在: D:\zthree2\standard_answers\backups
+2026-05-23 15:21:41,343 - root - INFO - 目录已确保存在: D:\zthree2\standard_answers\modifications
+2026-05-23 15:21:41,343 - root - INFO - 目录已确保存在: D:\zthree2\projects\手动编码保存编码
+2026-05-23 15:21:41,343 - root - INFO - 目录已确保存在: D:\zthree2\projects\手动编码编码树保存
+2026-05-23 15:21:41,343 - __main__ - INFO - 环境初始化成功
+2026-05-23 15:21:46,280 - numexpr.utils - INFO - Note: NumExpr detected 32 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
+2026-05-23 15:21:46,280 - numexpr.utils - INFO - NumExpr defaulting to 16 threads.
+2026-05-23 15:21:47,160 - root - INFO - pyarrow 15.0.0 导入成功
+2026-05-23 15:21:47,441 - semantic_matcher - INFO - psutil 库加载成功
+2026-05-23 15:21:47,545 - semantic_matcher - INFO - sentence-transformers 库加载成功
+2026-05-23 15:21:47,709 - training_manager - INFO - scikit-learn 版本: 1.7.1
+2026-05-23 15:21:47,837 - model_manager - INFO - 使用设备: cuda
+2026-05-23 15:21:47,839 - data_processor - INFO - 已启用精准受访者提取（SpeakerRoleExtractor + QA分类器）
+2026-05-23 15:21:47,850 - coding_library_manager - INFO - 编码库加载成功，包含 2000 个三阶编码和 2975 个二阶编码
+2026-05-23 15:21:47,850 - enhanced_coding_generator - INFO - 编码库管理器初始化成功
+2026-05-23 15:21:47,855 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2026-05-23 15:21:47,855 - jieba - DEBUG - Loading model from cache C:\Users\Lenovo\AppData\Local\Temp\jieba.cache
+2026-05-23 15:21:48,170 - jieba - DEBUG - Loading model cost 0.315 seconds.
+2026-05-23 15:21:48,170 - jieba - DEBUG - Prefix dict has been built successfully.
+2026-05-23 15:21:48,225 - high_quality_sample_learner - INFO - 加载了 942 个高质量样本 (encoding=gb18030)
+2026-05-23 15:21:48,225 - enhanced_coding_generator - INFO - 高质量样本学习器初始化成功
+2026-05-23 15:21:48,225 - semantic_matcher - INFO - 正在加载sentence-transformer模型: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 15:21:48,227 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cuda:0
+2026-05-23 15:21:48,227 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 15:21:48,680 - semantic_matcher - INFO - 模型加载成功，使用设备: cuda
+2026-05-23 15:21:48,680 - enhanced_coding_generator - INFO - 语义匹配器初始化成功
+2026-05-23 15:21:48,929 - enhanced_coding_generator - INFO - RAG自动编码已启用，运行策略: gpu
+2026-05-23 15:21:48,929 - main_window - INFO - 使用原有的 EnhancedCodingGenerator
+2026-05-23 15:21:48,953 - standard_answer_manager - INFO - 标准答案已加载: v57_20260409_085422.json
+2026-05-23 15:21:48,953 - standard_answer_manager - INFO - 成功加载最新的标准答案: v57_20260409_085422.json
+2026-05-23 15:21:49,122 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-23 15:21:49,342 - model_manager - INFO - Reranker 加载成功: custom_bert_4layer (174MB)
+2026-05-23 15:21:49,344 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cuda:0
+2026-05-23 15:21:49,344 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 15:21:49,413 - model_manager - INFO - Sentence 加载成功 (275MB) from D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 15:21:49,413 - model_manager - INFO - 模型初始化完成
+2026-05-23 15:21:49,413 - main_window - INFO - 模型初始化成功
+2026-05-23 15:21:50,069 - __main__ - INFO - 扎根理论编码分析系统启动成功，主窗口已显示
+2026-05-23 15:21:50,670 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-23 15:21:50,766 - model_manager - INFO - 抽象重排序模型已加载: D:\zthree2\trained_models\abstract_reranker_latest
+2026-05-23 15:21:50,766 - main_window - INFO - 抽象重排序模型预加载成功
+2026-05-23 15:21:50,825 - model_manager - INFO - Reranker 加载成功: custom_bert_4layer (174MB)
+2026-05-23 15:21:50,827 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cuda:0
+2026-05-23 15:21:50,827 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 15:21:50,894 - model_manager - INFO - Sentence 加载成功 (275MB) from D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 15:21:50,895 - model_manager - INFO - 模型初始化完成
+2026-05-23 15:21:50,895 - main_window - INFO - 模型初始化成功
+2026-05-23 15:21:50,896 - main_window - INFO - 抽象重排序模型预加载成功
+2026-05-23 15:21:59,431 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈 4（董国祥）.docx
+2026-05-23 15:21:59,434 - main_window - INFO - 成功导入文件: 康圣访谈 4（董国祥）.docx
+2026-05-23 15:21:59,454 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈 9（肖雄峰）.docx
+2026-05-23 15:21:59,454 - main_window - INFO - 成功导入文件: 康圣访谈 9（肖雄峰）.docx
+2026-05-23 15:21:59,480 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈 13（张桂）.docx
+2026-05-23 15:21:59,480 - main_window - INFO - 成功导入文件: 康圣访谈 13（张桂）.docx
+2026-05-23 15:21:59,487 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈1（蒋风情）.docx
+2026-05-23 15:21:59,488 - main_window - INFO - 成功导入文件: 康圣访谈1（蒋风情）.docx
+2026-05-23 15:21:59,495 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈2（张思婷）.docx
+2026-05-23 15:21:59,495 - main_window - INFO - 成功导入文件: 康圣访谈2（张思婷）.docx
+2026-05-23 15:21:59,518 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈3（谢文英）.docx
+2026-05-23 15:21:59,519 - main_window - INFO - 成功导入文件: 康圣访谈3（谢文英）.docx
+2026-05-23 15:21:59,540 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈5翟圣.docx
+2026-05-23 15:21:59,540 - main_window - INFO - 成功导入文件: 康圣访谈5翟圣.docx
+2026-05-23 15:21:59,559 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈6黄军涛.docx
+2026-05-23 15:21:59,559 - main_window - INFO - 成功导入文件: 康圣访谈6黄军涛.docx
+2026-05-23 15:21:59,575 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈7吴天.docx
+2026-05-23 15:21:59,575 - main_window - INFO - 成功导入文件: 康圣访谈7吴天.docx
+2026-05-23 15:21:59,590 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈8任作非.docx
+2026-05-23 15:21:59,590 - main_window - INFO - 成功导入文件: 康圣访谈8任作非.docx
+2026-05-23 15:21:59,608 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈10（黄志利）.docx
+2026-05-23 15:21:59,608 - main_window - INFO - 成功导入文件: 康圣访谈10（黄志利）.docx
+2026-05-23 15:21:59,634 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈11秦园.docx
+2026-05-23 15:21:59,634 - main_window - INFO - 成功导入文件: 康圣访谈11秦园.docx
+2026-05-23 15:21:59,649 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈12余桂俊.docx
+2026-05-23 15:21:59,649 - main_window - INFO - 成功导入文件: 康圣访谈12余桂俊.docx
+2026-05-23 15:21:59,666 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈14（李续图）.docx
+2026-05-23 15:21:59,666 - main_window - INFO - 成功导入文件: 康圣访谈14（李续图）.docx
+2026-05-23 15:21:59,680 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈15（陈进科）.docx
+2026-05-23 15:21:59,680 - main_window - INFO - 成功导入文件: 康圣访谈15（陈进科）.docx
+2026-05-23 15:21:59,690 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈16.（李妮）.docx
+2026-05-23 15:21:59,690 - main_window - INFO - 成功导入文件: 康圣访谈16.（李妮）.docx
+2026-05-23 15:21:59,705 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈17.（贾梦思）.docx
+2026-05-23 15:21:59,705 - main_window - INFO - 成功导入文件: 康圣访谈17.（贾梦思）.docx
+2026-05-23 15:21:59,719 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈18.（杨伟红）.docx
+2026-05-23 15:21:59,719 - main_window - INFO - 成功导入文件: 康圣访谈18.（杨伟红）.docx
+2026-05-23 15:21:59,737 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈19.（吴妍）.docx
+2026-05-23 15:21:59,738 - main_window - INFO - 成功导入文件: 康圣访谈19.（吴妍）.docx
+2026-05-23 15:21:59,750 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈20.（王珮鑫）.docx
+2026-05-23 15:21:59,750 - main_window - INFO - 成功导入文件: 康圣访谈20.（王珮鑫）.docx
+2026-05-23 15:21:59,765 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈21.docx
+2026-05-23 15:21:59,765 - main_window - INFO - 成功导入文件: 康圣访谈21.docx
+2026-05-23 15:21:59,778 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈22.docx
+2026-05-23 15:21:59,778 - main_window - INFO - 成功导入文件: 康圣访谈22.docx
+2026-05-23 15:21:59,789 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈23.docx
+2026-05-23 15:21:59,789 - main_window - INFO - 成功导入文件: 康圣访谈23.docx
+2026-05-23 15:21:59,799 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈24.docx
+2026-05-23 15:21:59,799 - main_window - INFO - 成功导入文件: 康圣访谈24.docx
+2026-05-23 15:21:59,810 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈25.docx
+2026-05-23 15:21:59,810 - main_window - INFO - 成功导入文件: 康圣访谈25.docx
+2026-05-23 15:21:59,821 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈26.docx
+2026-05-23 15:21:59,821 - main_window - INFO - 成功导入文件: 康圣访谈26.docx
+2026-05-23 15:21:59,844 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈27.docx
+2026-05-23 15:21:59,844 - main_window - INFO - 成功导入文件: 康圣访谈27.docx
+2026-05-23 15:21:59,859 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈28.docx
+2026-05-23 15:21:59,859 - main_window - INFO - 成功导入文件: 康圣访谈28.docx
+2026-05-23 15:21:59,873 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈29.docx
+2026-05-23 15:21:59,873 - main_window - INFO - 成功导入文件: 康圣访谈29.docx
+2026-05-23 15:21:59,891 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈30.docx
+2026-05-23 15:21:59,891 - main_window - INFO - 成功导入文件: 康圣访谈30.docx
+2026-05-23 15:21:59,906 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈31.docx
+2026-05-23 15:21:59,906 - main_window - INFO - 成功导入文件: 康圣访谈31.docx
+2026-05-23 15:21:59,930 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈32.docx
+2026-05-23 15:21:59,930 - main_window - INFO - 成功导入文件: 康圣访谈32.docx
+2026-05-23 15:21:59,949 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈33.docx
+2026-05-23 15:21:59,949 - main_window - INFO - 成功导入文件: 康圣访谈33.docx
+2026-05-23 15:21:59,971 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈34.docx
+2026-05-23 15:21:59,971 - main_window - INFO - 成功导入文件: 康圣访谈34.docx
+2026-05-23 15:21:59,987 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈35.docx
+2026-05-23 15:21:59,987 - main_window - INFO - 成功导入文件: 康圣访谈35.docx
+2026-05-23 15:22:00,017 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈36.docx
+2026-05-23 15:22:00,017 - main_window - INFO - 成功导入文件: 康圣访谈36.docx
+2026-05-23 15:22:00,039 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈37.docx
+2026-05-23 15:22:00,040 - main_window - INFO - 成功导入文件: 康圣访谈37.docx
+2026-05-23 15:22:00,057 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈38.docx
+2026-05-23 15:22:00,057 - main_window - INFO - 成功导入文件: 康圣访谈38.docx
+2026-05-23 15:22:00,088 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈39.docx
+2026-05-23 15:22:00,089 - main_window - INFO - 成功导入文件: 康圣访谈39.docx
+2026-05-23 15:22:00,103 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈40.docx
+2026-05-23 15:22:00,103 - main_window - INFO - 成功导入文件: 康圣访谈40.docx
+2026-05-23 15:22:00,116 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈41.docx
+2026-05-23 15:22:00,116 - main_window - INFO - 成功导入文件: 康圣访谈41.docx
+2026-05-23 15:22:00,147 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈42.docx
+2026-05-23 15:22:00,147 - main_window - INFO - 成功导入文件: 康圣访谈42.docx
+2026-05-23 15:22:02,478 - text_numbering - INFO - 为文件 康圣访谈 4（董国祥）.docx 中的 156 个句子进行了编号
+2026-05-23 15:22:02,478 - text_numbering - INFO - 为文件 康圣访谈 9（肖雄峰）.docx 中的 143 个句子进行了编号
+2026-05-23 15:22:02,478 - text_numbering - INFO - 为文件 康圣访谈 13（张桂）.docx 中的 252 个句子进行了编号
+2026-05-23 15:22:02,478 - text_numbering - INFO - 为文件 康圣访谈1（蒋风情）.docx 中的 121 个句子进行了编号
+2026-05-23 15:22:02,478 - text_numbering - INFO - 为文件 康圣访谈2（张思婷）.docx 中的 123 个句子进行了编号
+2026-05-23 15:22:02,480 - text_numbering - INFO - 为文件 康圣访谈3（谢文英）.docx 中的 174 个句子进行了编号
+2026-05-23 15:22:02,480 - text_numbering - INFO - 为文件 康圣访谈5翟圣.docx 中的 163 个句子进行了编号
+2026-05-23 15:22:02,480 - text_numbering - INFO - 为文件 康圣访谈6黄军涛.docx 中的 229 个句子进行了编号
+2026-05-23 15:22:02,480 - text_numbering - INFO - 为文件 康圣访谈7吴天.docx 中的 149 个句子进行了编号
+2026-05-23 15:22:02,481 - text_numbering - INFO - 为文件 康圣访谈8任作非.docx 中的 120 个句子进行了编号
+2026-05-23 15:22:02,481 - text_numbering - INFO - 为文件 康圣访谈10（黄志利）.docx 中的 150 个句子进行了编号
+2026-05-23 15:22:02,481 - text_numbering - INFO - 为文件 康圣访谈11秦园.docx 中的 177 个句子进行了编号
+2026-05-23 15:22:02,481 - text_numbering - INFO - 为文件 康圣访谈12余桂俊.docx 中的 124 个句子进行了编号
+2026-05-23 15:22:02,481 - text_numbering - INFO - 为文件 康圣访谈14（李续图）.docx 中的 218 个句子进行了编号
+2026-05-23 15:22:02,481 - text_numbering - INFO - 为文件 康圣访谈15（陈进科）.docx 中的 132 个句子进行了编号
+2026-05-23 15:22:02,481 - text_numbering - INFO - 为文件 康圣访谈16.（李妮）.docx 中的 98 个句子进行了编号
+2026-05-23 15:22:02,482 - text_numbering - INFO - 为文件 康圣访谈17.（贾梦思）.docx 中的 80 个句子进行了编号
+2026-05-23 15:22:02,482 - text_numbering - INFO - 为文件 康圣访谈18.（杨伟红）.docx 中的 152 个句子进行了编号
+2026-05-23 15:22:02,482 - text_numbering - INFO - 为文件 康圣访谈19.（吴妍）.docx 中的 149 个句子进行了编号
+2026-05-23 15:22:02,482 - text_numbering - INFO - 为文件 康圣访谈20.（王珮鑫）.docx 中的 118 个句子进行了编号
+2026-05-23 15:22:02,482 - text_numbering - INFO - 为文件 康圣访谈21.docx 中的 188 个句子进行了编号
+2026-05-23 15:22:02,484 - text_numbering - INFO - 为文件 康圣访谈22.docx 中的 126 个句子进行了编号
+2026-05-23 15:22:02,484 - text_numbering - INFO - 为文件 康圣访谈23.docx 中的 127 个句子进行了编号
+2026-05-23 15:22:02,484 - text_numbering - INFO - 为文件 康圣访谈24.docx 中的 120 个句子进行了编号
+2026-05-23 15:22:02,484 - text_numbering - INFO - 为文件 康圣访谈25.docx 中的 96 个句子进行了编号
+2026-05-23 15:22:02,484 - text_numbering - INFO - 为文件 康圣访谈26.docx 中的 97 个句子进行了编号
+2026-05-23 15:22:02,484 - text_numbering - INFO - 为文件 康圣访谈27.docx 中的 178 个句子进行了编号
+2026-05-23 15:22:02,485 - text_numbering - INFO - 为文件 康圣访谈28.docx 中的 155 个句子进行了编号
+2026-05-23 15:22:02,485 - text_numbering - INFO - 为文件 康圣访谈29.docx 中的 140 个句子进行了编号
+2026-05-23 15:22:02,485 - text_numbering - INFO - 为文件 康圣访谈30.docx 中的 180 个句子进行了编号
+2026-05-23 15:22:02,485 - text_numbering - INFO - 为文件 康圣访谈31.docx 中的 135 个句子进行了编号
+2026-05-23 15:22:02,486 - text_numbering - INFO - 为文件 康圣访谈32.docx 中的 233 个句子进行了编号
+2026-05-23 15:22:02,486 - text_numbering - INFO - 为文件 康圣访谈33.docx 中的 127 个句子进行了编号
+2026-05-23 15:22:02,486 - text_numbering - INFO - 为文件 康圣访谈34.docx 中的 256 个句子进行了编号
+2026-05-23 15:22:02,495 - text_numbering - INFO - 为文件 康圣访谈35.docx 中的 205 个句子进行了编号
+2026-05-23 15:22:02,495 - text_numbering - INFO - 为文件 康圣访谈36.docx 中的 196 个句子进行了编号
+2026-05-23 15:22:02,495 - text_numbering - INFO - 为文件 康圣访谈37.docx 中的 176 个句子进行了编号
+2026-05-23 15:22:02,496 - text_numbering - INFO - 为文件 康圣访谈38.docx 中的 134 个句子进行了编号
+2026-05-23 15:22:02,496 - text_numbering - INFO - 为文件 康圣访谈39.docx 中的 202 个句子进行了编号
+2026-05-23 15:22:02,496 - text_numbering - INFO - 为文件 康圣访谈40.docx 中的 86 个句子进行了编号
+2026-05-23 15:22:02,496 - text_numbering - INFO - 为文件 康圣访谈41.docx 中的 104 个句子进行了编号
+2026-05-23 15:22:02,496 - text_numbering - INFO - 为文件 康圣访谈42.docx 中的 182 个句子进行了编号
+2026-05-23 15:22:02,519 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈 4（董国祥）.docx
+2026-05-23 15:22:02,520 - data_processor - INFO - 精准提取: 康圣访谈 4（董国祥）.docx - 47 个受访者段落
+2026-05-23 15:22:02,560 - data_processor - INFO - 处理文件 康圣访谈 4（董国祥）.docx: 识别 47 个段落，提取 65 个受访人句子
+2026-05-23 15:22:02,580 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈 9（肖雄峰）.docx
+2026-05-23 15:22:02,582 - data_processor - INFO - 精准提取: 康圣访谈 9（肖雄峰）.docx - 45 个受访者段落
+2026-05-23 15:22:02,613 - data_processor - INFO - 处理文件 康圣访谈 9（肖雄峰）.docx: 识别 45 个段落，提取 54 个受访人句子
+2026-05-23 15:22:02,638 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈 13（张桂）.docx
+2026-05-23 15:22:02,639 - data_processor - INFO - 精准提取: 康圣访谈 13（张桂）.docx - 51 个受访者段落
+2026-05-23 15:22:02,690 - data_processor - INFO - 处理文件 康圣访谈 13（张桂）.docx: 识别 51 个段落，提取 109 个受访人句子
+2026-05-23 15:22:02,696 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈1（蒋风情）.docx
+2026-05-23 15:22:02,698 - data_processor - INFO - 精准提取: 康圣访谈1（蒋风情）.docx - 28 个受访者段落
+2026-05-23 15:22:02,712 - data_processor - INFO - 处理文件 康圣访谈1（蒋风情）.docx: 识别 28 个段落，提取 57 个受访人句子
+2026-05-23 15:22:02,719 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈2（张思婷）.docx
+2026-05-23 15:22:02,720 - data_processor - INFO - 精准提取: 康圣访谈2（张思婷）.docx - 37 个受访者段落
+2026-05-23 15:22:02,739 - data_processor - INFO - 处理文件 康圣访谈2（张思婷）.docx: 识别 37 个段落，提取 46 个受访人句子
+2026-05-23 15:22:02,760 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈3（谢文英）.docx
+2026-05-23 15:22:02,761 - data_processor - INFO - 精准提取: 康圣访谈3（谢文英）.docx - 49 个受访者段落
+2026-05-23 15:22:02,804 - data_processor - INFO - 处理文件 康圣访谈3（谢文英）.docx: 识别 49 个段落，提取 63 个受访人句子
+2026-05-23 15:22:02,825 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈5翟圣.docx
+2026-05-23 15:22:02,826 - data_processor - INFO - 精准提取: 康圣访谈5翟圣.docx - 32 个受访者段落
+2026-05-23 15:22:02,852 - data_processor - INFO - 处理文件 康圣访谈5翟圣.docx: 识别 32 个段落，提取 81 个受访人句子
+2026-05-23 15:22:02,871 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈6黄军涛.docx
+2026-05-23 15:22:02,871 - data_processor - INFO - 精准提取: 康圣访谈6黄军涛.docx - 46 个受访者段落
+2026-05-23 15:22:02,890 - data_processor - INFO - 处理文件 康圣访谈6黄军涛.docx: 识别 46 个段落，提取 82 个受访人句子
+2026-05-23 15:22:02,904 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈7吴天.docx
+2026-05-23 15:22:02,905 - data_processor - INFO - 精准提取: 康圣访谈7吴天.docx - 42 个受访者段落
+2026-05-23 15:22:02,928 - data_processor - INFO - 处理文件 康圣访谈7吴天.docx: 识别 42 个段落，提取 58 个受访人句子
+2026-05-23 15:22:02,942 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈8任作非.docx
+2026-05-23 15:22:02,943 - data_processor - INFO - 精准提取: 康圣访谈8任作非.docx - 34 个受访者段落
+2026-05-23 15:22:02,960 - data_processor - INFO - 处理文件 康圣访谈8任作非.docx: 识别 34 个段落，提取 48 个受访人句子
+2026-05-23 15:22:02,976 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈10（黄志利）.docx
+2026-05-23 15:22:02,977 - data_processor - INFO - 精准提取: 康圣访谈10（黄志利）.docx - 45 个受访者段落
+2026-05-23 15:22:02,997 - data_processor - INFO - 处理文件 康圣访谈10（黄志利）.docx: 识别 45 个段落，提取 45 个受访人句子
+2026-05-23 15:22:03,141 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈11秦园.docx
+2026-05-23 15:22:03,142 - data_processor - INFO - 精准提取: 康圣访谈11秦园.docx - 35 个受访者段落
+2026-05-23 15:22:03,198 - data_processor - INFO - 处理文件 康圣访谈11秦园.docx: 识别 35 个段落，提取 112 个受访人句子
+2026-05-23 15:22:03,211 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈12余桂俊.docx
+2026-05-23 15:22:03,212 - data_processor - INFO - 精准提取: 康圣访谈12余桂俊.docx - 28 个受访者段落
+2026-05-23 15:22:03,229 - data_processor - INFO - 处理文件 康圣访谈12余桂俊.docx: 识别 28 个段落，提取 57 个受访人句子
+2026-05-23 15:22:03,256 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈14（李续图）.docx
+2026-05-23 15:22:03,257 - data_processor - INFO - 精准提取: 康圣访谈14（李续图）.docx - 26 个受访者段落
+2026-05-23 15:22:03,291 - data_processor - INFO - 处理文件 康圣访谈14（李续图）.docx: 识别 26 个段落，提取 138 个受访人句子
+2026-05-23 15:22:03,304 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈15（陈进科）.docx
+2026-05-23 15:22:03,305 - data_processor - INFO - 精准提取: 康圣访谈15（陈进科）.docx - 24 个受访者段落
+2026-05-23 15:22:03,326 - data_processor - INFO - 处理文件 康圣访谈15（陈进科）.docx: 识别 24 个段落，提取 62 个受访人句子
+2026-05-23 15:22:03,335 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈16.（李妮）.docx
+2026-05-23 15:22:03,336 - data_processor - INFO - 精准提取: 康圣访谈16.（李妮）.docx - 29 个受访者段落
+2026-05-23 15:22:03,346 - data_processor - INFO - 处理文件 康圣访谈16.（李妮）.docx: 识别 29 个段落，提取 30 个受访人句子
+2026-05-23 15:22:03,354 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈17.（贾梦思）.docx
+2026-05-23 15:22:03,355 - data_processor - INFO - 精准提取: 康圣访谈17.（贾梦思）.docx - 19 个受访者段落
+2026-05-23 15:22:03,361 - data_processor - INFO - 处理文件 康圣访谈17.（贾梦思）.docx: 识别 19 个段落，提取 19 个受访人句子
+2026-05-23 15:22:03,375 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈18.（杨伟红）.docx
+2026-05-23 15:22:03,375 - data_processor - INFO - 精准提取: 康圣访谈18.（杨伟红）.docx - 41 个受访者段落
+2026-05-23 15:22:03,406 - data_processor - INFO - 处理文件 康圣访谈18.（杨伟红）.docx: 识别 41 个段落，提取 65 个受访人句子
+2026-05-23 15:22:03,421 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈19.（吴妍）.docx
+2026-05-23 15:22:03,421 - data_processor - INFO - 精准提取: 康圣访谈19.（吴妍）.docx - 43 个受访者段落
+2026-05-23 15:22:03,463 - data_processor - INFO - 处理文件 康圣访谈19.（吴妍）.docx: 识别 43 个段落，提取 62 个受访人句子
+2026-05-23 15:22:03,474 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈20.（王珮鑫）.docx
+2026-05-23 15:22:03,474 - data_processor - INFO - 精准提取: 康圣访谈20.（王珮鑫）.docx - 31 个受访者段落
+2026-05-23 15:22:03,486 - data_processor - INFO - 处理文件 康圣访谈20.（王珮鑫）.docx: 识别 31 个段落，提取 38 个受访人句子
+2026-05-23 15:22:03,500 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈21.docx
+2026-05-23 15:22:03,501 - data_processor - INFO - 精准提取: 康圣访谈21.docx - 51 个受访者段落
+2026-05-23 15:22:03,532 - data_processor - INFO - 处理文件 康圣访谈21.docx: 识别 51 个段落，提取 78 个受访人句子
+2026-05-23 15:22:03,543 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈22.docx
+2026-05-23 15:22:03,544 - data_processor - INFO - 精准提取: 康圣访谈22.docx - 38 个受访者段落
+2026-05-23 15:22:03,565 - data_processor - INFO - 处理文件 康圣访谈22.docx: 识别 38 个段落，提取 41 个受访人句子
+2026-05-23 15:22:03,578 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈23.docx
+2026-05-23 15:22:03,578 - data_processor - INFO - 精准提取: 康圣访谈23.docx - 34 个受访者段落
+2026-05-23 15:22:03,603 - data_processor - INFO - 处理文件 康圣访谈23.docx: 识别 34 个段落，提取 46 个受访人句子
+2026-05-23 15:22:03,614 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈24.docx
+2026-05-23 15:22:03,615 - data_processor - INFO - 精准提取: 康圣访谈24.docx - 31 个受访者段落
+2026-05-23 15:22:03,643 - data_processor - INFO - 处理文件 康圣访谈24.docx: 识别 31 个段落，提取 44 个受访人句子
+2026-05-23 15:22:03,653 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈25.docx
+2026-05-23 15:22:03,654 - data_processor - INFO - 精准提取: 康圣访谈25.docx - 29 个受访者段落
+2026-05-23 15:22:03,664 - data_processor - INFO - 处理文件 康圣访谈25.docx: 识别 29 个段落，提取 25 个受访人句子
+2026-05-23 15:22:03,673 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈26.docx
+2026-05-23 15:22:03,673 - data_processor - INFO - 精准提取: 康圣访谈26.docx - 20 个受访者段落
+2026-05-23 15:22:03,682 - data_processor - INFO - 处理文件 康圣访谈26.docx: 识别 20 个段落，提取 32 个受访人句子
+2026-05-23 15:22:03,702 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈27.docx
+2026-05-23 15:22:03,703 - data_processor - INFO - 精准提取: 康圣访谈27.docx - 55 个受访者段落
+2026-05-23 15:22:03,738 - data_processor - INFO - 处理文件 康圣访谈27.docx: 识别 55 个段落，提取 61 个受访人句子
+2026-05-23 15:22:03,752 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈28.docx
+2026-05-23 15:22:03,752 - data_processor - INFO - 精准提取: 康圣访谈28.docx - 35 个受访者段落
+2026-05-23 15:22:03,777 - data_processor - INFO - 处理文件 康圣访谈28.docx: 识别 35 个段落，提取 68 个受访人句子
+2026-05-23 15:22:03,791 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈29.docx
+2026-05-23 15:22:03,793 - data_processor - INFO - 精准提取: 康圣访谈29.docx - 45 个受访者段落
+2026-05-23 15:22:03,835 - data_processor - INFO - 处理文件 康圣访谈29.docx: 识别 45 个段落，提取 53 个受访人句子
+2026-05-23 15:22:03,852 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈30.docx
+2026-05-23 15:22:03,854 - data_processor - INFO - 精准提取: 康圣访谈30.docx - 51 个受访者段落
+2026-05-23 15:22:03,897 - data_processor - INFO - 处理文件 康圣访谈30.docx: 识别 51 个段落，提取 78 个受访人句子
+2026-05-23 15:22:03,910 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈31.docx
+2026-05-23 15:22:03,911 - data_processor - INFO - 精准提取: 康圣访谈31.docx - 36 个受访者段落
+2026-05-23 15:22:03,939 - data_processor - INFO - 处理文件 康圣访谈31.docx: 识别 36 个段落，提取 51 个受访人句子
+2026-05-23 15:22:03,961 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈32.docx
+2026-05-23 15:22:03,964 - data_processor - INFO - 精准提取: 康圣访谈32.docx - 77 个受访者段落
+2026-05-23 15:22:04,028 - data_processor - INFO - 处理文件 康圣访谈32.docx: 识别 77 个段落，提取 74 个受访人句子
+2026-05-23 15:22:04,043 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈33.docx
+2026-05-23 15:22:04,045 - data_processor - INFO - 精准提取: 康圣访谈33.docx - 22 个受访者段落
+2026-05-23 15:22:04,076 - data_processor - INFO - 处理文件 康圣访谈33.docx: 识别 22 个段落，提取 66 个受访人句子
+2026-05-23 15:22:04,099 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈34.docx
+2026-05-23 15:22:04,100 - data_processor - INFO - 精准提取: 康圣访谈34.docx - 70 个受访者段落
+2026-05-23 15:22:04,161 - data_processor - INFO - 处理文件 康圣访谈34.docx: 识别 70 个段落，提取 70 个受访人句子
+2026-05-23 15:22:04,178 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈35.docx
+2026-05-23 15:22:04,179 - data_processor - INFO - 精准提取: 康圣访谈35.docx - 44 个受访者段落
+2026-05-23 15:22:04,224 - data_processor - INFO - 处理文件 康圣访谈35.docx: 识别 44 个段落，提取 94 个受访人句子
+2026-05-23 15:22:04,251 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈36.docx
+2026-05-23 15:22:04,252 - data_processor - INFO - 精准提取: 康圣访谈36.docx - 68 个受访者段落
+2026-05-23 15:22:04,303 - data_processor - INFO - 处理文件 康圣访谈36.docx: 识别 68 个段落，提取 63 个受访人句子
+2026-05-23 15:22:04,325 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈37.docx
+2026-05-23 15:22:04,325 - data_processor - INFO - 精准提取: 康圣访谈37.docx - 61 个受访者段落
+2026-05-23 15:22:04,360 - data_processor - INFO - 处理文件 康圣访谈37.docx: 识别 61 个段落，提取 65 个受访人句子
+2026-05-23 15:22:04,375 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈38.docx
+2026-05-23 15:22:04,441 - data_processor - INFO - 精准提取: 康圣访谈38.docx - 34 个受访者段落
+2026-05-23 15:22:04,467 - data_processor - INFO - 处理文件 康圣访谈38.docx: 识别 34 个段落，提取 63 个受访人句子
+2026-05-23 15:22:04,498 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈39.docx
+2026-05-23 15:22:04,499 - data_processor - INFO - 精准提取: 康圣访谈39.docx - 63 个受访者段落
+2026-05-23 15:22:04,566 - data_processor - INFO - 处理文件 康圣访谈39.docx: 识别 63 个段落，提取 81 个受访人句子
+2026-05-23 15:22:04,579 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈40.docx
+2026-05-23 15:22:04,579 - data_processor - INFO - 精准提取: 康圣访谈40.docx - 22 个受访者段落
+2026-05-23 15:22:04,589 - data_processor - INFO - 处理文件 康圣访谈40.docx: 识别 22 个段落，提取 28 个受访人句子
+2026-05-23 15:22:04,605 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈41.docx
+2026-05-23 15:22:04,605 - data_processor - INFO - 精准提取: 康圣访谈41.docx - 31 个受访者段落
+2026-05-23 15:22:04,614 - data_processor - INFO - 处理文件 康圣访谈41.docx: 识别 31 个段落，提取 26 个受访人句子
+2026-05-23 15:22:04,644 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈42.docx
+2026-05-23 15:22:04,646 - data_processor - INFO - 精准提取: 康圣访谈42.docx - 38 个受访者段落
+2026-05-23 15:22:04,716 - data_processor - INFO - 处理文件 康圣访谈42.docx: 识别 38 个段落，提取 100 个受访人句子
+2026-05-23 15:31:04,215 - enhanced_coding_generator - INFO - 生成 1201 个一阶编码
+2026-05-23 15:31:04,216 - enhanced_coding_generator - INFO - 开始二阶编码分类，共 1201 个一阶编码
+2026-05-23 15:31:33,477 - enhanced_coding_generator - INFO - RAG二阶编码完成: 共 1 个类别
+2026-05-23 15:31:33,477 - enhanced_coding_generator - INFO - 生成 1 个二阶编码
+2026-05-23 15:31:33,478 - enhanced_coding_generator - INFO - 开始三阶编码抽象，共 1 个二阶编码
+2026-05-23 15:31:33,478 - enhanced_coding_generator - INFO - RAG三阶编码完成: 共 1 个类别
+2026-05-23 15:31:33,478 - enhanced_coding_generator - INFO - 生成 1 个三阶编码
+2026-05-23 15:31:33,478 - model_manager - INFO - 开始释放模型资源...
+2026-05-23 15:31:33,478 - model_manager - INFO - 释放抽象重排序模型...
+2026-05-23 15:31:33,479 - model_manager - INFO - 抽象重排序模型已释放
+2026-05-23 15:31:33,479 - model_manager - INFO - 释放抽象重排序tokenizer...
+2026-05-23 15:31:33,480 - model_manager - INFO - 抽象重排序tokenizer已释放
+2026-05-23 15:31:33,480 - model_manager - INFO - 清理PyTorch GPU缓存...
+2026-05-23 15:31:33,519 - model_manager - INFO - PyTorch GPU缓存已清理
+2026-05-23 15:31:33,519 - model_manager - INFO - 模型资源释放完成
+2026-05-23 15:31:33,519 - grounded_theory_coder - INFO - 开始构建编码结构: 一阶1201, 二阶1, 三阶1
+2026-05-23 15:31:33,527 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 才几个月没有碰到什么问题
+2026-05-23 15:31:33,527 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 没有什么很实质
+2026-05-23 15:31:33,527 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 并没有什么很直接关系
+2026-05-23 15:31:33,527 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 应该没有什么负面性
+2026-05-23 15:31:33,528 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 平台没有什么影响
+2026-05-23 15:31:33,528 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 遇到一个什么问题
+2026-05-23 15:31:33,530 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 在创新的过程中出现什么问题
+2026-05-23 15:31:33,530 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 最后出了什么问题
+2026-05-23 15:31:33,530 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 需求量没有这么大
+2026-05-23 15:31:33,536 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 说哪些流程
+2026-05-23 15:31:33,539 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 公司有什么影响
+2026-05-23 15:31:33,543 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 是需要多重复查或者怎么样才会出现一个这样结果
+2026-05-23 15:31:33,546 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 有什么负面影响
+2026-05-23 15:31:33,547 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 存在什么利益冲突的
+2026-05-23 15:31:33,552 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 哪些事情，执行到
+2026-05-23 15:31:33,554 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 的这些公司的这些什么不能允许执行或者怎么样的
+2026-05-23 15:31:33,560 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 体在实验室不会有什么创新余地
+2026-05-23 15:31:33,562 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 反馈哪里有问题
+2026-05-23 15:31:33,569 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 客户需求在哪里
+2026-05-23 15:31:33,569 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 市场压力或者是客户的需求或者是怎么样的
+2026-05-23 15:31:33,573 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 和其他公司合作
+2026-05-23 15:31:33,576 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 不涉及到其他人的利益情况下
+2026-05-23 15:31:33,578 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 是当时出现是个什么样的情况下产生的
+2026-05-23 15:31:33,581 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 4s店送什么东西
+2026-05-23 15:31:33,581 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 执行到什么程度了
+2026-05-23 15:31:33,581 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 首先自行想一下有什么办法去把事情执行得更好
+2026-05-23 15:31:33,582 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 私下里筹划应该怎么样
+2026-05-23 15:31:33,582 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 用户怎么方便怎么执行
+2026-05-23 15:31:33,582 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 公司上半年一直也没怎么执行事
+2026-05-23 15:31:33,586 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 目前没有听到什么反对事情
+2026-05-23 15:31:33,588 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 一段时间发现没什么问题
+2026-05-23 15:31:33,588 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 采用一个什么模式
+2026-05-23 15:31:33,588 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 是一个什么科研
+2026-05-23 15:31:33,589 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 通过什么渠道收
+2026-05-23 15:31:33,592 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 没那么多资源
+2026-05-23 15:31:33,597 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 什么核心分析
+2026-05-23 15:31:33,602 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 影响到大家其他人利益
+2026-05-23 15:31:33,604 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 只要不出什么大挫折
+2026-05-23 15:31:33,604 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 有这么一个契机
+2026-05-23 15:31:33,612 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 哪方面没有考虑
+2026-05-23 15:31:33,612 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 得看看什么方面
+2026-05-23 15:31:33,613 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 什么科研方面需要
+2026-05-23 15:31:33,613 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 是平台预算或者是怎么合适
+2026-05-23 15:31:33,615 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 赚钱比较多的项目相对来说那么小
+2026-05-23 15:31:33,620 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 有什么资源给
+2026-05-23 15:31:33,621 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 工作，哪些事情
+2026-05-23 15:31:33,621 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 下面哪些人愿意
+2026-05-23 15:31:33,622 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 领导什么时候知道
+2026-05-23 15:31:33,622 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 领导有什么显著
+2026-05-23 15:31:33,622 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 肯定是会影响其他人的工作情绪的
+2026-05-23 15:31:33,623 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 承担什么责任的
+2026-05-23 15:31:33,624 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 是其他同事发现
+2026-05-23 15:31:33,626 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 比如说像其他执行药物那些
+2026-05-23 15:31:33,628 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 没有那么多精力
+2026-05-23 15:31:33,629 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 在这个上面我会给予政策的倾斜和支持
+2026-05-23 15:31:33,629 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 定位那么喜欢创新
+2026-05-23 15:31:33,633 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 觉得我会愿意听
+2026-05-23 15:31:33,633 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 说部分基础的事情肯定怎么说
+2026-05-23 15:31:33,634 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 财务在哪个公司都是最严格部门
+2026-05-23 15:31:33,636 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 核心是医学部其他平台
+2026-05-23 15:31:33,637 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 具体到什么程度
+2026-05-23 15:31:33,637 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 说用到什么资料
+2026-05-23 15:31:33,639 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 动的这一环节对这个结果会造成什么样影响
+2026-05-23 15:31:33,639 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 优化什么意思
+2026-05-23 15:31:33,643 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 最好的部分人员叫什么轮转
+2026-05-23 15:31:33,645 - grounded_theory_coder - INFO - 自动编号完成: 共1个三阶编码
+2026-05-23 15:31:33,645 - grounded_theory_coder - INFO - 构建了扎根理论编码结构: 1个三阶编码
+2026-05-23 15:31:37,031 - code_validator_tree - INFO - 所有编码都匹配，无需删除
+2026-05-23 15:31:40,506 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈 4（董国祥）.docx
+2026-05-23 15:31:40,509 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈 9（肖雄峰）.docx
+2026-05-23 15:31:40,514 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈 13（张桂）.docx
+2026-05-23 15:31:40,515 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈1（蒋风情）.docx
+2026-05-23 15:31:40,519 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈2（张思婷）.docx
+2026-05-23 15:31:40,523 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈3（谢文英）.docx
+2026-05-23 15:31:40,529 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈5翟圣.docx
+2026-05-23 15:31:40,533 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈6黄军涛.docx
+2026-05-23 15:31:40,536 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈7吴天.docx
+2026-05-23 15:31:40,538 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈8任作非.docx
+2026-05-23 15:31:40,540 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈10（黄志利）.docx
+2026-05-23 15:31:40,550 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈11秦园.docx
+2026-05-23 15:31:40,554 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈12余桂俊.docx
+2026-05-23 15:31:40,565 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈14（李续图）.docx
+2026-05-23 15:31:40,569 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈15（陈进科）.docx
+2026-05-23 15:31:40,570 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈16.（李妮）.docx
+2026-05-23 15:31:40,572 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈17.（贾梦思）.docx
+2026-05-23 15:31:40,575 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈18.（杨伟红）.docx
+2026-05-23 15:31:40,578 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈19.（吴妍）.docx
+2026-05-23 15:31:40,581 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈20.（王珮鑫）.docx
+2026-05-23 15:31:40,583 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈21.docx
+2026-05-23 15:31:40,586 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈22.docx
+2026-05-23 15:31:40,589 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈23.docx
+2026-05-23 15:31:40,593 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈24.docx
+2026-05-23 15:31:40,594 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈25.docx
+2026-05-23 15:31:40,597 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈26.docx
+2026-05-23 15:31:40,598 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈27.docx
+2026-05-23 15:31:40,602 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈28.docx
+2026-05-23 15:31:40,604 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈29.docx
+2026-05-23 15:31:40,607 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈30.docx
+2026-05-23 15:31:40,612 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈31.docx
+2026-05-23 15:31:40,614 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈32.docx
+2026-05-23 15:31:40,624 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈33.docx
+2026-05-23 15:31:40,628 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈34.docx
+2026-05-23 15:31:40,633 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈35.docx
+2026-05-23 15:31:40,636 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈36.docx
+2026-05-23 15:31:40,638 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈37.docx
+2026-05-23 15:31:40,642 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈38.docx
+2026-05-23 15:31:40,647 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈39.docx
+2026-05-23 15:31:40,649 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈40.docx
+2026-05-23 15:31:40,650 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈41.docx
+2026-05-23 15:31:40,660 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈42.docx
+2026-05-23 15:42:55,242 - main_window - INFO - 导航请求: Content='大家加入进来不需要我说服，我只是把这个需...', Number='1205'
+2026-05-23 15:42:55,294 - main_window - INFO - 搜索内容: 大家加入进来不需要我说服，我只是把这个需求给大家讲出来，比如说你们临床上面有没有碰到医生有需要这个项...
+2026-05-23 15:42:55,301 - main_window - INFO - 成功高亮编码内容
+2026-05-23 15:42:55,342 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 1205
+2026-05-23 15:42:55,342 - main_window - INFO - 最终确定的一阶编码句子编号: 1205
+2026-05-23 15:42:55,342 - main_window - INFO - 关联编号完整列表: ['1205']
+2026-05-23 15:42:55,342 - main_window - INFO - sentence_details数量: 1
+2026-05-23 15:42:55,342 - main_window - INFO - 弹出对话框句子1 - 编号: 1205, 内容前30字: 大家加入进来不需要我说服，我只是把这个需求给大家讲出来，比如...
+2026-05-23 15:42:58,642 - main_window - INFO - 导航请求: Content='可能会外展出去或者是自己就做什么样，因为...', Number='78'
+2026-05-23 15:42:58,655 - main_window - INFO - 搜索内容: 可能会外展出去或者是自己就做什么样，因为量少了或者没有市场需求的话，可能会不开展的，作为客户...
+2026-05-23 15:42:58,657 - main_window - INFO - 成功高亮编码内容
+2026-05-23 15:42:58,730 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 78
+2026-05-23 15:42:58,730 - main_window - INFO - 最终确定的一阶编码句子编号: 78
+2026-05-23 15:42:58,730 - main_window - INFO - 关联编号完整列表: ['78']
+2026-05-23 15:42:58,730 - main_window - INFO - sentence_details数量: 1
+2026-05-23 15:42:58,730 - main_window - INFO - 弹出对话框句子1 - 编号: 78, 内容前30字: 可能会外展出去或者是自己就做什么样，因为量少了或者没有市场需...
+2026-05-23 15:43:07,017 - main_window - INFO - 导航请求: Content='如果说你要是越轨创新，你可能导致的结果就...', Number='129'
+2026-05-23 15:43:07,020 - main_window - INFO - 搜索内容: 如果说你要是越轨创新，你可能导致的结果就是不一样的，你发出结果就是有问题的，假设你是一款患者，你拿出...
+2026-05-23 15:43:07,021 - main_window - INFO - 成功高亮编码内容
+2026-05-23 15:43:07,075 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 129
+2026-05-23 15:43:07,075 - main_window - INFO - 最终确定的一阶编码句子编号: 129
+2026-05-23 15:43:07,075 - main_window - INFO - 关联编号完整列表: ['129']
+2026-05-23 15:43:07,075 - main_window - INFO - sentence_details数量: 1
+2026-05-23 15:43:07,077 - main_window - INFO - 弹出对话框句子1 - 编号: 129, 内容前30字: 如果说你要是越轨创新，你可能导致的结果就是不一样的，你发出结...
+2026-05-23 15:43:37,405 - main_window - INFO - 导航请求: Content='为什么说，因为我个人认为创新就两个，我说...', Number='2278'
+2026-05-23 15:43:37,435 - main_window - INFO - 搜索内容: 为什么说，因为我个人认为创新就两个，我说不算到位，我分析创新的话就有两个，一个是能节约成本，一个是能...
+2026-05-23 15:43:37,470 - main_window - INFO - 成功高亮编码内容
+2026-05-23 15:43:37,499 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 2278
+2026-05-23 15:43:37,499 - main_window - INFO - 最终确定的一阶编码句子编号: 2278
+2026-05-23 15:43:37,499 - main_window - INFO - 关联编号完整列表: ['2278']
+2026-05-23 15:43:37,499 - main_window - INFO - sentence_details数量: 1
+2026-05-23 15:43:37,499 - main_window - INFO - 弹出对话框句子1 - 编号: 2278, 内容前30字: 为什么说，因为我个人认为创新就两个，我说不算到位，我分析创新...
+2026-05-23 16:16:17,651 - main_window - INFO - 导航请求: Content='肯定会，因为一个公司，就像我们新公司，它...', Number='32'
+2026-05-23 16:16:17,673 - main_window - INFO - 搜索内容: 肯定会，因为一个公司，就像我们新公司，它肯定需要活力，如果说我们没有一个创新的思想，比如说我们通过自...
+2026-05-23 16:16:17,673 - main_window - INFO - 成功高亮编码内容
+2026-05-23 16:26:29,410 - main_window - INFO - 导航请求: Content='一定要买试剂，买设备，然后这些东西的话，...', Number='100'
+2026-05-23 16:26:29,413 - main_window - INFO - 搜索内容: 一定要买试剂，买设备，然后这些东西的话，审批过后才会有...
+2026-05-23 16:26:29,414 - main_window - INFO - 成功高亮编码内容
+2026-05-23 16:26:31,429 - main_window - INFO - 导航请求: Content='一定要买试剂，买设备，然后这些东西的话，...', Number='100'
+2026-05-23 16:26:31,433 - main_window - INFO - 搜索内容: 一定要买试剂，买设备，然后这些东西的话，审批过后才会有...
+2026-05-23 16:26:31,434 - main_window - INFO - 成功高亮编码内容
+2026-05-23 16:26:31,489 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 100
+2026-05-23 16:26:31,489 - main_window - INFO - 最终确定的一阶编码句子编号: 100
+2026-05-23 16:26:31,489 - main_window - INFO - 关联编号完整列表: ['100']
+2026-05-23 16:26:31,489 - main_window - INFO - sentence_details数量: 1
+2026-05-23 16:26:31,490 - main_window - INFO - 弹出对话框句子1 - 编号: 100, 内容前30字: 一定要买试剂，买设备，然后这些东西的话，审批过后才会有...
+2026-05-23 17:04:51,225 - root - INFO - 基础路径已设置: D:\zthree2 (打包模式: False)
+2026-05-23 17:04:51,808 - root - INFO - 目录已确保存在: D:\zthree2\projects
+2026-05-23 17:04:51,808 - root - INFO - 目录已确保存在: D:\zthree2\data
+2026-05-23 17:04:51,809 - root - INFO - 目录已确保存在: D:\zthree2\local_models
+2026-05-23 17:04:51,809 - root - INFO - 目录已确保存在: D:\zthree2\trained_models
+2026-05-23 17:04:51,809 - root - INFO - 目录已确保存在: D:\zthree2\standard_answers
+2026-05-23 17:04:51,809 - root - INFO - 目录已确保存在: D:\zthree2\output
+2026-05-23 17:04:51,809 - root - INFO - 目录已确保存在: D:\zthree2\cache
+2026-05-23 17:04:51,809 - root - INFO - 目录已确保存在: D:\zthree2\logs
+2026-05-23 17:04:51,809 - root - INFO - 目录已确保存在: D:\zthree2\standard_answers\backups
+2026-05-23 17:04:51,809 - root - INFO - 目录已确保存在: D:\zthree2\standard_answers\modifications
+2026-05-23 17:04:51,809 - root - INFO - 目录已确保存在: D:\zthree2\projects\手动编码保存编码
+2026-05-23 17:04:51,809 - root - INFO - 目录已确保存在: D:\zthree2\projects\手动编码编码树保存
+2026-05-23 17:04:51,811 - __main__ - INFO - 环境初始化成功
+2026-05-23 17:04:55,423 - numexpr.utils - INFO - Note: NumExpr detected 32 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
+2026-05-23 17:04:55,423 - numexpr.utils - INFO - NumExpr defaulting to 16 threads.
+2026-05-23 17:04:56,099 - root - INFO - pyarrow 15.0.0 导入成功
+2026-05-23 17:04:56,394 - semantic_matcher - INFO - psutil 库加载成功
+2026-05-23 17:04:56,473 - semantic_matcher - INFO - sentence-transformers 库加载成功
+2026-05-23 17:04:56,631 - training_manager - INFO - scikit-learn 版本: 1.7.1
+2026-05-23 17:04:56,740 - model_manager - INFO - 使用设备: cuda
+2026-05-23 17:04:56,742 - data_processor - INFO - 已启用精准受访者提取（SpeakerRoleExtractor + QA分类器）
+2026-05-23 17:04:56,752 - coding_library_manager - INFO - 编码库加载成功，包含 2000 个三阶编码和 2975 个二阶编码
+2026-05-23 17:04:56,752 - enhanced_coding_generator - INFO - 编码库管理器初始化成功
+2026-05-23 17:04:56,755 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2026-05-23 17:04:56,755 - jieba - DEBUG - Loading model from cache C:\Users\Lenovo\AppData\Local\Temp\jieba.cache
+2026-05-23 17:04:57,076 - jieba - DEBUG - Loading model cost 0.321 seconds.
+2026-05-23 17:04:57,076 - jieba - DEBUG - Prefix dict has been built successfully.
+2026-05-23 17:04:57,129 - high_quality_sample_learner - INFO - 加载了 942 个高质量样本 (encoding=gb18030)
+2026-05-23 17:04:57,129 - enhanced_coding_generator - INFO - 高质量样本学习器初始化成功
+2026-05-23 17:04:57,129 - semantic_matcher - INFO - 正在加载sentence-transformer模型: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 17:04:57,132 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cuda:0
+2026-05-23 17:04:57,133 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 17:04:57,427 - semantic_matcher - INFO - 模型加载成功，使用设备: cuda
+2026-05-23 17:04:57,427 - enhanced_coding_generator - INFO - 语义匹配器初始化成功
+2026-05-23 17:04:57,660 - enhanced_coding_generator - INFO - RAG自动编码已启用，运行策略: gpu
+2026-05-23 17:04:57,660 - main_window - INFO - 使用原有的 EnhancedCodingGenerator
+2026-05-23 17:04:57,685 - standard_answer_manager - INFO - 标准答案已加载: v57_20260409_085422.json
+2026-05-23 17:04:57,685 - standard_answer_manager - INFO - 成功加载最新的标准答案: v57_20260409_085422.json
+2026-05-23 17:04:57,815 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-23 17:04:58,025 - model_manager - INFO - Reranker 加载成功: custom_bert_4layer (174MB)
+2026-05-23 17:04:58,025 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cuda:0
+2026-05-23 17:04:58,025 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 17:04:58,106 - model_manager - INFO - Sentence 加载成功 (275MB) from D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 17:04:58,106 - model_manager - INFO - 模型初始化完成
+2026-05-23 17:04:58,106 - main_window - INFO - 模型初始化成功
+2026-05-23 17:04:58,768 - __main__ - INFO - 扎根理论编码分析系统启动成功，主窗口已显示
+2026-05-23 17:04:59,384 - model_manager - INFO - 抽象重排序模型已加载: D:\zthree2\trained_models\abstract_reranker_latest
+2026-05-23 17:04:59,384 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-23 17:04:59,384 - main_window - INFO - 抽象重排序模型预加载成功
+2026-05-23 17:04:59,489 - model_manager - INFO - Reranker 加载成功: custom_bert_4layer (174MB)
+2026-05-23 17:04:59,491 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cuda:0
+2026-05-23 17:04:59,491 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 17:04:59,559 - model_manager - INFO - Sentence 加载成功 (275MB) from D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 17:04:59,559 - model_manager - INFO - 模型初始化完成
+2026-05-23 17:04:59,559 - main_window - INFO - 模型初始化成功
+2026-05-23 17:04:59,559 - main_window - INFO - 抽象重排序模型预加载成功
+2026-05-23 17:05:07,368 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈7吴天.docx
+2026-05-23 17:05:07,369 - main_window - INFO - 成功导入文件: 康圣访谈7吴天.docx
+2026-05-23 17:05:07,386 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈8任作非.docx
+2026-05-23 17:05:07,386 - main_window - INFO - 成功导入文件: 康圣访谈8任作非.docx
+2026-05-23 17:05:07,405 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈10（黄志利）.docx
+2026-05-23 17:05:07,405 - main_window - INFO - 成功导入文件: 康圣访谈10（黄志利）.docx
+2026-05-23 17:05:07,435 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈11秦园.docx
+2026-05-23 17:05:07,435 - main_window - INFO - 成功导入文件: 康圣访谈11秦园.docx
+2026-05-23 17:05:07,449 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈12余桂俊.docx
+2026-05-23 17:05:07,449 - main_window - INFO - 成功导入文件: 康圣访谈12余桂俊.docx
+2026-05-23 17:05:07,468 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈14（李续图）.docx
+2026-05-23 17:05:07,468 - main_window - INFO - 成功导入文件: 康圣访谈14（李续图）.docx
+2026-05-23 17:05:07,486 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈15（陈进科）.docx
+2026-05-23 17:05:07,486 - main_window - INFO - 成功导入文件: 康圣访谈15（陈进科）.docx
+2026-05-23 17:05:07,497 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈16.（李妮）.docx
+2026-05-23 17:05:07,497 - main_window - INFO - 成功导入文件: 康圣访谈16.（李妮）.docx
+2026-05-23 17:05:07,505 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈17.（贾梦思）.docx
+2026-05-23 17:05:07,505 - main_window - INFO - 成功导入文件: 康圣访谈17.（贾梦思）.docx
+2026-05-23 17:05:07,520 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈18.（杨伟红）.docx
+2026-05-23 17:05:07,520 - main_window - INFO - 成功导入文件: 康圣访谈18.（杨伟红）.docx
+2026-05-23 17:05:07,536 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈19.（吴妍）.docx
+2026-05-23 17:05:07,536 - main_window - INFO - 成功导入文件: 康圣访谈19.（吴妍）.docx
+2026-05-23 17:05:07,548 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈20.（王珮鑫）.docx
+2026-05-23 17:05:07,548 - main_window - INFO - 成功导入文件: 康圣访谈20.（王珮鑫）.docx
+2026-05-23 17:05:07,564 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈21.docx
+2026-05-23 17:05:07,564 - main_window - INFO - 成功导入文件: 康圣访谈21.docx
+2026-05-23 17:05:07,577 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈22.docx
+2026-05-23 17:05:07,577 - main_window - INFO - 成功导入文件: 康圣访谈22.docx
+2026-05-23 17:05:07,590 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈23.docx
+2026-05-23 17:05:07,590 - main_window - INFO - 成功导入文件: 康圣访谈23.docx
+2026-05-23 17:05:07,602 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈24.docx
+2026-05-23 17:05:07,602 - main_window - INFO - 成功导入文件: 康圣访谈24.docx
+2026-05-23 17:05:07,616 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈25.docx
+2026-05-23 17:05:07,616 - main_window - INFO - 成功导入文件: 康圣访谈25.docx
+2026-05-23 17:05:07,627 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈26.docx
+2026-05-23 17:05:07,627 - main_window - INFO - 成功导入文件: 康圣访谈26.docx
+2026-05-23 17:05:07,646 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈27.docx
+2026-05-23 17:05:07,647 - main_window - INFO - 成功导入文件: 康圣访谈27.docx
+2026-05-23 17:05:07,661 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈28.docx
+2026-05-23 17:05:07,661 - main_window - INFO - 成功导入文件: 康圣访谈28.docx
+2026-05-23 17:05:07,677 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈29.docx
+2026-05-23 17:05:07,678 - main_window - INFO - 成功导入文件: 康圣访谈29.docx
+2026-05-23 17:05:07,699 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈30.docx
+2026-05-23 17:05:07,699 - main_window - INFO - 成功导入文件: 康圣访谈30.docx
+2026-05-23 17:05:07,710 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈31.docx
+2026-05-23 17:05:07,710 - main_window - INFO - 成功导入文件: 康圣访谈31.docx
+2026-05-23 17:05:07,733 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈32.docx
+2026-05-23 17:05:07,733 - main_window - INFO - 成功导入文件: 康圣访谈32.docx
+2026-05-23 17:05:07,748 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈33.docx
+2026-05-23 17:05:07,748 - main_window - INFO - 成功导入文件: 康圣访谈33.docx
+2026-05-23 17:05:07,770 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈34.docx
+2026-05-23 17:05:07,770 - main_window - INFO - 成功导入文件: 康圣访谈34.docx
+2026-05-23 17:05:07,789 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈35.docx
+2026-05-23 17:05:07,789 - main_window - INFO - 成功导入文件: 康圣访谈35.docx
+2026-05-23 17:05:07,816 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈36.docx
+2026-05-23 17:05:07,816 - main_window - INFO - 成功导入文件: 康圣访谈36.docx
+2026-05-23 17:05:07,839 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈37.docx
+2026-05-23 17:05:07,839 - main_window - INFO - 成功导入文件: 康圣访谈37.docx
+2026-05-23 17:05:07,853 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈38.docx
+2026-05-23 17:05:07,854 - main_window - INFO - 成功导入文件: 康圣访谈38.docx
+2026-05-23 17:05:07,886 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈39.docx
+2026-05-23 17:05:07,887 - main_window - INFO - 成功导入文件: 康圣访谈39.docx
+2026-05-23 17:05:07,900 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈40.docx
+2026-05-23 17:05:07,900 - main_window - INFO - 成功导入文件: 康圣访谈40.docx
+2026-05-23 17:05:07,913 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈41.docx
+2026-05-23 17:05:07,914 - main_window - INFO - 成功导入文件: 康圣访谈41.docx
+2026-05-23 17:05:07,945 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈42.docx
+2026-05-23 17:05:07,945 - main_window - INFO - 成功导入文件: 康圣访谈42.docx
+2026-05-23 17:05:07,969 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈 4（董国祥）.docx
+2026-05-23 17:05:07,969 - main_window - INFO - 成功导入文件: 康圣访谈 4（董国祥）.docx
+2026-05-23 17:05:07,989 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈 9（肖雄峰）.docx
+2026-05-23 17:05:07,989 - main_window - INFO - 成功导入文件: 康圣访谈 9（肖雄峰）.docx
+2026-05-23 17:05:08,016 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈 13（张桂）.docx
+2026-05-23 17:05:08,016 - main_window - INFO - 成功导入文件: 康圣访谈 13（张桂）.docx
+2026-05-23 17:05:08,022 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈1（蒋风情）.docx
+2026-05-23 17:05:08,022 - main_window - INFO - 成功导入文件: 康圣访谈1（蒋风情）.docx
+2026-05-23 17:05:08,030 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈2（张思婷）.docx
+2026-05-23 17:05:08,030 - main_window - INFO - 成功导入文件: 康圣访谈2（张思婷）.docx
+2026-05-23 17:05:08,053 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈3（谢文英）.docx
+2026-05-23 17:05:08,053 - main_window - INFO - 成功导入文件: 康圣访谈3（谢文英）.docx
+2026-05-23 17:05:08,072 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈5翟圣.docx
+2026-05-23 17:05:08,073 - main_window - INFO - 成功导入文件: 康圣访谈5翟圣.docx
+2026-05-23 17:05:08,091 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈6黄军涛.docx
+2026-05-23 17:05:08,091 - main_window - INFO - 成功导入文件: 康圣访谈6黄军涛.docx
+2026-05-23 17:05:09,884 - text_numbering - INFO - 为文件 康圣访谈7吴天.docx 中的 149 个句子进行了编号
+2026-05-23 17:05:09,886 - text_numbering - INFO - 为文件 康圣访谈8任作非.docx 中的 120 个句子进行了编号
+2026-05-23 17:05:09,886 - text_numbering - INFO - 为文件 康圣访谈10（黄志利）.docx 中的 150 个句子进行了编号
+2026-05-23 17:05:09,886 - text_numbering - INFO - 为文件 康圣访谈11秦园.docx 中的 177 个句子进行了编号
+2026-05-23 17:05:09,886 - text_numbering - INFO - 为文件 康圣访谈12余桂俊.docx 中的 124 个句子进行了编号
+2026-05-23 17:05:09,886 - text_numbering - INFO - 为文件 康圣访谈14（李续图）.docx 中的 218 个句子进行了编号
+2026-05-23 17:05:09,886 - text_numbering - INFO - 为文件 康圣访谈15（陈进科）.docx 中的 132 个句子进行了编号
+2026-05-23 17:05:09,887 - text_numbering - INFO - 为文件 康圣访谈16.（李妮）.docx 中的 98 个句子进行了编号
+2026-05-23 17:05:09,887 - text_numbering - INFO - 为文件 康圣访谈17.（贾梦思）.docx 中的 80 个句子进行了编号
+2026-05-23 17:05:09,887 - text_numbering - INFO - 为文件 康圣访谈18.（杨伟红）.docx 中的 152 个句子进行了编号
+2026-05-23 17:05:09,888 - text_numbering - INFO - 为文件 康圣访谈19.（吴妍）.docx 中的 149 个句子进行了编号
+2026-05-23 17:05:09,888 - text_numbering - INFO - 为文件 康圣访谈20.（王珮鑫）.docx 中的 118 个句子进行了编号
+2026-05-23 17:05:09,888 - text_numbering - INFO - 为文件 康圣访谈21.docx 中的 188 个句子进行了编号
+2026-05-23 17:05:09,888 - text_numbering - INFO - 为文件 康圣访谈22.docx 中的 126 个句子进行了编号
+2026-05-23 17:05:09,888 - text_numbering - INFO - 为文件 康圣访谈23.docx 中的 127 个句子进行了编号
+2026-05-23 17:05:09,888 - text_numbering - INFO - 为文件 康圣访谈24.docx 中的 120 个句子进行了编号
+2026-05-23 17:05:09,889 - text_numbering - INFO - 为文件 康圣访谈25.docx 中的 96 个句子进行了编号
+2026-05-23 17:05:09,889 - text_numbering - INFO - 为文件 康圣访谈26.docx 中的 97 个句子进行了编号
+2026-05-23 17:05:09,889 - text_numbering - INFO - 为文件 康圣访谈27.docx 中的 178 个句子进行了编号
+2026-05-23 17:05:09,889 - text_numbering - INFO - 为文件 康圣访谈28.docx 中的 155 个句子进行了编号
+2026-05-23 17:05:09,889 - text_numbering - INFO - 为文件 康圣访谈29.docx 中的 140 个句子进行了编号
+2026-05-23 17:05:09,889 - text_numbering - INFO - 为文件 康圣访谈30.docx 中的 180 个句子进行了编号
+2026-05-23 17:05:09,889 - text_numbering - INFO - 为文件 康圣访谈31.docx 中的 135 个句子进行了编号
+2026-05-23 17:05:09,891 - text_numbering - INFO - 为文件 康圣访谈32.docx 中的 233 个句子进行了编号
+2026-05-23 17:05:09,891 - text_numbering - INFO - 为文件 康圣访谈33.docx 中的 127 个句子进行了编号
+2026-05-23 17:05:09,891 - text_numbering - INFO - 为文件 康圣访谈34.docx 中的 256 个句子进行了编号
+2026-05-23 17:05:09,891 - text_numbering - INFO - 为文件 康圣访谈35.docx 中的 205 个句子进行了编号
+2026-05-23 17:05:09,892 - text_numbering - INFO - 为文件 康圣访谈36.docx 中的 196 个句子进行了编号
+2026-05-23 17:05:09,892 - text_numbering - INFO - 为文件 康圣访谈37.docx 中的 176 个句子进行了编号
+2026-05-23 17:05:09,892 - text_numbering - INFO - 为文件 康圣访谈38.docx 中的 134 个句子进行了编号
+2026-05-23 17:05:09,892 - text_numbering - INFO - 为文件 康圣访谈39.docx 中的 202 个句子进行了编号
+2026-05-23 17:05:09,893 - text_numbering - INFO - 为文件 康圣访谈40.docx 中的 86 个句子进行了编号
+2026-05-23 17:05:09,893 - text_numbering - INFO - 为文件 康圣访谈41.docx 中的 104 个句子进行了编号
+2026-05-23 17:05:09,893 - text_numbering - INFO - 为文件 康圣访谈42.docx 中的 182 个句子进行了编号
+2026-05-23 17:05:09,893 - text_numbering - INFO - 为文件 康圣访谈 4（董国祥）.docx 中的 156 个句子进行了编号
+2026-05-23 17:05:09,902 - text_numbering - INFO - 为文件 康圣访谈 9（肖雄峰）.docx 中的 143 个句子进行了编号
+2026-05-23 17:05:09,902 - text_numbering - INFO - 为文件 康圣访谈 13（张桂）.docx 中的 252 个句子进行了编号
+2026-05-23 17:05:09,902 - text_numbering - INFO - 为文件 康圣访谈1（蒋风情）.docx 中的 121 个句子进行了编号
+2026-05-23 17:05:09,902 - text_numbering - INFO - 为文件 康圣访谈2（张思婷）.docx 中的 123 个句子进行了编号
+2026-05-23 17:05:09,902 - text_numbering - INFO - 为文件 康圣访谈3（谢文英）.docx 中的 174 个句子进行了编号
+2026-05-23 17:05:09,902 - text_numbering - INFO - 为文件 康圣访谈5翟圣.docx 中的 163 个句子进行了编号
+2026-05-23 17:05:09,902 - text_numbering - INFO - 为文件 康圣访谈6黄军涛.docx 中的 229 个句子进行了编号
+2026-05-23 17:05:09,920 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈7吴天.docx
+2026-05-23 17:05:09,922 - data_processor - INFO - 精准提取: 康圣访谈7吴天.docx - 42 个受访者段落
+2026-05-23 17:05:09,945 - data_processor - INFO - 处理文件 康圣访谈7吴天.docx: 识别 42 个段落，提取 58 个受访人句子
+2026-05-23 17:05:09,958 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈8任作非.docx
+2026-05-23 17:05:09,960 - data_processor - INFO - 精准提取: 康圣访谈8任作非.docx - 34 个受访者段落
+2026-05-23 17:05:09,977 - data_processor - INFO - 处理文件 康圣访谈8任作非.docx: 识别 34 个段落，提取 48 个受访人句子
+2026-05-23 17:05:09,994 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈10（黄志利）.docx
+2026-05-23 17:05:09,994 - data_processor - INFO - 精准提取: 康圣访谈10（黄志利）.docx - 45 个受访者段落
+2026-05-23 17:05:10,016 - data_processor - INFO - 处理文件 康圣访谈10（黄志利）.docx: 识别 45 个段落，提取 45 个受访人句子
+2026-05-23 17:05:10,043 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈11秦园.docx
+2026-05-23 17:05:10,045 - data_processor - INFO - 精准提取: 康圣访谈11秦园.docx - 35 个受访者段落
+2026-05-23 17:05:10,103 - data_processor - INFO - 处理文件 康圣访谈11秦园.docx: 识别 35 个段落，提取 112 个受访人句子
+2026-05-23 17:05:10,116 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈12余桂俊.docx
+2026-05-23 17:05:10,118 - data_processor - INFO - 精准提取: 康圣访谈12余桂俊.docx - 28 个受访者段落
+2026-05-23 17:05:10,136 - data_processor - INFO - 处理文件 康圣访谈12余桂俊.docx: 识别 28 个段落，提取 57 个受访人句子
+2026-05-23 17:05:10,155 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈14（李续图）.docx
+2026-05-23 17:05:10,157 - data_processor - INFO - 精准提取: 康圣访谈14（李续图）.docx - 26 个受访者段落
+2026-05-23 17:05:10,193 - data_processor - INFO - 处理文件 康圣访谈14（李续图）.docx: 识别 26 个段落，提取 138 个受访人句子
+2026-05-23 17:05:10,205 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈15（陈进科）.docx
+2026-05-23 17:05:10,206 - data_processor - INFO - 精准提取: 康圣访谈15（陈进科）.docx - 24 个受访者段落
+2026-05-23 17:05:10,228 - data_processor - INFO - 处理文件 康圣访谈15（陈进科）.docx: 识别 24 个段落，提取 62 个受访人句子
+2026-05-23 17:05:10,237 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈16.（李妮）.docx
+2026-05-23 17:05:10,238 - data_processor - INFO - 精准提取: 康圣访谈16.（李妮）.docx - 29 个受访者段落
+2026-05-23 17:05:10,249 - data_processor - INFO - 处理文件 康圣访谈16.（李妮）.docx: 识别 29 个段落，提取 30 个受访人句子
+2026-05-23 17:05:10,257 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈17.（贾梦思）.docx
+2026-05-23 17:05:10,258 - data_processor - INFO - 精准提取: 康圣访谈17.（贾梦思）.docx - 19 个受访者段落
+2026-05-23 17:05:10,265 - data_processor - INFO - 处理文件 康圣访谈17.（贾梦思）.docx: 识别 19 个段落，提取 19 个受访人句子
+2026-05-23 17:05:10,278 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈18.（杨伟红）.docx
+2026-05-23 17:05:10,280 - data_processor - INFO - 精准提取: 康圣访谈18.（杨伟红）.docx - 41 个受访者段落
+2026-05-23 17:05:10,313 - data_processor - INFO - 处理文件 康圣访谈18.（杨伟红）.docx: 识别 41 个段落，提取 65 个受访人句子
+2026-05-23 17:05:10,327 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈19.（吴妍）.docx
+2026-05-23 17:05:10,328 - data_processor - INFO - 精准提取: 康圣访谈19.（吴妍）.docx - 43 个受访者段落
+2026-05-23 17:05:10,370 - data_processor - INFO - 处理文件 康圣访谈19.（吴妍）.docx: 识别 43 个段落，提取 62 个受访人句子
+2026-05-23 17:05:10,382 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈20.（王珮鑫）.docx
+2026-05-23 17:05:10,382 - data_processor - INFO - 精准提取: 康圣访谈20.（王珮鑫）.docx - 31 个受访者段落
+2026-05-23 17:05:10,395 - data_processor - INFO - 处理文件 康圣访谈20.（王珮鑫）.docx: 识别 31 个段落，提取 38 个受访人句子
+2026-05-23 17:05:10,409 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈21.docx
+2026-05-23 17:05:10,410 - data_processor - INFO - 精准提取: 康圣访谈21.docx - 51 个受访者段落
+2026-05-23 17:05:10,443 - data_processor - INFO - 处理文件 康圣访谈21.docx: 识别 51 个段落，提取 78 个受访人句子
+2026-05-23 17:05:10,454 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈22.docx
+2026-05-23 17:05:10,456 - data_processor - INFO - 精准提取: 康圣访谈22.docx - 38 个受访者段落
+2026-05-23 17:05:10,478 - data_processor - INFO - 处理文件 康圣访谈22.docx: 识别 38 个段落，提取 41 个受访人句子
+2026-05-23 17:05:10,490 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈23.docx
+2026-05-23 17:05:10,491 - data_processor - INFO - 精准提取: 康圣访谈23.docx - 34 个受访者段落
+2026-05-23 17:05:10,516 - data_processor - INFO - 处理文件 康圣访谈23.docx: 识别 34 个段落，提取 46 个受访人句子
+2026-05-23 17:05:10,527 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈24.docx
+2026-05-23 17:05:10,528 - data_processor - INFO - 精准提取: 康圣访谈24.docx - 31 个受访者段落
+2026-05-23 17:05:10,556 - data_processor - INFO - 处理文件 康圣访谈24.docx: 识别 31 个段落，提取 44 个受访人句子
+2026-05-23 17:05:10,566 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈25.docx
+2026-05-23 17:05:10,566 - data_processor - INFO - 精准提取: 康圣访谈25.docx - 29 个受访者段落
+2026-05-23 17:05:10,577 - data_processor - INFO - 处理文件 康圣访谈25.docx: 识别 29 个段落，提取 25 个受访人句子
+2026-05-23 17:05:10,585 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈26.docx
+2026-05-23 17:05:10,587 - data_processor - INFO - 精准提取: 康圣访谈26.docx - 20 个受访者段落
+2026-05-23 17:05:10,595 - data_processor - INFO - 处理文件 康圣访谈26.docx: 识别 20 个段落，提取 32 个受访人句子
+2026-05-23 17:05:10,623 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈27.docx
+2026-05-23 17:05:10,624 - data_processor - INFO - 精准提取: 康圣访谈27.docx - 55 个受访者段落
+2026-05-23 17:05:10,660 - data_processor - INFO - 处理文件 康圣访谈27.docx: 识别 55 个段落，提取 61 个受访人句子
+2026-05-23 17:05:10,675 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈28.docx
+2026-05-23 17:05:10,676 - data_processor - INFO - 精准提取: 康圣访谈28.docx - 35 个受访者段落
+2026-05-23 17:05:10,700 - data_processor - INFO - 处理文件 康圣访谈28.docx: 识别 35 个段落，提取 68 个受访人句子
+2026-05-23 17:05:10,714 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈29.docx
+2026-05-23 17:05:10,715 - data_processor - INFO - 精准提取: 康圣访谈29.docx - 45 个受访者段落
+2026-05-23 17:05:10,758 - data_processor - INFO - 处理文件 康圣访谈29.docx: 识别 45 个段落，提取 53 个受访人句子
+2026-05-23 17:05:10,775 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈30.docx
+2026-05-23 17:05:10,776 - data_processor - INFO - 精准提取: 康圣访谈30.docx - 51 个受访者段落
+2026-05-23 17:05:10,818 - data_processor - INFO - 处理文件 康圣访谈30.docx: 识别 51 个段落，提取 78 个受访人句子
+2026-05-23 17:05:10,833 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈31.docx
+2026-05-23 17:05:10,834 - data_processor - INFO - 精准提取: 康圣访谈31.docx - 36 个受访者段落
+2026-05-23 17:05:10,862 - data_processor - INFO - 处理文件 康圣访谈31.docx: 识别 36 个段落，提取 51 个受访人句子
+2026-05-23 17:05:10,884 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈32.docx
+2026-05-23 17:05:10,885 - data_processor - INFO - 精准提取: 康圣访谈32.docx - 77 个受访者段落
+2026-05-23 17:05:10,950 - data_processor - INFO - 处理文件 康圣访谈32.docx: 识别 77 个段落，提取 74 个受访人句子
+2026-05-23 17:05:10,965 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈33.docx
+2026-05-23 17:05:10,966 - data_processor - INFO - 精准提取: 康圣访谈33.docx - 22 个受访者段落
+2026-05-23 17:05:10,998 - data_processor - INFO - 处理文件 康圣访谈33.docx: 识别 22 个段落，提取 66 个受访人句子
+2026-05-23 17:05:11,020 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈34.docx
+2026-05-23 17:05:11,021 - data_processor - INFO - 精准提取: 康圣访谈34.docx - 70 个受访者段落
+2026-05-23 17:05:11,082 - data_processor - INFO - 处理文件 康圣访谈34.docx: 识别 70 个段落，提取 70 个受访人句子
+2026-05-23 17:05:11,099 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈35.docx
+2026-05-23 17:05:11,100 - data_processor - INFO - 精准提取: 康圣访谈35.docx - 44 个受访者段落
+2026-05-23 17:05:11,145 - data_processor - INFO - 处理文件 康圣访谈35.docx: 识别 44 个段落，提取 94 个受访人句子
+2026-05-23 17:05:11,172 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈36.docx
+2026-05-23 17:05:11,173 - data_processor - INFO - 精准提取: 康圣访谈36.docx - 68 个受访者段落
+2026-05-23 17:05:11,226 - data_processor - INFO - 处理文件 康圣访谈36.docx: 识别 68 个段落，提取 63 个受访人句子
+2026-05-23 17:05:11,246 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈37.docx
+2026-05-23 17:05:11,247 - data_processor - INFO - 精准提取: 康圣访谈37.docx - 61 个受访者段落
+2026-05-23 17:05:11,283 - data_processor - INFO - 处理文件 康圣访谈37.docx: 识别 61 个段落，提取 65 个受访人句子
+2026-05-23 17:05:11,298 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈38.docx
+2026-05-23 17:05:11,299 - data_processor - INFO - 精准提取: 康圣访谈38.docx - 34 个受访者段落
+2026-05-23 17:05:11,327 - data_processor - INFO - 处理文件 康圣访谈38.docx: 识别 34 个段落，提取 63 个受访人句子
+2026-05-23 17:05:11,358 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈39.docx
+2026-05-23 17:05:11,359 - data_processor - INFO - 精准提取: 康圣访谈39.docx - 63 个受访者段落
+2026-05-23 17:05:11,428 - data_processor - INFO - 处理文件 康圣访谈39.docx: 识别 63 个段落，提取 81 个受访人句子
+2026-05-23 17:05:11,440 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈40.docx
+2026-05-23 17:05:11,441 - data_processor - INFO - 精准提取: 康圣访谈40.docx - 22 个受访者段落
+2026-05-23 17:05:11,451 - data_processor - INFO - 处理文件 康圣访谈40.docx: 识别 22 个段落，提取 28 个受访人句子
+2026-05-23 17:05:11,465 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈41.docx
+2026-05-23 17:05:11,465 - data_processor - INFO - 精准提取: 康圣访谈41.docx - 31 个受访者段落
+2026-05-23 17:05:11,474 - data_processor - INFO - 处理文件 康圣访谈41.docx: 识别 31 个段落，提取 26 个受访人句子
+2026-05-23 17:05:11,504 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈42.docx
+2026-05-23 17:05:11,506 - data_processor - INFO - 精准提取: 康圣访谈42.docx - 38 个受访者段落
+2026-05-23 17:05:11,578 - data_processor - INFO - 处理文件 康圣访谈42.docx: 识别 38 个段落，提取 100 个受访人句子
+2026-05-23 17:05:11,599 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈 4（董国祥）.docx
+2026-05-23 17:05:11,600 - data_processor - INFO - 精准提取: 康圣访谈 4（董国祥）.docx - 47 个受访者段落
+2026-05-23 17:05:11,637 - data_processor - INFO - 处理文件 康圣访谈 4（董国祥）.docx: 识别 47 个段落，提取 65 个受访人句子
+2026-05-23 17:05:11,657 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈 9（肖雄峰）.docx
+2026-05-23 17:05:11,659 - data_processor - INFO - 精准提取: 康圣访谈 9（肖雄峰）.docx - 45 个受访者段落
+2026-05-23 17:05:11,691 - data_processor - INFO - 处理文件 康圣访谈 9（肖雄峰）.docx: 识别 45 个段落，提取 54 个受访人句子
+2026-05-23 17:05:11,717 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈 13（张桂）.docx
+2026-05-23 17:05:11,718 - data_processor - INFO - 精准提取: 康圣访谈 13（张桂）.docx - 51 个受访者段落
+2026-05-23 17:05:11,769 - data_processor - INFO - 处理文件 康圣访谈 13（张桂）.docx: 识别 51 个段落，提取 109 个受访人句子
+2026-05-23 17:05:11,775 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈1（蒋风情）.docx
+2026-05-23 17:05:11,777 - data_processor - INFO - 精准提取: 康圣访谈1（蒋风情）.docx - 28 个受访者段落
+2026-05-23 17:05:11,790 - data_processor - INFO - 处理文件 康圣访谈1（蒋风情）.docx: 识别 28 个段落，提取 57 个受访人句子
+2026-05-23 17:05:11,799 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈2（张思婷）.docx
+2026-05-23 17:05:11,799 - data_processor - INFO - 精准提取: 康圣访谈2（张思婷）.docx - 37 个受访者段落
+2026-05-23 17:05:11,819 - data_processor - INFO - 处理文件 康圣访谈2（张思婷）.docx: 识别 37 个段落，提取 46 个受访人句子
+2026-05-23 17:05:11,840 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈3（谢文英）.docx
+2026-05-23 17:05:11,841 - data_processor - INFO - 精准提取: 康圣访谈3（谢文英）.docx - 49 个受访者段落
+2026-05-23 17:05:11,883 - data_processor - INFO - 处理文件 康圣访谈3（谢文英）.docx: 识别 49 个段落，提取 63 个受访人句子
+2026-05-23 17:05:11,905 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈5翟圣.docx
+2026-05-23 17:05:11,906 - data_processor - INFO - 精准提取: 康圣访谈5翟圣.docx - 32 个受访者段落
+2026-05-23 17:05:11,931 - data_processor - INFO - 处理文件 康圣访谈5翟圣.docx: 识别 32 个段落，提取 81 个受访人句子
+2026-05-23 17:05:11,951 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈6黄军涛.docx
+2026-05-23 17:05:11,953 - data_processor - INFO - 精准提取: 康圣访谈6黄军涛.docx - 46 个受访者段落
+2026-05-23 17:05:11,972 - data_processor - INFO - 处理文件 康圣访谈6黄军涛.docx: 识别 46 个段落，提取 82 个受访人句子
+2026-05-23 17:11:01,946 - enhanced_coding_generator - INFO - 生成 1178 个一阶编码
+2026-05-23 17:11:01,948 - enhanced_coding_generator - INFO - 开始二阶编码分类，共 1178 个一阶编码
+2026-05-23 17:11:20,587 - enhanced_coding_generator - INFO - RAG二阶编码完成: 共 1 个类别
+2026-05-23 17:11:20,587 - enhanced_coding_generator - INFO - 生成 1 个二阶编码
+2026-05-23 17:11:20,588 - enhanced_coding_generator - INFO - 开始三阶编码抽象，共 1 个二阶编码
+2026-05-23 17:11:20,588 - enhanced_coding_generator - INFO - RAG三阶编码完成: 共 1 个类别
+2026-05-23 17:11:20,588 - enhanced_coding_generator - INFO - 生成 1 个三阶编码
+2026-05-23 17:11:20,589 - model_manager - INFO - 开始释放模型资源...
+2026-05-23 17:11:20,589 - model_manager - INFO - 释放抽象重排序模型...
+2026-05-23 17:11:20,589 - model_manager - INFO - 抽象重排序模型已释放
+2026-05-23 17:11:20,590 - model_manager - INFO - 释放抽象重排序tokenizer...
+2026-05-23 17:11:20,591 - model_manager - INFO - 抽象重排序tokenizer已释放
+2026-05-23 17:11:20,591 - model_manager - INFO - 清理PyTorch GPU缓存...
+2026-05-23 17:11:20,839 - model_manager - INFO - PyTorch GPU缓存已清理
+2026-05-23 17:11:20,839 - model_manager - INFO - 模型资源释放完成
+2026-05-23 17:11:20,840 - grounded_theory_coder - INFO - 开始构建编码结构: 一阶1178, 二阶1, 三阶1
+2026-05-23 17:11:20,844 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 和其他公司合作
+2026-05-23 17:11:20,851 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 不涉及到其他人的利益情况下
+2026-05-23 17:11:20,851 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 很有涉及到其他人部分利益
+2026-05-23 17:11:20,865 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 赚钱比较多的项目相对来说那么小
+2026-05-23 17:11:20,891 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 反馈哪里有问题
+2026-05-23 17:11:20,898 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 影响到大家其他人利益
+2026-05-23 17:11:20,899 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 有这么一个契机
+2026-05-23 17:11:20,906 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 没有那么多时间
+2026-05-23 17:11:20,906 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 没有那么多精力
+2026-05-23 17:11:20,923 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 是其他同事发现
+2026-05-23 17:11:20,927 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 定位那么喜欢创新
+2026-05-23 17:11:20,931 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 认为我会愿意听
+2026-05-23 17:11:20,932 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 财务在哪个公司都是最严格部门
+2026-05-23 17:11:20,935 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 医学部其他平台
+2026-05-23 17:11:20,945 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 占用这个时间去执行其他事情
+2026-05-23 17:11:20,953 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 需求量没有这么大
+2026-05-23 17:11:20,968 - grounded_theory_coder - INFO - 自动编号完成: 共1个三阶编码
+2026-05-23 17:11:20,968 - grounded_theory_coder - INFO - 构建了扎根理论编码结构: 1个三阶编码
+2026-05-23 17:11:24,400 - code_validator_tree - INFO - 所有编码都匹配，无需删除
+2026-05-23 17:11:27,869 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈7吴天.docx
+2026-05-23 17:11:27,871 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈8任作非.docx
+2026-05-23 17:11:27,874 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈10（黄志利）.docx
+2026-05-23 17:11:27,883 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈11秦园.docx
+2026-05-23 17:11:27,887 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈12余桂俊.docx
+2026-05-23 17:11:27,897 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈14（李续图）.docx
+2026-05-23 17:11:27,902 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈15（陈进科）.docx
+2026-05-23 17:11:27,903 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈16.（李妮）.docx
+2026-05-23 17:11:27,905 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈17.（贾梦思）.docx
+2026-05-23 17:11:27,908 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈18.（杨伟红）.docx
+2026-05-23 17:11:27,913 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈19.（吴妍）.docx
+2026-05-23 17:11:27,914 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈20.（王珮鑫）.docx
+2026-05-23 17:11:27,917 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈21.docx
+2026-05-23 17:11:27,918 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈22.docx
+2026-05-23 17:11:27,923 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈23.docx
+2026-05-23 17:11:27,927 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈24.docx
+2026-05-23 17:11:27,928 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈25.docx
+2026-05-23 17:11:27,930 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈26.docx
+2026-05-23 17:11:27,932 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈27.docx
+2026-05-23 17:11:27,934 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈28.docx
+2026-05-23 17:11:27,938 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈29.docx
+2026-05-23 17:11:27,940 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈30.docx
+2026-05-23 17:11:27,946 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈31.docx
+2026-05-23 17:11:27,948 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈32.docx
+2026-05-23 17:11:27,958 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈33.docx
+2026-05-23 17:11:27,962 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈34.docx
+2026-05-23 17:11:27,966 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈35.docx
+2026-05-23 17:11:27,970 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈36.docx
+2026-05-23 17:11:27,972 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈37.docx
+2026-05-23 17:11:27,976 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈38.docx
+2026-05-23 17:11:27,980 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈39.docx
+2026-05-23 17:11:27,983 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈40.docx
+2026-05-23 17:11:27,985 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈41.docx
+2026-05-23 17:11:27,994 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈42.docx
+2026-05-23 17:11:27,997 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈 4（董国祥）.docx
+2026-05-23 17:11:28,000 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈 9（肖雄峰）.docx
+2026-05-23 17:11:28,004 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈 13（张桂）.docx
+2026-05-23 17:11:28,005 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈1（蒋风情）.docx
+2026-05-23 17:11:28,008 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈2（张思婷）.docx
+2026-05-23 17:11:28,013 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈3（谢文英）.docx
+2026-05-23 17:11:28,017 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈5翟圣.docx
+2026-05-23 17:11:28,022 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈6黄军涛.docx
+2026-05-23 17:13:40,857 - main_window - INFO - 导航请求: Content='没有，因为之前工作是在实验室，必须一切都...', Number='24'
+2026-05-23 17:13:40,870 - main_window - INFO - 搜索内容: 没有，因为之前工作是在实验室，必须一切都按规定来，因为临床检验这个行业基本都是非常成熟才会用于临床，...
+2026-05-23 17:13:40,871 - main_window - INFO - 成功高亮编码内容
+2026-05-23 17:13:41,447 - main_window - INFO - 导航请求: Content='没有，因为之前工作是在实验室，必须一切都...', Number='24'
+2026-05-23 17:13:41,451 - main_window - INFO - 搜索内容: 没有，因为之前工作是在实验室，必须一切都按规定来，因为临床检验这个行业基本都是非常成熟才会用于临床，...
+2026-05-23 17:13:41,452 - main_window - INFO - 成功高亮编码内容
+2026-05-23 17:13:41,528 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 24
+2026-05-23 17:13:41,529 - main_window - INFO - 最终确定的一阶编码句子编号: 24
+2026-05-23 17:13:41,529 - main_window - INFO - 关联编号完整列表: ['24']
+2026-05-23 17:13:41,529 - main_window - INFO - sentence_details数量: 1
+2026-05-23 17:13:41,538 - main_window - INFO - 弹出对话框句子1 - 编号: 24, 内容前30字: 没有，因为之前工作是在实验室，必须一切都按规定来，因为临床检...
+2026-05-23 17:16:24,707 - main_window - INFO - 导航请求: Content='其实只要你找到了大家的需求，不会说还要去...', Number='6317'
+2026-05-23 17:16:24,747 - main_window - INFO - 搜索内容: 其实只要你找到了大家的需求，不会说还要去鼓动他们什么，大家只是说你帮他们，因为我们把这个需求满足了，...
+2026-05-23 17:16:24,752 - main_window - INFO - 成功高亮编码内容
+2026-05-23 17:16:24,787 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 6317
+2026-05-23 17:16:24,787 - main_window - INFO - 最终确定的一阶编码句子编号: 6317
+2026-05-23 17:16:24,787 - main_window - INFO - 关联编号完整列表: ['6317']
+2026-05-23 17:16:24,787 - main_window - INFO - sentence_details数量: 1
+2026-05-23 17:16:24,787 - main_window - INFO - 弹出对话框句子1 - 编号: 6317, 内容前30字: 其实只要你找到了大家的需求，不会说还要去鼓动他们什么，大家只...
+2026-05-23 17:16:33,217 - main_window - INFO - 导航请求: Content='然后另外可能只有个人的，因为个人的正式工...', Number='367'
+2026-05-23 17:16:33,249 - main_window - INFO - 搜索内容: 然后另外可能只有个人的，因为个人的正式工作应该还是占你的大部分时间,就是说但时间上可能也会精力有限，...
+2026-05-23 17:16:33,251 - main_window - INFO - 成功高亮编码内容
+2026-05-23 17:16:33,323 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 367
+2026-05-23 17:16:33,323 - main_window - INFO - 最终确定的一阶编码句子编号: 367
+2026-05-23 17:16:33,323 - main_window - INFO - 关联编号完整列表: ['367']
+2026-05-23 17:16:33,323 - main_window - INFO - sentence_details数量: 1
+2026-05-23 17:16:33,323 - main_window - INFO - 弹出对话框句子1 - 编号: 367, 内容前30字: 然后另外可能只有个人的，因为个人的正式工作应该还是占你的大部...
+2026-05-23 17:16:43,433 - main_window - INFO - 导航请求: Content='因为目前我们业务越来越多，在武汉市内的，...', Number='479'
+2026-05-23 17:16:43,468 - main_window - INFO - 搜索内容: 因为目前我们业务越来越多，在武汉市内的，之前是我们的总部的物流，但是现在我们在这边的分公司，其实是没...
+2026-05-23 17:16:43,473 - main_window - INFO - 成功高亮编码内容
+2026-05-23 17:16:43,593 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 479
+2026-05-23 17:16:43,594 - main_window - INFO - 最终确定的一阶编码句子编号: 479
+2026-05-23 17:16:43,594 - main_window - INFO - 关联编号完整列表: ['479']
+2026-05-23 17:16:43,594 - main_window - INFO - sentence_details数量: 1
+2026-05-23 17:16:43,594 - main_window - INFO - 弹出对话框句子1 - 编号: 479, 内容前30字: 因为目前我们业务越来越多，在武汉市内的，之前是我们的总部的物...
+2026-05-23 17:19:32,485 - main_window - INFO - 导航请求: Content='然后提出了优化方案后他们不满意的原因是什...', Number='5861'
+2026-05-23 17:19:32,508 - main_window - INFO - 搜索内容: 然后提出了优化方案后他们不满意的原因是什么，是觉得交接的步骤更繁琐了，更耗费时间了，还是一些其他的原...
+2026-05-23 17:19:32,513 - main_window - INFO - 成功高亮编码内容
+2026-05-23 17:19:35,456 - main_window - INFO - 导航请求: Content='没办法给他治疗的，因为我们现在做的是感染...', Number='459'
+2026-05-23 17:19:35,470 - main_window - INFO - 搜索内容: 没办法给他治疗的，因为我们现在做的是感染，都是那种真菌、细菌、病原体的，病情发展很快...
+2026-05-23 17:19:35,471 - main_window - INFO - 成功高亮编码内容
+2026-05-23 17:19:35,545 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 459
+2026-05-23 17:19:35,545 - main_window - INFO - 最终确定的一阶编码句子编号: 459
+2026-05-23 17:19:35,545 - main_window - INFO - 关联编号完整列表: ['459']
+2026-05-23 17:19:35,545 - main_window - INFO - sentence_details数量: 1
+2026-05-23 17:19:35,545 - main_window - INFO - 弹出对话框句子1 - 编号: 459, 内容前30字: 没办法给他治疗的，因为我们现在做的是感染，都是那种真菌、细菌...
+2026-05-23 17:47:55,018 - root - INFO - 基础路径已设置: D:\zthree2 (打包模式: False)
+2026-05-23 17:47:55,560 - root - INFO - 目录已确保存在: D:\zthree2\projects
+2026-05-23 17:47:55,560 - root - INFO - 目录已确保存在: D:\zthree2\data
+2026-05-23 17:47:55,560 - root - INFO - 目录已确保存在: D:\zthree2\local_models
+2026-05-23 17:47:55,562 - root - INFO - 目录已确保存在: D:\zthree2\trained_models
+2026-05-23 17:47:55,562 - root - INFO - 目录已确保存在: D:\zthree2\standard_answers
+2026-05-23 17:47:55,562 - root - INFO - 目录已确保存在: D:\zthree2\output
+2026-05-23 17:47:55,562 - root - INFO - 目录已确保存在: D:\zthree2\cache
+2026-05-23 17:47:55,562 - root - INFO - 目录已确保存在: D:\zthree2\logs
+2026-05-23 17:47:55,562 - root - INFO - 目录已确保存在: D:\zthree2\standard_answers\backups
+2026-05-23 17:47:55,562 - root - INFO - 目录已确保存在: D:\zthree2\standard_answers\modifications
+2026-05-23 17:47:55,562 - root - INFO - 目录已确保存在: D:\zthree2\projects\手动编码保存编码
+2026-05-23 17:47:55,564 - root - INFO - 目录已确保存在: D:\zthree2\projects\手动编码编码树保存
+2026-05-23 17:47:55,564 - __main__ - INFO - 环境初始化成功
+2026-05-23 17:47:59,166 - numexpr.utils - INFO - Note: NumExpr detected 32 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
+2026-05-23 17:47:59,166 - numexpr.utils - INFO - NumExpr defaulting to 16 threads.
+2026-05-23 17:47:59,863 - root - INFO - pyarrow 15.0.0 导入成功
+2026-05-23 17:48:00,165 - semantic_matcher - INFO - psutil 库加载成功
+2026-05-23 17:48:00,275 - semantic_matcher - INFO - sentence-transformers 库加载成功
+2026-05-23 17:48:00,407 - training_manager - INFO - scikit-learn 版本: 1.7.1
+2026-05-23 17:48:00,519 - model_manager - INFO - 使用设备: cuda
+2026-05-23 17:48:00,524 - data_processor - INFO - 已启用精准受访者提取（SpeakerRoleExtractor + QA分类器）
+2026-05-23 17:48:00,535 - coding_library_manager - INFO - 编码库加载成功，包含 2000 个三阶编码和 2975 个二阶编码
+2026-05-23 17:48:00,535 - enhanced_coding_generator - INFO - 编码库管理器初始化成功
+2026-05-23 17:48:00,540 - jieba - DEBUG - Building prefix dict from the default dictionary ...
+2026-05-23 17:48:00,540 - jieba - DEBUG - Loading model from cache C:\Users\Lenovo\AppData\Local\Temp\jieba.cache
+2026-05-23 17:48:00,850 - jieba - DEBUG - Loading model cost 0.310 seconds.
+2026-05-23 17:48:00,850 - jieba - DEBUG - Prefix dict has been built successfully.
+2026-05-23 17:48:00,906 - high_quality_sample_learner - INFO - 加载了 942 个高质量样本 (encoding=gb18030)
+2026-05-23 17:48:00,906 - enhanced_coding_generator - INFO - 高质量样本学习器初始化成功
+2026-05-23 17:48:00,906 - semantic_matcher - INFO - 正在加载sentence-transformer模型: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 17:48:00,907 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cuda:0
+2026-05-23 17:48:00,907 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 17:48:01,369 - semantic_matcher - INFO - 模型加载成功，使用设备: cuda
+2026-05-23 17:48:01,369 - enhanced_coding_generator - INFO - 语义匹配器初始化成功
+2026-05-23 17:48:01,615 - enhanced_coding_generator - INFO - RAG自动编码已启用，运行策略: gpu
+2026-05-23 17:48:01,615 - main_window - INFO - 使用原有的 EnhancedCodingGenerator
+2026-05-23 17:48:01,639 - standard_answer_manager - INFO - 标准答案已加载: v57_20260409_085422.json
+2026-05-23 17:48:01,639 - standard_answer_manager - INFO - 成功加载最新的标准答案: v57_20260409_085422.json
+2026-05-23 17:48:01,775 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-23 17:48:01,877 - model_manager - INFO - Reranker 加载成功: custom_bert_4layer (174MB)
+2026-05-23 17:48:01,880 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cuda:0
+2026-05-23 17:48:01,880 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 17:48:01,949 - model_manager - INFO - Sentence 加载成功 (275MB) from D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 17:48:01,949 - model_manager - INFO - 模型初始化完成
+2026-05-23 17:48:01,949 - main_window - INFO - 模型初始化成功
+2026-05-23 17:48:02,726 - __main__ - INFO - 扎根理论编码分析系统启动成功，主窗口已显示
+2026-05-23 17:48:02,852 - model_manager - INFO - 抽象重排序模型已加载: D:\zthree2\trained_models\abstract_reranker_latest
+2026-05-23 17:48:02,852 - main_window - INFO - 抽象重排序模型预加载成功
+2026-05-23 17:48:03,324 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-23 17:48:03,438 - model_manager - INFO - Reranker 加载成功: custom_bert_4layer (174MB)
+2026-05-23 17:48:03,440 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cuda:0
+2026-05-23 17:48:03,440 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 17:48:03,512 - model_manager - INFO - Sentence 加载成功 (275MB) from D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-23 17:48:03,512 - model_manager - INFO - 模型初始化完成
+2026-05-23 17:48:03,512 - main_window - INFO - 模型初始化成功
+2026-05-23 17:48:03,513 - main_window - INFO - 抽象重排序模型预加载成功
+2026-05-23 17:48:42,026 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈 4（董国祥）.docx
+2026-05-23 17:48:42,026 - main_window - INFO - 成功导入文件: 康圣访谈 4（董国祥）.docx
+2026-05-23 17:48:42,046 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈 9（肖雄峰）.docx
+2026-05-23 17:48:42,046 - main_window - INFO - 成功导入文件: 康圣访谈 9（肖雄峰）.docx
+2026-05-23 17:48:42,074 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈 13（张桂）.docx
+2026-05-23 17:48:42,074 - main_window - INFO - 成功导入文件: 康圣访谈 13（张桂）.docx
+2026-05-23 17:48:42,082 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈1（蒋风情）.docx
+2026-05-23 17:48:42,082 - main_window - INFO - 成功导入文件: 康圣访谈1（蒋风情）.docx
+2026-05-23 17:48:42,087 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈2（张思婷）.docx
+2026-05-23 17:48:42,087 - main_window - INFO - 成功导入文件: 康圣访谈2（张思婷）.docx
+2026-05-23 17:48:42,107 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈3（谢文英）.docx
+2026-05-23 17:48:42,107 - main_window - INFO - 成功导入文件: 康圣访谈3（谢文英）.docx
+2026-05-23 17:48:42,130 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈5翟圣.docx
+2026-05-23 17:48:42,130 - main_window - INFO - 成功导入文件: 康圣访谈5翟圣.docx
+2026-05-23 17:48:42,152 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈6黄军涛.docx
+2026-05-23 17:48:42,152 - main_window - INFO - 成功导入文件: 康圣访谈6黄军涛.docx
+2026-05-23 17:48:42,169 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈7吴天.docx
+2026-05-23 17:48:42,169 - main_window - INFO - 成功导入文件: 康圣访谈7吴天.docx
+2026-05-23 17:48:42,186 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈8任作非.docx
+2026-05-23 17:48:42,187 - main_window - INFO - 成功导入文件: 康圣访谈8任作非.docx
+2026-05-23 17:48:42,204 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈10（黄志利）.docx
+2026-05-23 17:48:42,204 - main_window - INFO - 成功导入文件: 康圣访谈10（黄志利）.docx
+2026-05-23 17:48:42,229 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈11秦园.docx
+2026-05-23 17:48:42,229 - main_window - INFO - 成功导入文件: 康圣访谈11秦园.docx
+2026-05-23 17:48:42,241 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈12余桂俊.docx
+2026-05-23 17:48:42,244 - main_window - INFO - 成功导入文件: 康圣访谈12余桂俊.docx
+2026-05-23 17:48:42,256 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈14（李续图）.docx
+2026-05-23 17:48:42,256 - main_window - INFO - 成功导入文件: 康圣访谈14（李续图）.docx
+2026-05-23 17:48:42,274 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈15（陈进科）.docx
+2026-05-23 17:48:42,274 - main_window - INFO - 成功导入文件: 康圣访谈15（陈进科）.docx
+2026-05-23 17:48:42,286 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈16.（李妮）.docx
+2026-05-23 17:48:42,286 - main_window - INFO - 成功导入文件: 康圣访谈16.（李妮）.docx
+2026-05-23 17:48:42,294 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈17.（贾梦思）.docx
+2026-05-23 17:48:42,294 - main_window - INFO - 成功导入文件: 康圣访谈17.（贾梦思）.docx
+2026-05-23 17:48:42,308 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈18.（杨伟红）.docx
+2026-05-23 17:48:42,308 - main_window - INFO - 成功导入文件: 康圣访谈18.（杨伟红）.docx
+2026-05-23 17:48:42,324 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈19.（吴妍）.docx
+2026-05-23 17:48:42,324 - main_window - INFO - 成功导入文件: 康圣访谈19.（吴妍）.docx
+2026-05-23 17:48:42,334 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈20.（王珮鑫）.docx
+2026-05-23 17:48:42,334 - main_window - INFO - 成功导入文件: 康圣访谈20.（王珮鑫）.docx
+2026-05-23 17:48:42,350 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈21.docx
+2026-05-23 17:48:42,350 - main_window - INFO - 成功导入文件: 康圣访谈21.docx
+2026-05-23 17:48:42,362 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈22.docx
+2026-05-23 17:48:42,362 - main_window - INFO - 成功导入文件: 康圣访谈22.docx
+2026-05-23 17:48:42,375 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈23.docx
+2026-05-23 17:48:42,375 - main_window - INFO - 成功导入文件: 康圣访谈23.docx
+2026-05-23 17:48:42,385 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈24.docx
+2026-05-23 17:48:42,385 - main_window - INFO - 成功导入文件: 康圣访谈24.docx
+2026-05-23 17:48:42,394 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈25.docx
+2026-05-23 17:48:42,395 - main_window - INFO - 成功导入文件: 康圣访谈25.docx
+2026-05-23 17:48:42,404 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈26.docx
+2026-05-23 17:48:42,404 - main_window - INFO - 成功导入文件: 康圣访谈26.docx
+2026-05-23 17:48:42,424 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈27.docx
+2026-05-23 17:48:42,424 - main_window - INFO - 成功导入文件: 康圣访谈27.docx
+2026-05-23 17:48:42,439 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈28.docx
+2026-05-23 17:48:42,439 - main_window - INFO - 成功导入文件: 康圣访谈28.docx
+2026-05-23 17:48:42,454 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈29.docx
+2026-05-23 17:48:42,454 - main_window - INFO - 成功导入文件: 康圣访谈29.docx
+2026-05-23 17:48:42,475 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈30.docx
+2026-05-23 17:48:42,475 - main_window - INFO - 成功导入文件: 康圣访谈30.docx
+2026-05-23 17:48:42,490 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈31.docx
+2026-05-23 17:48:42,490 - main_window - INFO - 成功导入文件: 康圣访谈31.docx
+2026-05-23 17:48:42,514 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈32.docx
+2026-05-23 17:48:42,514 - main_window - INFO - 成功导入文件: 康圣访谈32.docx
+2026-05-23 17:48:42,530 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈33.docx
+2026-05-23 17:48:42,530 - main_window - INFO - 成功导入文件: 康圣访谈33.docx
+2026-05-23 17:48:42,553 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈34.docx
+2026-05-23 17:48:42,553 - main_window - INFO - 成功导入文件: 康圣访谈34.docx
+2026-05-23 17:48:42,572 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈35.docx
+2026-05-23 17:48:42,572 - main_window - INFO - 成功导入文件: 康圣访谈35.docx
+2026-05-23 17:48:42,601 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈36.docx
+2026-05-23 17:48:42,601 - main_window - INFO - 成功导入文件: 康圣访谈36.docx
+2026-05-23 17:48:42,625 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈37.docx
+2026-05-23 17:48:42,625 - main_window - INFO - 成功导入文件: 康圣访谈37.docx
+2026-05-23 17:48:42,641 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈38.docx
+2026-05-23 17:48:42,642 - main_window - INFO - 成功导入文件: 康圣访谈38.docx
+2026-05-23 17:48:42,682 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈39.docx
+2026-05-23 17:48:42,682 - main_window - INFO - 成功导入文件: 康圣访谈39.docx
+2026-05-23 17:48:42,694 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈40.docx
+2026-05-23 17:48:42,694 - main_window - INFO - 成功导入文件: 康圣访谈40.docx
+2026-05-23 17:48:42,709 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈41.docx
+2026-05-23 17:48:42,710 - main_window - INFO - 成功导入文件: 康圣访谈41.docx
+2026-05-23 17:48:42,738 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈42.docx
+2026-05-23 17:48:42,740 - main_window - INFO - 成功导入文件: 康圣访谈42.docx
+2026-05-23 17:48:49,215 - text_numbering - INFO - 为文件 康圣访谈 4（董国祥）.docx 中的 156 个句子进行了编号
+2026-05-23 17:48:49,215 - text_numbering - INFO - 为文件 康圣访谈 9（肖雄峰）.docx 中的 143 个句子进行了编号
+2026-05-23 17:48:49,216 - text_numbering - INFO - 为文件 康圣访谈 13（张桂）.docx 中的 252 个句子进行了编号
+2026-05-23 17:48:49,216 - text_numbering - INFO - 为文件 康圣访谈1（蒋风情）.docx 中的 121 个句子进行了编号
+2026-05-23 17:48:49,216 - text_numbering - INFO - 为文件 康圣访谈2（张思婷）.docx 中的 123 个句子进行了编号
+2026-05-23 17:48:49,216 - text_numbering - INFO - 为文件 康圣访谈3（谢文英）.docx 中的 174 个句子进行了编号
+2026-05-23 17:48:49,216 - text_numbering - INFO - 为文件 康圣访谈5翟圣.docx 中的 163 个句子进行了编号
+2026-05-23 17:48:49,216 - text_numbering - INFO - 为文件 康圣访谈6黄军涛.docx 中的 229 个句子进行了编号
+2026-05-23 17:48:49,216 - text_numbering - INFO - 为文件 康圣访谈7吴天.docx 中的 149 个句子进行了编号
+2026-05-23 17:48:49,217 - text_numbering - INFO - 为文件 康圣访谈8任作非.docx 中的 120 个句子进行了编号
+2026-05-23 17:48:49,217 - text_numbering - INFO - 为文件 康圣访谈10（黄志利）.docx 中的 150 个句子进行了编号
+2026-05-23 17:48:49,218 - text_numbering - INFO - 为文件 康圣访谈11秦园.docx 中的 177 个句子进行了编号
+2026-05-23 17:48:49,218 - text_numbering - INFO - 为文件 康圣访谈12余桂俊.docx 中的 124 个句子进行了编号
+2026-05-23 17:48:49,218 - text_numbering - INFO - 为文件 康圣访谈14（李续图）.docx 中的 218 个句子进行了编号
+2026-05-23 17:48:49,218 - text_numbering - INFO - 为文件 康圣访谈15（陈进科）.docx 中的 132 个句子进行了编号
+2026-05-23 17:48:49,218 - text_numbering - INFO - 为文件 康圣访谈16.（李妮）.docx 中的 98 个句子进行了编号
+2026-05-23 17:48:49,219 - text_numbering - INFO - 为文件 康圣访谈17.（贾梦思）.docx 中的 80 个句子进行了编号
+2026-05-23 17:48:49,219 - text_numbering - INFO - 为文件 康圣访谈18.（杨伟红）.docx 中的 152 个句子进行了编号
+2026-05-23 17:48:49,219 - text_numbering - INFO - 为文件 康圣访谈19.（吴妍）.docx 中的 149 个句子进行了编号
+2026-05-23 17:48:49,219 - text_numbering - INFO - 为文件 康圣访谈20.（王珮鑫）.docx 中的 118 个句子进行了编号
+2026-05-23 17:48:49,219 - text_numbering - INFO - 为文件 康圣访谈21.docx 中的 188 个句子进行了编号
+2026-05-23 17:48:49,220 - text_numbering - INFO - 为文件 康圣访谈22.docx 中的 126 个句子进行了编号
+2026-05-23 17:48:49,220 - text_numbering - INFO - 为文件 康圣访谈23.docx 中的 127 个句子进行了编号
+2026-05-23 17:48:49,220 - text_numbering - INFO - 为文件 康圣访谈24.docx 中的 120 个句子进行了编号
+2026-05-23 17:48:49,220 - text_numbering - INFO - 为文件 康圣访谈25.docx 中的 96 个句子进行了编号
+2026-05-23 17:48:49,220 - text_numbering - INFO - 为文件 康圣访谈26.docx 中的 97 个句子进行了编号
+2026-05-23 17:48:49,221 - text_numbering - INFO - 为文件 康圣访谈27.docx 中的 178 个句子进行了编号
+2026-05-23 17:48:49,221 - text_numbering - INFO - 为文件 康圣访谈28.docx 中的 155 个句子进行了编号
+2026-05-23 17:48:49,221 - text_numbering - INFO - 为文件 康圣访谈29.docx 中的 140 个句子进行了编号
+2026-05-23 17:48:49,221 - text_numbering - INFO - 为文件 康圣访谈30.docx 中的 180 个句子进行了编号
+2026-05-23 17:48:49,221 - text_numbering - INFO - 为文件 康圣访谈31.docx 中的 135 个句子进行了编号
+2026-05-23 17:48:49,222 - text_numbering - INFO - 为文件 康圣访谈32.docx 中的 233 个句子进行了编号
+2026-05-23 17:48:49,222 - text_numbering - INFO - 为文件 康圣访谈33.docx 中的 127 个句子进行了编号
+2026-05-23 17:48:49,222 - text_numbering - INFO - 为文件 康圣访谈34.docx 中的 256 个句子进行了编号
+2026-05-23 17:48:49,223 - text_numbering - INFO - 为文件 康圣访谈35.docx 中的 205 个句子进行了编号
+2026-05-23 17:48:49,224 - text_numbering - INFO - 为文件 康圣访谈36.docx 中的 196 个句子进行了编号
+2026-05-23 17:48:49,224 - text_numbering - INFO - 为文件 康圣访谈37.docx 中的 176 个句子进行了编号
+2026-05-23 17:48:49,224 - text_numbering - INFO - 为文件 康圣访谈38.docx 中的 134 个句子进行了编号
+2026-05-23 17:48:49,224 - text_numbering - INFO - 为文件 康圣访谈39.docx 中的 202 个句子进行了编号
+2026-05-23 17:48:49,224 - text_numbering - INFO - 为文件 康圣访谈40.docx 中的 86 个句子进行了编号
+2026-05-23 17:48:49,225 - text_numbering - INFO - 为文件 康圣访谈41.docx 中的 104 个句子进行了编号
+2026-05-23 17:48:49,225 - text_numbering - INFO - 为文件 康圣访谈42.docx 中的 182 个句子进行了编号
+2026-05-23 17:48:49,245 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈 4（董国祥）.docx
+2026-05-23 17:48:49,247 - data_processor - INFO - 精准提取: 康圣访谈 4（董国祥）.docx - 47 个受访者段落
+2026-05-23 17:48:49,285 - data_processor - INFO - 处理文件 康圣访谈 4（董国祥）.docx: 识别 47 个段落，提取 65 个受访人句子
+2026-05-23 17:48:49,305 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈 9（肖雄峰）.docx
+2026-05-23 17:48:49,306 - data_processor - INFO - 精准提取: 康圣访谈 9（肖雄峰）.docx - 45 个受访者段落
+2026-05-23 17:48:49,336 - data_processor - INFO - 处理文件 康圣访谈 9（肖雄峰）.docx: 识别 45 个段落，提取 54 个受访人句子
+2026-05-23 17:48:49,362 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈 13（张桂）.docx
+2026-05-23 17:48:49,365 - data_processor - INFO - 精准提取: 康圣访谈 13（张桂）.docx - 51 个受访者段落
+2026-05-23 17:48:49,413 - data_processor - INFO - 处理文件 康圣访谈 13（张桂）.docx: 识别 51 个段落，提取 109 个受访人句子
+2026-05-23 17:48:49,421 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈1（蒋风情）.docx
+2026-05-23 17:48:49,422 - data_processor - INFO - 精准提取: 康圣访谈1（蒋风情）.docx - 28 个受访者段落
+2026-05-23 17:48:49,436 - data_processor - INFO - 处理文件 康圣访谈1（蒋风情）.docx: 识别 28 个段落，提取 57 个受访人句子
+2026-05-23 17:48:49,444 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈2（张思婷）.docx
+2026-05-23 17:48:49,445 - data_processor - INFO - 精准提取: 康圣访谈2（张思婷）.docx - 37 个受访者段落
+2026-05-23 17:48:49,464 - data_processor - INFO - 处理文件 康圣访谈2（张思婷）.docx: 识别 37 个段落，提取 46 个受访人句子
+2026-05-23 17:48:49,487 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈3（谢文英）.docx
+2026-05-23 17:48:49,488 - data_processor - INFO - 精准提取: 康圣访谈3（谢文英）.docx - 49 个受访者段落
+2026-05-23 17:48:49,532 - data_processor - INFO - 处理文件 康圣访谈3（谢文英）.docx: 识别 49 个段落，提取 63 个受访人句子
+2026-05-23 17:48:49,552 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈5翟圣.docx
+2026-05-23 17:48:49,554 - data_processor - INFO - 精准提取: 康圣访谈5翟圣.docx - 32 个受访者段落
+2026-05-23 17:48:49,580 - data_processor - INFO - 处理文件 康圣访谈5翟圣.docx: 识别 32 个段落，提取 81 个受访人句子
+2026-05-23 17:48:49,599 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈6黄军涛.docx
+2026-05-23 17:48:49,601 - data_processor - INFO - 精准提取: 康圣访谈6黄军涛.docx - 46 个受访者段落
+2026-05-23 17:48:49,620 - data_processor - INFO - 处理文件 康圣访谈6黄军涛.docx: 识别 46 个段落，提取 82 个受访人句子
+2026-05-23 17:48:49,634 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈7吴天.docx
+2026-05-23 17:48:49,636 - data_processor - INFO - 精准提取: 康圣访谈7吴天.docx - 42 个受访者段落
+2026-05-23 17:48:49,658 - data_processor - INFO - 处理文件 康圣访谈7吴天.docx: 识别 42 个段落，提取 58 个受访人句子
+2026-05-23 17:48:49,672 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈8任作非.docx
+2026-05-23 17:48:49,672 - data_processor - INFO - 精准提取: 康圣访谈8任作非.docx - 34 个受访者段落
+2026-05-23 17:48:49,691 - data_processor - INFO - 处理文件 康圣访谈8任作非.docx: 识别 34 个段落，提取 48 个受访人句子
+2026-05-23 17:48:49,708 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈10（黄志利）.docx
+2026-05-23 17:48:49,708 - data_processor - INFO - 精准提取: 康圣访谈10（黄志利）.docx - 45 个受访者段落
+2026-05-23 17:48:49,728 - data_processor - INFO - 处理文件 康圣访谈10（黄志利）.docx: 识别 45 个段落，提取 45 个受访人句子
+2026-05-23 17:48:49,755 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈11秦园.docx
+2026-05-23 17:48:49,757 - data_processor - INFO - 精准提取: 康圣访谈11秦园.docx - 35 个受访者段落
+2026-05-23 17:48:49,814 - data_processor - INFO - 处理文件 康圣访谈11秦园.docx: 识别 35 个段落，提取 112 个受访人句子
+2026-05-23 17:48:49,828 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈12余桂俊.docx
+2026-05-23 17:48:49,828 - data_processor - INFO - 精准提取: 康圣访谈12余桂俊.docx - 28 个受访者段落
+2026-05-23 17:48:49,846 - data_processor - INFO - 处理文件 康圣访谈12余桂俊.docx: 识别 28 个段落，提取 57 个受访人句子
+2026-05-23 17:48:49,865 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈14（李续图）.docx
+2026-05-23 17:48:49,866 - data_processor - INFO - 精准提取: 康圣访谈14（李续图）.docx - 26 个受访者段落
+2026-05-23 17:48:49,900 - data_processor - INFO - 处理文件 康圣访谈14（李续图）.docx: 识别 26 个段落，提取 138 个受访人句子
+2026-05-23 17:48:49,912 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈15（陈进科）.docx
+2026-05-23 17:48:49,913 - data_processor - INFO - 精准提取: 康圣访谈15（陈进科）.docx - 24 个受访者段落
+2026-05-23 17:48:49,933 - data_processor - INFO - 处理文件 康圣访谈15（陈进科）.docx: 识别 24 个段落，提取 62 个受访人句子
+2026-05-23 17:48:49,941 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈16.（李妮）.docx
+2026-05-23 17:48:49,943 - data_processor - INFO - 精准提取: 康圣访谈16.（李妮）.docx - 29 个受访者段落
+2026-05-23 17:48:49,953 - data_processor - INFO - 处理文件 康圣访谈16.（李妮）.docx: 识别 29 个段落，提取 30 个受访人句子
+2026-05-23 17:48:49,963 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈17.（贾梦思）.docx
+2026-05-23 17:48:49,964 - data_processor - INFO - 精准提取: 康圣访谈17.（贾梦思）.docx - 19 个受访者段落
+2026-05-23 17:48:49,971 - data_processor - INFO - 处理文件 康圣访谈17.（贾梦思）.docx: 识别 19 个段落，提取 19 个受访人句子
+2026-05-23 17:48:49,984 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈18.（杨伟红）.docx
+2026-05-23 17:48:49,985 - data_processor - INFO - 精准提取: 康圣访谈18.（杨伟红）.docx - 41 个受访者段落
+2026-05-23 17:48:50,016 - data_processor - INFO - 处理文件 康圣访谈18.（杨伟红）.docx: 识别 41 个段落，提取 65 个受访人句子
+2026-05-23 17:48:50,030 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈19.（吴妍）.docx
+2026-05-23 17:48:50,032 - data_processor - INFO - 精准提取: 康圣访谈19.（吴妍）.docx - 43 个受访者段落
+2026-05-23 17:48:50,071 - data_processor - INFO - 处理文件 康圣访谈19.（吴妍）.docx: 识别 43 个段落，提取 62 个受访人句子
+2026-05-23 17:48:50,083 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈20.（王珮鑫）.docx
+2026-05-23 17:48:50,083 - data_processor - INFO - 精准提取: 康圣访谈20.（王珮鑫）.docx - 31 个受访者段落
+2026-05-23 17:48:50,095 - data_processor - INFO - 处理文件 康圣访谈20.（王珮鑫）.docx: 识别 31 个段落，提取 38 个受访人句子
+2026-05-23 17:48:50,108 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈21.docx
+2026-05-23 17:48:50,109 - data_processor - INFO - 精准提取: 康圣访谈21.docx - 51 个受访者段落
+2026-05-23 17:48:50,140 - data_processor - INFO - 处理文件 康圣访谈21.docx: 识别 51 个段落，提取 78 个受访人句子
+2026-05-23 17:48:50,152 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈22.docx
+2026-05-23 17:48:50,153 - data_processor - INFO - 精准提取: 康圣访谈22.docx - 38 个受访者段落
+2026-05-23 17:48:50,174 - data_processor - INFO - 处理文件 康圣访谈22.docx: 识别 38 个段落，提取 41 个受访人句子
+2026-05-23 17:48:50,186 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈23.docx
+2026-05-23 17:48:50,187 - data_processor - INFO - 精准提取: 康圣访谈23.docx - 34 个受访者段落
+2026-05-23 17:48:50,211 - data_processor - INFO - 处理文件 康圣访谈23.docx: 识别 34 个段落，提取 46 个受访人句子
+2026-05-23 17:48:50,222 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈24.docx
+2026-05-23 17:48:50,223 - data_processor - INFO - 精准提取: 康圣访谈24.docx - 31 个受访者段落
+2026-05-23 17:48:50,250 - data_processor - INFO - 处理文件 康圣访谈24.docx: 识别 31 个段落，提取 44 个受访人句子
+2026-05-23 17:48:50,260 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈25.docx
+2026-05-23 17:48:50,260 - data_processor - INFO - 精准提取: 康圣访谈25.docx - 29 个受访者段落
+2026-05-23 17:48:50,270 - data_processor - INFO - 处理文件 康圣访谈25.docx: 识别 29 个段落，提取 25 个受访人句子
+2026-05-23 17:48:50,278 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈26.docx
+2026-05-23 17:48:50,279 - data_processor - INFO - 精准提取: 康圣访谈26.docx - 20 个受访者段落
+2026-05-23 17:48:50,287 - data_processor - INFO - 处理文件 康圣访谈26.docx: 识别 20 个段落，提取 32 个受访人句子
+2026-05-23 17:48:50,306 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈27.docx
+2026-05-23 17:48:50,307 - data_processor - INFO - 精准提取: 康圣访谈27.docx - 55 个受访者段落
+2026-05-23 17:48:50,341 - data_processor - INFO - 处理文件 康圣访谈27.docx: 识别 55 个段落，提取 61 个受访人句子
+2026-05-23 17:48:50,354 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈28.docx
+2026-05-23 17:48:50,356 - data_processor - INFO - 精准提取: 康圣访谈28.docx - 35 个受访者段落
+2026-05-23 17:48:50,380 - data_processor - INFO - 处理文件 康圣访谈28.docx: 识别 35 个段落，提取 68 个受访人句子
+2026-05-23 17:48:50,394 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈29.docx
+2026-05-23 17:48:50,395 - data_processor - INFO - 精准提取: 康圣访谈29.docx - 45 个受访者段落
+2026-05-23 17:48:50,434 - data_processor - INFO - 处理文件 康圣访谈29.docx: 识别 45 个段落，提取 53 个受访人句子
+2026-05-23 17:48:50,453 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈30.docx
+2026-05-23 17:48:50,454 - data_processor - INFO - 精准提取: 康圣访谈30.docx - 51 个受访者段落
+2026-05-23 17:48:50,494 - data_processor - INFO - 处理文件 康圣访谈30.docx: 识别 51 个段落，提取 78 个受访人句子
+2026-05-23 17:48:50,507 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈31.docx
+2026-05-23 17:48:50,508 - data_processor - INFO - 精准提取: 康圣访谈31.docx - 36 个受访者段落
+2026-05-23 17:48:50,534 - data_processor - INFO - 处理文件 康圣访谈31.docx: 识别 36 个段落，提取 51 个受访人句子
+2026-05-23 17:48:50,563 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈32.docx
+2026-05-23 17:48:50,564 - data_processor - INFO - 精准提取: 康圣访谈32.docx - 77 个受访者段落
+2026-05-23 17:48:50,626 - data_processor - INFO - 处理文件 康圣访谈32.docx: 识别 77 个段落，提取 74 个受访人句子
+2026-05-23 17:48:50,641 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈33.docx
+2026-05-23 17:48:50,642 - data_processor - INFO - 精准提取: 康圣访谈33.docx - 22 个受访者段落
+2026-05-23 17:48:50,671 - data_processor - INFO - 处理文件 康圣访谈33.docx: 识别 22 个段落，提取 66 个受访人句子
+2026-05-23 17:48:50,692 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈34.docx
+2026-05-23 17:48:50,694 - data_processor - INFO - 精准提取: 康圣访谈34.docx - 70 个受访者段落
+2026-05-23 17:48:50,751 - data_processor - INFO - 处理文件 康圣访谈34.docx: 识别 70 个段落，提取 70 个受访人句子
+2026-05-23 17:48:50,767 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈35.docx
+2026-05-23 17:48:50,769 - data_processor - INFO - 精准提取: 康圣访谈35.docx - 44 个受访者段落
+2026-05-23 17:48:50,811 - data_processor - INFO - 处理文件 康圣访谈35.docx: 识别 44 个段落，提取 94 个受访人句子
+2026-05-23 17:48:50,838 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈36.docx
+2026-05-23 17:48:50,839 - data_processor - INFO - 精准提取: 康圣访谈36.docx - 68 个受访者段落
+2026-05-23 17:48:50,888 - data_processor - INFO - 处理文件 康圣访谈36.docx: 识别 68 个段落，提取 63 个受访人句子
+2026-05-23 17:48:50,907 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈37.docx
+2026-05-23 17:48:50,909 - data_processor - INFO - 精准提取: 康圣访谈37.docx - 61 个受访者段落
+2026-05-23 17:48:50,942 - data_processor - INFO - 处理文件 康圣访谈37.docx: 识别 61 个段落，提取 65 个受访人句子
+2026-05-23 17:48:50,956 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈38.docx
+2026-05-23 17:48:50,958 - data_processor - INFO - 精准提取: 康圣访谈38.docx - 34 个受访者段落
+2026-05-23 17:48:50,985 - data_processor - INFO - 处理文件 康圣访谈38.docx: 识别 34 个段落，提取 63 个受访人句子
+2026-05-23 17:48:51,013 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈39.docx
+2026-05-23 17:48:51,015 - data_processor - INFO - 精准提取: 康圣访谈39.docx - 63 个受访者段落
+2026-05-23 17:48:51,080 - data_processor - INFO - 处理文件 康圣访谈39.docx: 识别 63 个段落，提取 81 个受访人句子
+2026-05-23 17:48:51,092 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈40.docx
+2026-05-23 17:48:51,092 - data_processor - INFO - 精准提取: 康圣访谈40.docx - 22 个受访者段落
+2026-05-23 17:48:51,103 - data_processor - INFO - 处理文件 康圣访谈40.docx: 识别 22 个段落，提取 28 个受访人句子
+2026-05-23 17:48:51,116 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈41.docx
+2026-05-23 17:48:51,117 - data_processor - INFO - 精准提取: 康圣访谈41.docx - 31 个受访者段落
+2026-05-23 17:48:51,125 - data_processor - INFO - 处理文件 康圣访谈41.docx: 识别 31 个段落，提取 26 个受访人句子
+2026-05-23 17:48:51,155 - data_processor - INFO - 成功读取Word文档: D:/c盘/文本样本/康圣访谈42.docx
+2026-05-23 17:48:51,157 - data_processor - INFO - 精准提取: 康圣访谈42.docx - 38 个受访者段落
+2026-05-23 17:48:51,224 - data_processor - INFO - 处理文件 康圣访谈42.docx: 识别 38 个段落，提取 100 个受访人句子
+2026-05-23 17:54:48,091 - enhanced_coding_generator - INFO - 生成 1178 个一阶编码
+2026-05-23 17:54:48,093 - enhanced_coding_generator - INFO - 开始二阶编码分类，共 1178 个一阶编码
+2026-05-23 17:55:05,922 - enhanced_coding_generator - INFO - RAG二阶编码完成: 共 1 个类别
+2026-05-23 17:55:05,922 - enhanced_coding_generator - INFO - 生成 1 个二阶编码
+2026-05-23 17:55:05,923 - enhanced_coding_generator - INFO - 开始三阶编码抽象，共 1 个二阶编码
+2026-05-23 17:55:05,923 - enhanced_coding_generator - INFO - RAG三阶编码完成: 共 1 个类别
+2026-05-23 17:55:05,923 - enhanced_coding_generator - INFO - 生成 1 个三阶编码
+2026-05-23 17:55:05,924 - model_manager - INFO - 开始释放模型资源...
+2026-05-23 17:55:05,924 - model_manager - INFO - 释放抽象重排序模型...
+2026-05-23 17:55:05,924 - model_manager - INFO - 抽象重排序模型已释放
+2026-05-23 17:55:05,924 - model_manager - INFO - 释放抽象重排序tokenizer...
+2026-05-23 17:55:05,925 - model_manager - INFO - 抽象重排序tokenizer已释放
+2026-05-23 17:55:05,925 - model_manager - INFO - 清理PyTorch GPU缓存...
+2026-05-23 17:55:05,997 - model_manager - INFO - PyTorch GPU缓存已清理
+2026-05-23 17:55:05,997 - model_manager - INFO - 模型资源释放完成
+2026-05-23 17:55:05,998 - grounded_theory_coder - INFO - 开始构建编码结构: 一阶1178, 二阶1, 三阶1
+2026-05-23 17:55:06,005 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 需求量没有这么大
+2026-05-23 17:55:06,026 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 反馈哪里有问题
+2026-05-23 17:55:06,029 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 没有说给你个具体方案
+2026-05-23 17:55:06,045 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 流程哪里有
+2026-05-23 17:55:06,049 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 客户需求在哪里
+2026-05-23 17:55:06,052 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 不涉及到其他人的利益情况下
+2026-05-23 17:55:06,056 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 流程没有那么长
+2026-05-23 17:55:06,069 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 有这么一个契机
+2026-05-23 17:55:06,082 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 有这么部分案例
+2026-05-23 17:55:06,083 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 认为我会愿意听
+2026-05-23 17:55:06,089 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 没有那么多时间处理
+2026-05-23 17:55:06,095 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 创新能力
+2026-05-23 17:55:06,095 - grounded_theory_coder - INFO - 过滤低质量一阶编码: 创新能力
+2026-05-23 17:55:06,126 - grounded_theory_coder - INFO - 自动编号完成: 共1个三阶编码
+2026-05-23 17:55:06,126 - grounded_theory_coder - INFO - 构建了扎根理论编码结构: 1个三阶编码
+2026-05-23 17:55:09,721 - code_validator_tree - INFO - 所有编码都匹配，无需删除
+2026-05-23 17:55:13,503 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈 4（董国祥）.docx
+2026-05-23 17:55:13,506 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈 9（肖雄峰）.docx
+2026-05-23 17:55:13,512 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈 13（张桂）.docx
+2026-05-23 17:55:13,514 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈1（蒋风情）.docx
+2026-05-23 17:55:13,518 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈2（张思婷）.docx
+2026-05-23 17:55:13,521 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈3（谢文英）.docx
+2026-05-23 17:55:13,528 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈5翟圣.docx
+2026-05-23 17:55:13,534 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈6黄军涛.docx
+2026-05-23 17:55:13,536 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈7吴天.docx
+2026-05-23 17:55:13,538 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈8任作非.docx
+2026-05-23 17:55:13,541 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈10（黄志利）.docx
+2026-05-23 17:55:13,552 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈11秦园.docx
+2026-05-23 17:55:13,554 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈12余桂俊.docx
+2026-05-23 17:55:13,566 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈14（李续图）.docx
+2026-05-23 17:55:13,572 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈15（陈进科）.docx
+2026-05-23 17:55:13,572 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈16.（李妮）.docx
+2026-05-23 17:55:13,574 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈17.（贾梦思）.docx
+2026-05-23 17:55:13,577 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈18.（杨伟红）.docx
+2026-05-23 17:55:13,583 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈19.（吴妍）.docx
+2026-05-23 17:55:13,583 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈20.（王珮鑫）.docx
+2026-05-23 17:55:13,586 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈21.docx
+2026-05-23 17:55:13,588 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈22.docx
+2026-05-23 17:55:13,593 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈23.docx
+2026-05-23 17:55:13,597 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈24.docx
+2026-05-23 17:55:13,597 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈25.docx
+2026-05-23 17:55:13,597 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈26.docx
+2026-05-23 17:55:13,597 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈27.docx
+2026-05-23 17:55:13,606 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈28.docx
+2026-05-23 17:55:13,608 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈29.docx
+2026-05-23 17:55:13,613 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈30.docx
+2026-05-23 17:55:13,619 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈31.docx
+2026-05-23 17:55:13,622 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈32.docx
+2026-05-23 17:55:13,632 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈33.docx
+2026-05-23 17:55:13,636 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈34.docx
+2026-05-23 17:55:13,638 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈35.docx
+2026-05-23 17:55:13,645 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈36.docx
+2026-05-23 17:55:13,646 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈37.docx
+2026-05-23 17:55:13,650 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈38.docx
+2026-05-23 17:55:13,655 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈39.docx
+2026-05-23 17:55:13,658 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈40.docx
+2026-05-23 17:55:13,658 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈41.docx
+2026-05-23 17:55:13,669 - main_window - INFO - 已保存自动编码内容到缓存: 康圣访谈42.docx
+2026-05-23 18:13:33,010 - main_window - INFO - 导航请求: Content='但是如果某一个市场部的人员认为这个项目很...', Number='597'
+2026-05-23 18:13:33,058 - main_window - INFO - 搜索内容: 但是如果某一个市场部的人员认为这个项目很好，私下里跟我们实验员说我们先私下做着看看行不行，成功了就跟...
+2026-05-23 18:13:33,061 - main_window - INFO - 成功高亮编码内容
+2026-05-23 18:13:33,274 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 597
+2026-05-23 18:13:33,274 - main_window - INFO - 最终确定的一阶编码句子编号: 597
+2026-05-23 18:13:33,274 - main_window - INFO - 关联编号完整列表: ['597']
+2026-05-23 18:13:33,274 - main_window - INFO - sentence_details数量: 1
+2026-05-23 18:13:33,275 - main_window - INFO - 弹出对话框句子1 - 编号: 597, 内容前30字: 但是如果某一个市场部的人员认为这个项目很好，私下里跟我们实验...
+2026-05-23 18:13:35,214 - main_window - INFO - 导航请求: Content='所以这个问题应该说可能是我们这种所谓的市...', Number='2195'
+2026-05-23 18:13:35,244 - main_window - INFO - 搜索内容: 所以这个问题应该说可能是我们这种所谓的市场部人员，我们市场部因为不是直接去销售，我们虽然是和销量挂钩...
+2026-05-23 18:13:35,258 - main_window - INFO - 成功高亮编码内容
+2026-05-23 18:13:35,639 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 2195
+2026-05-23 18:13:35,639 - main_window - INFO - 最终确定的一阶编码句子编号: 2195
+2026-05-23 18:13:35,639 - main_window - INFO - 关联编号完整列表: ['2195']
+2026-05-23 18:13:35,639 - main_window - INFO - sentence_details数量: 1
+2026-05-23 18:13:35,639 - main_window - INFO - 弹出对话框句子1 - 编号: 2195, 内容前30字: 所以这个问题应该说可能是我们这种所谓的市场部人员，我们市场部...
+2026-05-23 18:13:42,563 - main_window - INFO - 导航请求: Content='然后我们现在会接触更多的这种所谓转化医学...', Number='2133'
+2026-05-23 18:13:42,569 - main_window - INFO - 搜索内容: 然后我们现在会接触更多的这种所谓转化医学网，临床和有科研需求的方向去做转化，去做一些项目的引进...
+2026-05-23 18:13:42,569 - main_window - INFO - 成功高亮编码内容
+2026-05-23 18:13:47,040 - main_window - INFO - 导航请求: Content='比如我们因为我负责团队管理，肯定对成本这...', Number='4139'
+2026-05-23 18:13:47,067 - main_window - INFO - 搜索内容: 比如我们因为我负责团队管理，肯定对成本这一块都会有控制的，虽然你说没有做，我们公司可能每个公司管理不...
+2026-05-23 18:13:47,067 - main_window - INFO - 成功高亮编码内容
+2026-05-23 18:13:47,132 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 4139
+2026-05-23 18:13:47,132 - main_window - INFO - 最终确定的一阶编码句子编号: 4139
+2026-05-23 18:13:47,132 - main_window - INFO - 关联编号完整列表: ['4139']
+2026-05-23 18:13:47,132 - main_window - INFO - sentence_details数量: 1
+2026-05-23 18:13:47,132 - main_window - INFO - 弹出对话框句子1 - 编号: 4139, 内容前30字: 比如我们因为我负责团队管理，肯定对成本这一块都会有控制的，虽...
+2026-05-23 18:13:53,082 - main_window - INFO - 导航请求: Content='因为你的制度是要求所有人规范化管理，就是...', Number='791'
+2026-05-23 18:13:53,096 - main_window - INFO - 搜索内容: 因为你的制度是要求所有人规范化管理，就是要求所有人高度统一，但是你的创新就要求不断激发出新的想法，激...
+2026-05-23 18:13:53,100 - main_window - INFO - 成功高亮编码内容
+2026-05-23 18:14:02,684 - __main__ - INFO - 应用程序正常退出

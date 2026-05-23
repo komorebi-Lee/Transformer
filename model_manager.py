@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 class EnhancedModelManager:
-    """增强的模型管理器 - 修复版本"""
+    """增强的模型管理器 — 研发即交付，直接加载目标模型"""
 
     def __init__(self):
         self.models = {}
@@ -60,7 +60,19 @@ class EnhancedModelManager:
         # 嵌入向量缓存
         self.embedding_cache = {}
 
+        # 懒加载状态控制（避免重复初始化和日志刷屏）
+        self._lazy_init_attempted = False
+        self._warned_not_loaded = False
+
         logger.info(f"使用设备: {self.device}")
+
+    # =========================================================================
+    # 模型加载
+    # =========================================================================
+
+    def _model_path(self, model_name: str) -> str:
+        """模型名 → local_models 路径"""
+        return os.path.join(self.local_model_dir, model_name.replace('/', '_'))
 
     def ensure_abstract_reranker_loaded(self) -> bool:
         """确保抽象重排序模型已加载（仅尝试一次，避免在循环里反复加载）。
@@ -83,38 +95,58 @@ class EnhancedModelManager:
             return False
 
     def initialize_models(self) -> bool:
-        """初始化所有需要的模型"""
-        try:
-            # 加载BERT模型
-            bert_path = os.path.join(self.local_model_dir, Config.DEFAULT_MODEL_NAME)
-            if os.path.exists(bert_path):
-                logger.info("加载本地BERT模型")
-                self.tokenizers['bert'] = AutoTokenizer.from_pretrained(bert_path)
-                self.models['bert'] = AutoModel.from_pretrained(bert_path).to(self.device)
-                self.is_model_loaded = True
-                logger.info("BERT模型初始化成功")
-            else:
-                logger.error("BERT模型不存在，请先运行 download_models.py")
-                return False
+        """初始化模型：加载 4 层 BERT + bge-small-zh-v1.5"""
+        rr_name = Config.RERANKER_MODEL_NAME
+        st_name = Config.SENTENCE_MODEL_NAME
 
-            # 加载sentence-transformer模型
-            sentence_model_path = os.path.join(self.local_model_dir, "sentence-transformer")
-            if os.path.exists(sentence_model_path):
+        logger.info(f"加载模型: reranker={rr_name}, sentence={st_name}")
+
+        # 1. 加载 reranker 基座（4 层 BERT）
+        rr_path = self._model_path(rr_name)
+        if os.path.exists(rr_path):
+            try:
+                self.tokenizers['bert'] = AutoTokenizer.from_pretrained(rr_path)
+                self.models['bert'] = AutoModel.from_pretrained(rr_path).to(self.device)
+                self.is_model_loaded = True
+                logger.info(f"Reranker 加载成功: {rr_name} ({self._dir_mb(rr_path):.0f}MB)")
+            except Exception as e:
+                logger.error(f"Reranker 加载失败: {e}")
+                return False
+        else:
+            logger.error(f"Reranker 模型不存在: {rr_path}")
+            logger.error("请先运行: python model_builder.py")
+            return False
+
+        # 2. 加载 sentence 模型（按优先级搜索多个路径）
+        st_path = self._model_path(st_name)
+        st_search = [
+            st_path,                                          # local_models/bge-small-zh-v1.5
+            os.path.join(self.local_model_dir, "sentence-transformer"),  # 旧版兼容
+        ]
+        for sp in st_search:
+            if os.path.exists(sp):
                 try:
                     from sentence_transformers import SentenceTransformer
-                    logger.info("加载本地sentence-transformer模型")
-                    self.models['sentence'] = SentenceTransformer(sentence_model_path).to(self.device)
-                    self.is_model_loaded = True
-                    logger.info("sentence-transformer初始化成功")
+                    self.models['sentence'] = SentenceTransformer(sp).to(self.device)
+                    logger.info(f"Sentence 加载成功 ({self._dir_mb(sp):.0f}MB) from {sp}")
+                    break
                 except Exception as e:
-                    logger.warning(f"sentence-transformer模型加载失败: {e}")
+                    logger.warning(f"Sentence 加载失败 ({sp}): {e}")
 
-            logger.info("模型初始化完成")
-            return True
+        logger.info("模型初始化完成")
+        return True
 
-        except Exception as e:
-            logger.error(f"模型初始化失败: {e}")
-            return False
+    def _dir_mb(self, path: str) -> float:
+        """目录大小 (MB)"""
+        if not os.path.isdir(path):
+            return 0
+        total = 0
+        for dp, _, fns in os.walk(path):
+            for fn in fns:
+                fp = os.path.join(dp, fn)
+                if os.path.isfile(fp):
+                    total += os.path.getsize(fp)
+        return total / (1024 * 1024)
 
     def get_embeddings(self, texts: List[str], model_type: str = 'bert') -> np.ndarray:
         """获取文本嵌入"""
@@ -132,13 +164,22 @@ class EnhancedModelManager:
                 self.embedding_cache[cache_key] = embeddings
                 return embeddings
 
-            # 默认使用BERT模型
+            # 默认使用BERT模型；首次调用时尝试自动初始化
             if not self.is_model_loaded:
-                logger.warning("模型未加载，使用降级模式")
-                embeddings = self.get_simple_embeddings(texts)
-                # 缓存结果
-                self.embedding_cache[cache_key] = embeddings
-                return embeddings
+                if not self._lazy_init_attempted:
+                    self._lazy_init_attempted = True
+                    try:
+                        self.initialize_models()
+                    except Exception as init_err:
+                        logger.warning(f"模型懒初始化失败，使用降级模式: {init_err}")
+                if not self.is_model_loaded:
+                    if not self._warned_not_loaded:
+                        logger.warning("模型未加载，使用降级模式")
+                        self._warned_not_loaded = True
+                    embeddings = self.get_simple_embeddings(texts)
+                    # 缓存结果
+                    self.embedding_cache[cache_key] = embeddings
+                    return embeddings
 
             tokenizer = self.tokenizers['bert']
             model = self.models['bert']

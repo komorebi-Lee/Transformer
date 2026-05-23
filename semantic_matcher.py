@@ -45,7 +45,7 @@ class SemanticMatcher:
         
         # 使用配置中定义的模型名称
         if model_name is None:
-            model_name = "sentence-transformer"
+            model_name = Config.SENTENCE_MODEL_NAME
         
         # 使用本地模型路径
         self.model_name = os.path.join(Config.LOCAL_MODELS_DIR, model_name)
