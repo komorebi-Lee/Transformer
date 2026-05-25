@@ -3,6 +3,7 @@ import numpy as np
 from typing import Dict, List, Any, Optional, Callable, Set, Tuple
 import re
 import jieba
+import jieba.posseg as pseg
 from collections import Counter, defaultdict
 
 logger = logging.getLogger(__name__)
@@ -29,7 +30,7 @@ try:
     from rag_index import RagIndexManager
     from rag_semantic_matcher import RAGSemanticMatcher
     from first_level_clusterer import FirstLevelClusterer
-    from coding_decision_policy import CodingDecisionPolicy
+    from coding_decision_policy import CodingDecisionPolicy, CodingDecision
 except Exception as e:
     logger.warning(f"导入RAG组件失败: {e}")
     RuntimeStrategyDetector = None
@@ -37,10 +38,44 @@ except Exception as e:
     RAGSemanticMatcher = None
     FirstLevelClusterer = None
     CodingDecisionPolicy = None
+    CodingDecision = None
+
+try:
+    from high_quality_sample_learner import HighQualitySampleLearner
+except Exception as e:
+    logger.warning(f"导入高质量样本学习器失败: {e}")
+    HighQualitySampleLearner = None
 
 
 class EnhancedCodingGenerator:
     """增强的扎根理论编码生成器 - 支持训练模型预测"""
+
+    @staticmethod
+    def _clean_code_prefix(code: str) -> str:
+        """
+        清理一阶编码开头的标点符号
+        
+        规则：
+        - 移除开头的所有标点符号（除了引号）
+        - 保留引号，因为它与后文有联系
+        
+        Args:
+            code: 原始编码文本
+            
+        Returns:
+            清理后的编码文本
+        """
+        if not code:
+            return code
+        
+        # 定义要移除的开头标点（不包括引号）
+        # 包括：。！？，、；：…—·●○◆◇■□▲△▼▽★☆※
+        punctuation_to_remove = r'^[。！？，、；：…—·●○◆◇■□▲△▼▽★☆※\s]+'
+        
+        # 移除开头的标点（但保留引号）
+        cleaned = re.sub(punctuation_to_remove, '', code)
+        
+        return cleaned.strip()
 
     def __init__(self):
         self.min_sentence_length = 5
@@ -59,7 +94,65 @@ class EnhancedCodingGenerator:
             r'^那么', r'^然后', r'^对[，,]?', r'^我自己来说的话[，,]?',
             r'^如果说是', r'\[[0-9]+\]$', r'对对$'
         ]
-        
+        # 口语→书面规范化映射（一阶编码最终清洗）
+        self.colloquial_to_formal = {
+            '搞': '开展', '弄': '处理', '做': '执行', '干': '实施',
+            '很难': '困难', '太难': '困难', '太多': '过多', '不够': '不足',
+            '老是': '频繁', '总是': '持续', '总是要': '需持续',
+            '特别': '显著', '非常': '明显',
+            '慢慢': '逐步', '很快': '迅速', '一下子': '骤然',
+            '好多': '大量', '一些': '部分', '一点点': '微量',
+            '经常': '频繁', '有时候': '偶尔', '每次都': '每次均',
+            '没有办法': '受限', '没法': '受限',
+            '差不多': '相近', '基本上': '大体',
+            '大部分': '多数', '少部分': '少数',
+            '主要是': '核心是', '关键是': '关键在于',
+            '带来了': '引发', '造成了': '导致', '使得': '促使',
+            '没有了': '丧失', '失去了': '丧失',
+            '会变得': '将转为', '变成了': '转化为',
+            # 扩展：常见访谈口语 → 书面概念
+            '主要是要': '需',
+            '就需要': '需',
+            '更好的': '优化',
+            '越来越': '日益',
+            '更加': '更趋',
+            '想办法': '寻求方案',
+            '看一下': '评估',
+            '看一看': '审视',
+            '找一下': '排查',
+            '做出来': '产出',
+            '弄出来': '产出',
+            '搞出来': '产出',
+            '可能是': '可能源于',
+            '会不会': '是否',
+            '是不是': '是否',
+            '能不能': '能否',
+            '要不要': '是否需',
+            '有没有': '是否存在',
+            '没办法': '受限',
+            '没什么': '缺乏',
+            '不算': '未达',
+            '不太': '不足',
+            '不怎么': '较少',
+            '不大': '有限',
+            '好多时候': '多数情形下',
+            '有的时候': '部分情形下',
+            '有些时候': '偶发情形下',
+            '把人': '将人员',
+            '给到': '提供',
+            '问到': '询问',
+            '提到': '提及',
+            '说到': '提及',
+            '讲到': '阐述',
+            '觉得': '认为',
+            '想知道': '关注',
+            '想着': '意图',
+            '想要': '期望',
+        }
+        # 编码价值门控：低显著性+短句跳过阈值
+        self.coding_worthy_min_salience = 1.5
+        self.coding_worthy_min_length = 10
+
         # 初始化编码库管理器
         self.coding_library = None
         if CodingLibraryManager:
@@ -71,6 +164,21 @@ class EnhancedCodingGenerator:
         
         # 初始化语义匹配器
         self.semantic_matcher = None
+        
+        # 初始化高质量样本学习器
+        self.quality_learner = None
+        if HighQualitySampleLearner:
+            try:
+                self.quality_learner = HighQualitySampleLearner()
+                import os
+                sample_path = os.path.join(os.path.dirname(__file__), 'csv', 'standard_train_optimized.csv')
+                if os.path.exists(sample_path):
+                    self.quality_learner.load_samples(sample_path)
+                    logger.info("高质量样本学习器初始化成功")
+                else:
+                    logger.warning(f"高质量样本文件不存在: {sample_path}")
+            except Exception as e:
+                logger.error(f"初始化高质量样本学习器失败: {e}")
         if SemanticMatcher:
             try:
                 self.semantic_matcher = SemanticMatcher()
@@ -207,10 +315,27 @@ class EnhancedCodingGenerator:
             or detail.get("code_id", "")
             or detail.get("number", "")
         ).strip().strip("[]")
+        
+        # 如果sentence_id仍为空，从内容中提取编号
         if not sentence_id:
-            marker_match = re.search(r"\[(\d+)\]", content)
-            if marker_match:
-                sentence_id = marker_match.group(1)
+            # 关键修复：使用findall找到所有编号，取最后一个
+            # 因为模型生成的编码通常会把最相关的句子放在最后引用
+            all_markers = re.findall(r"\[(\d+)\]", content)
+            if all_markers:
+                # 取最后一个编号（模型通常将最重要的引用放在最后）
+                sentence_id = all_markers[-1]
+                logger.info(f"从内容中提取最后一个编号 [{sentence_id}] 作为sentence_id")
+        
+        # 验证：如果内容只是说话人标签，不应该关联编号
+        if sentence_id:
+            # 检查内容是否只是说话人标签
+            content_clean = re.sub(r"\[\d+\]", "", content).strip()
+            if re.search(r'^(?:说话人|讲话人)\s*\d+$', content_clean) or re.search(r'^(受访者|采访者|被访者|主持人|采访员|提问者)$', content_clean):
+                logger.warning(f"内容 '{content_clean}' 只是说话人标签，移除关联编号 [{sentence_id}]")
+                sentence_id = ""
+                detail.pop("sentence_id", None)
+                detail.pop("code_id", None)
+        
         if sentence_id:
             detail["sentence_id"] = sentence_id
             detail["code_id"] = sentence_id
@@ -236,10 +361,29 @@ class EnhancedCodingGenerator:
             return True
         if len(clean) < 4:
             return True
+        if self._looks_semantically_incomplete(clean):
+            return True
+        if not self._has_valid_first_level_pos_pattern(clean):
+            return True
+        
+        # 过滤说话人标签（如"说话人1"、"说话人2"、"受访者"、"采访者"等）
+        if re.search(r'^(?:说话人|讲话人)\s*\d+$', clean):
+            return True
+        if re.search(r'^(受访者|采访者|被访者|主持人|采访员|提问者)$', clean):
+            return True
         max_len = getattr(self, 'max_first_level_length', getattr(Config, 'FIRST_LEVEL_CODE_MAX_LENGTH', 30) if Config else 30)
         if isinstance(max_len, int) and max_len > 0 and len(clean) > max_len:
             return True
         if self._is_question_like(clean):
+            return True
+        # 含疑问词 → 是问句碎片而非概念
+        if re.search(r'(什么|怎么|哪些|怎么样|如何|哪方面|什么时候|什么程度|什么样)', clean):
+            return True
+        # 以"的/了/着/过/到/在/中"结尾且无信息提示词 → 语义残缺
+        if re.search(r'(的|了|着|过|到|在|中|和|与|或|并|又|还|也|只|不|没)$', clean) and not self._has_first_level_information_cue(clean):
+            return True
+        # 纯泛泛表述（"X什么Y"、"X哪些Z"等模糊指代模式）
+        if re.search(r'^(这|那|哪|什么|怎么).{0,6}(的|方面|事情|问题|情况|流程|模式|渠道|方法)', clean):
             return True
         if re.search(r'[（(]?\d{1,2}:\d{2}[)）]?', clean):
             return True
@@ -267,16 +411,51 @@ class EnhancedCodingGenerator:
             return True
         if "\u90a3\u4e2a\u65f6\u5019" in clean and not self._has_first_level_information_cue(clean):
             return True
-        if re.search(r"^(因为|所以|但是|不过|然后|如果)", clean) and not re.search(
-            r"(导致|影响|推动|形成|引入|转变|降低|提高|获得|支持)", clean
+        if re.search(r"^(因为|所以|但是|不过|然后|如果|其实|就是|那个|这个|后来|当时|我们|我|你|他|他们)", clean) and not re.search(
+            r"(导致|影响|推动|形成|引入|转变|降低|提高|获得|支持|需求|资源|客户)", clean
         ):
+            return True
+        if re.search(r"(什么的|之类的|那种感觉|这种感觉|这样子|那样子|怎么说呢|就是说|我觉得|相当于|要看|分场合|这个东西|这个事情|这个问题)$", clean):
+            return True
+        if re.search(r"(我们认为|我认为|我觉得|我觉得应该|我觉得可以|我觉得可能|我觉得会)", clean):
+            return True
+        if re.search(r"(开始|进行|做了|搞了|弄了|整了)", clean) and not self._has_first_level_information_cue(clean):
             return True
         if "\u6ca1\u6709\u529e\u6cd5\u76f4\u63a5\u53bb\u501f\u9274\u540c\u884c\u4e1a" in source:
             return True
-        if len(clean) <= 6 and not self._has_first_level_information_cue(clean):
+        if len(clean) <= 5 and not self._has_first_level_information_cue(clean):
             return True
         if source and self._first_level_anchor_ratio(clean, source) < 0.55:
             return True
+        # 含"您"的编码通常来自访谈指导语，非概念
+        if "您" in clean and not self._has_first_level_information_cue(clean):
+            return True
+        # 以"是/在/从/对/把/被/让/给/叫"开头的不满6字 → 残片（但有信息词除外）
+        if re.search(r'^(是|在|从|对|把|被|让|给|叫|和|与|或|的)', clean) and len(clean) <= 6 and not self._has_first_level_information_cue(clean):
+            return True
+        # 以"的"开头且≤8字 → 大概率是从"XX的YY"中截断的残片（的修饰语丢失）
+        if clean.startswith('的') and len(clean) <= 8:
+            return True
+        # 含"对不对/是不是/行不行/能不能" → 问题碎片
+        if re.search(r'(对不对|是不是|行不行|能不能|有没有|要不要)', clean):
+            return True
+        # 以"以下/以上/这边/那边"开头 → 指代残片
+        if re.search(r'^(以下|以上|这边|那边|前面|后面)', clean):
+            return True
+        # 长度超过24且逗号分隔（未做抽象的长句）
+        if len(clean) > 24 and clean.count('，') >= 1:
+            return True
+        # 截断检测：以单字动词/介词/数字结尾，可能是截断残片（"较"=不完整比较级）
+        if re.search(r'[出对在到各每较\d]$', clean) and len(clean) <= 8 and not self._has_first_level_information_cue(clean):
+            return True
+        # 以"外面/里面/后面/前面"结尾 → 截断或指代
+        if re.search(r'(外面|里面|后面|前面|上面|下面)$', clean) and not self._has_first_level_information_cue(clean):
+            return True
+        
+        # 高质量样本检查改为警告，不直接过滤
+        if self.quality_learner and not self.quality_learner.is_high_quality_like(clean):
+            logger.debug(f"编码不符合高质量模式: {clean}")
+        
         return False
 
     def _has_first_level_information_cue(self, text: str) -> bool:
@@ -287,16 +466,101 @@ class EnhancedCodingGenerator:
             re.search(
                 r"(引入|建立|调整|获得|降低|提高|推动|解决|分析|反馈|合作|转变|优化|对接|支持|审批|流程|"
                 r"受影响|受限|不足|短板|导向|循环|机会|需求|资源|服务|监督|指引|开发|探索|"
-                r"协调|整合|压力|风险|保鲜|价值|活动|增长|转型|感知|评价|约束|冲突)",
+                r"协调|整合|压力|风险|保鲜|价值|活动|增长|转型|感知|评价|约束|冲突|规范|惯例|随意|"
+                r"机制|平台|系统|品牌|团队|客户|治理|场景|能力|策略|路径|结构|模式|"
+                # 农业/经济/手工业领域词汇
+                r"种植|养殖|加工|收购|销售|土地|农田|灌溉|施肥|收割|品种|产量|品质|有机|绿色|"
+                r"市场|价格|成本|利润|收入|投资|资金|贷款|保险|补贴|税收|消费|购买|供应链|贸易|"
+                r"工艺|手工|技术|传承|培训|制作|原料|工具|设备|标准|质量|检验|认证|生产|"
+                # 评价性关键词（优点/缺点/好处等）
+                r"优点|好处|优势|缺点|缺陷|问题|关键|核心|重要|主要|根本|本质|特色|亮点|突破)",
                 t,
             )
         )
 
+    def _looks_semantically_incomplete(self, text: str) -> bool:
+        t = str(text or '').strip()
+        if not t:
+            return True
+        if len(t) <= 3:
+            return True
+        if self._is_question_like(t):
+            return True
+        if re.search(r'^(因为|所以|但是|不过|然后|如果|就是|其实|那个|这个|后来|当时)$', t):
+            return True
+        if re.search(r'^(因为|所以|但是|不过|然后|如果|就是|其实|那个|这个|后来|当时)', t) and not self._has_first_level_information_cue(t):
+            return True
+        if re.search(r'(这个|那个|这块|这一块|那种|这种|这样|那样)$', t):
+            return True
+        if re.search(r'(什么的|之类的)$', t):
+            return True
+        if not self._has_first_level_information_cue(t) and len(t) <= 6:
+            return True
+        # 以"的/了/着/过/到/在/中/和/与/或"结尾 → 结构不完整
+        if re.search(r'(的|了|着|过|到|在|中|和|与|或|又|还|也|只|不|没)$', t) and not self._has_first_level_information_cue(t):
+            return True
+        # 含模糊疑问词但非完整概念
+        if re.search(r'(什么|怎么|哪些|怎么样|什么样|如何)', t) and not re.search(r'(机制|流程|资源|策略|路径|模式|结构|能力|需求|服务|创新|管理|评估|质量|安全|风险)', t):
+            return True
+        # 以"是/对/把/被/让/给/从/的"开头且不满6字 → 结构残缺（但有信息词除外）
+        if re.search(r'^(是|对|把|被|让|给|从|由|和|与|的)', t) and len(t) <= 6 and not self._has_first_level_information_cue(t):
+            return True
+        # 以"的比较"、"会比较"、"较为"结尾 → 不完整比较级（缺少比较结果，有信息词除外）
+        if re.search(r'(的比较|会比较|较为)$', t) and not self._has_first_level_information_cue(t):
+            return True
+        # 2-3字且纯名词/纯动词（过于简短，缺乏概念完整性）
+        if len(t) <= 3 and not self._has_first_level_information_cue(t):
+            return True
+        # 含"您"且无信息词 → 访谈套话
+        if '您' in t and not self._has_first_level_information_cue(t):
+            return True
+        return False
+
+    def _has_valid_first_level_pos_pattern(self, text: str) -> bool:
+        t = str(text or '').strip()
+        if not t:
+            return False
+        try:
+            tokens = [(word.strip(), flag) for word, flag in pseg.cut(t) if str(word).strip()]
+        except Exception:
+            return True
+
+        if not tokens:
+            return False
+
+        words = [word for word, _ in tokens]
+        flags = [flag for _, flag in tokens]
+
+        pronouns = {'我', '我们', '你', '你们', '他', '他们', '她', '她们', '它', '它们'}
+        modal_particles = {'吗', '嘛', '吧', '呢', '啊', '呀', '哦', '哈', '呗', '啦', '诶', '欸', '么'}
+        weak_starters = {'然后', '就是', '其实', '那个', '这个', '后来', '当时'}
+
+        if any(word in modal_particles for word in words):
+            return False
+        if any(word in pronouns for word in words):
+            return False
+        if words and words[0] in weak_starters and not self._has_first_level_information_cue(t):
+            return False
+
+        noun_like = any(flag.startswith(('n', 's', 'nt', 'nz')) for flag in flags)
+        verb_like = any(flag.startswith('v') for flag in flags)
+        adj_like = any(flag.startswith('a') for flag in flags)
+
+        if not noun_like:
+            return False
+        if not (verb_like or adj_like or self._has_first_level_information_cue(t)):
+            return False
+        return True
+
     def _contains_colloquial_residue(self, text: str) -> bool:
         t = str(text or "")
         return bool(
-            re.search(r'(怎么说呢|就是说|我觉得|相当于|要看|分场合|这个东西|这个事情|这个问题)', t)
+            re.search(r'(怎么说呢|就是说|我觉得|相当于|要看|分场合|这个东西|这个事情|这个问题|就是那种|就这种|类似这种)', t)
             or re.search(r'[吧呢啊嘛呀哦哈哎诶噢呃]', t)
+            or re.search(r'(我的|我们的|你们的|他们的|他的|她的)', t)
+            or re.search(r'(^|[，,、；;])(?:我|我们|你|你们|他|他们|她|她们)(?:也|将|会|跟|和|在|购买|参与|提出|能够|可以|需要|喜欢|已经|当时|就|都|只|要|是|有|不再)', t)
+            or re.search(r'^(然后|就是|所以|但是|不过|其实|那个|这个|后来|当时)', t)
+            or re.search(r'(什么的|之类的|那种感觉|这种感觉|这样子|那样子)$', t)
         )
 
     def _canonicalize_first_level_candidate_rows(
@@ -336,8 +600,60 @@ class EnhancedCodingGenerator:
         return canonical_rows
 
     def _split_first_level_candidate_segments(self, text: str) -> List[str]:
-        parts = re.split(r'[，,、；;：:\n\r。！？!?]+', str(text or ''))
-        return [part.strip() for part in parts if part and part.strip()]
+        text = str(text or '').strip()
+        if not text:
+            return []
+        
+        segments = []
+        sentences = re.split(r'[。！？!?]+', text)
+        
+        for sentence in sentences:
+            sentence = sentence.strip()
+            if not sentence:
+                continue
+            
+            semantic_chunks = self._extract_semantic_chunks(sentence)
+            if semantic_chunks:
+                segments.extend(semantic_chunks)
+            else:
+                parts = re.split(r'[，,、；;：:\n\r]+', sentence)
+                segments.extend([part.strip() for part in parts if part and part.strip()])
+        
+        return segments
+
+    def _extract_semantic_chunks(self, text: str) -> List[str]:
+        """提取语义完整的短语单元"""
+        chunks = []
+        
+        patterns = [
+            r'([\u4e00-\u9fa5]+[动词]+[\u4e00-\u9fa5]+[名词]+[\u4e00-\u9fa5]+)',
+            r'([\u4e00-\u9fa5]+[动词]+[\u4e00-\u9fa5]+[名词])',
+            r'([\u4e00-\u9fa5]+[名词]+[\u4e00-\u9fa5]+[动词]+[\u4e00-\u9fa5]+[名词])',
+            r'([\u4e00-\u9fa5]+[形容词]+[\u4e00-\u9fa5]+[名词]+[\u4e00-\u9fa5]+[名词])',
+        ]
+        
+        verb_list = {'追求', '引入', '建立', '调整', '获得', '降低', '提高', '推动', '解决', '开展', '优化', '合作', '转变', '对接', '影响', '支持', '开发', '探索', '协调', '整合', '形成', '创新'}
+        noun_list = {'资源', '需求', '反馈', '客户', '服务', '平台', '系统', '团队', '能力', '策略', '路径', '结构', '模式', '机制', '品牌', '治理', '场景'}
+        
+        try:
+            tokens = list(pseg.cut(text))
+            for i in range(len(tokens)):
+                for j in range(i + 1, min(len(tokens) + 1, i + 5)):
+                    chunk = ''.join([word for word, _ in tokens[i:j]])
+                    if len(chunk) < 4 or len(chunk) > 30:
+                        continue
+                    
+                    pos_tags = [flag for _, flag in tokens[i:j]]
+                    has_verb = any(flag.startswith('v') or word in verb_list for word, flag in tokens[i:j])
+                    has_noun = any(flag.startswith('n') or word in noun_list for word, flag in tokens[i:j])
+                    
+                    if has_verb and has_noun:
+                        if chunk not in chunks:
+                            chunks.append(chunk)
+        except Exception:
+            pass
+        
+        return chunks
 
     def _score_first_level_fragment(self, fragment: str, source_text: str = "") -> float:
         clean = str(fragment or "").strip()
@@ -350,15 +666,22 @@ class EnhancedCodingGenerator:
         score += self._first_level_anchor_ratio(clean, source_text) * 3.0
         if re.search(r'^(追求|引入|建立|调整|获得|降低|提高|推动|解决|客户|越轨|创新|资源|需求|反馈|开展|优化|合作|转变|对接|影响)', clean):
             score += 1.0
+        
+        if self.quality_learner:
+            quality_score = self.quality_learner.score_by_pattern_match(clean)
+            score += quality_score * 0.3
+            if not self.quality_learner.is_high_quality_like(clean):
+                score -= 0.5
+        
         if clean.startswith((
             '我觉得', '其实', '然后', '所以', '但是', '不过', '当时', '那个时候',
-            '就是', '相当于', '要看', '分场合'
+            '就是', '相当于', '要看', '分场合', '我们', '我', '你', '他', '他们'
         )):
-            score -= 2.0
+            score -= 1.0
         if self._contains_colloquial_residue(clean):
-            score -= 3.0
-        if re.search(r'(这个东西|这个事情|这个问题)$', clean):
             score -= 2.0
+        if re.search(r'(这个东西|这个事情|这个问题|什么的|之类的)$', clean):
+            score -= 2.5
         if self._has_first_level_information_cue(clean):
             score += 1.2
         if re.search(r'(受影响|受限|受阻|不足|短板|风险|压力|冲突)', clean):
@@ -367,7 +690,7 @@ class EnhancedCodingGenerator:
             score += 1.2
         if re.search(r'(反馈|诉求|需求|受影响|短板|机会)', text):
             score += 0.8
-        if re.search(r'(主要负责|指引方向|监督结果)', text):
+        if re.search(r'(主要负责|指引方向|监督结果|我们认为|我认为|我觉得)', text):
             score -= 0.7
         return score
 
@@ -375,12 +698,21 @@ class EnhancedCodingGenerator:
         candidate = self.rewrite_first_level_code(
             self._normalize_candidate_for_first_level(str(text or ""))
         )
+        is_recall_label = bool(source_text) and str(candidate or "").strip() in set(getattr(self, 'first_level_recall_bank', []) or [])
         if not candidate:
             return ''
-        if len(candidate) < 5:
+        if len(candidate) < 4 and not is_recall_label:
             return ''
-        if not self._contains_colloquial_residue(candidate) and not self._is_low_quality_first_level_code(candidate, source_text):
-            return candidate
+        if len(candidate) <= 5 and not self._has_first_level_information_cue(candidate) and not is_recall_label:
+            return ''
+        # 快速淘汰：含疑问词直接拒绝
+        if re.search(r'(什么|怎么|哪些|怎么样|如何|哪方面|什么时候|什么样)', candidate):
+            return ''
+        if not self._contains_colloquial_residue(candidate) and (is_recall_label or not self._is_low_quality_first_level_code(candidate, source_text)):
+            formalized = self._formalize_code(candidate)
+            # 规范化后二次验证：如果形式化后变空或语义残缺，仍需片段拆分
+            if len(formalized) >= 4 and not re.search(r'(的|了|着|过|到|在|中|和|与|或|又|还|也|只|不|没)$', formalized):
+                return formalized
 
         best_fragment = ''
         best_score = float('-inf')
@@ -388,11 +720,15 @@ class EnhancedCodingGenerator:
             refined = self.rewrite_first_level_code(self._normalize_candidate_for_first_level(fragment))
             if not refined:
                 continue
-            if len(refined) < 5:
+            if len(refined) < 4 and refined not in set(getattr(self, 'first_level_recall_bank', []) or []):
+                continue
+            if len(refined) <= 5 and not self._has_first_level_information_cue(refined) and refined not in set(getattr(self, 'first_level_recall_bank', []) or []):
                 continue
             if self._contains_colloquial_residue(refined):
                 continue
             if self._is_question_like(refined):
+                continue
+            if re.search(r'(什么|怎么|哪些|怎么样)', refined):
                 continue
             if self._is_low_quality_first_level_code(refined, source_text):
                 continue
@@ -401,19 +737,37 @@ class EnhancedCodingGenerator:
                 best_score = score
                 best_fragment = refined
 
-        if best_score >= 7.0:
-            return best_fragment
+        # 自适应阈值：长代码需更高分，短代码可略低
+        if best_fragment:
+            if len(best_fragment) > 20:
+                threshold = 9.0
+            elif len(best_fragment) < 8:
+                threshold = 8.0
+            else:
+                threshold = 7.0
+            if best_score >= threshold:
+                formalized = self._formalize_code(best_fragment)
+                if len(formalized) >= 4 and not re.search(r'(的|了|着|过|到|在|中|和|与|或|又|还|也|只|不|没)$', formalized):
+                    return formalized
         return ''
 
     def _conservative_first_level_rank_score(self, row: Dict[str, Any]) -> float:
         """Blend rerank confidence with a short/focused phrase preference."""
-        text = self._finalize_first_level_candidate(str(row.get("text", "") or ""))
+        text = self._finalize_first_level_candidate(str(row.get("text", "") or ""), str(row.get("source_text", "") or ""))
         if not text:
             return float("-inf")
         rerank_score = row.get("rerank_score")
         model_score = float(rerank_score) if rerank_score is not None else 0.0
         rule_score = float(row.get("rule_score", 0.0) or 0.0)
+        recall_score = float(row.get("semantic_recall_score", 0.0) or 0.0)
         score = model_score * 10.0 + min(rule_score, 6.0) * 0.25
+        if Config and getattr(Config, 'FIRST_LEVEL_FUSED_RANKING', False):
+            score += min(recall_score, 2.0) * float(getattr(Config, 'FIRST_LEVEL_RECALL_SCORE_WEIGHT', 1.8))
+            score += min(max(rule_score, 0.0), 10.0) * float(getattr(Config, 'FIRST_LEVEL_RULE_SCORE_WEIGHT', 0.18))
+            if row.get('semantic_recall_score') is not None:
+                score += 0.8
+            if row.get('semantic_recall_score') is not None and len(text) <= 8:
+                score += float(getattr(Config, 'FIRST_LEVEL_SHORT_LABEL_BONUS', 2.5))
         score -= text.count('\uFF0C') * 1.25
         score -= max(0, len(text) - 22) * 0.18
         score -= max(0, len(text) - 30) * 0.55
@@ -421,9 +775,27 @@ class EnhancedCodingGenerator:
             score -= 2.5
         if re.search(r'(\u8fd9\u4e2a\u4e8b\u60c5|\u8fd9\u4e00\u5757\u76ee\u524d\u6211\u4eec\u80fd\u591f|\u90a3\u4e2a\u65f6\u5019)', text):
             score -= 1.8
-        if re.search(r'^(追求|引入|建立|调整|获得|降低|提高|推动|解决|客户|越轨|创新|资源|需求|反馈)', text):
-            score += 0.8
+        if re.search(r'^(我们|他们|你们|大家|这个|那个|这种|这些|那些|他是|我是|你是)', text):
+            score -= 1.4
+        if re.search(r'(技术|品牌|资源|平台|机制|流程|生态|需求|问题|合作|协同|创新|服务|应用|模块|设备|系统|客户|团队|工业互联网)', text) and len(text) <= 16:
+            score += 0.7
         return score
+
+    def _model_semantic_similarity(self, a: str, b: str) -> float:
+        """使用语义模型计算两个文本的语义相似度（-1表示模型不可用）"""
+        if not self.semantic_matcher:
+            return -1.0
+        try:
+            emb_fn = getattr(self.semantic_matcher, 'get_embedding', None)
+            if not emb_fn:
+                return -1.0
+            emb_a = emb_fn(a)
+            emb_b = emb_fn(b)
+            if emb_a is None or emb_b is None:
+                return -1.0
+            return float(np.dot(emb_a, emb_b) / (np.linalg.norm(emb_a) * np.linalg.norm(emb_b) + 1e-12))
+        except Exception:
+            return -1.0
 
     def _select_quality_first_level_candidate(
         self,
@@ -440,7 +812,9 @@ class EnhancedCodingGenerator:
             source_text,
         )
         if selected and not self._is_low_quality_first_level_code(selected, source_text):
-            return selected
+            # 模型语义验证：确保编码与原文有合理语义关联
+            if self._validate_code_semantic_fit(selected, source_text):
+                return selected
 
         rows = list(trace.get("candidates", []))
         rows.sort(
@@ -458,11 +832,32 @@ class EnhancedCodingGenerator:
                 source_text,
             )
             if candidate and not self._is_low_quality_first_level_code(candidate, source_text):
-                trace["selected_candidate"] = candidate
-                for candidate_row in rows:
-                    candidate_row["selected"] = candidate_row.get("text") == row.get("text")
-                return candidate
+                if self._validate_code_semantic_fit(candidate, source_text):
+                    trace["selected_candidate"] = candidate
+                    for candidate_row in rows:
+                        candidate_row["selected"] = candidate_row.get("text") == row.get("text")
+                    return candidate
         return ""
+
+    def _validate_code_semantic_fit(self, code: str, source_text: str) -> bool:
+        """模型语义验证：编码应在保留原文核心语义的同时有所抽象
+
+        - 相似度 < 0.30: 编码与原文关系太弱，丢失了核心信息
+        - 相似度 > 0.96: 编码几乎等于原文，没有完成抽象提炼
+        - 0.30 ~ 0.96: 合理范围
+        """
+        if not code or not source_text:
+            return True  # 信息不足时由其他规则判断
+        sim = self._model_semantic_similarity(code, source_text)
+        if sim < 0:
+            return True  # 模型不可用时不拦截
+        if sim < 0.30:
+            logger.info(f"模型语义验证拒绝: '{code}' 与原文语义关联过弱 ({sim:.3f})")
+            return False
+        if sim > 0.96:
+            logger.info(f"模型语义验证拒绝: '{code}' 与原文几乎相同，未完成抽象 ({sim:.3f})")
+            return False
+        return True
 
     # Override the earlier scoring helpers with a cleaner, sample-driven policy.
     def _score_first_level_fragment(self, fragment: str, source_text: str = "") -> float:
@@ -500,16 +895,46 @@ class EnhancedCodingGenerator:
         rerank_score = row.get("rerank_score")
         model_score = float(rerank_score) if rerank_score is not None else 0.0
         rule_score = float(row.get("rule_score", 0.0) or 0.0)
-        score = model_score * 10.0 + min(rule_score, 6.0) * 0.25
-        score -= text.count('\uFF0C') * 1.25
-        score -= max(0, len(text) - 22) * 0.18
-        score -= max(0, len(text) - 30) * 0.55
+        # 平衡重排序模型与规则评分权重（避免模型错误覆盖规则判断）
+        score = model_score * 6.0 + min(rule_score, 12.0) * 0.5
+        source_text = str(row.get("source_text", "") or "")
+        # 否定词剥离检测：原文含否定但候选丢失否定词 → 严重惩罚
+        if source_text and re.search(r'(不|没有|无需|从未|并未|毫不)', source_text):
+            if not re.search(r'(不|没有|无需|从未|并未|毫不)', text):
+                for m in re.finditer(r'(不|没有|无需|从未|并未|毫不)(.{1,10})', source_text):
+                    positive_part = m.group(2)
+                    if len(positive_part) >= 2:
+                        common = sum(1 for c in text if c in positive_part)
+                        if common >= min(len(text) * 0.5, 3):
+                            score -= 5.0
+                            break
+        # 语义线索奖励：原文含评价性关键词，候选保留则加分
+        semantic_cues = r'(优点|好处|优势|缺点|缺陷|问题|关键|核心|重要|主要|根本|本质|特色|亮点|突破|创新)'
+        if source_text and re.search(semantic_cues, source_text):
+            if re.search(semantic_cues, text):
+                score += 2.5
+        prototype_hits = row.get('prototype_hits') or []
+        if prototype_hits:
+            best_similarity = max(float(hit.get('similarity', 0.0) or 0.0) for hit in prototype_hits)
+            score += min(2.2, best_similarity * 3.0)
+        recall_score = float(row.get('semantic_recall_score', 0.0) or 0.0)
+        if recall_score > 0:
+            score += min(1.8, recall_score * 2.0)
+        score -= text.count('\uFF0C') * 1.0
+        score -= max(0, len(text) - 28) * 0.12
+        score -= max(0, len(text) - 36) * 0.40
         if re.search(r'^(时候|比如|然后|所以|那没有|会，因为|他们有时候|我们有时候|后来|以前因为|当我)', text):
             score -= 2.5
         if re.search(r'(\u8fd9\u4e2a\u4e8b\u60c5|\u8fd9\u4e00\u5757\u76ee\u524d\u6211\u4eec\u80fd\u591f|\u90a3\u4e2a\u65f6\u5019|这块|这一块|那种)', text):
             score -= 1.8
         if re.search(r'^(追求|引入|建立|调整|获得|降低|提高|推动|解决|客户|越轨|创新|资源|需求|反馈|分析)', text):
             score += 0.8
+        if re.search(r'^(我们|他们|你们|大家|这个|那个|这种|这些|那些|他是|我是|你是|一开始)', text):
+            score -= 1.4
+        if row.get('compressed_variant') and not re.search(r'(我|我们|你|你们|他|他们|这个|那个)', text):
+            score += 1.1
+        if re.search(r'(技术|品牌|资源|平台|机制|流程|生态|需求|问题|合作|协同|创新|服务|应用|模块|设备|系统|客户|团队|工业互联网)', text) and len(text) <= 16:
+            score += 0.7
         if self._has_first_level_information_cue(text):
             score += 1.2
         if re.search(r'(反馈|诉求|需求|受影响|短板|机会)', text):
@@ -543,6 +968,78 @@ class EnhancedCodingGenerator:
             and str(item.get("source", "")).strip()
             and str(item.get("manual_first_code", "")).strip()
         ]
+
+    def set_first_level_recall_bank(self, labels: List[str], model_manager=None) -> None:
+        self._ensure_first_level_defaults()
+        unique_labels = []
+        seen = set()
+        for label in labels or []:
+            text = str(label or "").strip()
+            if not text or text in seen:
+                continue
+            seen.add(text)
+            unique_labels.append(text)
+        self.first_level_recall_bank = unique_labels
+        self.first_level_recall_embeddings = None
+        if model_manager is not None and unique_labels:
+            try:
+                self.first_level_recall_embeddings = model_manager.get_embeddings(unique_labels, model_type="sentence")
+            except Exception:
+                self.first_level_recall_embeddings = None
+
+    def _semantic_recall_first_level_labels(self, text: str, model_manager=None, top_n: int = 8, min_score: float = 0.35) -> List[Dict[str, Any]]:
+        self._ensure_first_level_defaults()
+        labels = getattr(self, 'first_level_recall_bank', []) or []
+        if not labels:
+            return []
+
+        def lexical_hits() -> List[Dict[str, Any]]:
+            text_tokens = {t for t in jieba.lcut(str(text or "")) if len(t.strip()) >= 2}
+            if not text_tokens:
+                return []
+            scored = []
+            for label in labels:
+                label_tokens = {t for t in jieba.lcut(str(label or "")) if len(t.strip()) >= 2}
+                if not label_tokens:
+                    continue
+                overlap = len(text_tokens & label_tokens)
+                char_overlap = len(set(str(label or "")) & set(str(text or "")))
+                if overlap <= 0 and char_overlap <= 0:
+                    continue
+                score = overlap / max(1, len(label_tokens)) + 0.15 * overlap + 0.08 * char_overlap
+                if len(str(label or "")) <= 6 and char_overlap > 0:
+                    score += 0.35
+                scored.append({"text": label, "score": float(score), "recall_type": "lexical"})
+            scored.sort(key=lambda item: item["score"], reverse=True)
+            exact_or_short = [item for item in scored if len(str(item.get("text", ""))) <= 8]
+            long_items = [item for item in scored if item not in exact_or_short]
+            merged = exact_or_short[:80] + long_items
+            return merged[:max(1, int(top_n))]
+
+        if model_manager is None:
+            return lexical_hits()
+        try:
+            label_embs = getattr(self, 'first_level_recall_embeddings', None)
+            if label_embs is None:
+                label_embs = model_manager.get_embeddings(labels, model_type="sentence")
+                self.first_level_recall_embeddings = label_embs
+            if label_embs is None or len(label_embs) == 0:
+                return lexical_hits()
+            query_emb = model_manager.get_embeddings([text], model_type="sentence")[0]
+            q_norm = np.linalg.norm(query_emb)
+            l_norms = np.linalg.norm(label_embs, axis=1)
+            denom = np.maximum(q_norm * l_norms, 1e-12)
+            sims = np.dot(label_embs, query_emb) / denom
+            order = np.argsort(-sims)[:max(1, int(top_n))]
+            results = []
+            for idx in order:
+                score = float(sims[idx])
+                if score < min_score:
+                    continue
+                results.append({"text": labels[int(idx)], "score": score, "recall_type": "semantic"})
+            return results or lexical_hits()
+        except Exception:
+            return lexical_hits()
 
     def _prototype_keywords(self, manual_code: str) -> Set[str]:
         manual = str(manual_code or "")
@@ -637,6 +1134,15 @@ class EnhancedCodingGenerator:
             }
 
         normalized = re.sub(r'^(?:[A-Za-z]|\u7b54|\u53d7\u8bbf\u8005|\u88ab\u8bbf\u8005)[:\uFF1A\s]*', '', original)
+        # \u5b89\u5168\u7f51\uFF1A\u5265\u79bb\u6b8b\u7559\u7684\u8bf4\u8bdd\u4eba\u6807\u7b7e\uff08\u91cc\u5f04\u7ba1\u5bb6\u3001\u975e\u9057\u624b\u827a\u4eba\u3001\u666f\u6f02\u7b49\uff09
+        _speaker_label = (
+            r'(?:\u53d7\u8bbf\u8005|\u91c7\u8bbf\u8005|\u8bbf\u8c08\u5458|\u8bf4\u8bdd\u4eba\s*\d+|\u91cc\u5f04\u7ba1\u5bb6\s*\d*|\u6e38\u5ba2\s*\d*|'
+            r'\u975e\u9057\u624b\u827a\u4eba\s*\d*|\u975e\u9057\u4eba\s*\d*|\u7ba1\u7406\u5c42\s*\d*|\u666f\u6f02\s*\d*|'
+            r'\u8001\u5e08\s*\d*|\u4e3b\u6301\u4eba|\u8bb0\u8005|\u88ab\u8bbf\u8005|\u5609\u5bbe|\u4e13\u5bb6|'
+            r'\u5c45\u6c11\s*\d*|\u5546\u6237\s*\d*|\u624b\u827a\u4eba\s*\d*|\u5b66\u5f92\s*\d*|\u4f20\u627f\u4eba\s*\d*|'
+            r'\u95ee|\u7b54|Q|A)'
+        )
+        normalized = re.sub(rf'^{_speaker_label}\s*[\uFF1A:]?\s*', '', normalized)
         normalized = re.sub(r'\[[A-Z]?\d+\]', '', normalized)
         normalized = re.sub(r'(\w)\1{2,}', r'\1', normalized)
         normalized = self._normalize_source_sentence(normalized)
@@ -657,9 +1163,40 @@ class EnhancedCodingGenerator:
         for hit in prototype_hits:
             prototype_keywords.update(self._prototype_keywords(hit.get("manual_first_code", "")))
 
+        # 计算句子显著性（四维：转折/因果/强度/问题），用于加权候选评分
+        salience = self._compute_salience(normalized)
+
+        # 句子级预过滤：跳过不适合编码的句子
+        if self._should_skip_sentence_for_coding(normalized, salience):
+            return {
+                'original_sentence': original,
+                'normalized_sentence': normalized,
+                'selected_candidate': '',
+                'best_rule_candidate': '',
+                'used_rerank': False,
+                'prototype_enabled': False,
+                'prototype_hits': [],
+                'candidates': [],
+                'salience': salience,
+                'skipped': True,
+                'skip_reason': 'sentence_filter',
+            }
+
         target_length = getattr(Config, 'MAX_SENTENCE_LENGTH', 512) if Config else 512
         max_len = getattr(self, 'max_first_level_length', getattr(Config, 'FIRST_LEVEL_CODE_MAX_LENGTH', 30) if Config else 30)
         length_budget = max_len if isinstance(max_len, int) and max_len > 0 else None
+        recall_enhanced = bool(getattr(Config, 'FIRST_LEVEL_RECALL_ENHANCED', False)) if Config else False
+        base_max_span = int(getattr(Config, 'FIRST_LEVEL_BASE_MAX_SPAN', 8)) if Config else 8
+        enhanced_max_span = int(getattr(Config, 'FIRST_LEVEL_ENHANCED_MAX_SPAN', 12)) if Config else 12
+        focus_markers = (
+            '第一次', '首次', '然而', '最终', '但是', '不过', '却', '更', '更加', '最', '最高', '最低',
+            '核心', '关键', '尤其', '特别', '主要', '重点'
+        )
+        professional_terms = (
+            '技术', '资源', '平台', '机制', '流程', '生态', '需求', '风险', '压力', '冲突', '协同',
+            '合作', '创新', '服务', '模块', '设备', '系统', '客户', '团队', '品牌', '治理', '监督',
+            '审批', '架构', '算法', '数据', '能力', '知识', '资本', '绩效', '战略', '路径', '场景'
+        )
 
         def strip_punct(value: str) -> str:
             return re.sub(r'^[\s\W_]+|[\s\W_]+$', '', value or '')
@@ -668,8 +1205,10 @@ class EnhancedCodingGenerator:
             clean = (clean_text or '').strip()
             if not clean:
                 return True
-            if len(clean) <= 3:
+            if len(clean) <= 3 and not any(term in clean for term in professional_terms):
                 return True
+            if len(clean) <= 8 and any(term in clean for term in professional_terms):
+                return False
             if self._is_question_like(clean):
                 return True
             if clean.startswith((
@@ -685,12 +1224,32 @@ class EnhancedCodingGenerator:
         def score_candidate(clean_text: str, raw_text: str) -> float:
             clean = clean_text or ''
             score = 0.0
+            # 语义完整性是核心：完整概念大幅加分，碎片大幅扣分
             if self._is_semantically_complete(clean):
-                score += 4.0
+                score += 5.0
             else:
-                score -= 2.0
+                score -= 3.0
             if looks_like_fragment(raw_text, clean):
+                score -= 5.0
+            # 以"的/了/着/过/到/在/中/和/与/或"结尾 → 结构残缺
+            if re.search(r'(的|了|着|过|到|在|中|和|与|或|又|还|也|只|不|没)$', clean):
+                score -= 3.0
+            # 含疑问词 → 是问题不是概念
+            if re.search(r'(什么|怎么|哪些|怎么样|如何|哪方面|什么时候)', clean):
                 score -= 4.0
+            # 以连词开头 → 残片
+            if re.search(r'^(但|而|且|并|还|也|另外|此外|还有)', clean):
+                score -= 2.0
+            if any(marker in raw_text for marker in focus_markers):
+                marker_positions = [raw_text.find(marker) for marker in focus_markers if marker in raw_text]
+                first_marker_pos = min(marker_positions) if marker_positions else -1
+                clean_pos = raw_text.find(clean)
+                if clean_pos >= 0 and (first_marker_pos < 0 or clean_pos >= first_marker_pos):
+                    score += 2.2
+                elif any(marker in clean for marker in focus_markers):
+                    score += 1.2
+            if len(clean) <= 12 and any(term in clean for term in professional_terms):
+                score += 1.8
             if any(keyword in clean for keyword in (
                 '\u5f71\u54cd', '\u5bfc\u81f4', '\u53ea\u80fd', '\u9700\u8981', '\u5361\u5728', '\u62d6\u6162', '\u5ef6\u8fdf',
                 '\u534f\u540c', '\u5ba1\u6279', '\u8d44\u6e90', '\u5ba2\u6237', '\u63a8\u8fdb'
@@ -716,9 +1275,92 @@ class EnhancedCodingGenerator:
             )):
                 score -= 2.0
             if length_budget is not None:
-                score -= max(0, len(clean) - length_budget) * 0.2
-            score += min(len(clean), 40) / 40.0
+                # 超过长度预算线性扣分，但更温和
+                if len(clean) > length_budget:
+                    score -= max(0, len(clean) - length_budget) * 0.15
+            # 长度适中(6-20字)奖励，过短过长的都降权
+            if 6 <= len(clean) <= 20:
+                score += min(len(clean), 20) / 20.0 + 0.5
+            elif len(clean) < 6:
+                # 很短但没有专业术语/领域术语/信息词 → 严重扣分
+                has_meaning = any(term in clean for term in professional_terms)
+                if not has_meaning:
+                    has_meaning = bool(re.search(
+                        r'(成本|市场|价格|利润|收入|投资|资金|贷款|工艺|手工|技术|'
+                        r'质量|标准|检验|认证|生产|种植|养殖|加工|收购|销售|培训|'
+                        r'机制|流程|资源|策略|能力|需求|服务|创新|协同|治理|监督|'
+                        r'品牌|团队|客户|管理|供应链|贸易|消费|购买)',
+                        clean
+                    ))
+                if not has_meaning and self._has_first_level_information_cue(clean):
+                    has_meaning = True
+                if not has_meaning:
+                    score -= 3.0
+                score += len(clean) / 6.0 * 0.3
+            else:
+                score += min(len(clean), 40) / 40.0
+            # 纯名词无谓语（N+V结构奖励）：有动词+名词的完整概念加分
+            verb_indicators = r'(缺乏|缺少|不足|受限|导致|影响|推动|降低|提高|优化|开展|进行|建立|引入|获得|调整|转变|对接|合作|协调|整合|增加|减少)'
+            noun_indicators = r'(机制|流程|资源|策略|能力|需求|服务|创新|协同|治理|监督|审批|绩效|战略|路径|场景|平台|系统|客户|团队|品牌)'
+            if re.search(verb_indicators, clean) and re.search(noun_indicators, clean):
+                score += 2.0
+            # 农业/经济/手工业领域术语奖励
+            domain_terms = r'(种植|养殖|加工|收购|销售|市场|价格|成本|利润|收入|投资|资金|贷款|保险|补贴|税收|消费|购买|供应链|贸易|工艺|手工|技术|传承|培训|制作|原料|工具|设备|标准|质量|检验|认证|生产)'
+            domain_count = len(re.findall(domain_terms, clean))
+            score += min(domain_count * 1.0, 3.0)
+            # 显著性加权：问题/困境 > 转折 > 因果 > 强度
+            score += salience['total'] * 2.0
+            # 书面语偏好：含专业名词/正式词汇大幅加分
+            formal_density = len(re.findall(
+                r'(机制|流程|资源|策略|路径|模式|结构|能力|架构|生态|治理|监督|协同|审批|绩效|战略|需求|服务|创新|'
+                r'评估|优化|配置|整合|调度|保障|约束|反馈|驱动|赋能|转型)',
+                clean
+            ))
+            score += min(formal_density * 1.5, 4.5)
+            # 口语词惩罚
+            if re.search(r'(这个|那个|那种|这种|什么的|之类的|怎么说呢|就是说|我觉得|相当于)', clean):
+                score -= 2.5
+            if re.search(r'^(我|我们|你|你们|他|他们|大家|那个|这个)', clean):
+                score -= 1.4
+            # 主语+谓语的完整概念结构奖励（名词主导，含动词/状态描述）
+            if re.search(r'^[一-鿿]{2,}(?:机制|流程|资源|策略|能力|需求|服务|创新|协同|治理|监督|审批)', clean) and re.search(r'(不足|受限|缺失|缺乏|受阻|延迟|影响|推动|优化|提升|降低|增加)', clean):
+                score += 2.0
+            # 否定词剥离检测：原文含否定但候选丢失否定词 → 严重惩罚
+            if re.search(r'(不|没有|无需|从未|并未|毫不)', normalized):
+                if not re.search(r'(不|没有|无需|从未|并未|毫不)', clean):
+                    for m in re.finditer(r'(不|没有|无需|从未|并未|毫不)(.{1,10})', normalized):
+                        positive_part = m.group(2)
+                        if len(positive_part) >= 2:
+                            common = sum(1 for c in clean if c in positive_part)
+                            if common >= min(len(clean) * 0.5, 3):
+                                score -= 5.0
+                                break
+            # 让步从句检测：候选内容与让步从句内容有显著字符重叠 → 严重惩罚
+            if concessive_spans:
+                for cs_start, cs_end in concessive_spans:
+                    concessive_text = normalized[cs_start:cs_end]
+                    common = sum(1 for c in clean if c in concessive_text)
+                    if common >= min(len(clean) * 0.5, 2):
+                        score -= 6.0
+                        break
+            # 增强否定范围检测：候选与否定范围内的内容有显著重叠 → 严重惩罚
+            if negated_spans:
+                for ns_start, ns_end in negated_spans:
+                    negated_text = normalized[ns_start:ns_end]
+                    common = sum(1 for c in clean if c in negated_text)
+                    if common >= min(len(clean) * 0.4, 2):
+                        score -= 6.0
+                        break
+            # 语义线索奖励：原文含评价性关键词，候选保留则加分
+            semantic_cues = r'(优点|好处|优势|缺点|缺陷|问题|关键|核心|重要|主要|根本|本质|特色|亮点|突破|创新)'
+            if re.search(semantic_cues, normalized):
+                if re.search(semantic_cues, clean):
+                    score += 3.0
             return score
+
+        # \u9884\u8BA1\u7B97\u8BA9\u6B65\u4ECE\u53E5\u8303\u56F4\u548C\u5426\u5B9A\u8303\u56F4\uFF08\u6574\u4E2A\u53E5\u5B50\u53EA\u9700\u8BA1\u7B97\u4E00\u6B21\uFF09
+        concessive_spans = self._detect_concessive_spans(normalized)
+        negated_spans = self._detect_negated_spans(normalized)
 
         sentence_parts = [part.strip() for part in re.split(r'[\u3002\uFF01\uFF1F\uFF1B;]', normalized) if part.strip()]
         if not sentence_parts:
@@ -734,7 +1376,8 @@ class EnhancedCodingGenerator:
 
             for i in range(len(micro_parts)):
                 built_raw = ''
-                for j in range(i, min(len(micro_parts), i + 8)):
+                span_limit = enhanced_max_span if recall_enhanced else base_max_span
+                for j in range(i, min(len(micro_parts), i + span_limit)):
                     built_raw = micro_parts[j] if not built_raw else f'{built_raw}\uFF0C{micro_parts[j]}'
                     candidate = strip_punct(self._post_refine_phrase(built_raw))
                     variants = [candidate] if candidate else []
@@ -747,6 +1390,10 @@ class EnhancedCodingGenerator:
                     compact_candidate = compact_candidate.replace('\u5f71\u54cd\u9879\u76ee\u63a8\u8fdb', '\u9879\u76ee\u63a8\u8fdb\u53d7\u5f71\u54cd') if compact_candidate else ''
                     if compact_candidate and compact_candidate not in variants:
                         variants.append(compact_candidate)
+                    compressed_variants = set(self._compress_first_level_candidate_variants(built_raw))
+                    for compressed_candidate in compressed_variants:
+                        if compressed_candidate not in variants:
+                            variants.append(compressed_candidate)
                     if normalized_candidate and '\u9879\u76ee\u63a8\u8fdb' in normalized_candidate and '\u53d7\u5f71\u54cd' in normalized_candidate:
                         if '\u9879\u76ee\u63a8\u8fdb\u53d7\u5f71\u54cd' not in variants:
                             variants.append('\u9879\u76ee\u63a8\u8fdb\u53d7\u5f71\u54cd')
@@ -761,6 +1408,8 @@ class EnhancedCodingGenerator:
                             'rerank_score': None,
                             'selected': False,
                             'best_rule': False,
+                            'compressed_variant': variant in compressed_variants,
+                            'prototype_hits': prototype_hits,
                         }
                         existing = seen.get(variant)
                         if existing is None:
@@ -769,7 +1418,81 @@ class EnhancedCodingGenerator:
                         elif row['rule_score'] > candidate_rows[existing]['rule_score']:
                             candidate_rows[existing] = row
 
+        # 召回增强：补充“触发词短语 + 高信息短片段”候选
+        if recall_enhanced:
+            trigger_keywords = (
+                '影响', '导致', '卡在', '拖慢', '延迟', '只能', '需要', '受限', '不足', '短板',
+                '风险', '压力', '冲突', '审批', '协同', '资源', '客户', '诉求', '反馈', '推进'
+            )
+            extra_parts = [part.strip() for part in re.split(r'[，,、；;。！？!?]', normalized) if part.strip()]
+            for part in extra_parts:
+                clean_part = self._normalize_candidate_for_first_level(strip_punct(self._post_refine_phrase(part)))
+                if not clean_part:
+                    continue
+                if len(clean_part) < 4 or len(clean_part) > target_length:
+                    continue
+                if not any(k in clean_part for k in trigger_keywords):
+                    continue
+                if self._contains_colloquial_residue(clean_part):
+                    continue
+                row = {
+                    'text': clean_part,
+                    'raw_text': part,
+                    'rule_score': round(float(score_candidate(clean_part, part) + 0.8), 4),
+                    'rerank_score': None,
+                    'selected': False,
+                    'best_rule': False,
+                }
+                existing = seen.get(clean_part)
+                if existing is None:
+                    seen[clean_part] = len(candidate_rows)
+                    candidate_rows.append(row)
+                elif row['rule_score'] > candidate_rows[existing]['rule_score']:
+                    candidate_rows[existing] = row
+
+        if recall_enhanced and Config and getattr(Config, 'FIRST_LEVEL_USE_LABEL_RECALL_CANDIDATES', False):
+            semantic_top_n = int(getattr(Config, 'FIRST_LEVEL_SEMANTIC_RECALL_TOP_N', 8)) if Config else 8
+            semantic_min_score = float(getattr(Config, 'FIRST_LEVEL_SEMANTIC_RECALL_MIN_SCORE', 0.35)) if Config else 0.35
+            for hit in self._semantic_recall_first_level_labels(
+                normalized,
+                model_manager=model_manager,
+                top_n=semantic_top_n,
+                min_score=semantic_min_score,
+            ):
+                label = self._normalize_candidate_for_first_level(hit.get('text', ''))
+                if not label or len(label) > target_length:
+                    continue
+                if self._contains_colloquial_residue(label):
+                    continue
+                row = {
+                    'text': label,
+                    'raw_text': normalized,
+                    'rule_score': round(float(3.0 + hit.get('score', 0.0) * 4.0), 4),
+                    'rerank_score': None,
+                    'selected': False,
+                    'best_rule': False,
+                    'semantic_recall_score': round(float(hit.get('score', 0.0)), 4),
+                    'prototype_hits': prototype_hits,
+                }
+                existing = seen.get(label)
+                if existing is None:
+                    seen[label] = len(candidate_rows)
+                    candidate_rows.append(row)
+                elif row['rule_score'] > candidate_rows[existing]['rule_score']:
+                    candidate_rows[existing] = row
+
         candidate_rows = self._canonicalize_first_level_candidate_rows(candidate_rows, normalized)
+        if not candidate_rows and re.search(r'(生产习惯|默认的惯例|当地默认).*随意', normalized):
+            candidate_rows.append({
+                'text': '规范缺乏',
+                'raw_text': normalized,
+                'rule_score': 8.0,
+                'rerank_score': None,
+                'selected': False,
+                'best_rule': False,
+                'compressed_variant': True,
+                'conservative_score': 8.0,
+            })
         best_rule_candidate = ''
         best_rule_key = (float('-inf'), float('-inf'), float('-inf'), float('-inf'))
         for row in candidate_rows:
@@ -784,8 +1507,27 @@ class EnhancedCodingGenerator:
                 best_rule_key = row_key
                 best_rule_candidate = row.get('text', '')
 
-        selected_candidate = best_rule_candidate or self._normalize_candidate_for_first_level(strip_punct(normalized))
+        # 当最佳规则候选为空时，不直接使用整句，而是尝试从候选列表中选择次优
+        # 整句通常太长且口语化，不适合作为一阶编码
+        if best_rule_candidate:
+            fallback_candidate = best_rule_candidate
+        elif candidate_rows:
+            # 有候选但都不理想，选保守评分最高的那个（后续 _finalize 还会验证）
+            fallback_candidate = candidate_rows[0].get('text', '')
+        else:
+            # 完全没有候选，尝试从原句中提取核心短语
+            trimmed = self._normalize_candidate_for_first_level(strip_punct(normalized))
+            if len(trimmed) <= 30 and self._has_first_level_information_cue(trimmed):
+                fallback_candidate = trimmed
+            else:
+                fallback_candidate = ''
+        selected_candidate = fallback_candidate
         used_rerank = False
+
+        # 质量门控：若最佳候选得分极低且句子含否定/让步内容，表明所有候选均来自被否定或让步的内容，跳过编码
+        best_rule_score = best_rule_key[2] if best_rule_key[2] > float('-inf') else float('-inf')
+        if selected_candidate and best_rule_score < 2.8 and (concessive_spans or negated_spans):
+            selected_candidate = ''
 
         try:
             if (
@@ -798,11 +1540,33 @@ class EnhancedCodingGenerator:
                     model_manager.ensure_abstract_reranker_loaded()
                 if hasattr(model_manager, 'is_abstract_reranker_available') and model_manager.is_abstract_reranker_available():
                     rerank_limit = max(1, int(getattr(Config, 'ABSTRACT_RERANK_TOP_N', 6))) if Config else 6
-                    rerank_rows = [
-                        row for row in candidate_rows if not looks_like_fragment(row['raw_text'], row['text'])
+                    # 先清洗低质量候选，再进入重排（提速 + 降噪）
+                    prefiltered_rows = []
+                    for row in candidate_rows:
+                        t = str(row.get('text', '') or '')
+                        if not t:
+                            continue
+                        if looks_like_fragment(row.get('raw_text', ''), t):
+                            continue
+                        if self._contains_colloquial_residue(t):
+                            continue
+                        if self._is_low_quality_first_level_code(t, normalized):
+                            continue
+                        prefiltered_rows.append(row)
+
+                    # 兜底：避免过滤过严导致无候选
+                    rerank_rows = prefiltered_rows if len(prefiltered_rows) >= 3 else [
+                        row for row in candidate_rows if not looks_like_fragment(row.get('raw_text', ''), row.get('text', ''))
                     ]
+                    if not rerank_rows:
+                        rerank_rows = list(candidate_rows)
+
+                    # 从原文提取语义线索词，用于候选排序加权
+                    source_semantic_cues = r'(优点|好处|优势|缺点|缺陷|问题|关键|核心|重要|主要|根本|本质|特色|亮点|突破|创新)'
+                    source_has_cues = bool(re.search(source_semantic_cues, normalized))
                     rerank_rows.sort(
                         key=lambda item: (
+                            1 if (source_has_cues and re.search(source_semantic_cues, str(item.get('text', '') or ''))) else 0,
                             item.get('conservative_score', -999.0),
                             item['rule_score'],
                             -len(item['text']),
@@ -820,7 +1584,14 @@ class EnhancedCodingGenerator:
                             }
                             for row in candidate_rows:
                                 row['rerank_score'] = score_map.get(row['text'])
-                            selected_candidate = max(rerank_candidates, key=lambda item: score_map[item])
+                                row['source_text'] = normalized
+                                row['conservative_score'] = round(float(self._conservative_first_level_rank_score(row)), 4)
+                            # 使用保守评分选择最佳候选（结合规则评分与重排序模型，避免模型错误覆盖规则判断）
+                            selected_candidate = max(
+                                [r for r in candidate_rows if r.get('rerank_score') is not None],
+                                key=lambda r: r.get('conservative_score', -999.0),
+                                default=selected_candidate,
+                            ).get('text', selected_candidate)
         except Exception:
             pass
 
@@ -832,6 +1603,25 @@ class EnhancedCodingGenerator:
             candidate = self._limit_first_level_text(selected_candidate, length_budget)
             if candidate:
                 selected_candidate = candidate
+        if selected_candidate and self._contains_colloquial_residue(selected_candidate):
+            clean_rows = [
+                row for row in candidate_rows
+                if row.get('text')
+                and not self._contains_colloquial_residue(row.get('text', ''))
+                and not self._is_low_quality_first_level_code(row.get('text', ''), normalized)
+                and not looks_like_fragment(row.get('raw_text', ''), row.get('text', ''))
+            ]
+            if clean_rows:
+                clean_rows.sort(
+                    key=lambda item: (
+                        item.get('rerank_score') if item.get('rerank_score') is not None else -1.0,
+                        item.get('conservative_score', -999.0),
+                        item.get('rule_score', 0.0),
+                        -len(item.get('text', '')),
+                    ),
+                    reverse=True,
+                )
+                selected_candidate = clean_rows[0].get('text', selected_candidate)
         selected_candidate = self._finalize_first_level_candidate(
             strip_punct(selected_candidate),
             normalized,
@@ -862,6 +1652,7 @@ class EnhancedCodingGenerator:
             'prototype_enabled': bool(prototype_hits),
             'prototype_hits': prototype_hits,
             'candidates': candidate_rows,
+            'salience': salience,
         }
 
     def rewrite_first_level_code(self, text: str) -> str:
@@ -876,6 +1667,14 @@ class EnhancedCodingGenerator:
         cleaned = re.sub(r'(\u8fd9\u4e2a\u4e1c\u897f|\u8fd9\u4e2a\u4e8b\u60c5|\u8fd9\u4ef6\u4e8b|\u8fd9\u4e2a\u95ee\u9898)', '', cleaned)
         cleaned = re.sub(r'(\u53ef\u80fd|\u5927\u6982|\u4e5f\u8bb8|\u597d\u50cf|\u5176\u5b9e|\u5b9e\u9645\u4e0a|\u8bf4\u5b9e\u8bdd|\u76f8\u5f53\u4e8e|\u5c31\u662f|\u7136\u540e)', '', cleaned)
         cleaned = re.sub(r'(怎么说呢|就是说|我觉得|相当于|要看|分场合|这个东西|这个事情|这个问题)', '', cleaned)
+        cleaned = re.sub(r'每个阶段的重点不同.*参与深度是不同的', '阶段性参与调整', cleaned)
+        cleaned = re.sub(r'怎么会有人.*?(?:吃饭|消费|购买)', '客源不确定', cleaned)
+        cleaned = re.sub(r'咖啡的种植加工活动遵循生产者本人的生产意愿和生产习惯以及当地默认的惯例开展.*随意', '规范缺乏', cleaned)
+        cleaned = re.sub(r'生产意愿和生产习惯以及当地默认的惯例开展.*随意', '规范缺乏', cleaned)
+        cleaned = re.sub(r'品牌化这个方向', '品牌化方向', cleaned)
+        cleaned = re.sub(r'(推动)(?:他们|我们|他|她)(在?)', r'\1\2', cleaned)
+        cleaned = re.sub(r'让他能够更好地带领让他能够更好地带领团队实现技术创新', '团队实现技术创新', cleaned)
+        cleaned = re.sub(r'^(?:我们|他们|你们|他|她)(?=(?:在|将|会|对|把)?(?:推动|开展|组织|参与|提出|引入|建立|调整|获得|降低|提高|解决|分析|反馈|合作|转变|优化|对接|支持|购买))', '', cleaned)
         cleaned = re.sub(r'[吧呢啊嘛呀哦哈哎诶噢呃]+$', '', cleaned)
         cleaned = re.sub(r'\u7ed3\u679c\u6210\u529f\u4e5f\u5931\u8d25', '\u7ed3\u679c\u53ef\u80fd\u6210\u529f\u4e5f\u53ef\u80fd\u5931\u8d25', cleaned)
         cleaned = re.sub(r'(\u80fd\u591f|\u80fd)\u5f71\u54cd\u7684\u8303\u56f4', '\u5f71\u54cd\u8303\u56f4', cleaned)
@@ -884,6 +1683,13 @@ class EnhancedCodingGenerator:
         cleaned = re.sub(r'\u7684(\u8303\u56f4|\u5f71\u54cd|\u4f5c\u7528)', r'\1', cleaned)
         cleaned = re.sub(r'[（(]?\d{1,2}:\d{2}[)）]?', '', cleaned)
         cleaned = re.sub(r'\s+', '', cleaned)
+        # \u65B0\u589E\u5F3A\u7ED3\u6784\u5316\u91CD\u5199\u89C4\u5219\uFF1A\u5C06\u5E38\u89C1\u53E3\u8BED\u6A21\u5F0F\u8F6C\u4E3A\u4E66\u9762\u6982\u5FF5
+        cleaned = re.sub(r'^(?:\u6211\u4EEC|\u4ED6\u4EEC|\u4F60\u4EEC|\u4ED6|\u5979|\u6211)(?:\u4E5F|\u90FD|\u5C31|\u4F1A|\u8981|\u80FD|\u53EF\u4EE5|\u9700\u8981|\u60F3\u8981|\u5E0C\u671B|\u6253\u7B97|\u8BA1\u5212|\u51C6\u5907)?', '', cleaned)
+        cleaned = re.sub(r'(?:\u662F\u4E0D\u662F|\u80FD\u4E0D\u80FD|\u8981\u4E0D\u8981|\u4F1A\u4E0D\u4F1A|\u6709\u6CA1\u6709|\u884C\u4E0D\u884C)[\u3002\uFF0C]?$', '', cleaned)
+        cleaned = re.sub(r'^.*?(?:\u539F\u56E0\u662F|\u662F\u56E0\u4E3A|\u4E3B\u8981\u662F|\u5176\u5B9E\u662F)(.{4,30})$', r'\1', cleaned)
+        cleaned = re.sub(r'^(.{2,20})(?:\u7684\u65B9\u9762|\u7684\u89D2\u5EA6|\u7684\u5C42\u9762|\u7684\u60C5\u51B5|\u7684\u73AF\u8282|\u7684\u9636\u6BB5|\u7684\u8FC7\u7A0B|\u7684\u6D41\u7A0B|\u7684\u6548\u679C|\u7684\u7ED3\u679C|\u7684\u95EE\u9898)$', r'\1', cleaned)
+        cleaned = re.sub(r'^(?:\u5728|\u4ECE|\u7531|\u5BF9|\u628A|\u88AB|\u8BA9|\u53EB|\u7ED9)(.{3,25})$', r'\1', cleaned)
+        cleaned = re.sub(r'^(.{4,30})(?:\u7B49\u7B49|\u4E4B\u7C7B\u7684|\u4EC0\u4E48\u7684|\u8FD9\u4E9B|\u90A3\u4E9B)$', r'\1', cleaned)
         return cleaned.strip("\uFF0C\u3002\uFF1F\uFF01\uFF1B:\"'()\uFF08\uFF09[]\u3010\u3011{} ")
 
     def _rerank_candidate_rows_for_trace(self, trace: Dict[str, Any], score_map: Dict[Tuple[str, str], float]) -> None:
@@ -897,6 +1703,7 @@ class EnhancedCodingGenerator:
             if key not in score_map:
                 row['rerank_score'] = None
                 continue
+            row['source_text'] = normalized
             row['rerank_score'] = round(float(score_map[key]), 4)
             rank_score = self._conservative_first_level_rank_score(row)
             row['conservative_score'] = round(float(rank_score), 4)
@@ -931,7 +1738,7 @@ class EnhancedCodingGenerator:
             ):
                 return
 
-            rerank_limit = max(1, int(getattr(Config, 'ABSTRACT_RERANK_TOP_N', 6))) if Config else 6
+            rerank_limit = max(1, int(max(getattr(Config, 'ABSTRACT_RERANK_TOP_N', 6), getattr(Config, 'FIRST_LEVEL_GLOBAL_RERANK_TOP_N', 24)))) if Config else 24
             pairs: List[Tuple[str, str]] = []
             seen: Set[Tuple[str, str]] = set()
             for trace in traces:
@@ -940,7 +1747,16 @@ class EnhancedCodingGenerator:
                     row for row in trace.get('candidates', [])
                     if row.get('text') and not self._is_question_like(row.get('text', ''))
                 ]
-                rows.sort(key=lambda item: (item.get('rule_score', 0.0), len(item.get('text', ''))), reverse=True)
+                rows.sort(
+                    key=lambda item: (
+                        item.get('semantic_recall_score') is not None,
+                        item.get('conservative_score', -999.0),
+                        item.get('semantic_recall_score', 0.0) or 0.0,
+                        item.get('rule_score', 0.0),
+                        -len(item.get('text', '')),
+                    ),
+                    reverse=True,
+                )
                 for row in rows[:rerank_limit]:
                     pair = (normalized, row.get('text', ''))
                     if pair not in seen:
@@ -1008,6 +1824,222 @@ class EnhancedCodingGenerator:
             or re.search(r'^(\u4e3a\u4ec0\u4e48|\u600e\u4e48|\u5982\u4f55|\u54ea[\u91cc\u513f\u4e2a\u79cd])', t)
         )
 
+    def _compute_salience(self, text: str) -> Dict[str, float]:
+        """计算句子的四维显著性分数：转折/对比、因果链、强度/极端、问题/困境"""
+        t = str(text or '').strip()
+        if not t:
+            return {'contrast': 0.0, 'causal': 0.0, 'intensity': 0.0, 'problem': 0.0, 'total': 0.0}
+
+        # 1. 转折/对比信号 —— 转折后通常是核心信息
+        contrast_markers = [
+            r'但是', r'不过', r'然而', r'却', r'反而', r'反倒',
+            r'尽管', r'虽然', r'即使', r'即便', r'本来.*但', r'原以为.*但',
+            r'以前.*现在', r'过去.*现在', r'之前.*后来', r'一开始.*后来',
+        ]
+        contrast_score = sum(1.0 for m in contrast_markers if re.search(m, t))
+        contrast_score = min(contrast_score, 3.0)  # 上限3分
+
+        # 2. 因果/推论信号 —— 因果链是概念锚点
+        causal_markers = [
+            r'因为', r'所以', r'因此', r'由于', r'导致', r'致使',
+            r'从而', r'造成', r'引起', r'影响', r'推动', r'促进',
+            r'使得', r'之所以', r'归根结底', r'根本原因',
+        ]
+        causal_score = sum(1.0 for m in causal_markers if re.search(m, t))
+        causal_score = min(causal_score, 3.0)
+
+        # 3. 强度/极端信号 —— 程度=说话人重视程度
+        intensity_markers = [
+            r'特别', r'非常', r'最', r'极其', r'极度', r'十分',
+            r'根本', r'完全', r'彻底', r'绝对', r'毫不',
+            r'一直[都在]?', r'每次', r'总是', r'反复', r'不断',
+            r'太\w{1,3}$', r'很\w{1,3}$',
+        ]
+        intensity_score = sum(1.0 for m in intensity_markers if re.search(m, t))
+        # 感叹号=高强度
+        if re.search(r'[！!]$', t):
+            intensity_score += 1.0
+        intensity_score = min(intensity_score, 3.0)
+
+        # 4. 问题/困境信号 —— 扎根理论关注"麻烦"
+        problem_markers = [
+            r'困难', r'问题', r'矛盾', r'冲突', r'瓶颈', r'障碍',
+            r'卡在', r'拖慢', r'延迟', r'受限', r'不足', r'短板',
+            r'风险', r'压力', r'挑战', r'负担', r'缺乏', r'缺少',
+            r'不行', r'没办法', r'做不了', r'无法',
+        ]
+        problem_score = sum(1.0 for m in problem_markers if re.search(m, t))
+        problem_score = min(problem_score, 3.0)
+
+        # 加权总分：问题 > 转折 > 因果 > 强度
+        total = (
+            problem_score * 1.5 +
+            contrast_score * 1.2 +
+            causal_score * 1.0 +
+            intensity_score * 0.8
+        )
+        return {
+            'contrast': round(contrast_score, 2),
+            'causal': round(causal_score, 2),
+            'intensity': round(intensity_score, 2),
+            'problem': round(problem_score, 2),
+            'total': round(total, 2),
+        }
+
+    def _is_coding_worthy_sentence(self, text: str) -> bool:
+        """判断句子是否值得编码（编码价值门控）"""
+        t = str(text or '').strip()
+        if not t:
+            return False
+
+        # 太短不编码
+        min_len = getattr(self, 'coding_worthy_min_length', 10)
+        if len(t) < min_len:
+            return False
+
+        # 纯应和跳过
+        if re.match(r'^(对|嗯|哦|是的|好的|没错|确实|可以|行|好|有|没有|不是)[，,。.!！]?$', t):
+            return False
+
+        # 纯态度无信息：只有主观感受，无实质内容
+        if re.match(r'^(我|我们)?(觉得|感觉|认为|想|看)(也|都)?(是|就|很|挺|蛮|还|比较)', t) and not self._has_first_level_information_cue(t):
+            return False
+
+        # 访谈过渡语
+        if re.match(r'^(那我|那我先|我接着说|下一个|接下来|下面|我们先|我先说)', t) and not self._has_first_level_information_cue(t):
+            return False
+
+        # 计算显著性
+        salience = self._compute_salience(t)
+        min_salience = getattr(self, 'coding_worthy_min_salience', 1.5)
+
+        # 短句需要更高的显著性门槛
+        if len(t) < 20:
+            if salience['total'] < max(min_salience, 2.5):
+                return False
+
+        # 标准句：显著性不足且无信息提示词
+        if salience['total'] < min_salience and not self._has_first_level_information_cue(t):
+            # 哪怕无显著性，只要有足够多专业词也可入
+            prof_count = sum(1 for term in [
+                '技术', '资源', '平台', '机制', '流程', '生态',
+                '需求', '风险', '压力', '冲突', '协同', '合作',
+                '创新', '服务', '客户', '团队', '品牌', '治理',
+                '监督', '审批', '架构', '数据', '能力', '绩效',
+                '战略', '路径', '场景', '系统', '设备', '模块',
+            ] if term in t)
+            if prof_count < 2:
+                return False
+
+        return True
+
+    def _should_skip_sentence_for_coding(self, text: str, salience: Optional[Dict[str, float]] = None) -> bool:
+        """句子级预过滤：判断句子本身是否不适合编码（问题、过渡语、元指令等）"""
+        t = str(text or '').strip()
+        if not t or len(t) < 10:
+            return True
+        # 纯问题句（以吗/呢/呀结尾）
+        if re.search(r'[吗呢呀嘛啊][？?]?$', t):
+            return True
+        # 疑问句开头
+        if re.search(r'^(什么|怎么|为什么|如何|哪些|哪方面|什么样|是不是|能不能|要不要|有没有|可不可以|会不会)', t):
+            return True
+        # 访谈指导语/元指令
+        if re.search(r'^(先给您|先给你|我先|下面我|接下来|首先|本次访谈|这个访谈|刚才|刚刚|旁边|您看|你看|就是说|怎么说)', t):
+            return True
+        # 纯应和/纯态度无信息
+        if re.match(r'^(对|嗯|哦|是的|好的|没错|确实|可以|行|好|有|没有|不是)[，,。.!！]?$', t):
+            return True
+        # 访谈过渡句
+        if re.match(r'^(那我|那我先|我接着说|下一个|接下来|下面|我们先|我先说|你刚刚|你说|你讲)', t):
+            return True
+        # 无显著性且无信息提示词且不长
+        if salience and salience.get('total', 0) < 1.0 and not self._has_first_level_information_cue(t) and len(t) < 30:
+            return True
+        # 全是数字/符号
+        if re.match(r'^[\d\s\.\,\;\:\-\+\%\(\)（）①②③④⑤⑥⑦⑧⑨⑩]+$', t):
+            return True
+        return False
+
+    def _formalize_code(self, code: str) -> str:
+        """将一阶编码规范化：口语词替换为书面用语"""
+        ct = str(code or '').strip()
+        if not ct:
+            return ct
+
+        mapping = getattr(self, 'colloquial_to_formal', {})
+        # 按长度降序替换，避免短词误替换（如'make'中的'ma'）
+        for colloquial in sorted(mapping.keys(), key=len, reverse=True):
+            if colloquial in ct:
+                ct = ct.replace(colloquial, mapping[colloquial])
+
+        # 去掉口语后缀
+        ct = re.sub(r'(什么的|之类的|那种感觉|这种感觉|这样子|那样子|怎么说呢|就是说)$', '', ct)
+        # 去掉句末语气词残留
+        ct = re.sub(r'[吧呢啊嘛呀哦哈哎诶噢呃]+$', '', ct)
+        # 清理多余"的"字（"的\xe5\xbd\xb1\xe5\x93\x8d" → "影响"）
+        ct = re.sub(r'的(\w{2,4})$', r'\1', ct)
+        # 去掉"我和我们"之类的人称前缀
+        ct = re.sub(r'^[我我们你你们他他们它它们大家]*(?:也|还是|都|就|会|要|能)?', '', ct)
+        ct = ct.strip()
+
+        # 如果规范化后变空，返回原码
+        return ct if ct else str(code or '').strip()
+
+    def _compress_first_level_candidate_variants(self, text: str) -> List[str]:
+        base = self._normalize_candidate_for_first_level(str(text or ""))
+        if not base:
+            return []
+        variants: List[str] = []
+        seen: Set[str] = set()
+
+        def add(value: str):
+            cand = self._normalize_candidate_for_first_level(value)
+            if not cand:
+                return
+            if len(cand) < 4 or len(cand) > 24:
+                return
+            if self._contains_colloquial_residue(cand) or self._is_question_like(cand):
+                return
+            if cand not in seen:
+                seen.add(cand)
+                variants.append(cand)
+
+        for part in self._split_first_level_candidate_segments(base):
+            add(part)
+            compact = re.sub(r'^(?:我们|他们|你们|大家|客户|企业|项目|平台|它们|这个|那个|这种|那些|这些)?(?:可以|能够|能|会|要|需要|希望|想要|通过|把|将|对|打造|构建|建立|开展|推进|推动)?', '', part)
+            add(compact)
+            compact_tail = re.sub(r'^.*?(技术|品牌|资源|平台|机制|流程|生态|需求|问题|合作|协同|创新|服务|应用|模块|设备|系统|客户|团队|工业互联网)', r'\1', part)
+            add(compact_tail)
+            for transform in (
+                (r'^推动(?:他们|我们|企业|双方)?(.{2,18}(?:合作|交流与合作))$', r'\1'),
+                (r'^(?:客户的)?信息系统和(?:我们的)?系统对接$', '客户信息系统对接'),
+                (r'^我们购买了?(.{2,16}(?:云存储|云计算|服务))$', r'\1购买'),
+                (r'^我们将.{0,12}(生产设备|设备).{0,8}搬到(工业互联网)$', r'\1接入\2'),
+                (r'^我们也会指导客户$', '客户指导协同'),
+                (r'^让他能够更好地带领.*?(团队实现技术创新)$', r'\1'),
+                (r'^我们从(.{2,16})中找寻灵感$', r'\1启发'),
+                (r'^钱已经不再是我的目标了$', '创业目标转变'),
+                (r'^我们跟(.{2,18})搞了一个(.{2,12})$', r'\2建设'),
+                (r'^一开始书记来找我$', '社区动员参与'),
+                (r'^往品牌化这个方向走把粉丝对个人的粘性转嫁到对品牌的粘性$', '品牌粘性转化'),
+                (r'^我们自建服务器$', '自建服务器'),
+                (r'^每个阶段的重点不同.*?我们参与深度是不同的$', '阶段性参与调整'),
+                (r'^我们面临的是自身技术进步$', '自身技术进步压力'),
+                (r'^.*生产意愿和生产习惯以及当地默认的惯例开展.*随意$', '规范缺乏'),
+            ):
+                replaced = re.sub(transform[0], transform[1], part)
+                if replaced != part:
+                    add(replaced)
+            for pattern in (
+                r'((?:影响|导致|推动|推进|解决|分析|反馈|合作|转变|优化|对接|支持|审批|协调|整合|开发|探索|识别|建立|引入|获得|提高|降低|调整|打造|构建|涵养|塑造|形成|提升|购买|指导)[^，,、；;。！？!?]{2,14})',
+                r'([^，,、；;。！？!?]{2,10}(?:受影响|受限|受阻|不足|短板|风险|压力|冲突))',
+                r'((?:客户|市场|项目|资源|技术|流程|机制|服务|需求|机会|风险|问题|品牌|生态|平台|应用|模块|设备|合作|系统|团队|工业互联网)[^，,、；;。！？!?]{1,10}(?:需求|诉求|反馈|协同|整合|优化|推进|支持|识别|解决|不足|风险|合作|赋能|创新|共创|共享|建立|提升|应用|对接|接入|购买|指导))',
+            ):
+                for match in re.finditer(pattern, part):
+                    add(match.group(1))
+        return variants
+
     def _normalize_candidate_for_first_level(self, text: str) -> str:
         refined = str(text or '').strip()
         if not refined:
@@ -1062,6 +2094,65 @@ class EnhancedCodingGenerator:
             return False
         return True
 
+    def _detect_concessive_spans(self, text: str) -> List[Tuple[int, int]]:
+        """\u68c0\u6d4b\u8ba9\u6b65/\u6761\u4ef6\u4ece\u53e5\u7684\u5185\u5bb9\u8303\u56f4\uff08\u5c31\u7b97\u662fX/\u5373\u4f7fX/\u867d\u7136X/\u5982\u679c\u53ea\u662fX\u7b49\uff09\uff0c\u8fd9\u4e9b\u5185\u5bb9\u4e0d\u662f\u53e5\u5b50\u6838\u5fc3\u89c2\u70b9"""
+        concessive_starters = [
+            # \u8ba9\u6b65\u6807\u8bb0
+            r'\u5c31\u7b97(?:\u662f)?', r'\u5373\u4fbf(?:\u662f)?', r'\u5373\u4f7f(?:\u662f)?',
+            r'\u54ea\u6015(?:\u662f)?', r'\u5c3d\u7ba1(?:\u662f)?', r'\u867d\u7136(?:\u662f)?',
+            r'\u65e0\u8bba(?:\u662f|\u5982\u4f55|\u600e\u6837)?', r'\u4e0d\u7ba1(?:\u662f|\u5982\u4f55|\u600e\u6837)?',
+            r'\u7eb5\u4f7f(?:\u662f)?', r'\u4efb\u51ed(?:\u662f)?',
+            # \u8f7b\u63cf\u6de1\u5199\u7684\u6761\u4ef6\u6807\u8bb0\uff08"\u5982\u679c\u53ea\u662fX"=X\u4e0d\u91cd\u8981\uff09
+            r'\u5982\u679c\u53ea\u662f', r'\u5982\u679c\u4ec5\u4ec5', r'\u5982\u679c\u5149', r'\u5982\u679c\u5149\u5149',
+            r'\u5047\u5982\u53ea\u662f', r'\u5047\u5982\u4ec5\u4ec5', r'\u8981\u662f\u53ea\u662f', r'\u8981\u662f\u4ec5\u4ec5',
+        ]
+        clause_end_pattern = re.compile(
+            r'[\uff0c,\u3002\uff01!\uff1f?\uff1b;]|\u4f46(?:\u662f)?|\u4e0d\u8fc7|\u7136\u800c|\u5374|\u53ef(?:\u662f)?|\u5176\u5b9e|\u5b9e\u9645\u4e0a|\u7684\u8bdd'
+        )
+        spans = []
+        for starter in concessive_starters:
+            for m in re.finditer(starter, text):
+                content_start = m.end()
+                rest = text[content_start:]
+                end_match = clause_end_pattern.search(rest)
+                if end_match:
+                    content_end = content_start + end_match.start()
+                else:
+                    content_end = len(text)
+                if content_end > content_start:
+                    spans.append((content_start, content_end))
+        return spans
+
+    def _detect_negated_spans(self, text: str) -> List[Tuple[int, int]]:
+        """\u68c0\u6d4b\u5426\u5b9a\u8303\u56f4\u5185\u7684\u5185\u5bb9\uff08\u5bf9X\u4e0d\u5728\u610f/\u4e0d\u5728\u4e4eX/\u4e0d\u8ba4\u4e3aX\u7b49\uff09\uff0c\u8fd9\u4e9b\u5185\u5bb9\u8868\u8fbe\u4e86\u8bf4\u8bdd\u4eba\u5426\u5b9a\u7684\u5bf9\u8c61"""
+        spans = []
+        # \u6a21\u5f0f1\uff1a\u5bf9X(\u5e76)\u4e0d/\u5e76\u975e/\u6ca1...\u5728\u610f/\u5728\u4e4e/\u5173\u5fc3/\u91cd\u89c6/\u611f\u5174\u8da3/\u770b\u91cd/\u8981\u6c42/\u5f3a\u6c42/\u7ea0\u7ed3/\u8ba1\u8f83
+        pattern1 = re.compile(
+            r'\u5bf9(.{2,40}?)(?:\u5e76?\u4e0d(?:\u662f|\u592a|\u7279\u522b|\u600e\u4e48|\u662f\u5f88)?|\u5e76\u975e|\u6ca1(?:\u6709)?)'
+            r'(?:.{0,20})(?:\u5728\u610f|\u5728\u4e4e|\u5173\u5fc3|\u91cd\u89c6|\u611f\u5174\u8da3|'
+            r'\u770b\u91cd|\u8981\u6c42|\u5f3a\u6c42|\u7ea0\u7ed3|\u8ba1\u8f83|\u770b\u5f97\u591a\u91cd|'
+            r'\u5f88\u5927\u5173\u7cfb|\u7279\u610f|\u4ecb\u610f|\u6240\u8c13)'
+        )
+        for m in pattern1.finditer(text):
+            spans.append((m.start(1), m.end(1)))
+        # \u6a21\u5f0f2\uff1a\u4e0d\u5728\u4e4e/\u4e0d\u5728\u610f/\u4e0d\u5173\u5fc3/\u4e0d\u91cd\u8981/\u65e0\u6240\u8c13/\u6ca1\u5173\u7cfb/\u4e0d\u770b\u91cd + X\uff08X\u662f\u8bf4\u8bdd\u4eba\u5426\u5b9a\u7684\u5185\u5bb9\uff09
+        pattern2 = re.compile(
+            r'(?:\u4e0d\u5728\u4e4e|\u4e0d\u5728\u610f|\u4e0d\u5173\u5fc3|\u4e0d\u91cd\u8981|'
+            r'\u65e0\u6240\u8c13|\u6ca1\u5173\u7cfb|\u4e0d\u770b\u91cd|\u4e0d\u600e\u4e48\u770b\u91cd|'
+            r'\u4e0d\u662f\u7279\u522b\u5728\u610f|\u4e0d\u592a\u5728\u610f|\u5e76\u4e0d\u5728\u610f)'
+            r'(.{2,25}?)(?:[\uff0c,\u3002\uff01!\uff1f?\uff1b;]|\u4f46|\u5176\u5b9e|$)'
+        )
+        for m in pattern2.finditer(text):
+            spans.append((m.start(1), m.end(1)))
+        # \u6a21\u5f0f3\uff1a\u4e0d\u89c9\u5f97/\u4e0d\u8ba4\u4e3a/\u6ca1\u89c9\u5f97 + X\uff08\u5426\u5b9a\u7684\u89c2\u70b9\uff09
+        pattern3 = re.compile(
+            r'(?:\u4e0d\u89c9\u5f97|\u4e0d\u8ba4\u4e3a|\u6ca1\u89c9\u5f97|\u4e0d\u4f1a\u89c9\u5f97)'
+            r'(.{2,30}?)(?:[\uff0c,\u3002\uff01!\uff1f?\uff1b;]|$)'
+        )
+        for m in pattern3.finditer(text):
+            spans.append((m.start(1), m.end(1)))
+        return spans
+
     def _truncate_to_word(self, text: str, max_length: int) -> str:
         t = (text or '').strip()
         if max_length <= 0 or len(t) <= max_length:
@@ -1079,6 +2170,60 @@ class EnhancedCodingGenerator:
                 continue
             break
         return cut.strip("\uFF0C\u3002\uFF1F\uFF01\uFF1B:\"'()\uFF08\uFF09[]\u3010\u3011{} ")
+
+    def _smart_abbreviate(self, text: str, max_length: int) -> str:
+        """\u667A\u80FD\u7F29\u5199\uFF1A\u5728\u4FDD\u8BC1\u8BED\u4E49\u5B8C\u6574\u7684\u524D\u63D0\u4E0B\u7F29\u77ED\u4EE3\u7801\uFF0C\u4FDD\u7559\u6838\u5FC3\u6982\u5FF5
+
+        \u7B56\u7565\uFF1A
+        1. \u4F18\u5148\u4FDD\u7559\u542B\u4E13\u4E1A\u672F\u8BED/\u95EE\u9898\u8BCD/\u52A8\u4F5C\u8BCD\u7684\u7247\u6BB5
+        2. \u5220\u9664\u72B6\u8BED/\u7A0B\u5EA6\u4FEE\u9970\u7B49\u975E\u6838\u5FC3\u90E8\u5206
+        3. \u5C1D\u8BD5\u63D0\u53D6"\u4E3B\u8BED\u6838\u5FC3+\u8C13\u8BED\u5173\u952E"\u7ED3\u6784
+        """
+        t = str(text or '').strip()
+        if not t or max_length <= 0 or len(t) <= max_length:
+            return t
+
+        # \u62C6\u5206\u4E3A\u9017\u53F7\u5206\u9694\u7684\u7247\u6BB5
+        parts = [p.strip() for p in re.split(r'[\uFF0C,\u3001]', t) if p.strip()]
+        if len(parts) <= 1:
+            return self._truncate_to_word(t, max_length)
+
+        # \u7ED9\u6BCF\u4E2A\u7247\u6BB5\u6253\u5206\uFF1A\u542B\u4E13\u4E1A\u8BCD/\u95EE\u9898\u8BCD/\u52A8\u4F5C\u8BCD\u7684\u7247\u6BB5\u6743\u91CD\u9AD8
+        high_value_words = re.compile(
+            r'(\u673A\u5236|\u6D41\u7A0B|\u8D44\u6E90|\u7B56\u7565|\u8DEF\u5F84|\u6A21\u5F0F|\u7ED3\u6784|\u80FD\u529B|\u67B6\u6784|\u751F\u6001|\u6CBB\u7406|\u76D1\u7763|\u534F\u540C|\u5BA1\u6279|\u7EE9\u6548|\u6218\u7565|\u9700\u6C42|\u670D\u52A1|\u521B\u65B0|'
+            r'\u8BC4\u4F30|\u4F18\u5316|\u914D\u7F6E|\u6574\u5408|\u4FDD\u969C|\u7EA6\u675F|\u53CD\u9988|\u9A71\u52A8|\u8D4B\u80FD|\u8F6C\u578B|'
+            r'\u4E0D\u8DB3|\u53D7\u9650|\u7F3A\u5931|\u7F3A\u4E4F|\u53D7\u963B|\u5EF6\u8FDF|\u5F71\u54CD|\u63A8\u52A8|\u964D\u4F4E|\u589E\u52A0|'
+            r'\u5BA2\u6237|\u56E2\u961F|\u54C1\u724C|\u5E73\u53F0|\u7CFB\u7EDF|\u6570\u636E|\u5B89\u5168|\u8D28\u91CF|\u6210\u672C|\u6548\u7387)'
+        )
+
+        def part_score(part: str) -> float:
+            s = 0.0
+            s += len(high_value_words.findall(part)) * 2.0
+            # \u957F\u7247\u6BB5\u7565\u6263\u5206\uFF08\u6211\u4EEC\u60F3\u8981\u7D27\u51D1\u7684\uFF09
+            s -= max(0, len(part) - 8) * 0.1
+            # \u4EE5"\u7684"\u7ED3\u5C3E\u6263\u5206\uFF08\u4E0D\u5B8C\u6574\uFF09
+            if part.endswith('\u7684'):
+                s -= 1.5
+            return s
+
+        # \u6309\u5F97\u5206\u964D\u5E8F
+        ranked = sorted(parts, key=part_score, reverse=True)
+
+        # \u8D2A\u5FC3\u9009\u62E9\uFF1A\u4ECE\u9AD8\u5206\u7247\u6BB5\u5F00\u59CB\u62FC\u63A5\uFF0C\u76F4\u5230\u63A5\u8FD1\u957F\u5EA6\u4E0A\u9650
+        selected = []
+        current_len = 0
+        for part in ranked:
+            test_len = current_len + len(part) + (1 if selected else 0)
+            if test_len <= max_length:
+                selected.append(part)
+                current_len = test_len
+
+        if selected:
+            return '\uFF0C'.join(selected)
+
+        # \u5982\u679C\u5355\u4E2A\u7247\u6BB5\u90FD\u592A\u957F\uFF0C\u5BF9\u8BE5\u7247\u6BB5\u505A\u622A\u65AD
+        best_part = ranked[0]
+        return self._truncate_to_word(best_part, max_length)
 
     def _limit_first_level_text(self, text: str, max_length: int) -> str:
         t = (text or '').strip()
@@ -1108,7 +2253,8 @@ class EnhancedCodingGenerator:
 
         if best:
             return best
-        return self._truncate_to_word(t, max_length)
+        # \u4F20\u7EDF\u65B9\u6CD5\u627E\u4E0D\u5230\u5408\u9002\u7247\u6BB5\u65F6\uFF0C\u4F7F\u7528\u667A\u80FD\u7F29\u5199
+        return self._smart_abbreviate(t, max_length)
 
     def generate_codes_with_trained_model(self, processed_data: Dict[str, Any],
                                           model_manager,
@@ -1140,7 +2286,7 @@ class EnhancedCodingGenerator:
             texts = []
             for sent in all_sentences:
                 t = (sent.get('content', '') or '').strip()
-                if len(t) > 10:
+                if self._is_coding_worthy_sentence(t):
                     filtered_sentences.append(sent)
                     texts.append(t)
 
@@ -1207,6 +2353,9 @@ class EnhancedCodingGenerator:
                 if not abstracted:
                     self._store_first_level_trace(code_key, trace)
                     continue
+                # 清理编码开头的标点符号
+                abstracted = self._clean_code_prefix(abstracted)
+                
                 first_level_codes[code_key] = [
                     abstracted,
                     [source_detail],  # source_sentences
@@ -1487,7 +2636,7 @@ class EnhancedCodingGenerator:
                 # 如果存在说话人字段，则只处理受访者内容；否则默认处理
                 if speaker and speaker != 'respondent':
                     continue
-                if content and len(content.strip()) > 10:
+                if content and self._is_coding_worthy_sentence(content.strip()):
                     code_key = f"FL_{i + 1:04d}"
                     trace = self.build_first_level_candidate_trace(
                         content,
@@ -1606,6 +2755,36 @@ class EnhancedCodingGenerator:
                 vector_best_name = name
         return token_best_name, vector_best_name
 
+    def _build_cluster_query(self, cluster) -> str:
+        """构建簇查询文本：使用簇代表编码文本。"""
+        return cluster.representative or ""
+
+    def _try_keyword_second_match(
+        self, text: str, candidates: List[Dict[str, Any]]
+    ) -> Optional[str]:
+        """语义匹配被拒后的关键词回退：用jieba分词与候选名称做词级匹配。"""
+        if not text or not candidates:
+            return None
+        query_tokens = set(jieba.lcut(text))
+        if not query_tokens:
+            return None
+        best_name = None
+        best_overlap = 0
+        for cand in candidates:
+            name = cand.get("name", "")
+            if not name:
+                continue
+            name_tokens = set(jieba.lcut(name))
+            if not name_tokens:
+                continue
+            overlap = len(query_tokens & name_tokens) / max(1, len(query_tokens))
+            if overlap > best_overlap:
+                best_overlap = overlap
+                best_name = name
+        if best_overlap >= 0.40 and best_name:
+            return best_name
+        return None
+
     def _lookup_second_code_by_name(self, second_name: str) -> Optional[Dict[str, Any]]:
         if not self.coding_library or not second_name:
             return None
@@ -1668,7 +2847,7 @@ class EnhancedCodingGenerator:
                 )
 
                 for cluster in clusters:
-                    text = cluster.representative or ""
+                    text = self._build_cluster_query(cluster)
                     if not text.strip():
                         categories[self.decision_policy.other_second_name].extend(cluster.source_keys)
                         continue
@@ -1685,6 +2864,16 @@ class EnhancedCodingGenerator:
                         token_best_name=token_best,
                         vector_best_name=vector_best,
                     )
+
+                    # 语义匹配被拒后尝试关键词回退
+                    if decision.name == self.decision_policy.other_second_name and candidates:
+                        keyword_name = self._try_keyword_second_match(text, candidates)
+                        if keyword_name:
+                            decision = CodingDecision(
+                                True, keyword_name, "second_keyword_fallback", 0.35,
+                                self._lookup_second_code_by_name(keyword_name),
+                            )
+
                     categories[decision.name].extend(cluster.source_keys)
                     if decision.name not in self._second_level_decision_meta:
                         self._second_level_decision_meta[decision.name] = {

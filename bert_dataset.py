@@ -6,6 +6,11 @@ from typing import Dict, List, Any, Optional, Tuple
 
 import difflib
 
+try:
+    import jieba
+except Exception:
+    jieba = None
+
 import torch
 from torch.utils.data import Dataset
 from transformers import BertTokenizer
@@ -238,6 +243,33 @@ def create_abstract_rerank_dataset_from_standard_answers(
     def _sim(a: str, b: str) -> float:
         return difflib.SequenceMatcher(None, a or '', b or '').ratio()
 
+    def _tokens(text: str) -> set:
+        raw = str(text or "")
+        if jieba is not None:
+            return {tok.strip() for tok in jieba.lcut(raw) if len(tok.strip()) >= 2}
+        return {raw[i:i + 2] for i in range(max(0, len(raw) - 1))}
+
+    def _focus_score(candidate: str, target: str, original: str) -> float:
+        cand = str(candidate or "").strip()
+        tgt = str(target or "").strip()
+        if not cand or not tgt:
+            return 0.0
+        cand_tokens = _tokens(cand)
+        target_tokens = _tokens(tgt)
+        token_overlap = len(cand_tokens & target_tokens) / max(1, len(target_tokens))
+        char_overlap = len(set(cand) & set(tgt)) / max(1, len(set(tgt)))
+        seq_sim = _sim(cand, tgt)
+        score = 0.45 * token_overlap + 0.30 * char_overlap + 0.25 * seq_sim
+        if re.search(r'(影响|导致|需要|只能|受限|不足|短板|风险|压力|冲突|审批|协同|资源|客户|诉求|反馈|推进|识别|整合|建立|引入|优化|开发|支持|合作|转型|创新|需求|机会|机制|流程)', cand):
+            score += 0.15
+        if cand and cand in original:
+            score += 0.10
+        score -= max(0, len(cand) - 30) * 0.015
+        score -= cand.count('，') * 0.06
+        if re.search(r'(我觉得|怎么说呢|就是说|相当于|这个东西|这个事情|这个问题|吧|呢|啊|嘛|呀|哦|哈)', cand):
+            score -= 0.20
+        return score
+
     kept = 0
     skipped = 0
 
@@ -260,11 +292,11 @@ def create_abstract_rerank_dataset_from_standard_answers(
             skipped += 1
             continue
 
-        # 选一个“最接近人工抽象”的候选作为正样本
+        # 选一个“最接近人工抽象语义方向”的原文候选作为正样本。
         best_idx = 0
         best_score = -1.0
         for i, c in enumerate(candidates):
-            s = _sim(c, target)
+            s = _focus_score(c, target, original)
             if s > best_score:
                 best_score = s
                 best_idx = i
@@ -273,10 +305,17 @@ def create_abstract_rerank_dataset_from_standard_answers(
         text_pairs.append((original, pos))
         labels.append(1)
 
-        neg_pool = [c for i, c in enumerate(candidates) if i != best_idx]
+        neg_pool = sorted(
+            [c for i, c in enumerate(candidates) if i != best_idx],
+            key=lambda c: _focus_score(c, target, original),
+        )
         if neg_pool:
-            rng.shuffle(neg_pool)
-            for neg in neg_pool[:max(1, int(negative_samples))]:
+            hard_neg_pool = neg_pool[-max(1, int(negative_samples) * 2):]
+            easy_neg_pool = neg_pool[:max(1, int(negative_samples) * 2)]
+            rng.shuffle(hard_neg_pool)
+            rng.shuffle(easy_neg_pool)
+            sampled_negs = (hard_neg_pool[:max(1, int(negative_samples) // 2)] + easy_neg_pool[:max(1, int(negative_samples) - max(1, int(negative_samples) // 2))])
+            for neg in sampled_negs[:max(1, int(negative_samples))]:
                 text_pairs.append((original, neg))
                 labels.append(0)
 

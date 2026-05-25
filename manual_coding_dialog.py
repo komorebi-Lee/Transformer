@@ -273,8 +273,6 @@ class ManualCodingDialog(QDialog):
         self.text_display.installEventFilter(self)
         text_layout.addWidget(self.text_display)
 
-
-
         layout.addWidget(text_group)
 
         return panel
@@ -305,8 +303,6 @@ class ManualCodingDialog(QDialog):
 
         select_buttons_layout.addWidget(self.select_sentence_btn)
         first_layout.addLayout(select_buttons_layout)
-
-
 
         layout.addWidget(first_group)
 
@@ -883,7 +879,7 @@ class ManualCodingDialog(QDialog):
                 if len(selected_text) > 0:  # 确保有意义的文本
                     # 将文本复制到编码输入框
                     self.first_content_edit.setPlainText(selected_text)
-                    
+
                     # 直接调用添加一阶编码的方法
                     self.add_first_level_direct()
                 else:
@@ -1771,8 +1767,26 @@ class ManualCodingDialog(QDialog):
 
             sentence_id = code_id
             detail_text = clean_content
+            tmng_number = code_id
 
-            if number_matches:
+            # 优先检查用户是否在文本编辑器中选中了文本
+            cursor = self.text_display.textCursor()
+            selected_text = cursor.selectedText().strip() if cursor.hasSelection() else ""
+            
+            text_content = self.text_display.toPlainText()
+            
+            # 策略1：如果用户选中了文本，优先从选中位置获取句子编号
+            if selected_text and text_content:
+                found_number = self.find_sentence_number_from_text(selected_text, text_content)
+                if found_number:
+                    tmng_number = found_number
+                    sentence_id = tmng_number
+                    # 使用选中的文本作为详情文本
+                    detail_text = selected_text.strip()
+                    logger.info(f"从选中文本获取句子编号: [{tmng_number}]")
+            elif number_matches:
+                # 策略2：从编码内容中提取编号，取最后一个编号
+                # 因为用户通常会把最相关的句子放在最后引用
                 tmng_number = number_matches[-1]
                 sentence_id = tmng_number
                 try:
@@ -1782,14 +1796,12 @@ class ManualCodingDialog(QDialog):
                         detail_text = match.group(1).strip()
                 except Exception as e:
                     logger.error(f"提取句子文本失败: {e}")
-            else:
-                tmng_number = code_id
-                text_content = self.text_display.toPlainText()
-                if text_content:
-                    found_number = self.find_sentence_number_from_text(clean_content, text_content)
-                    if found_number:
-                        tmng_number = found_number
-                        sentence_id = tmng_number
+            elif text_content:
+                # 策略3：尝试从文本中查找匹配的句子编号
+                found_number = self.find_sentence_number_from_text(clean_content, text_content)
+                if found_number:
+                    tmng_number = found_number
+                    sentence_id = tmng_number
 
             # 尝试获取当前选中的文件路径
             current_file_path = ""
@@ -2821,7 +2833,8 @@ class ManualCodingDialog(QDialog):
                         logger.info(f"使用精确方式高亮了编码 {code_id}")
 
                 # 如果精确高亮失败，尝试使用内容搜索
-                if not success and code_id and content and not (target_file_path or target_filename or target_sentence_id):
+                if not success and code_id and content and not (
+                        target_file_path or target_filename or target_sentence_id):
                     # 清理内容，移除可能存在的标记
                     import re
                     clean_content = re.sub(r'\s*\[A\d+\]', '', content).strip()
@@ -3409,14 +3422,27 @@ class ManualCodingDialog(QDialog):
 
             # 如果策略0未找到文件，继续后续策略
             if not target_file:
-                # 尝试从sentences_to_highlight中获取关联的句子ID
+                # 优先尝试从sentences_to_highlight中获取关联的句子ID
                 for sentence_info in sentences_to_highlight:
                     if sentence_info.get('sentence_id'):
                         target_sentence_id = sentence_info.get('sentence_id')
                         break
 
-                # 优先使用编码内容进行文件匹配
-                if code_clean:
+                # 优先使用句子ID匹配文件（更精确）
+                if target_sentence_id:
+                    sentence_tag = f"[{target_sentence_id}]"
+                    for file_path, file_data in self.loaded_files.items():
+                        if time.time() - start_time > max_execution_time:
+                            logger.warning("文件匹配超时")
+                            return False
+                        file_text = file_data.get('numbered_content', '') or file_data.get('content', '')
+                        if sentence_tag in file_text:
+                            target_file = file_path
+                            logger.info(f"通过句子ID [{target_sentence_id}] 找到文件: {target_file}")
+                            break
+
+                # 如果句子ID匹配失败，再尝试使用编码内容进行文件匹配
+                if not target_file and code_clean:
                     for file_path, file_data in self.loaded_files.items():
                         if time.time() - start_time > max_execution_time:
                             logger.warning("文件匹配超时")
@@ -3428,9 +3454,10 @@ class ManualCodingDialog(QDialog):
 
                         if code_clean in file_text:
                             target_file = file_path
+                            logger.info(f"通过编码内容匹配找到文件: {target_file}")
                             break
 
-            # 如果没找到，尝试通过句子ID匹配文件
+            # 如果没找到，再次尝试通过句子ID匹配文件（冗余检查）
             if not target_file and target_sentence_id:
                 sentence_tag = f"[{target_sentence_id}]"
                 for file_path, file_data in self.loaded_files.items():
@@ -3524,190 +3551,158 @@ class ManualCodingDialog(QDialog):
             found_count = 0
             first_match_position = None  # 记录第一个匹配项的位置
             extra_selections = []  # 用于存储临时高亮的选择
+            
+            # 标记是否有有效的sentence_id
+            has_valid_sentence_id = False
+            if sentences_to_highlight:
+                for sentence_info in sentences_to_highlight:
+                    sid = sentence_info.get('sentence_id', '').strip()
+                    if sid and sid.isdigit():
+                        has_valid_sentence_id = True
+                        break
 
-            # 优先高亮一阶编码的精确内容
-            if code_clean:
-                search_cursor = self.text_display.textCursor()
-                search_cursor.movePosition(cursor.Start)
+            # 策略1：优先使用句子ID精确定位（最可靠）
+            # 如果有有效的sentence_id，只使用sentence_id定位，不使用内容匹配
+            if sentences_to_highlight:
+                for sentence_info in sentences_to_highlight:
+                    sentence_id = sentence_info.get('sentence_id', '').strip()
+                    if sentence_id and sentence_id.isdigit():
+                        id_pattern = r'\[' + re.escape(str(sentence_id)) + r'\]'
+                        id_regex = QRegularExpression(id_pattern)
+                        id_match = id_regex.match(current_text)
 
-                # 策略1：直接查找编码内容
-                found_cursor = self.text_document.find(code_clean, search_cursor)
+                        if id_match.hasMatch():
+                            match_start = id_match.capturedStart()
+                            match_end = id_match.capturedEnd()
 
-                # 策略2：如果策略1失败，尝试使用正则表达式查找（忽略空白差异）
-                if found_cursor.isNull():
-                    # 限制正则表达式长度，避免性能问题
-                    if len(code_clean) > 100:
-                        code_clean = code_clean[:100]
-                    # 转换为正则模式，将多个空白符视为一个
-                    pattern = re.sub(r'\s+', r'\\s+', re.escape(code_clean))
-                    regex = QRegularExpression(pattern)
-                    found_cursor = self.text_document.find(regex, search_cursor)
+                            cursor = self.text_display.textCursor()
+                            cursor.setPosition(match_end)
 
-                # 策略3：如果还失败，尝试查找关键词
-                if found_cursor.isNull():
-                    # 提取关键词
-                    words = [word for word in code_clean.split() if len(word) > 2]
-                    if words and len(words) <= 5:
-                        # 尝试查找前几个关键词
-                        keyword_pattern = r'\b' + r'\b.*\b'.join(words[:3]) + r'\b'
-                        regex = QRegularExpression(keyword_pattern, QRegularExpression.CaseInsensitiveOption)
-                        found_cursor = self.text_document.find(regex, search_cursor)
+                            next_id_pattern = r'\[\w+\d+\]|\[\d+\]'
+                            next_regex = QRegularExpression(next_id_pattern)
+                            next_match = next_regex.match(current_text, match_end)
 
-                if not found_cursor.isNull():
-                    # 使用 ExtraSelection 进行临时高亮
-                    selection = QTextEdit.ExtraSelection()
-                    selection.cursor = found_cursor
-                    selection.format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
-                    selection.format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
-                    extra_selections.append(selection)
+                            end_pos = -1
+                            if next_match.hasMatch():
+                                end_pos = next_match.capturedStart()
+                            else:
+                                block = cursor.block()
+                                end_pos = block.position() + block.length() - 1
 
-                    found_count += 1
-
-                    # 记录第一个匹配项的位置用于滚动
-                    if first_match_position is None:
-                        first_match_position = found_cursor.selectionStart()
-                        logger.info(f"记录第一个匹配位置: {first_match_position}")
-
-            # 如果没有找到编码内容，尝试高亮句子内容
-            if found_count == 0:
-                # 尝试使用句子ID精确定位（针对自动编码产生的数字ID）
-                # 这是最可靠的定位方式，特别是对于纯文本内容匹配失败的情况
-                if sentences_to_highlight:
-                    for sentence_info in sentences_to_highlight:
-                        sentence_id = sentence_info.get('id', '')
-                        if sentence_id:
-                            # 构造精确的ID查找正则表达式 [ID]
-                            id_pattern = r'\[' + re.escape(str(sentence_id)) + r'\]'
-                            id_regex = QRegularExpression(id_pattern)
-                            id_match = id_regex.match(current_text)
-
-                            if id_match.hasMatch():
-                                # 找到ID位置
-                                match_start = id_match.capturedStart()
-                                match_end = id_match.capturedEnd()
-
-                                # 将光标移动到ID之后
-                                cursor = self.text_display.textCursor()
+                            if end_pos > match_end:
+                                selection = QTextEdit.ExtraSelection()
                                 cursor.setPosition(match_end)
+                                cursor.setPosition(end_pos, QTextCursor.KeepAnchor)
+                                selection.cursor = cursor
+                                selection.format.setBackground(QColor(173, 216, 230))
+                                selection.format.setForeground(QColor(0, 0, 139))
+                                extra_selections.append(selection)
 
-                                # 尝试查找该句子的结束位置（下一个 [ID] 或段落结束）
-                                next_id_pattern = r'\[\w+\d+\]|\[\d+\]'  # 匹配下一个ID标记
-                                next_regex = QRegularExpression(next_id_pattern)
-                                next_match = next_regex.match(current_text, match_end)
+                                found_count += 1
+                                if first_match_position is None:
+                                    first_match_position = match_start
+                                    logger.info(f"通过句子ID [{sentence_id}] 定位成功")
+                            break
+                    elif sentence_id:
+                        # 非数字的sentence_id，可能是编码ID如A01，不用于定位
+                        continue
 
-                                end_pos = -1
-                                if next_match.hasMatch():
-                                    end_pos = next_match.capturedStart()
-                                else:
-                                    # 如果没有下一个ID，则高亮到段落结束或一定长度
-                                    block = cursor.block()
-                                    end_pos = block.position() + block.length() - 1
-
-                                    # 选中从ID结束到句子结束的文本
-                                if end_pos > match_end:
-                                    selection = QTextEdit.ExtraSelection()
-                                    cursor.setPosition(match_end)
-                                    cursor.setPosition(end_pos, QTextCursor.KeepAnchor)
-                                    selection.cursor = cursor
-                                    selection.format.setBackground(QColor(173, 216, 230))
-                                    selection.format.setForeground(QColor(0, 0, 139))
-                                    extra_selections.append(selection)
-
-                                    found_count += 1
-                                    if first_match_position is None:
-                                        first_match_position = match_start
-
-                                    # 如果找到了，就跳出循环，避免重复处理
-                                    break
-
-                # 如果ID定位也失败，继续尝试原来的内容匹配逻辑
-                if found_count == 0:
-                    # 限制处理的句子数量
-                    max_sentences = 3
+            # 策略2：只有当没有有效的sentence_id时，才使用句子详情中的原始内容进行匹配
+            # 避免sentence_id和内容匹配冲突导致重复高亮
+            if found_count == 0 and not has_valid_sentence_id and sentences_to_highlight:
                 processed_sentences = 0
+                max_sentences = 3
 
                 for sentence_info in sentences_to_highlight:
                     if processed_sentences >= max_sentences:
                         break
 
-                    if time.time() - start_time > max_execution_time:
-                        logger.warning("句子高亮超时")
-                        break
-
-                    # 优先使用原始内容，而不是抽象后的内容
-                    sentence_content = sentence_info.get('original_content', '') or sentence_info.get('text',
-                                                                                                      '').strip()
+                    sentence_content = sentence_info.get('original_content', '') or sentence_info.get('text', '').strip()
                     if not sentence_content:
                         continue
 
-                    # 清理句子内容：移除可能存在的编号标记
                     sentence_clean = re.sub(r'\s*\[[A-Z]\d+\]', '', sentence_content)
                     sentence_clean = re.sub(r'^[A-Z]\d+\s+', '', sentence_clean)
                     sentence_clean = re.sub(r'\s*\[\d+\]', '', sentence_clean).strip()
 
-                    # 尝试从sentence_info中获取file_path，如果有的话
-                    file_path = sentence_info.get('file_path', '')
-                    if file_path and file_path in self.loaded_files:
-                        # 如果指定了文件路径，确保当前显示的是该文件
-                        current_items = self.file_list.selectedItems()
-                        current_file = current_items[0].data(Qt.UserRole) if current_items else None
-                        if current_file != file_path:
-                            for i in range(self.file_list.count()):
-                                item = self.file_list.item(i)
-                                if item.data(Qt.UserRole) == file_path:
-                                    self.file_list.setCurrentItem(item)
-                                    QApplication.processEvents()
-                                    current_text = self.text_display.toPlainText()
-                                    break
+                    # 关键修复：跳过说话人标签的内容匹配
+                    # 如果内容只是说话人标签（如"说话人2"），不进行内容匹配，避免错误匹配
+                    if re.search(r'^(?:说话人|讲话人)\s*\d+$', sentence_clean) or re.search(r'^(受访者|采访者|被访者|主持人|采访员|提问者)$', sentence_clean):
+                        logger.info(f"跳过说话人标签 '{sentence_clean}' 的内容匹配")
+                        continue
 
-                    # 在文本中查找并高亮这个精确句子
+                    # 检查内容是否太短或没有实质信息
+                    if len(sentence_clean) <= 6:
+                        logger.info(f"跳过太短的内容 '{sentence_clean}' 的内容匹配")
+                        continue
+
+                    if len(sentence_clean) > 200:
+                        sentence_clean = sentence_clean[:200]
+
                     search_cursor = self.text_display.textCursor()
                     search_cursor.movePosition(cursor.Start)
-
-                    # 策略1：直接查找清理后的文本
-                    if len(sentence_clean) > 200:
-                        sentence_clean = sentence_clean[:200]  # 限制搜索长度
                     found_cursor = self.text_document.find(sentence_clean, search_cursor)
 
-                    # 策略2：如果策略1失败，尝试查找前50个字符
                     if found_cursor.isNull() and len(sentence_clean) > 50:
                         found_cursor = self.text_document.find(sentence_clean[:50], search_cursor)
 
-                    # 策略3：如果还失败，尝试使用正则表达式查找（忽略空白差异）
-                    if found_cursor.isNull():
-                        # 限制正则表达式长度
-                        if len(sentence_clean) > 100:
-                            sentence_clean = sentence_clean[:100]
-                        # 转换为正则模式，将多个空白符视为一个
+                    if found_cursor.isNull() and len(sentence_clean) <= 100:
                         pattern = re.sub(r'\s+', r'\\s+', re.escape(sentence_clean))
                         regex = QRegularExpression(pattern)
                         found_cursor = self.text_document.find(regex, search_cursor)
 
-                    # 策略4：如果还失败，尝试查找关键词
-                    if found_cursor.isNull():
-                        # 提取关键词
-                        words = [word for word in sentence_clean.split() if len(word) > 2]
-                        if words and len(words) <= 5:
-                            # 尝试查找前几个关键词
-                            keyword_pattern = r'\b' + r'\b.*\b'.join(words[:3]) + r'\b'
-                            regex = QRegularExpression(keyword_pattern, QRegularExpression.CaseInsensitiveOption)
-                            found_cursor = self.text_document.find(regex, search_cursor)
-
                     if not found_cursor.isNull():
-                        # 使用 ExtraSelection 进行临时高亮
                         selection = QTextEdit.ExtraSelection()
                         selection.cursor = found_cursor
-                        selection.format.setBackground(QColor(173, 216, 230))  # 浅蓝色背景
-                        selection.format.setForeground(QColor(0, 0, 139))  # 深蓝色文字
+                        selection.format.setBackground(QColor(173, 216, 230))
+                        selection.format.setForeground(QColor(0, 0, 139))
                         extra_selections.append(selection)
 
                         found_count += 1
                         processed_sentences += 1
 
-                        # 记录第一个匹配项的位置用于滚动
                         if first_match_position is None:
                             first_match_position = found_cursor.selectionStart()
-                            logger.info(f"记录第一个匹配位置: {first_match_position}")
+                            logger.info(f"通过句子内容定位成功")
+
+            # 策略3：只有当没有有效的sentence_id且内容匹配也失败时，才使用编码内容进行匹配
+            if found_count == 0 and not has_valid_sentence_id and code_clean:
+                # 关键修复：跳过说话人标签的内容匹配
+                if re.search(r'^(?:说话人|讲话人)\s*\d+$', code_clean) or re.search(r'^(受访者|采访者|被访者|主持人|采访员|提问者)$', code_clean):
+                    logger.info(f"跳过说话人标签 '{code_clean}' 的编码内容匹配")
+                    return False
+                    
+                search_cursor = self.text_display.textCursor()
+                search_cursor.movePosition(cursor.Start)
+
+                found_cursor = self.text_document.find(code_clean, search_cursor)
+
+                if found_cursor.isNull():
+                    if len(code_clean) > 100:
+                        code_clean = code_clean[:100]
+                    pattern = re.sub(r'\s+', r'\\s+', re.escape(code_clean))
+                    regex = QRegularExpression(pattern)
+                    found_cursor = self.text_document.find(regex, search_cursor)
+
+                if found_cursor.isNull():
+                    words = [word for word in code_clean.split() if len(word) > 2]
+                    if words and len(words) <= 5:
+                        keyword_pattern = r'\b' + r'\b.*\b'.join(words[:3]) + r'\b'
+                        regex = QRegularExpression(keyword_pattern, QRegularExpression.CaseInsensitiveOption)
+                        found_cursor = self.text_document.find(regex, search_cursor)
+
+                if not found_cursor.isNull():
+                    selection = QTextEdit.ExtraSelection()
+                    selection.cursor = found_cursor
+                    selection.format.setBackground(QColor(173, 216, 230))
+                    selection.format.setForeground(QColor(0, 0, 139))
+                    extra_selections.append(selection)
+
+                    found_count += 1
+
+                    if first_match_position is None:
+                        first_match_position = found_cursor.selectionStart()
+                        logger.info(f"通过编码内容定位成功")
 
             if found_count > 0 and first_match_position is not None:
                 # 限制高亮数量，避免内存问题
@@ -6565,10 +6560,10 @@ class ManualCodingDialog(QDialog):
             PathManager.ensure_dir(tree_save_dir)
             tree_filename = f"编码树_{timestamp}.json"
             tree_file_path = PathManager.join(tree_save_dir, tree_filename)
-            
+
             # 从树形控件构建完整的数据结构
             tree_data = self.extract_tree_data()
-            
+
             # 构建完整保存数据（包含文件编码标记状态）
             tree_save_data = {
                 "timestamp": datetime.now().isoformat(),
@@ -6577,12 +6572,13 @@ class ManualCodingDialog(QDialog):
                 "current_codes": self.current_codes,
                 "unclassified_first_codes": self.unclassified_first_codes
             }
-            
+
             # 保存完整的编码结构和文件状态
             with PathManager.safe_open(tree_file_path, 'w', encoding='utf-8') as f:
                 json.dump(tree_save_data, f, ensure_ascii=False, indent=2)
 
-            QMessageBox.information(self, "成功", f"编码已保存到: {file_path}\n编码树已保存到: {tree_file_path}\n\n编码进度已记录，下次打开将自动恢复到当前位置。")
+            QMessageBox.information(self, "成功",
+                                    f"编码已保存到: {file_path}\n编码树已保存到: {tree_file_path}\n\n编码进度已记录，下次打开将自动恢复到当前位置。")
             logger.info(f"编码已保存: {file_path}")
             logger.info(f"编码树已保存: {tree_file_path}")
             return True

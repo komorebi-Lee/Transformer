@@ -1,12 +1,90 @@
 import logging
 from typing import Dict, List, Any, Tuple
 import re
+import jieba.posseg as pseg
 
 logger = logging.getLogger(__name__)
 
 
 class GroundedTheoryCoder:
     """扎根理论编码器 - 改进版，支持新的编号系统和导航标记"""
+
+    def _has_information_cue(self, text: str) -> bool:
+        t = str(text or '').strip()
+        if not t:
+            return False
+        return bool(re.search(
+            r'(引入|建立|调整|获得|降低|提高|推动|解决|分析|反馈|合作|转变|优化|对接|支持|审批|流程|'
+            r'受影响|受限|不足|短板|导向|循环|机会|需求|资源|服务|监督|指引|开发|探索|'
+            r'协调|整合|压力|风险|价值|增长|转型|评价|约束|冲突|规范|机制|平台|系统|品牌|团队|客户|治理|场景)',
+            t,
+        ))
+
+    def _contains_colloquial_residue(self, text: str) -> bool:
+        t = str(text or '').strip()
+        return bool(
+            re.search(r'(怎么说呢|就是说|我觉得|相当于|要看|分场合|这个东西|这个事情|这个问题|就是那种|就这种|类似这种)', t)
+            or re.search(r'[吧呢啊嘛呀哦哈哎诶噢呃]', t)
+            or re.search(r'^(然后|就是|所以|但是|不过|其实|那个|这个|后来|当时)', t)
+            or re.search(r'(什么的|之类的|那种感觉|这种感觉|这样子|那样子)$', t)
+        )
+
+    def _is_question_like(self, text: str) -> bool:
+        t = str(text or '').strip()
+        if not t:
+            return False
+        if any(word in t for word in self.question_words):
+            return True
+        return ('？' in t) or ('?' in t)
+
+    def _has_valid_pos_pattern(self, text: str) -> bool:
+        t = str(text or '').strip()
+        if not t:
+            return False
+        try:
+            tokens = [(word.strip(), flag) for word, flag in pseg.cut(t) if str(word).strip()]
+        except Exception:
+            return True
+        if not tokens:
+            return False
+        words = [word for word, _ in tokens]
+        flags = [flag for _, flag in tokens]
+        if any(word in self.modal_particles for word in words):
+            return False
+        if any(word in self.pronouns for word in words):
+            return False
+        noun_like = any(flag.startswith(('n', 's', 'nt', 'nz')) for flag in flags)
+        verb_like = any(flag.startswith('v') for flag in flags)
+        adj_like = any(flag.startswith('a') for flag in flags)
+        if not noun_like:
+            return False
+        if not (verb_like or adj_like or self._has_information_cue(t)):
+            return False
+        return True
+
+    def _is_good_first_level_content(self, text: str) -> bool:
+        t = re.sub(r'^[A-Z]\d+\s*', '', str(text or '').strip())
+        if not t or len(t) < 4:
+            return False
+        if self._is_question_like(t):
+            return False
+        if self._contains_colloquial_residue(t):
+            return False
+        if any(pronoun in t for pronoun in self.pronouns):
+            return False
+        if any(particle in t for particle in self.modal_particles):
+            return False
+        if re.search(r'^(因为|所以|但是|不过|然后|如果|就是|其实|那个|这个|后来|当时)$', t):
+            return False
+        if re.search(r'^(因为|所以|但是|不过|然后|如果|就是|其实|那个|这个|后来|当时)', t) and not self._has_information_cue(t):
+            return False
+        if re.search(r'(这个|那个|这块|这一块|那种|这种|这样|那样)$', t):
+            return False
+        if re.search(r'(什么的|之类的)$', t):
+            return False
+        if not self._has_valid_pos_pattern(t):
+            return False
+        return True
 
     def __init__(self):
         self.used_second_categories = set()
@@ -15,6 +93,15 @@ class GroundedTheoryCoder:
             'third': 0,
             'second': {},
             'first': {}
+        }
+        self.modal_particles = {
+            '啊', '呀', '呢', '吧', '嘛', '哦', '哈', '啦', '哇', '呗', '咯', '诶', '欸', '嗯'
+        }
+        self.pronouns = {
+            '你', '我', '他', '她', '它', '你们', '我们', '他们', '她们', '它们'
+        }
+        self.question_words = {
+            '吗', '么', '呢', '什么', '为什么', '怎么', '如何', '哪', '哪里', '哪儿', '是否'
         }
 
     def build_coding_structure(self, raw_codes: Dict[str, Any]) -> Dict[str, Any]:
@@ -52,6 +139,11 @@ class GroundedTheoryCoder:
                                 contents = first_level_codes[key]
                                 if isinstance(contents, list) and len(contents) >= 5:
                                     content_str = contents[0]
+
+                                    # 主程序最终展示前的一阶编码内容总闸
+                                    if not self._is_good_first_level_content(content_str):
+                                        logger.info(f"过滤低质量一阶编码: {content_str}")
+                                        continue
 
                                     # 检查一阶编码是否重复
                                     if content_str not in self.used_first_contents:
@@ -152,17 +244,13 @@ class GroundedTheoryCoder:
         return self.add_coding_numbers_new_format(structured_codes)
 
     def add_code_id_to_sentences(self, sentence_details: List[Dict[str, Any]], code_id: str) -> List[Dict[str, Any]]:
-        """为句子详情添加编码ID标记"""
+        """为句子详情添加编码ID（不修改content，不添加marked_content）"""
         updated_details = []
 
         for sentence in sentence_details:
             if isinstance(sentence, dict):
-                # 在句子内容中添加编号标记
-                original_content = sentence.get('content', '')
-                marked_content = f"{original_content} [{code_id}]"
-
                 updated_sentence = sentence.copy()
-                updated_sentence['content'] = marked_content
+                # 只添加 code_id 字段，不修改 content，不添加 marked_content
                 updated_sentence['code_id'] = code_id
                 updated_details.append(updated_sentence)
             else:

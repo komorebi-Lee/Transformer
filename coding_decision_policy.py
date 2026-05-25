@@ -62,13 +62,47 @@ class CodingDecisionPolicy:
         if cluster_support < self.min_cluster_support:
             return CodingDecision(False, self.other_second_name, "second_cluster_support_too_low")
 
-        if token_best_name and vector_best_name and token_best_name != vector_best_name:
-            return CodingDecision(False, self.other_second_name, "token_vector_conflict")
-
         ordered = sorted(candidates, key=self._candidate_score, reverse=True)
         best = ordered[0]
         best_score = self._candidate_score(best)
-        if best_score < self.second_threshold:
+
+        # 令牌/向量分歧处理：不再直接拒绝，改为降低有效得分
+        effective_score = best_score
+        if token_best_name and vector_best_name and token_best_name != vector_best_name:
+            # 检查分歧方是否有足够高的个体得分
+            token_best = next((c for c in candidates if c.get("name") == token_best_name), None)
+            vector_best = next((c for c in candidates if c.get("name") == vector_best_name), None)
+            token_score = self._candidate_score(token_best) if token_best else 0.0
+            vector_score = self._candidate_score(vector_best) if vector_best else 0.0
+            # 若任一方的个体得分足够高(>=0.55)，信任该方；否则降低有效得分
+            if token_score >= 0.55 or vector_score >= 0.55:
+                # 选择得分更高的那个作为最佳
+                if token_score > vector_score:
+                    effective_score = token_score
+                    best = token_best if token_best else best
+                else:
+                    effective_score = vector_score
+                    best = vector_best if vector_best else best
+            elif token_score >= 0.45 and vector_score >= 0.45:
+                # 双方都中等置信，轻微降分
+                effective_score = max(token_score, vector_score) * 0.95
+                best = token_best if token_score >= vector_score else vector_best
+            else:
+                # 双方都不够高 → 拒绝
+                return CodingDecision(False, self.other_second_name, "token_vector_conflict_low")
+
+        best_score = effective_score
+        # 自适应阈值：簇越大置信度越高，阈值可适度放宽
+        if cluster_support >= 4:
+            adaptive_threshold = max(0.34, self.second_threshold - 0.06)
+        elif cluster_support >= 3:
+            adaptive_threshold = max(0.36, self.second_threshold - 0.04)
+        elif cluster_support >= 2:
+            adaptive_threshold = max(0.38, self.second_threshold - 0.02)
+        else:
+            adaptive_threshold = self.second_threshold
+
+        if best_score < adaptive_threshold:
             return CodingDecision(
                 False,
                 self.other_second_name,
@@ -108,7 +142,12 @@ class CodingDecisionPolicy:
 
         if len(ordered) > 1:
             second_score = self._candidate_score(ordered[1])
-            if best_score - second_score < self.second_margin:
+            # 动态边际: 高分时跳过边际检查; 低分时要求明显领先
+            if best_score >= 0.48:
+                dynamic_margin = 0  # 中等置信以上跳过边际检查
+            else:
+                dynamic_margin = self.second_margin  # 0.03
+            if dynamic_margin > 0 and best_score - second_score < dynamic_margin:
                 return CodingDecision(
                     False,
                     self.other_second_name,

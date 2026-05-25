@@ -14,7 +14,7 @@ class Config:
 
     # 模型配置
     DEFAULT_MODEL_NAME = "bert-base-chinese"
-    SENTENCE_MODEL_NAME = "paraphrase-multilingual-MiniLM-L12-v2"
+    SENTENCE_MODEL_NAME = "bge-small-zh-v1.5"
 
     # 训练配置
     TRAINING_EPOCHS = 3
