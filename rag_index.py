@@ -195,23 +195,93 @@ class RagIndexBuilder:
         parent_description: str,
         siblings: List[str],
     ) -> str:
-        parts = [
-            f"层级：{level_label}",
-            f"编码ID：{code_id}",
-            f"编码名称：{name}",
-            f"定义：{description}",
-        ]
-        if parent_name:
-            parts.append(f"所属三阶：{parent_name}")
-        if parent_description:
-            parts.append(f"三阶定义：{parent_description}")
-        if siblings:
-            parts.append(f"同组三阶下相关二阶：{'、'.join(siblings[:12])}")
+        # 以编码名称为核心信号，用同类编码名称提供区分度。
+        meaningful_desc = description
+        generic_prefix = f"描述{name}"
+        if not description or description.startswith(generic_prefix):
+            meaningful_desc = self._generate_rich_description(name, level_label, parent_name)
 
-        keywords = sorted(set(tokenize(f"{name} {description}")))
-        if keywords:
-            parts.append(f"检索关键词：{'、'.join(keywords[:20])}")
+        parts = [name]
+
+        # 仅当描述比名称更长且不重复时加入
+        if meaningful_desc and len(meaningful_desc) > len(name) + 3:
+            desc_clean = meaningful_desc.strip()
+            if desc_clean.startswith(name):
+                rest = desc_clean[len(name):].strip("。，、. \t")
+                if rest:
+                    parts.append(f"{name}：{rest}")
+            else:
+                parts.append(desc_clean)
+
+        if parent_name:
+            parts.append(f"{name}属于{parent_name}")
+
+        # 同类编码名称提供关键的区分信号
+        if siblings:
+            related = "、".join(siblings[:6])
+            parts.append(f"相关概念：{related}")
+
         return "\n".join(parts)
+
+    @staticmethod
+    def _generate_rich_description(name: str, level_label: str, parent_name: str) -> str:
+        """基于编码名称生成较丰富的描述文本"""
+        # 领域关键词 -> 描述模板
+        keyword_templates = [
+            ('技术', f'{name}涉及技术研发、技术创新和技术应用方面的讨论'),
+            ('创新', f'{name}涉及创新方法、创新机制和创新成果方面的讨论'),
+            ('管理', f'{name}涉及组织管理、人员管理和流程管理方面的讨论'),
+            ('市场', f'{name}涉及市场策略、营销推广和客户销售方面的讨论'),
+            ('资源', f'{name}涉及资源配置、资源获取和资源整合方面的讨论'),
+            ('服务', f'{name}涉及服务流程、服务质量和客户服务体验方面的讨论'),
+            ('质量', f'{name}涉及质量标准、质量控制和质量管理方面的讨论'),
+            ('团队', f'{name}涉及团队协作、团队建设和团队管理方面的讨论'),
+            ('战略', f'{name}涉及战略规划、战略执行和战略调整方面的讨论'),
+            ('文化', f'{name}涉及组织文化、价值观念和文化建设方面的讨论'),
+            ('制度', f'{name}涉及制度建设、制度执行和制度完善方面的讨论'),
+            ('风险', f'{name}涉及风险识别、风险评估和风险应对方面的讨论'),
+            ('合作', f'{name}涉及合作关系、合作模式和合作效果方面的讨论'),
+            ('知识', f'{name}涉及知识管理、知识共享和知识传承方面的讨论'),
+            ('学习', f'{name}涉及学习过程、学习机制和知识获取方面的讨论'),
+            ('权力', f'{name}涉及权力分配、权力运行和权力制衡方面的讨论'),
+            ('关系', f'{name}涉及关系网络、关系维护和关系协调方面的讨论'),
+            ('传承', f'{name}涉及技艺传承、文化传承和代际传承方面的讨论'),
+            ('手工', f'{name}涉及手工技艺、手工制作和手工艺方面的讨论'),
+            ('设计', f'{name}涉及设计理念、设计方法和设计创新方面的讨论'),
+            ('品牌', f'{name}涉及品牌建设、品牌传播和品牌价值方面的讨论'),
+            ('渠道', f'{name}涉及渠道建设、渠道管理和渠道拓展方面的讨论'),
+            ('供应链', f'{name}涉及供应链管理、供应链优化和供应链协同方面的讨论'),
+            ('生产', f'{name}涉及生产工艺、生产流程和生产效率方面的讨论'),
+            ('产品', f'{name}涉及产品开发、产品设计和产品质量方面的讨论'),
+            ('治理', f'{name}涉及组织治理、治理结构和治理机制方面的讨论'),
+            ('组织', f'{name}涉及组织结构、组织变革和组织管理方面的讨论'),
+            ('绩效', f'{name}涉及绩效评估、绩效管理和绩效改进方面的讨论'),
+            ('激励', f'{name}涉及激励制度、激励方式和激励效果方面的讨论'),
+            ('领导', f'{name}涉及领导方式、领导行为和领导决策方面的讨论'),
+            ('决策', f'{name}涉及决策过程、决策机制和决策执行方面的讨论'),
+            ('能力', f'{name}涉及能力建设、能力评估和能力提升方面的讨论'),
+            ('价值', f'{name}涉及价值创造、价值评估和价值实现方面的讨论'),
+            ('模式', f'{name}涉及模式创新、模式选择和模式转型方面的讨论'),
+            ('环境', f'{name}涉及环境分析、环境适应和环境变化方面的讨论'),
+            ('竞争', f'{name}涉及竞争策略、竞争优势和竞争态势方面的讨论'),
+            ('客户', f'{name}涉及客户需求、客户关系和客户服务方面的讨论'),
+            ('人才', f'{name}涉及人才培养、人才引进和人才管理方面的讨论'),
+            ('资金', f'{name}涉及资金管理、资金筹措和资金运作方面的讨论'),
+            ('信息', f'{name}涉及信息管理、信息共享和信息处理方面的讨论'),
+            ('流程', f'{name}涉及流程设计、流程优化和流程管理方面的讨论'),
+            ('结构', f'{name}涉及结构设计、结构优化和结构调整方面的讨论'),
+            ('机制', f'{name}涉及机制设计、机制运行和机制完善方面的讨论'),
+            ('体系', f'{name}涉及体系建设、体系完善和体系管理方面的讨论'),
+        ]
+
+        for keyword, template in keyword_templates:
+            if keyword in name:
+                return template
+
+        # 默认: 基于名称和父级描述
+        if parent_name:
+            return f'{name}是属于{parent_name}领域的一个编码概念，涉及{name}方面的讨论和分析'
+        return f'{name}是一个编码概念，涉及{name}方面的讨论和分析内容'
 
 
 class RagIndexManager:
