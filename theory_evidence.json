@@ -1,0 +1,4357 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "created_at": "2026-05-29T10:05:30.063749"
+  },
+  "density": {
+    "metrics": {
+      "EM阶段核心": {
+        "source_file_count": 18,
+        "sentence_count": 21,
+        "anchor_count": 21,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 3,
+          "康圣访谈20.（王珮鑫）.docx": 2,
+          "康圣访谈 4（董国祥）.docx": 1,
+          "康圣访谈29.docx": 1,
+          "康圣访谈36.docx": 1,
+          "康圣访谈40.docx": 1,
+          "康圣访谈22.docx": 1,
+          "康圣访谈31.docx": 1,
+          "康圣访谈6黄军涛.docx": 1,
+          "康圣访谈19.（吴妍）.docx": 1
+        },
+        "source_entropy": 0.9762,
+        "source_concentration": 0.0238
+      },
+      "上海国资存量更大": {
+        "source_file_count": 14,
+        "sentence_count": 18,
+        "anchor_count": 18,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 2,
+          "康圣访谈28.docx": 2,
+          "康圣访谈38.docx": 2,
+          "康圣访谈42.docx": 2,
+          "康圣访谈21.docx": 1,
+          "康圣访谈35.docx": 1,
+          "康圣访谈10（黄志利）.docx": 1,
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈1（蒋风情）.docx": 1,
+          "康圣访谈36.docx": 1
+        },
+        "source_entropy": 0.9785,
+        "source_concentration": 0.0215
+      },
+      "专业胜任": {
+        "source_file_count": 2,
+        "sentence_count": 2,
+        "anchor_count": 2,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.94,
+        "source_distribution": {
+          "康圣访谈25.docx": 1,
+          "康圣访谈6黄军涛.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "专精优势无法适用": {
+        "source_file_count": 22,
+        "sentence_count": 34,
+        "anchor_count": 34,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.9773,
+        "source_distribution": {
+          "康圣访谈3（谢文英）.docx": 3,
+          "康圣访谈19.（吴妍）.docx": 3,
+          "康圣访谈14（李续图）.docx": 3,
+          "康圣访谈 13（张桂）.docx": 2,
+          "康圣访谈6黄军涛.docx": 2,
+          "康圣访谈28.docx": 2,
+          "康圣访谈8任作非.docx": 2,
+          "康圣访谈 9（肖雄峰）.docx": 2,
+          "康圣访谈29.docx": 2,
+          "康圣访谈1（蒋风情）.docx": 1
+        },
+        "source_entropy": 0.9676,
+        "source_concentration": 0.0324
+      },
+      "专精优衰减": {
+        "source_file_count": 16,
+        "sentence_count": 23,
+        "anchor_count": 23,
+        "theme_count": 3,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 3,
+          "康圣访谈29.docx": 3,
+          "康圣访谈21.docx": 2,
+          "康圣访谈12余桂俊.docx": 2,
+          "康圣访谈42.docx": 2,
+          "康圣访谈38.docx": 1,
+          "康圣访谈6黄军涛.docx": 1,
+          "康圣访谈19.（吴妍）.docx": 1,
+          "康圣访谈35.docx": 1,
+          "康圣访谈39.docx": 1
+        },
+        "source_entropy": 0.9623,
+        "source_concentration": 0.0377
+      },
+      "中国情境局限": {
+        "source_file_count": 11,
+        "sentence_count": 13,
+        "anchor_count": 13,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 2,
+          "康圣访谈29.docx": 2,
+          "康圣访谈37.docx": 1,
+          "康圣访谈18.（杨伟红）.docx": 1,
+          "康圣访谈42.docx": 1,
+          "康圣访谈6黄军涛.docx": 1,
+          "康圣访谈19.（吴妍）.docx": 1,
+          "康圣访谈40.docx": 1,
+          "康圣访谈20.（王珮鑫）.docx": 1,
+          "康圣访谈30.docx": 1
+        },
+        "source_entropy": 0.9807,
+        "source_concentration": 0.0193
+      },
+      "主从关系": {
+        "source_file_count": 9,
+        "sentence_count": 9,
+        "anchor_count": 9,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈10（黄志利）.docx": 1,
+          "康圣访谈35.docx": 1,
+          "康圣访谈7吴天.docx": 1,
+          "康圣访谈16.（李妮）.docx": 1,
+          "康圣访谈31.docx": 1,
+          "康圣访谈26.docx": 1,
+          "康圣访谈30.docx": 1,
+          "康圣访谈28.docx": 1,
+          "康圣访谈32.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "乡村治理困境": {
+        "source_file_count": 32,
+        "sentence_count": 51,
+        "anchor_count": 51,
+        "theme_count": 3,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.9565,
+        "source_distribution": {
+          "康圣访谈39.docx": 5,
+          "康圣访谈23.docx": 4,
+          "康圣访谈 13（张桂）.docx": 2,
+          "康圣访谈18.（杨伟红）.docx": 2,
+          "康圣访谈33.docx": 2,
+          "康圣访谈37.docx": 2,
+          "康圣访谈10（黄志利）.docx": 2,
+          "康圣访谈2（张思婷）.docx": 2,
+          "康圣访谈15（陈进科）.docx": 2,
+          "康圣访谈 9（肖雄峰）.docx": 2
+        },
+        "source_entropy": 0.9635,
+        "source_concentration": 0.0365
+      },
+      "乡村社会基础": {
+        "source_file_count": 7,
+        "sentence_count": 8,
+        "anchor_count": 8,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈18.（杨伟红）.docx": 2,
+          "康圣访谈37.docx": 1,
+          "康圣访谈19.（吴妍）.docx": 1,
+          "康圣访谈22.docx": 1,
+          "康圣访谈6黄军涛.docx": 1,
+          "康圣访谈24.docx": 1,
+          "康圣访谈35.docx": 1
+        },
+        "source_entropy": 0.9796,
+        "source_concentration": 0.0204
+      },
+      "亏损脱困为主": {
+        "source_file_count": 2,
+        "sentence_count": 2,
+        "anchor_count": 2,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.94,
+        "source_distribution": {
+          "康圣访谈22.docx": 1,
+          "康圣访谈6黄军涛.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "产品层面": {
+        "source_file_count": 34,
+        "sentence_count": 78,
+        "anchor_count": 65,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.2,
+        "density_score": 0.8557,
+        "source_distribution": {
+          "康圣访谈32.docx": 7,
+          "康圣访谈14（李续图）.docx": 6,
+          "康圣访谈6黄军涛.docx": 5,
+          "康圣访谈28.docx": 4,
+          "康圣访谈5翟圣.docx": 4,
+          "康圣访谈42.docx": 4,
+          "康圣访谈10（黄志利）.docx": 3,
+          "康圣访谈34.docx": 3,
+          "康圣访谈35.docx": 3,
+          "康圣访谈15（陈进科）.docx": 3
+        },
+        "source_entropy": 0.9487,
+        "source_concentration": 0.0513
+      },
+      "人心式领导": {
+        "source_file_count": 17,
+        "sentence_count": 20,
+        "anchor_count": 20,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈6黄军涛.docx": 3,
+          "康圣访谈34.docx": 2,
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈18.（杨伟红）.docx": 1,
+          "康圣访谈24.docx": 1,
+          "康圣访谈26.docx": 1,
+          "康圣访谈33.docx": 1,
+          "康圣访谈37.docx": 1,
+          "康圣访谈 4（董国祥）.docx": 1,
+          "康圣访谈15（陈进科）.docx": 1
+        },
+        "source_entropy": 0.9747,
+        "source_concentration": 0.0253
+      },
+      "人缘式领导": {
+        "source_file_count": 12,
+        "sentence_count": 16,
+        "anchor_count": 16,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 2,
+          "康圣访谈18.（杨伟红）.docx": 2,
+          "康圣访谈35.docx": 2,
+          "康圣访谈33.docx": 2,
+          "康圣访谈22.docx": 1,
+          "康圣访谈21.docx": 1,
+          "康圣访谈28.docx": 1,
+          "康圣访谈31.docx": 1,
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈7吴天.docx": 1
+        },
+        "source_entropy": 0.9763,
+        "source_concentration": 0.0237
+      },
+      "代理问题缓解": {
+        "source_file_count": 8,
+        "sentence_count": 8,
+        "anchor_count": 8,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈20.（王珮鑫）.docx": 1,
+          "康圣访谈31.docx": 1,
+          "康圣访谈7吴天.docx": 1,
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈36.docx": 1,
+          "康圣访谈21.docx": 1,
+          "康圣访谈25.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "价值共创扭曲": {
+        "source_file_count": 6,
+        "sentence_count": 6,
+        "anchor_count": 6,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 9（肖雄峰）.docx": 1,
+          "康圣访谈1（蒋风情）.docx": 1,
+          "康圣访谈31.docx": 1,
+          "康圣访谈42.docx": 1,
+          "康圣访谈12余桂俊.docx": 1,
+          "康圣访谈38.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "价值判断建构": {
+        "source_file_count": 16,
+        "sentence_count": 26,
+        "anchor_count": 26,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.9343,
+        "source_distribution": {
+          "康圣访谈42.docx": 4,
+          "康圣访谈20.（王珮鑫）.docx": 4,
+          "康圣访谈3（谢文英）.docx": 3,
+          "康圣访谈19.（吴妍）.docx": 3,
+          "康圣访谈 4（董国祥）.docx": 1,
+          "康圣访谈21.docx": 1,
+          "康圣访谈28.docx": 1,
+          "康圣访谈38.docx": 1,
+          "康圣访谈12余桂俊.docx": 1,
+          "康圣访谈24.docx": 1
+        },
+        "source_entropy": 0.9298,
+        "source_concentration": 0.0702
+      },
+      "企业-网络-集群三层互动": {
+        "source_file_count": 2,
+        "sentence_count": 2,
+        "anchor_count": 2,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.94,
+        "source_distribution": {
+          "康圣访谈22.docx": 1,
+          "康圣访谈31.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "企业主导阶段": {
+        "source_file_count": 2,
+        "sentence_count": 2,
+        "anchor_count": 2,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.94,
+        "source_distribution": {
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈32.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "低价竞加剧": {
+        "source_file_count": 6,
+        "sentence_count": 8,
+        "anchor_count": 8,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈11秦园.docx": 2,
+          "康圣访谈30.docx": 2,
+          "康圣访谈 4（董国祥）.docx": 1,
+          "康圣访谈28.docx": 1,
+          "康圣访谈24.docx": 1,
+          "康圣访谈3（谢文英）.docx": 1
+        },
+        "source_entropy": 0.9671,
+        "source_concentration": 0.0329
+      },
+      "作业长制为核心": {
+        "source_file_count": 12,
+        "sentence_count": 16,
+        "anchor_count": 2,
+        "theme_count": 1,
+        "evidence_per_anchor": 8.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 2,
+          "康圣访谈30.docx": 2,
+          "康圣访谈6黄军涛.docx": 2,
+          "康圣访谈19.（吴妍）.docx": 2,
+          "康圣访谈18.（杨伟红）.docx": 1,
+          "康圣访谈34.docx": 1,
+          "康圣访谈38.docx": 1,
+          "康圣访谈16.（李妮）.docx": 1,
+          "康圣访谈22.docx": 1,
+          "康圣访谈39.docx": 1
+        },
+        "source_entropy": 0.9763,
+        "source_concentration": 0.0237
+      },
+      "供应商/顾客/员工共赢": {
+        "source_file_count": 11,
+        "sentence_count": 16,
+        "anchor_count": 16,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈6黄军涛.docx": 3,
+          "康圣访谈32.docx": 3,
+          "康圣访谈42.docx": 2,
+          "康圣访谈 4（董国祥）.docx": 1,
+          "康圣访谈19.（吴妍）.docx": 1,
+          "康圣访谈31.docx": 1,
+          "康圣访谈3（谢文英）.docx": 1,
+          "康圣访谈15（陈进科）.docx": 1,
+          "康圣访谈8任作非.docx": 1,
+          "康圣访谈18.（杨伟红）.docx": 1
+        },
+        "source_entropy": 0.9483,
+        "source_concentration": 0.0517
+      },
+      "保证金/质押导致现金不可用": {
+        "source_file_count": 33,
+        "sentence_count": 105,
+        "anchor_count": 105,
+        "theme_count": 3,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.6389,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 9,
+          "康圣访谈 4（董国祥）.docx": 8,
+          "康圣访谈7吴天.docx": 6,
+          "康圣访谈35.docx": 6,
+          "康圣访谈24.docx": 5,
+          "康圣访谈42.docx": 5,
+          "康圣访谈6黄军涛.docx": 5,
+          "康圣访谈12余桂俊.docx": 5,
+          "康圣访谈31.docx": 4,
+          "康圣访谈14（李续图）.docx": 4
+        },
+        "source_entropy": 0.9487,
+        "source_concentration": 0.0513
+      },
+      "信任基础": {
+        "source_file_count": 2,
+        "sentence_count": 2,
+        "anchor_count": 2,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.94,
+        "source_distribution": {
+          "康圣访谈17.（贾梦思）.docx": 1,
+          "康圣访谈23.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "修辞方式": {
+        "source_file_count": 32,
+        "sentence_count": 65,
+        "anchor_count": 65,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.8186,
+        "source_distribution": {
+          "康圣访谈 4（董国祥）.docx": 5,
+          "康圣访谈32.docx": 5,
+          "康圣访谈35.docx": 4,
+          "康圣访谈5翟圣.docx": 3,
+          "康圣访谈42.docx": 3,
+          "康圣访谈34.docx": 3,
+          "康圣访谈21.docx": 3,
+          "康圣访谈22.docx": 3,
+          "康圣访谈7吴天.docx": 3,
+          "康圣访谈14（李续图）.docx": 3
+        },
+        "source_entropy": 0.9544,
+        "source_concentration": 0.0456
+      },
+      "修辞策略": {
+        "source_file_count": 41,
+        "sentence_count": 179,
+        "anchor_count": 179,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.5553,
+        "source_distribution": {
+          "康圣访谈32.docx": 9,
+          "康圣访谈30.docx": 9,
+          "康圣访谈23.docx": 8,
+          "康圣访谈36.docx": 8,
+          "康圣访谈28.docx": 8,
+          "康圣访谈11秦园.docx": 8,
+          "康圣访谈14（李续图）.docx": 8,
+          "康圣访谈 13（张桂）.docx": 7,
+          "康圣访谈 9（肖雄峰）.docx": 7,
+          "康圣访谈19.（吴妍）.docx": 7
+        },
+        "source_entropy": 0.954,
+        "source_concentration": 0.046
+      },
+      "先借鉴后经验": {
+        "source_file_count": 5,
+        "sentence_count": 5,
+        "anchor_count": 5,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 4（董国祥）.docx": 1,
+          "康圣访谈1（蒋风情）.docx": 1,
+          "康圣访谈33.docx": 1,
+          "康圣访谈5翟圣.docx": 1,
+          "康圣访谈8任作非.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": -0.0
+      },
+      "先抑后扬粉饰业绩": {
+        "source_file_count": 8,
+        "sentence_count": 11,
+        "anchor_count": 11,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈21.docx": 3,
+          "康圣访谈37.docx": 2,
+          "康圣访谈10（黄志利）.docx": 1,
+          "康圣访谈31.docx": 1,
+          "康圣访谈11秦园.docx": 1,
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈2（张思婷）.docx": 1,
+          "康圣访谈20.（王珮鑫）.docx": 1
+        },
+        "source_entropy": 0.9485,
+        "source_concentration": 0.0515
+      },
+      "关系资本弥补资源不足": {
+        "source_file_count": 4,
+        "sentence_count": 4,
+        "anchor_count": 4,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈12余桂俊.docx": 1,
+          "康圣访谈35.docx": 1,
+          "康圣访谈15（陈进科）.docx": 1,
+          "康圣访谈3（谢文英）.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "关联交易、资金挪用": {
+        "source_file_count": 7,
+        "sentence_count": 9,
+        "anchor_count": 9,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈14（李续图）.docx": 2,
+          "康圣访谈7吴天.docx": 2,
+          "康圣访谈12余桂俊.docx": 1,
+          "康圣访谈31.docx": 1,
+          "康圣访谈6黄军涛.docx": 1,
+          "康圣访谈15（陈进科）.docx": 1,
+          "康圣访谈30.docx": 1
+        },
+        "source_entropy": 0.9708,
+        "source_concentration": 0.0292
+      },
+      "具体路径": {
+        "source_file_count": 2,
+        "sentence_count": 2,
+        "anchor_count": 2,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.94,
+        "source_distribution": {
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈36.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "内主外辅转型动力": {
+        "source_file_count": 15,
+        "sentence_count": 17,
+        "anchor_count": 17,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈19.（吴妍）.docx": 3,
+          "康圣访谈 9（肖雄峰）.docx": 1,
+          "康圣访谈21.docx": 1,
+          "康圣访谈32.docx": 1,
+          "康圣访谈6黄军涛.docx": 1,
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈30.docx": 1,
+          "康圣访谈16.（李妮）.docx": 1,
+          "康圣访谈27.docx": 1,
+          "康圣访谈17.（贾梦思）.docx": 1
+        },
+        "source_entropy": 0.9746,
+        "source_concentration": 0.0254
+      },
+      "内幕信息获利": {
+        "source_file_count": 19,
+        "sentence_count": 24,
+        "anchor_count": 24,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈34.docx": 3,
+          "康圣访谈31.docx": 2,
+          "康圣访谈11秦园.docx": 2,
+          "康圣访谈33.docx": 2,
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈1（蒋风情）.docx": 1,
+          "康圣访谈24.docx": 1,
+          "康圣访谈32.docx": 1,
+          "康圣访谈 4（董国祥）.docx": 1,
+          "康圣访谈22.docx": 1
+        },
+        "source_entropy": 0.9738,
+        "source_concentration": 0.0262
+      },
+      "农户+本地大户": {
+        "source_file_count": 14,
+        "sentence_count": 23,
+        "anchor_count": 7,
+        "theme_count": 1,
+        "evidence_per_anchor": 3.29,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈11秦园.docx": 6,
+          "康圣访谈27.docx": 3,
+          "康圣访谈29.docx": 2,
+          "康圣访谈36.docx": 2,
+          "康圣访谈10（黄志利）.docx": 1,
+          "康圣访谈39.docx": 1,
+          "康圣访谈18.（杨伟红）.docx": 1,
+          "康圣访谈34.docx": 1,
+          "康圣访谈22.docx": 1,
+          "康圣访谈37.docx": 1
+        },
+        "source_entropy": 0.911,
+        "source_concentration": 0.089
+      },
+      "创业集聚驱动": {
+        "source_file_count": 32,
+        "sentence_count": 63,
+        "anchor_count": 50,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.26,
+        "density_score": 0.9783,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 5,
+          "康圣访谈7吴天.docx": 5,
+          "康圣访谈29.docx": 4,
+          "康圣访谈6黄军涛.docx": 3,
+          "康圣访谈34.docx": 3,
+          "康圣访谈42.docx": 3,
+          "康圣访谈19.（吴妍）.docx": 3,
+          "康圣访谈8任作非.docx": 2,
+          "康圣访谈1（蒋风情）.docx": 2,
+          "康圣访谈33.docx": 2
+        },
+        "source_entropy": 0.9598,
+        "source_concentration": 0.0402
+      },
+      "创新基础": {
+        "source_file_count": 3,
+        "sentence_count": 3,
+        "anchor_count": 3,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈33.docx": 1,
+          "康圣访谈3（谢文英）.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "创新性认知": {
+        "source_file_count": 11,
+        "sentence_count": 11,
+        "anchor_count": 11,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈12余桂俊.docx": 1,
+          "康圣访谈24.docx": 1,
+          "康圣访谈41.docx": 1,
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈42.docx": 1,
+          "康圣访谈1（蒋风情）.docx": 1,
+          "康圣访谈36.docx": 1,
+          "康圣访谈20.（王珮鑫）.docx": 1,
+          "康圣访谈26.docx": 1,
+          "康圣访谈22.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "创造力来源": {
+        "source_file_count": 31,
+        "sentence_count": 57,
+        "anchor_count": 57,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.8714,
+        "source_distribution": {
+          "康圣访谈8任作非.docx": 4,
+          "康圣访谈11秦园.docx": 4,
+          "康圣访谈14（李续图）.docx": 4,
+          "康圣访谈1（蒋风情）.docx": 3,
+          "康圣访谈34.docx": 3,
+          "康圣访谈23.docx": 3,
+          "康圣访谈32.docx": 3,
+          "康圣访谈2（张思婷）.docx": 3,
+          "康圣访谈29.docx": 2,
+          "康圣访谈37.docx": 2
+        },
+        "source_entropy": 0.9586,
+        "source_concentration": 0.0414
+      },
+      "制度重塑": {
+        "source_file_count": 4,
+        "sentence_count": 4,
+        "anchor_count": 4,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈12余桂俊.docx": 1,
+          "康圣访谈27.docx": 1,
+          "康圣访谈34.docx": 1,
+          "康圣访谈39.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "制造环节优势": {
+        "source_file_count": 13,
+        "sentence_count": 13,
+        "anchor_count": 3,
+        "theme_count": 1,
+        "evidence_per_anchor": 4.33,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 9（肖雄峰）.docx": 1,
+          "康圣访谈21.docx": 1,
+          "康圣访谈30.docx": 1,
+          "康圣访谈6黄军涛.docx": 1,
+          "康圣访谈11秦园.docx": 1,
+          "康圣访谈23.docx": 1,
+          "康圣访谈25.docx": 1,
+          "康圣访谈35.docx": 1,
+          "康圣访谈12余桂俊.docx": 1,
+          "康圣访谈2（张思婷）.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": -0.0
+      },
+      "前期": {
+        "source_file_count": 12,
+        "sentence_count": 13,
+        "anchor_count": 13,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈15（陈进科）.docx": 2,
+          "康圣访谈12余桂俊.docx": 1,
+          "康圣访谈26.docx": 1,
+          "康圣访谈39.docx": 1,
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈27.docx": 1,
+          "康圣访谈37.docx": 1,
+          "康圣访谈24.docx": 1,
+          "康圣访谈35.docx": 1,
+          "康圣访谈38.docx": 1
+        },
+        "source_entropy": 0.9893,
+        "source_concentration": 0.0107
+      },
+      "功能使命定位": {
+        "source_file_count": 12,
+        "sentence_count": 16,
+        "anchor_count": 13,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.23,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈32.docx": 3,
+          "康圣访谈18.（杨伟红）.docx": 2,
+          "康圣访谈41.docx": 2,
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈34.docx": 1,
+          "康圣访谈 9（肖雄峰）.docx": 1,
+          "康圣访谈28.docx": 1,
+          "康圣访谈15（陈进科）.docx": 1,
+          "康圣访谈31.docx": 1,
+          "康圣访谈5翟圣.docx": 1
+        },
+        "source_entropy": 0.9631,
+        "source_concentration": 0.0369
+      },
+      "升级前提": {
+        "source_file_count": 12,
+        "sentence_count": 13,
+        "anchor_count": 13,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈14（李续图）.docx": 2,
+          "康圣访谈12余桂俊.docx": 1,
+          "康圣访谈28.docx": 1,
+          "康圣访谈36.docx": 1,
+          "康圣访谈31.docx": 1,
+          "康圣访谈30.docx": 1,
+          "康圣访谈18.（杨伟红）.docx": 1,
+          "康圣访谈33.docx": 1,
+          "康圣访谈21.docx": 1,
+          "康圣访谈42.docx": 1
+        },
+        "source_entropy": 0.9893,
+        "source_concentration": 0.0107
+      },
+      "发展期": {
+        "source_file_count": 6,
+        "sentence_count": 7,
+        "anchor_count": 7,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈33.docx": 2,
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈20.（王珮鑫）.docx": 1,
+          "康圣访谈32.docx": 1,
+          "康圣访谈6黄军涛.docx": 1,
+          "康圣访谈14（李续图）.docx": 1
+        },
+        "source_entropy": 0.9755,
+        "source_concentration": 0.0245
+      },
+      "变化阶段": {
+        "source_file_count": 22,
+        "sentence_count": 33,
+        "anchor_count": 33,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.9956,
+        "source_distribution": {
+          "康圣访谈27.docx": 4,
+          "康圣访谈25.docx": 3,
+          "康圣访谈41.docx": 2,
+          "康圣访谈42.docx": 2,
+          "康圣访谈35.docx": 2,
+          "康圣访谈36.docx": 2,
+          "康圣访谈14（李续图）.docx": 2,
+          "康圣访谈16.（李妮）.docx": 2,
+          "康圣访谈 4（董国祥）.docx": 1,
+          "康圣访谈23.docx": 1
+        },
+        "source_entropy": 0.963,
+        "source_concentration": 0.037
+      },
+      "合：治理建构": {
+        "source_file_count": 7,
+        "sentence_count": 7,
+        "anchor_count": 7,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈1（蒋风情）.docx": 1,
+          "康圣访谈2（张思婷）.docx": 1,
+          "康圣访谈30.docx": 1,
+          "康圣访谈5翟圣.docx": 1,
+          "康圣访谈15（陈进科）.docx": 1,
+          "康圣访谈35.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "同源性技术初始积累": {
+        "source_file_count": 3,
+        "sentence_count": 3,
+        "anchor_count": 3,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 4（董国祥）.docx": 1,
+          "康圣访谈19.（吴妍）.docx": 1,
+          "康圣访谈36.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "同质竞加剧": {
+        "source_file_count": 2,
+        "sentence_count": 2,
+        "anchor_count": 2,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.94,
+        "source_distribution": {
+          "康圣访谈17.（贾梦思）.docx": 1,
+          "康圣访谈39.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "否决项与月度考核": {
+        "source_file_count": 21,
+        "sentence_count": 28,
+        "anchor_count": 28,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈28.docx": 5,
+          "康圣访谈42.docx": 2,
+          "康圣访谈 4（董国祥）.docx": 2,
+          "康圣访谈21.docx": 2,
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈19.（吴妍）.docx": 1,
+          "康圣访谈40.docx": 1,
+          "康圣访谈22.docx": 1,
+          "康圣访谈34.docx": 1,
+          "康圣访谈39.docx": 1
+        },
+        "source_entropy": 0.9513,
+        "source_concentration": 0.0487
+      },
+      "品牌形象提升": {
+        "source_file_count": 26,
+        "sentence_count": 44,
+        "anchor_count": 44,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.9209,
+        "source_distribution": {
+          "康圣访谈36.docx": 4,
+          "康圣访谈39.docx": 3,
+          "康圣访谈12余桂俊.docx": 3,
+          "康圣访谈14（李续图）.docx": 3,
+          "康圣访谈10（黄志利）.docx": 2,
+          "康圣访谈11秦园.docx": 2,
+          "康圣访谈35.docx": 2,
+          "康圣访谈29.docx": 2,
+          "康圣访谈7吴天.docx": 2,
+          "康圣访谈15（陈进科）.docx": 2
+        },
+        "source_entropy": 0.9668,
+        "source_concentration": 0.0332
+      },
+      "国资放任掏空": {
+        "source_file_count": 11,
+        "sentence_count": 12,
+        "anchor_count": 12,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈3（谢文英）.docx": 2,
+          "康圣访谈 9（肖雄峰）.docx": 1,
+          "康圣访谈24.docx": 1,
+          "康圣访谈35.docx": 1,
+          "康圣访谈15（陈进科）.docx": 1,
+          "康圣访谈5翟圣.docx": 1,
+          "康圣访谈17.（贾梦思）.docx": 1,
+          "康圣访谈21.docx": 1,
+          "康圣访谈20.（王珮鑫）.docx": 1,
+          "康圣访谈30.docx": 1
+        },
+        "source_entropy": 0.9881,
+        "source_concentration": 0.0119
+      },
+      "在位者劣势": {
+        "source_file_count": 9,
+        "sentence_count": 9,
+        "anchor_count": 9,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈18.（杨伟红）.docx": 1,
+          "康圣访谈24.docx": 1,
+          "康圣访谈32.docx": 1,
+          "康圣访谈38.docx": 1,
+          "康圣访谈42.docx": 1,
+          "康圣访谈 9（肖雄峰）.docx": 1,
+          "康圣访谈31.docx": 1,
+          "康圣访谈5翟圣.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "均等控制权": {
+        "source_file_count": 5,
+        "sentence_count": 5,
+        "anchor_count": 5,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈2（张思婷）.docx": 1,
+          "康圣访谈33.docx": 1,
+          "康圣访谈11秦园.docx": 1,
+          "康圣访谈32.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": -0.0
+      },
+      "外生式学习": {
+        "source_file_count": 24,
+        "sentence_count": 36,
+        "anchor_count": 36,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.9972,
+        "source_distribution": {
+          "康圣访谈35.docx": 3,
+          "康圣访谈2（张思婷）.docx": 3,
+          "康圣访谈14（李续图）.docx": 3,
+          "康圣访谈 4（董国祥）.docx": 2,
+          "康圣访谈29.docx": 2,
+          "康圣访谈36.docx": 2,
+          "康圣访谈11秦园.docx": 2,
+          "康圣访谈39.docx": 2,
+          "康圣访谈12余桂俊.docx": 2,
+          "康圣访谈 13（张桂）.docx": 1
+        },
+        "source_entropy": 0.9685,
+        "source_concentration": 0.0315
+      },
+      "外部环境因素": {
+        "source_file_count": 22,
+        "sentence_count": 29,
+        "anchor_count": 29,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈21.docx": 2,
+          "康圣访谈29.docx": 2,
+          "康圣访谈5翟圣.docx": 2,
+          "康圣访谈37.docx": 2,
+          "康圣访谈12余桂俊.docx": 2,
+          "康圣访谈15（陈进科）.docx": 2,
+          "康圣访谈41.docx": 2,
+          "康圣访谈 9（肖雄峰）.docx": 1,
+          "康圣访谈10（黄志利）.docx": 1,
+          "康圣访谈14（李续图）.docx": 1
+        },
+        "source_entropy": 0.9811,
+        "source_concentration": 0.0189
+      },
+      "外部监管不足": {
+        "source_file_count": 5,
+        "sentence_count": 5,
+        "anchor_count": 5,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈10（黄志利）.docx": 1,
+          "康圣访谈28.docx": 1,
+          "康圣访谈3（谢文英）.docx": 1,
+          "康圣访谈17.（贾梦思）.docx": 1,
+          "康圣访谈26.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": -0.0
+      },
+      "多技能提升": {
+        "source_file_count": 3,
+        "sentence_count": 3,
+        "anchor_count": 3,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈11秦园.docx": 1,
+          "康圣访谈34.docx": 1,
+          "康圣访谈8任作非.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "大库存优势": {
+        "source_file_count": 3,
+        "sentence_count": 3,
+        "anchor_count": 3,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈28.docx": 1,
+          "康圣访谈39.docx": 1,
+          "康圣访谈8任作非.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "大股东困境": {
+        "source_file_count": 8,
+        "sentence_count": 9,
+        "anchor_count": 9,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈11秦园.docx": 2,
+          "康圣访谈 4（董国祥）.docx": 1,
+          "康圣访谈21.docx": 1,
+          "康圣访谈35.docx": 1,
+          "康圣访谈27.docx": 1,
+          "康圣访谈42.docx": 1,
+          "康圣访谈30.docx": 1,
+          "康圣访谈8任作非.docx": 1
+        },
+        "source_entropy": 0.9826,
+        "source_concentration": 0.0174
+      },
+      "学习机制": {
+        "source_file_count": 36,
+        "sentence_count": 78,
+        "anchor_count": 78,
+        "theme_count": 3,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.7882,
+        "source_distribution": {
+          "康圣访谈 4（董国祥）.docx": 6,
+          "康圣访谈3（谢文英）.docx": 5,
+          "康圣访谈30.docx": 4,
+          "康圣访谈31.docx": 4,
+          "康圣访谈2（张思婷）.docx": 4,
+          "康圣访谈5翟圣.docx": 4,
+          "康圣访谈19.（吴妍）.docx": 3,
+          "康圣访谈11秦园.docx": 3,
+          "康圣访谈34.docx": 3,
+          "康圣访谈12余桂俊.docx": 3
+        },
+        "source_entropy": 0.9556,
+        "source_concentration": 0.0444
+      },
+      "实施原则": {
+        "source_file_count": 5,
+        "sentence_count": 7,
+        "anchor_count": 7,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈27.docx": 3,
+          "康圣访谈 4（董国祥）.docx": 1,
+          "康圣访谈17.（贾梦思）.docx": 1,
+          "康圣访谈30.docx": 1,
+          "康圣访谈3（谢文英）.docx": 1
+        },
+        "source_entropy": 0.9165,
+        "source_concentration": 0.0835
+      },
+      "家族创业培育要素": {
+        "source_file_count": 7,
+        "sentence_count": 8,
+        "anchor_count": 8,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈3（谢文英）.docx": 2,
+          "康圣访谈 4（董国祥）.docx": 1,
+          "康圣访谈24.docx": 1,
+          "康圣访谈34.docx": 1,
+          "康圣访谈7吴天.docx": 1,
+          "康圣访谈20.（王珮鑫）.docx": 1,
+          "康圣访谈23.docx": 1
+        },
+        "source_entropy": 0.9796,
+        "source_concentration": 0.0204
+      },
+      "对价争议": {
+        "source_file_count": 12,
+        "sentence_count": 13,
+        "anchor_count": 13,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈37.docx": 2,
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈20.（王珮鑫）.docx": 1,
+          "康圣访谈30.docx": 1,
+          "康圣访谈 4（董国祥）.docx": 1,
+          "康圣访谈28.docx": 1,
+          "康圣访谈11秦园.docx": 1,
+          "康圣访谈2（张思婷）.docx": 1,
+          "康圣访谈39.docx": 1,
+          "康圣访谈15（陈进科）.docx": 1
+        },
+        "source_entropy": 0.9893,
+        "source_concentration": 0.0107
+      },
+      "封建层级文化诱因": {
+        "source_file_count": 42,
+        "sentence_count": 209,
+        "anchor_count": 60,
+        "theme_count": 5,
+        "evidence_per_anchor": 3.48,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈14（李续图）.docx": 13,
+          "康圣访谈11秦园.docx": 11,
+          "康圣访谈42.docx": 10,
+          "康圣访谈32.docx": 9,
+          "康圣访谈5翟圣.docx": 8,
+          "康圣访谈34.docx": 8,
+          "康圣访谈35.docx": 8,
+          "康圣访谈40.docx": 7,
+          "康圣访谈12余桂俊.docx": 7,
+          "康圣访谈15（陈进科）.docx": 6
+        },
+        "source_entropy": 0.9665,
+        "source_concentration": 0.0335
+      },
+      "工资与市场业绩挂钩": {
+        "source_file_count": 10,
+        "sentence_count": 13,
+        "anchor_count": 13,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈26.docx": 2,
+          "康圣访谈37.docx": 2,
+          "康圣访谈18.（杨伟红）.docx": 2,
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈34.docx": 1,
+          "康圣访谈40.docx": 1,
+          "康圣访谈 9（肖雄峰）.docx": 1,
+          "康圣访谈11秦园.docx": 1,
+          "康圣访谈32.docx": 1,
+          "康圣访谈3（谢文英）.docx": 1
+        },
+        "source_entropy": 0.975,
+        "source_concentration": 0.025
+      },
+      "差异起源": {
+        "source_file_count": 3,
+        "sentence_count": 3,
+        "anchor_count": 3,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈27.docx": 1,
+          "康圣访谈42.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "市场导向模式": {
+        "source_file_count": 2,
+        "sentence_count": 2,
+        "anchor_count": 2,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.94,
+        "source_distribution": {
+          "康圣访谈23.docx": 1,
+          "康圣访谈3（谢文英）.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "市场约束无效": {
+        "source_file_count": 25,
+        "sentence_count": 44,
+        "anchor_count": 37,
+        "theme_count": 3,
+        "evidence_per_anchor": 1.19,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈11秦园.docx": 8,
+          "康圣访谈27.docx": 4,
+          "康圣访谈39.docx": 2,
+          "康圣访谈34.docx": 2,
+          "康圣访谈29.docx": 2,
+          "康圣访谈36.docx": 2,
+          "康圣访谈5翟圣.docx": 2,
+          "康圣访谈16.（李妮）.docx": 2,
+          "康圣访谈33.docx": 2,
+          "康圣访谈42.docx": 2
+        },
+        "source_entropy": 0.9309,
+        "source_concentration": 0.0691
+      },
+      "市场能力积累": {
+        "source_file_count": 1,
+        "sentence_count": 1,
+        "anchor_count": 1,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.34,
+        "source_distribution": {
+          "康圣访谈37.docx": 1
+        },
+        "source_entropy": 0.0,
+        "source_concentration": 1.0
+      },
+      "市属国企整合": {
+        "source_file_count": 24,
+        "sentence_count": 32,
+        "anchor_count": 32,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈21.docx": 5,
+          "康圣访谈32.docx": 2,
+          "康圣访谈11秦园.docx": 2,
+          "康圣访谈36.docx": 2,
+          "康圣访谈37.docx": 2,
+          "康圣访谈 9（肖雄峰）.docx": 1,
+          "康圣访谈6黄军涛.docx": 1,
+          "康圣访谈38.docx": 1,
+          "康圣访谈19.（吴妍）.docx": 1,
+          "康圣访谈12余桂俊.docx": 1
+        },
+        "source_entropy": 0.9569,
+        "source_concentration": 0.0431
+      },
+      "延展高价值业务": {
+        "source_file_count": 11,
+        "sentence_count": 12,
+        "anchor_count": 12,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈2（张思婷）.docx": 2,
+          "康圣访谈 4（董国祥）.docx": 1,
+          "康圣访谈22.docx": 1,
+          "康圣访谈28.docx": 1,
+          "康圣访谈5翟圣.docx": 1,
+          "康圣访谈10（黄志利）.docx": 1,
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈21.docx": 1,
+          "康圣访谈37.docx": 1,
+          "康圣访谈1（蒋风情）.docx": 1
+        },
+        "source_entropy": 0.9881,
+        "source_concentration": 0.0119
+      },
+      "建构型学习": {
+        "source_file_count": 25,
+        "sentence_count": 36,
+        "anchor_count": 29,
+        "theme_count": 3,
+        "evidence_per_anchor": 1.24,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈26.docx": 3,
+          "康圣访谈18.（杨伟红）.docx": 2,
+          "康圣访谈10（黄志利）.docx": 2,
+          "康圣访谈24.docx": 2,
+          "康圣访谈35.docx": 2,
+          "康圣访谈7吴天.docx": 2,
+          "康圣访谈3（谢文英）.docx": 2,
+          "康圣访谈14（李续图）.docx": 2,
+          "康圣访谈39.docx": 2,
+          "康圣访谈21.docx": 2
+        },
+        "source_entropy": 0.9772,
+        "source_concentration": 0.0228
+      },
+      "循环动力": {
+        "source_file_count": 5,
+        "sentence_count": 5,
+        "anchor_count": 5,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 4（董国祥）.docx": 1,
+          "康圣访谈36.docx": 1,
+          "康圣访谈11秦园.docx": 1,
+          "康圣访谈29.docx": 1,
+          "康圣访谈6黄军涛.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": -0.0
+      },
+      "心化内控归宿": {
+        "source_file_count": 5,
+        "sentence_count": 6,
+        "anchor_count": 6,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈42.docx": 2,
+          "康圣访谈11秦园.docx": 1,
+          "康圣访谈20.（王珮鑫）.docx": 1,
+          "康圣访谈36.docx": 1,
+          "康圣访谈37.docx": 1
+        },
+        "source_entropy": 0.9697,
+        "source_concentration": 0.0303
+      },
+      "志愿者能动阶段": {
+        "source_file_count": 12,
+        "sentence_count": 14,
+        "anchor_count": 14,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈37.docx": 2,
+          "康圣访谈12余桂俊.docx": 2,
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈1（蒋风情）.docx": 1,
+          "康圣访谈26.docx": 1,
+          "康圣访谈8任作非.docx": 1,
+          "康圣访谈28.docx": 1,
+          "康圣访谈20.（王珮鑫）.docx": 1,
+          "康圣访谈36.docx": 1,
+          "康圣访谈14（李续图）.docx": 1
+        },
+        "source_entropy": 0.9823,
+        "source_concentration": 0.0177
+      },
+      "忽视长期技术积累": {
+        "source_file_count": 3,
+        "sentence_count": 3,
+        "anchor_count": 3,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈12余桂俊.docx": 1,
+          "康圣访谈35.docx": 1,
+          "康圣访谈8任作非.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "思维基础": {
+        "source_file_count": 33,
+        "sentence_count": 71,
+        "anchor_count": 71,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.7965,
+        "source_distribution": {
+          "康圣访谈27.docx": 5,
+          "康圣访谈39.docx": 4,
+          "康圣访谈 13（张桂）.docx": 3,
+          "康圣访谈26.docx": 3,
+          "康圣访谈11秦园.docx": 3,
+          "康圣访谈5翟圣.docx": 3,
+          "康圣访谈14（李续图）.docx": 3,
+          "康圣访谈17.（贾梦思）.docx": 3,
+          "康圣访谈2（张思婷）.docx": 3,
+          "康圣访谈18.（杨伟红）.docx": 3
+        },
+        "source_entropy": 0.9723,
+        "source_concentration": 0.0277
+      },
+      "成长增速放缓": {
+        "source_file_count": 8,
+        "sentence_count": 8,
+        "anchor_count": 8,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 4（董国祥）.docx": 1,
+          "康圣访谈33.docx": 1,
+          "康圣访谈6黄军涛.docx": 1,
+          "康圣访谈10（黄志利）.docx": 1,
+          "康圣访谈23.docx": 1,
+          "康圣访谈24.docx": 1,
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈27.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "成长空被挤压": {
+        "source_file_count": 3,
+        "sentence_count": 3,
+        "anchor_count": 3,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈31.docx": 1,
+          "康圣访谈39.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "技术准入合法性缺乏": {
+        "source_file_count": 6,
+        "sentence_count": 6,
+        "anchor_count": 6,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈23.docx": 1,
+          "康圣访谈35.docx": 1,
+          "康圣访谈42.docx": 1,
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈37.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "技术杠杆": {
+        "source_file_count": 2,
+        "sentence_count": 2,
+        "anchor_count": 2,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.94,
+        "source_distribution": {
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈34.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "抚育成长经历": {
+        "source_file_count": 4,
+        "sentence_count": 4,
+        "anchor_count": 4,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 4（董国祥）.docx": 1,
+          "康圣访谈20.（王珮鑫）.docx": 1,
+          "康圣访谈35.docx": 1,
+          "康圣访谈23.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "拓展前沿技术": {
+        "source_file_count": 14,
+        "sentence_count": 15,
+        "anchor_count": 15,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈14（李续图）.docx": 2,
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈20.（王珮鑫）.docx": 1,
+          "康圣访谈22.docx": 1,
+          "康圣访谈3（谢文英）.docx": 1,
+          "康圣访谈 4（董国祥）.docx": 1,
+          "康圣访谈1（蒋风情）.docx": 1,
+          "康圣访谈34.docx": 1,
+          "康圣访谈37.docx": 1,
+          "康圣访谈30.docx": 1
+        },
+        "source_entropy": 0.9911,
+        "source_concentration": 0.0089
+      },
+      "挤水分": {
+        "source_file_count": 25,
+        "sentence_count": 35,
+        "anchor_count": 35,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈14（李续图）.docx": 4,
+          "康圣访谈 13（张桂）.docx": 3,
+          "康圣访谈6黄军涛.docx": 3,
+          "康圣访谈27.docx": 2,
+          "康圣访谈35.docx": 2,
+          "康圣访谈26.docx": 2,
+          "康圣访谈31.docx": 1,
+          "康圣访谈22.docx": 1,
+          "康圣访谈34.docx": 1,
+          "康圣访谈5翟圣.docx": 1
+        },
+        "source_entropy": 0.9599,
+        "source_concentration": 0.0401
+      },
+      "探索式即兴": {
+        "source_file_count": 24,
+        "sentence_count": 41,
+        "anchor_count": 41,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.9112,
+        "source_distribution": {
+          "康圣访谈27.docx": 4,
+          "康圣访谈35.docx": 3,
+          "康圣访谈38.docx": 3,
+          "康圣访谈42.docx": 3,
+          "康圣访谈14（李续图）.docx": 3,
+          "康圣访谈7吴天.docx": 3,
+          "康圣访谈21.docx": 3,
+          "康圣访谈36.docx": 2,
+          "康圣访谈33.docx": 2,
+          "康圣访谈 13（张桂）.docx": 1
+        },
+        "source_entropy": 0.9529,
+        "source_concentration": 0.0471
+      },
+      "数字化": {
+        "source_file_count": 39,
+        "sentence_count": 102,
+        "anchor_count": 102,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.708,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 11,
+          "康圣访谈5翟圣.docx": 5,
+          "康圣访谈28.docx": 4,
+          "康圣访谈20.（王珮鑫）.docx": 4,
+          "康圣访谈39.docx": 4,
+          "康圣访谈6黄军涛.docx": 4,
+          "康圣访谈34.docx": 4,
+          "康圣访谈 9（肖雄峰）.docx": 4,
+          "康圣访谈3（谢文英）.docx": 3,
+          "康圣访谈26.docx": 3
+        },
+        "source_entropy": 0.9523,
+        "source_concentration": 0.0477
+      },
+      "整合阶段主导": {
+        "source_file_count": 17,
+        "sentence_count": 27,
+        "anchor_count": 27,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.9547,
+        "source_distribution": {
+          "康圣访谈39.docx": 4,
+          "康圣访谈 9（肖雄峰）.docx": 3,
+          "康圣访谈14（李续图）.docx": 3,
+          "康圣访谈2（张思婷）.docx": 2,
+          "康圣访谈38.docx": 2,
+          "康圣访谈41.docx": 2,
+          "康圣访谈29.docx": 1,
+          "康圣访谈30.docx": 1,
+          "康圣访谈6黄军涛.docx": 1,
+          "康圣访谈11秦园.docx": 1
+        },
+        "source_entropy": 0.9503,
+        "source_concentration": 0.0497
+      },
+      "文化创新核心载体": {
+        "source_file_count": 5,
+        "sentence_count": 5,
+        "anchor_count": 5,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈18.（杨伟红）.docx": 1,
+          "康圣访谈1（蒋风情）.docx": 1,
+          "康圣访谈34.docx": 1,
+          "康圣访谈22.docx": 1,
+          "康圣访谈39.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": -0.0
+      },
+      "文化情境特征": {
+        "source_file_count": 3,
+        "sentence_count": 3,
+        "anchor_count": 3,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈17.（贾梦思）.docx": 1,
+          "康圣访谈29.docx": 1,
+          "康圣访谈5翟圣.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "文化框架激活": {
+        "source_file_count": 3,
+        "sentence_count": 3,
+        "anchor_count": 3,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈11秦园.docx": 1,
+          "康圣访谈33.docx": 1,
+          "康圣访谈42.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "新旧更替": {
+        "source_file_count": 9,
+        "sentence_count": 9,
+        "anchor_count": 9,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈11秦园.docx": 1,
+          "康圣访谈1（蒋风情）.docx": 1,
+          "康圣访谈31.docx": 1,
+          "康圣访谈41.docx": 1,
+          "康圣访谈12余桂俊.docx": 1,
+          "康圣访谈30.docx": 1,
+          "康圣访谈36.docx": 1,
+          "康圣访谈22.docx": 1,
+          "康圣访谈34.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "替代放大因素": {
+        "source_file_count": 3,
+        "sentence_count": 3,
+        "anchor_count": 3,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 9（肖雄峰）.docx": 1,
+          "康圣访谈30.docx": 1,
+          "康圣访谈42.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "未审议、董事会独断": {
+        "source_file_count": 10,
+        "sentence_count": 13,
+        "anchor_count": 13,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 2,
+          "康圣访谈30.docx": 2,
+          "康圣访谈14（李续图）.docx": 2,
+          "康圣访谈18.（杨伟红）.docx": 1,
+          "康圣访谈31.docx": 1,
+          "康圣访谈35.docx": 1,
+          "康圣访谈39.docx": 1,
+          "康圣访谈27.docx": 1,
+          "康圣访谈38.docx": 1,
+          "康圣访谈8任作非.docx": 1
+        },
+        "source_entropy": 0.975,
+        "source_concentration": 0.025
+      },
+      "本土适配": {
+        "source_file_count": 9,
+        "sentence_count": 10,
+        "anchor_count": 10,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈6黄军涛.docx": 2,
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈42.docx": 1,
+          "康圣访谈12余桂俊.docx": 1,
+          "康圣访谈24.docx": 1,
+          "康圣访谈33.docx": 1,
+          "康圣访谈18.（杨伟红）.docx": 1,
+          "康圣访谈28.docx": 1,
+          "康圣访谈38.docx": 1
+        },
+        "source_entropy": 0.9849,
+        "source_concentration": 0.0151
+      },
+      "机会识别能力": {
+        "source_file_count": 10,
+        "sentence_count": 14,
+        "anchor_count": 14,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈3（谢文英）.docx": 3,
+          "康圣访谈 9（肖雄峰）.docx": 2,
+          "康圣访谈37.docx": 2,
+          "康圣访谈2（张思婷）.docx": 1,
+          "康圣访谈33.docx": 1,
+          "康圣访谈12余桂俊.docx": 1,
+          "康圣访谈39.docx": 1,
+          "康圣访谈20.（王珮鑫）.docx": 1,
+          "康圣访谈5翟圣.docx": 1,
+          "康圣访谈27.docx": 1
+        },
+        "source_entropy": 0.9579,
+        "source_concentration": 0.0421
+      },
+      "松散关联功能特征": {
+        "source_file_count": 1,
+        "sentence_count": 1,
+        "anchor_count": 1,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.34,
+        "source_distribution": {
+          "康圣访谈30.docx": 1
+        },
+        "source_entropy": 0.0,
+        "source_concentration": 1.0
+      },
+      "核心冲突": {
+        "source_file_count": 3,
+        "sentence_count": 3,
+        "anchor_count": 3,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈12余桂俊.docx": 1,
+          "康圣访谈24.docx": 1,
+          "康圣访谈37.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "核心影响因素": {
+        "source_file_count": 3,
+        "sentence_count": 3,
+        "anchor_count": 3,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈27.docx": 1,
+          "康圣访谈38.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "核心目标": {
+        "source_file_count": 5,
+        "sentence_count": 5,
+        "anchor_count": 5,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 4（董国祥）.docx": 1,
+          "康圣访谈16.（李妮）.docx": 1,
+          "康圣访谈28.docx": 1,
+          "康圣访谈34.docx": 1,
+          "康圣访谈3（谢文英）.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": -0.0
+      },
+      "核心问题": {
+        "source_file_count": 5,
+        "sentence_count": 5,
+        "anchor_count": 5,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈11秦园.docx": 1,
+          "康圣访谈1（蒋风情）.docx": 1,
+          "康圣访谈34.docx": 1,
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈36.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": -0.0
+      },
+      "模块化组织核心": {
+        "source_file_count": 11,
+        "sentence_count": 11,
+        "anchor_count": 11,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈19.（吴妍）.docx": 1,
+          "康圣访谈28.docx": 1,
+          "康圣访谈38.docx": 1,
+          "康圣访谈42.docx": 1,
+          "康圣访谈11秦园.docx": 1,
+          "康圣访谈34.docx": 1,
+          "康圣访谈12余桂俊.docx": 1,
+          "康圣访谈21.docx": 1,
+          "康圣访谈29.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "模式二": {
+        "source_file_count": 13,
+        "sentence_count": 14,
+        "anchor_count": 14,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈18.（杨伟红）.docx": 2,
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈24.docx": 1,
+          "康圣访谈34.docx": 1,
+          "康圣访谈40.docx": 1,
+          "康圣访谈 9（肖雄峰）.docx": 1,
+          "康圣访谈35.docx": 1,
+          "康圣访谈39.docx": 1,
+          "康圣访谈11秦园.docx": 1,
+          "康圣访谈26.docx": 1
+        },
+        "source_entropy": 0.9903,
+        "source_concentration": 0.0097
+      },
+      "治理机制": {
+        "source_file_count": 9,
+        "sentence_count": 11,
+        "anchor_count": 11,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈20.（王珮鑫）.docx": 2,
+          "康圣访谈18.（杨伟红）.docx": 2,
+          "康圣访谈10（黄志利）.docx": 1,
+          "康圣访谈38.docx": 1,
+          "康圣访谈15（陈进科）.docx": 1,
+          "康圣访谈16.（李妮）.docx": 1,
+          "康圣访谈34.docx": 1,
+          "康圣访谈39.docx": 1,
+          "康圣访谈35.docx": 1
+        },
+        "source_entropy": 0.9766,
+        "source_concentration": 0.0234
+      },
+      "治理缺陷": {
+        "source_file_count": 7,
+        "sentence_count": 8,
+        "anchor_count": 8,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈37.docx": 2,
+          "康圣访谈 4（董国祥）.docx": 1,
+          "康圣访谈22.docx": 1,
+          "康圣访谈41.docx": 1,
+          "康圣访谈5翟圣.docx": 1,
+          "康圣访谈15（陈进科）.docx": 1,
+          "康圣访谈32.docx": 1
+        },
+        "source_entropy": 0.9796,
+        "source_concentration": 0.0204
+      },
+      "海外获取": {
+        "source_file_count": 3,
+        "sentence_count": 3,
+        "anchor_count": 3,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈32.docx": 1,
+          "康圣访谈8任作非.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "满足感与地位": {
+        "source_file_count": 12,
+        "sentence_count": 12,
+        "anchor_count": 12,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈20.（王珮鑫）.docx": 1,
+          "康圣访谈38.docx": 1,
+          "康圣访谈39.docx": 1,
+          "康圣访谈8任作非.docx": 1,
+          "康圣访谈 4（董国祥）.docx": 1,
+          "康圣访谈28.docx": 1,
+          "康圣访谈34.docx": 1,
+          "康圣访谈 9（肖雄峰）.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": -0.0
+      },
+      "演化机制": {
+        "source_file_count": 7,
+        "sentence_count": 7,
+        "anchor_count": 7,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈15（陈进科）.docx": 1,
+          "康圣访谈7吴天.docx": 1,
+          "康圣访谈19.（吴妍）.docx": 1,
+          "康圣访谈36.docx": 1,
+          "康圣访谈6黄军涛.docx": 1,
+          "康圣访谈20.（王珮鑫）.docx": 1,
+          "康圣访谈27.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "激励型政策认知": {
+        "source_file_count": 17,
+        "sentence_count": 26,
+        "anchor_count": 26,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.9802,
+        "source_distribution": {
+          "康圣访谈35.docx": 4,
+          "康圣访谈36.docx": 3,
+          "康圣访谈30.docx": 2,
+          "康圣访谈14（李续图）.docx": 2,
+          "康圣访谈24.docx": 2,
+          "康圣访谈22.docx": 2,
+          "康圣访谈11秦园.docx": 1,
+          "康圣访谈42.docx": 1,
+          "康圣访谈39.docx": 1,
+          "康圣访谈15（陈进科）.docx": 1
+        },
+        "source_entropy": 0.9547,
+        "source_concentration": 0.0453
+      },
+      "特新优丧失": {
+        "source_file_count": 21,
+        "sentence_count": 37,
+        "anchor_count": 37,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.8927,
+        "source_distribution": {
+          "康圣访谈42.docx": 4,
+          "康圣访谈 4（董国祥）.docx": 4,
+          "康圣访谈 13（张桂）.docx": 3,
+          "康圣访谈34.docx": 3,
+          "康圣访谈7吴天.docx": 3,
+          "康圣访谈33.docx": 2,
+          "康圣访谈29.docx": 2,
+          "康圣访谈11秦园.docx": 2,
+          "康圣访谈35.docx": 2,
+          "康圣访谈1（蒋风情）.docx": 1
+        },
+        "source_entropy": 0.9506,
+        "source_concentration": 0.0494
+      },
+      "特新优势难以拓展": {
+        "source_file_count": 25,
+        "sentence_count": 33,
+        "anchor_count": 30,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.1,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈42.docx": 2,
+          "康圣访谈 9（肖雄峰）.docx": 2,
+          "康圣访谈21.docx": 2,
+          "康圣访谈32.docx": 2,
+          "康圣访谈37.docx": 2,
+          "康圣访谈22.docx": 2,
+          "康圣访谈12余桂俊.docx": 2,
+          "康圣访谈24.docx": 2,
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈41.docx": 1
+        },
+        "source_entropy": 0.9818,
+        "source_concentration": 0.0182
+      },
+      "现有知识深化": {
+        "source_file_count": 9,
+        "sentence_count": 9,
+        "anchor_count": 9,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈17.（贾梦思）.docx": 1,
+          "康圣访谈33.docx": 1,
+          "康圣访谈21.docx": 1,
+          "康圣访谈37.docx": 1,
+          "康圣访谈23.docx": 1,
+          "康圣访谈40.docx": 1,
+          "康圣访谈26.docx": 1,
+          "康圣访谈39.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "生产制造+技术引进": {
+        "source_file_count": 32,
+        "sentence_count": 65,
+        "anchor_count": 13,
+        "theme_count": 1,
+        "evidence_per_anchor": 5.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈32.docx": 6,
+          "康圣访谈6黄军涛.docx": 5,
+          "康圣访谈14（李续图）.docx": 5,
+          "康圣访谈5翟圣.docx": 4,
+          "康圣访谈42.docx": 4,
+          "康圣访谈10（黄志利）.docx": 3,
+          "康圣访谈34.docx": 3,
+          "康圣访谈 13（张桂）.docx": 2,
+          "康圣访谈 4（董国祥）.docx": 2,
+          "康圣访谈28.docx": 2
+        },
+        "source_entropy": 0.9453,
+        "source_concentration": 0.0547
+      },
+      "生产效率提升": {
+        "source_file_count": 3,
+        "sentence_count": 3,
+        "anchor_count": 3,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 9（肖雄峰）.docx": 1,
+          "康圣访谈18.（杨伟红）.docx": 1,
+          "康圣访谈35.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "生命周期+政商关系": {
+        "source_file_count": 11,
+        "sentence_count": 12,
+        "anchor_count": 12,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈22.docx": 2,
+          "康圣访谈10（黄志利）.docx": 1,
+          "康圣访谈8任作非.docx": 1,
+          "康圣访谈11秦园.docx": 1,
+          "康圣访谈36.docx": 1,
+          "康圣访谈12余桂俊.docx": 1,
+          "康圣访谈28.docx": 1,
+          "康圣访谈33.docx": 1,
+          "康圣访谈6黄军涛.docx": 1,
+          "康圣访谈14（李续图）.docx": 1
+        },
+        "source_entropy": 0.9881,
+        "source_concentration": 0.0119
+      },
+      "盲目轻信媒体": {
+        "source_file_count": 8,
+        "sentence_count": 9,
+        "anchor_count": 9,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈1（蒋风情）.docx": 2,
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈29.docx": 1,
+          "康圣访谈35.docx": 1,
+          "康圣访谈37.docx": 1,
+          "康圣访谈12余桂俊.docx": 1,
+          "康圣访谈28.docx": 1,
+          "康圣访谈7吴天.docx": 1
+        },
+        "source_entropy": 0.9826,
+        "source_concentration": 0.0174
+      },
+      "直觉创业学习": {
+        "source_file_count": 9,
+        "sentence_count": 9,
+        "anchor_count": 9,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈21.docx": 1,
+          "康圣访谈32.docx": 1,
+          "康圣访谈10（黄志利）.docx": 1,
+          "康圣访谈2（张思婷）.docx": 1,
+          "康圣访谈3（谢文英）.docx": 1,
+          "康圣访谈11秦园.docx": 1,
+          "康圣访谈19.（吴妍）.docx": 1,
+          "康圣访谈39.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "研发网络结构": {
+        "source_file_count": 14,
+        "sentence_count": 21,
+        "anchor_count": 21,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.9946,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 3,
+          "康圣访谈42.docx": 3,
+          "康圣访谈19.（吴妍）.docx": 2,
+          "康圣访谈3（谢文英）.docx": 2,
+          "康圣访谈14（李续图）.docx": 2,
+          "康圣访谈21.docx": 1,
+          "康圣访谈34.docx": 1,
+          "康圣访谈39.docx": 1,
+          "康圣访谈33.docx": 1,
+          "康圣访谈11秦园.docx": 1
+        },
+        "source_entropy": 0.9597,
+        "source_concentration": 0.0403
+      },
+      "研发设计能力": {
+        "source_file_count": 21,
+        "sentence_count": 28,
+        "anchor_count": 15,
+        "theme_count": 3,
+        "evidence_per_anchor": 1.87,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈32.docx": 3,
+          "康圣访谈15（陈进科）.docx": 2,
+          "康圣访谈16.（李妮）.docx": 2,
+          "康圣访谈20.（王珮鑫）.docx": 2,
+          "康圣访谈18.（杨伟红）.docx": 2,
+          "康圣访谈41.docx": 2,
+          "康圣访谈11秦园.docx": 1,
+          "康圣访谈2（张思婷）.docx": 1,
+          "康圣访谈8任作非.docx": 1,
+          "康圣访谈37.docx": 1
+        },
+        "source_entropy": 0.9745,
+        "source_concentration": 0.0255
+      },
+      "社会共治机制": {
+        "source_file_count": 10,
+        "sentence_count": 11,
+        "anchor_count": 11,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈38.docx": 2,
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈11秦园.docx": 1,
+          "康圣访谈27.docx": 1,
+          "康圣访谈34.docx": 1,
+          "康圣访谈12余桂俊.docx": 1,
+          "康圣访谈24.docx": 1,
+          "康圣访谈6黄军涛.docx": 1,
+          "康圣访谈15（陈进科）.docx": 1,
+          "康圣访谈32.docx": 1
+        },
+        "source_entropy": 0.9867,
+        "source_concentration": 0.0133
+      },
+      "社群构建": {
+        "source_file_count": 7,
+        "sentence_count": 8,
+        "anchor_count": 8,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 2,
+          "康圣访谈19.（吴妍）.docx": 1,
+          "康圣访谈34.docx": 1,
+          "康圣访谈5翟圣.docx": 1,
+          "康圣访谈35.docx": 1,
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈31.docx": 1
+        },
+        "source_entropy": 0.9796,
+        "source_concentration": 0.0204
+      },
+      "组织印记": {
+        "source_file_count": 41,
+        "sentence_count": 140,
+        "anchor_count": 132,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.06,
+        "density_score": 0.639,
+        "source_distribution": {
+          "康圣访谈14（李续图）.docx": 11,
+          "康圣访谈5翟圣.docx": 8,
+          "康圣访谈40.docx": 7,
+          "康圣访谈42.docx": 7,
+          "康圣访谈35.docx": 6,
+          "康圣访谈11秦园.docx": 6,
+          "康圣访谈12余桂俊.docx": 6,
+          "康圣访谈32.docx": 5,
+          "康圣访谈21.docx": 5,
+          "康圣访谈34.docx": 4
+        },
+        "source_entropy": 0.9532,
+        "source_concentration": 0.0468
+      },
+      "组装制造能力": {
+        "source_file_count": 21,
+        "sentence_count": 27,
+        "anchor_count": 27,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 4（董国祥）.docx": 2,
+          "康圣访谈27.docx": 2,
+          "康圣访谈10（黄志利）.docx": 2,
+          "康圣访谈17.（贾梦思）.docx": 2,
+          "康圣访谈29.docx": 2,
+          "康圣访谈33.docx": 2,
+          "康圣访谈21.docx": 1,
+          "康圣访谈34.docx": 1,
+          "康圣访谈39.docx": 1,
+          "康圣访谈2（张思婷）.docx": 1
+        },
+        "source_entropy": 0.9814,
+        "source_concentration": 0.0186
+      },
+      "绿色转型阶段": {
+        "source_file_count": 2,
+        "sentence_count": 2,
+        "anchor_count": 2,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.94,
+        "source_distribution": {
+          "康圣访谈19.（吴妍）.docx": 1,
+          "康圣访谈36.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "自主创新": {
+        "source_file_count": 2,
+        "sentence_count": 2,
+        "anchor_count": 2,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.94,
+        "source_distribution": {
+          "康圣访谈12余桂俊.docx": 1,
+          "康圣访谈23.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "自利动机驱动": {
+        "source_file_count": 3,
+        "sentence_count": 3,
+        "anchor_count": 3,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈10（黄志利）.docx": 1,
+          "康圣访谈25.docx": 1,
+          "康圣访谈34.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "表外融资": {
+        "source_file_count": 11,
+        "sentence_count": 12,
+        "anchor_count": 12,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈42.docx": 2,
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈 9（肖雄峰）.docx": 1,
+          "康圣访谈24.docx": 1,
+          "康圣访谈6黄军涛.docx": 1,
+          "康圣访谈15（陈进科）.docx": 1,
+          "康圣访谈2（张思婷）.docx": 1,
+          "康圣访谈5翟圣.docx": 1,
+          "康圣访谈22.docx": 1,
+          "康圣访谈23.docx": 1
+        },
+        "source_entropy": 0.9881,
+        "source_concentration": 0.0119
+      },
+      "规模扩张、制度建设": {
+        "source_file_count": 1,
+        "sentence_count": 1,
+        "anchor_count": 1,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.34,
+        "source_distribution": {
+          "康圣访谈19.（吴妍）.docx": 1
+        },
+        "source_entropy": 0.0,
+        "source_concentration": 1.0
+      },
+      "规避监管": {
+        "source_file_count": 2,
+        "sentence_count": 2,
+        "anchor_count": 2,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.94,
+        "source_distribution": {
+          "康圣访谈1（蒋风情）.docx": 1,
+          "康圣访谈5翟圣.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "解错试验组合": {
+        "source_file_count": 6,
+        "sentence_count": 6,
+        "anchor_count": 6,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈22.docx": 1,
+          "康圣访谈30.docx": 1,
+          "康圣访谈41.docx": 1,
+          "康圣访谈18.（杨伟红）.docx": 1,
+          "康圣访谈5翟圣.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "话语时间策略": {
+        "source_file_count": 40,
+        "sentence_count": 74,
+        "anchor_count": 74,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.866,
+        "source_distribution": {
+          "康圣访谈 4（董国祥）.docx": 6,
+          "康圣访谈39.docx": 4,
+          "康圣访谈21.docx": 4,
+          "康圣访谈12余桂俊.docx": 4,
+          "康圣访谈 13（张桂）.docx": 3,
+          "康圣访谈14（李续图）.docx": 3,
+          "康圣访谈29.docx": 3,
+          "康圣访谈5翟圣.docx": 3,
+          "康圣访谈28.docx": 3,
+          "康圣访谈30.docx": 3
+        },
+        "source_entropy": 0.9515,
+        "source_concentration": 0.0485
+      },
+      "话语经验建构": {
+        "source_file_count": 26,
+        "sentence_count": 45,
+        "anchor_count": 45,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.909,
+        "source_distribution": {
+          "康圣访谈21.docx": 3,
+          "康圣访谈3（谢文英）.docx": 3,
+          "康圣访谈39.docx": 3,
+          "康圣访谈6黄军涛.docx": 3,
+          "康圣访谈32.docx": 3,
+          "康圣访谈38.docx": 2,
+          "康圣访谈 4（董国祥）.docx": 2,
+          "康圣访谈24.docx": 2,
+          "康圣访谈37.docx": 2,
+          "康圣访谈 9（肖雄峰）.docx": 2
+        },
+        "source_entropy": 0.9709,
+        "source_concentration": 0.0291
+      },
+      "负面超额收益": {
+        "source_file_count": 5,
+        "sentence_count": 6,
+        "anchor_count": 6,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈35.docx": 2,
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈15（陈进科）.docx": 1,
+          "康圣访谈 9（肖雄峰）.docx": 1,
+          "康圣访谈27.docx": 1
+        },
+        "source_entropy": 0.9697,
+        "source_concentration": 0.0303
+      },
+      "财务战略传递路径": {
+        "source_file_count": 8,
+        "sentence_count": 8,
+        "anchor_count": 8,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 9（肖雄峰）.docx": 1,
+          "康圣访谈22.docx": 1,
+          "康圣访谈6黄军涛.docx": 1,
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈35.docx": 1,
+          "康圣访谈15（陈进科）.docx": 1,
+          "康圣访谈30.docx": 1,
+          "康圣访谈3（谢文英）.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "资本市场层面": {
+        "source_file_count": 4,
+        "sentence_count": 4,
+        "anchor_count": 4,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈24.docx": 1,
+          "康圣访谈35.docx": 1,
+          "康圣访谈6黄军涛.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "资源能力化": {
+        "source_file_count": 5,
+        "sentence_count": 5,
+        "anchor_count": 5,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 4（董国祥）.docx": 1,
+          "康圣访谈21.docx": 1,
+          "康圣访谈32.docx": 1,
+          "康圣访谈36.docx": 1,
+          "康圣访谈42.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": -0.0
+      },
+      "资源蓄能": {
+        "source_file_count": 1,
+        "sentence_count": 1,
+        "anchor_count": 1,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.34,
+        "source_distribution": {
+          "康圣访谈21.docx": 1
+        },
+        "source_entropy": 0.0,
+        "source_concentration": 1.0
+      },
+      "资金筹集关键手段": {
+        "source_file_count": 10,
+        "sentence_count": 11,
+        "anchor_count": 11,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈10（黄志利）.docx": 2,
+          "康圣访谈22.docx": 1,
+          "康圣访谈38.docx": 1,
+          "康圣访谈39.docx": 1,
+          "康圣访谈21.docx": 1,
+          "康圣访谈3（谢文英）.docx": 1,
+          "康圣访谈7吴天.docx": 1,
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈27.docx": 1,
+          "康圣访谈5翟圣.docx": 1
+        },
+        "source_entropy": 0.9867,
+        "source_concentration": 0.0133
+      },
+      "赔偿机制改善": {
+        "source_file_count": 5,
+        "sentence_count": 5,
+        "anchor_count": 5,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈12余桂俊.docx": 1,
+          "康圣访谈35.docx": 1,
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈24.docx": 1,
+          "康圣访谈42.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": -0.0
+      },
+      "超越追赶阶段": {
+        "source_file_count": 2,
+        "sentence_count": 2,
+        "anchor_count": 2,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.94,
+        "source_distribution": {
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈41.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "跨国并购前提": {
+        "source_file_count": 33,
+        "sentence_count": 65,
+        "anchor_count": 65,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.8318,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 6,
+          "康圣访谈3（谢文英）.docx": 5,
+          "康圣访谈11秦园.docx": 4,
+          "康圣访谈33.docx": 4,
+          "康圣访谈28.docx": 3,
+          "康圣访谈30.docx": 3,
+          "康圣访谈21.docx": 3,
+          "康圣访谈6黄军涛.docx": 3,
+          "康圣访谈32.docx": 3,
+          "康圣访谈1（蒋风情）.docx": 2
+        },
+        "source_entropy": 0.9472,
+        "source_concentration": 0.0528
+      },
+      "转型驱动因素": {
+        "source_file_count": 6,
+        "sentence_count": 6,
+        "anchor_count": 6,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈22.docx": 1,
+          "康圣访谈34.docx": 1,
+          "康圣访谈10（黄志利）.docx": 1,
+          "康圣访谈23.docx": 1,
+          "康圣访谈41.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "远景+经营重心": {
+        "source_file_count": 19,
+        "sentence_count": 25,
+        "anchor_count": 25,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 4（董国祥）.docx": 2,
+          "康圣访谈32.docx": 2,
+          "康圣访谈33.docx": 2,
+          "康圣访谈 9（肖雄峰）.docx": 2,
+          "康圣访谈6黄军涛.docx": 2,
+          "康圣访谈39.docx": 2,
+          "康圣访谈31.docx": 1,
+          "康圣访谈18.（杨伟红）.docx": 1,
+          "康圣访谈40.docx": 1,
+          "康圣访谈21.docx": 1
+        },
+        "source_entropy": 0.9802,
+        "source_concentration": 0.0198
+      },
+      "部分结局": {
+        "source_file_count": 17,
+        "sentence_count": 20,
+        "anchor_count": 20,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈11秦园.docx": 2,
+          "康圣访谈5翟圣.docx": 2,
+          "康圣访谈14（李续图）.docx": 2,
+          "康圣访谈 9（肖雄峰）.docx": 1,
+          "康圣访谈21.docx": 1,
+          "康圣访谈30.docx": 1,
+          "康圣访谈38.docx": 1,
+          "康圣访谈10（黄志利）.docx": 1,
+          "康圣访谈1（蒋风情）.docx": 1,
+          "康圣访谈35.docx": 1
+        },
+        "source_entropy": 0.984,
+        "source_concentration": 0.016
+      },
+      "配置与投资机会背离": {
+        "source_file_count": 3,
+        "sentence_count": 3,
+        "anchor_count": 3,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈10（黄志利）.docx": 1,
+          "康圣访谈31.docx": 1,
+          "康圣访谈39.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "长期效果": {
+        "source_file_count": 17,
+        "sentence_count": 20,
+        "anchor_count": 20,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈27.docx": 3,
+          "康圣访谈 4（董国祥）.docx": 2,
+          "康圣访谈20.（王珮鑫）.docx": 1,
+          "康圣访谈32.docx": 1,
+          "康圣访谈7吴天.docx": 1,
+          "康圣访谈36.docx": 1,
+          "康圣访谈 9（肖雄峰）.docx": 1,
+          "康圣访谈26.docx": 1,
+          "康圣访谈33.docx": 1,
+          "康圣访谈6黄军涛.docx": 1
+        },
+        "source_entropy": 0.9747,
+        "source_concentration": 0.0253
+      },
+      "间断平衡支撑": {
+        "source_file_count": 9,
+        "sentence_count": 10,
+        "anchor_count": 10,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈10（黄志利）.docx": 2,
+          "康圣访谈36.docx": 1,
+          "康圣访谈2（张思婷）.docx": 1,
+          "康圣访谈39.docx": 1,
+          "康圣访谈11秦园.docx": 1,
+          "康圣访谈5翟圣.docx": 1,
+          "康圣访谈14（李续图）.docx": 1,
+          "康圣访谈22.docx": 1,
+          "康圣访谈6黄军涛.docx": 1
+        },
+        "source_entropy": 0.9849,
+        "source_concentration": 0.0151
+      },
+      "隐蔽性操作": {
+        "source_file_count": 21,
+        "sentence_count": 32,
+        "anchor_count": 32,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.9815,
+        "source_distribution": {
+          "康圣访谈5翟圣.docx": 5,
+          "康圣访谈37.docx": 3,
+          "康圣访谈 13（张桂）.docx": 2,
+          "康圣访谈32.docx": 2,
+          "康圣访谈30.docx": 2,
+          "康圣访谈3（谢文英）.docx": 2,
+          "康圣访谈39.docx": 2,
+          "康圣访谈1（蒋风情）.docx": 1,
+          "康圣访谈10（黄志利）.docx": 1,
+          "康圣访谈24.docx": 1
+        },
+        "source_entropy": 0.9508,
+        "source_concentration": 0.0492
+      },
+      "集权式领导": {
+        "source_file_count": 21,
+        "sentence_count": 39,
+        "anchor_count": 39,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.8676,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 4,
+          "康圣访谈2（张思婷）.docx": 3,
+          "康圣访谈12余桂俊.docx": 3,
+          "康圣访谈14（李续图）.docx": 3,
+          "康圣访谈33.docx": 3,
+          "康圣访谈19.（吴妍）.docx": 2,
+          "康圣访谈28.docx": 2,
+          "康圣访谈36.docx": 2,
+          "康圣访谈20.（王珮鑫）.docx": 2,
+          "康圣访谈38.docx": 2
+        },
+        "source_entropy": 0.9639,
+        "source_concentration": 0.0361
+      },
+      "雇佣关系主体": {
+        "source_file_count": 16,
+        "sentence_count": 24,
+        "anchor_count": 19,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.26,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 13（张桂）.docx": 3,
+          "康圣访谈19.（吴妍）.docx": 3,
+          "康圣访谈16.（李妮）.docx": 2,
+          "康圣访谈8任作非.docx": 2,
+          "康圣访谈30.docx": 2,
+          "康圣访谈6黄军涛.docx": 2,
+          "康圣访谈28.docx": 1,
+          "康圣访谈33.docx": 1,
+          "康圣访谈36.docx": 1,
+          "康圣访谈7吴天.docx": 1
+        },
+        "source_entropy": 0.9638,
+        "source_concentration": 0.0362
+      },
+      "青春期": {
+        "source_file_count": 23,
+        "sentence_count": 31,
+        "anchor_count": 31,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈 9（肖雄峰）.docx": 2,
+          "康圣访谈39.docx": 2,
+          "康圣访谈27.docx": 2,
+          "康圣访谈37.docx": 2,
+          "康圣访谈7吴天.docx": 2,
+          "康圣访谈10（黄志利）.docx": 2,
+          "康圣访谈34.docx": 2,
+          "康圣访谈18.（杨伟红）.docx": 2,
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈28.docx": 1
+        },
+        "source_entropy": 0.9811,
+        "source_concentration": 0.0189
+      },
+      "风险情境": {
+        "source_file_count": 2,
+        "sentence_count": 2,
+        "anchor_count": 2,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 0.94,
+        "source_distribution": {
+          "康圣访谈10（黄志利）.docx": 1,
+          "康圣访谈21.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": 0.0
+      },
+      "驱动因素": {
+        "source_file_count": 13,
+        "sentence_count": 13,
+        "anchor_count": 13,
+        "theme_count": 1,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈11秦园.docx": 1,
+          "康圣访谈37.docx": 1,
+          "康圣访谈12余桂俊.docx": 1,
+          "康圣访谈27.docx": 1,
+          "康圣访谈39.docx": 1,
+          "康圣访谈18.（杨伟红）.docx": 1,
+          "康圣访谈22.docx": 1,
+          "康圣访谈28.docx": 1,
+          "康圣访谈36.docx": 1,
+          "康圣访谈8任作非.docx": 1
+        },
+        "source_entropy": 1.0,
+        "source_concentration": -0.0
+      },
+      "高端增值": {
+        "source_file_count": 23,
+        "sentence_count": 33,
+        "anchor_count": 33,
+        "theme_count": 2,
+        "evidence_per_anchor": 1.0,
+        "density_score": 1.0,
+        "source_distribution": {
+          "康圣访谈23.docx": 3,
+          "康圣访谈27.docx": 3,
+          "康圣访谈10（黄志利）.docx": 3,
+          "康圣访谈 9（肖雄峰）.docx": 2,
+          "康圣访谈29.docx": 2,
+          "康圣访谈34.docx": 2,
+          "康圣访谈35.docx": 2,
+          "康圣访谈 13（张桂）.docx": 1,
+          "康圣访谈31.docx": 1,
+          "康圣访谈40.docx": 1
+        },
+        "source_entropy": 0.966,
+        "source_concentration": 0.034
+      }
+    },
+    "summary": {
+      "avg_density_score": 0.9549,
+      "avg_evidence_per_anchor": 1.14,
+      "high_density": 147,
+      "medium_density": 5,
+      "low_density": 0
+    }
+  },
+  "diversity": {
+    "metrics": {
+      "EM阶段核心": {
+        "theory": "EM阶段核心",
+        "diversity_score": 0.62,
+        "source_entropy": 0.9762,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9278,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "上海国资存量更大": {
+        "theory": "上海国资存量更大",
+        "diversity_score": 0.6791,
+        "source_entropy": 0.9785,
+        "theme_entropy": 0.5436,
+        "anchor_entropy": 0.4879,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "专业胜任": {
+        "theory": "专业胜任",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "专精优势无法适用": {
+        "theory": "专精优势无法适用",
+        "diversity_score": 0.6358,
+        "source_entropy": 0.9676,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9903,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "专精优衰减": {
+        "theory": "专精优衰减",
+        "diversity_score": 0.9762,
+        "source_entropy": 0.9623,
+        "theme_entropy": 1.0,
+        "anchor_entropy": 0.9647,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "中国情境局限": {
+        "theory": "中国情境局限",
+        "diversity_score": 0.6236,
+        "source_entropy": 0.9807,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9345,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "主从关系": {
+        "theory": "主从关系",
+        "diversity_score": 0.6462,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9875,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "乡村治理困境": {
+        "theory": "乡村治理困境",
+        "diversity_score": 0.8025,
+        "source_entropy": 0.9635,
+        "theme_entropy": 0.7777,
+        "anchor_entropy": 0.6436,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "乡村社会基础": {
+        "theory": "乡村社会基础",
+        "diversity_score": 0.6336,
+        "source_entropy": 0.9796,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.969,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "亏损脱困为主": {
+        "theory": "亏损脱困为主",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "产品层面": {
+        "theory": "产品层面",
+        "diversity_score": 0.8781,
+        "source_entropy": 0.9487,
+        "theme_entropy": 0.7219,
+        "anchor_entropy": 0.9781,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "人心式领导": {
+        "theory": "人心式领导",
+        "diversity_score": 0.6368,
+        "source_entropy": 0.9747,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9855,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "人缘式领导": {
+        "theory": "人缘式领导",
+        "diversity_score": 0.7032,
+        "source_entropy": 0.9763,
+        "theme_entropy": 0.65,
+        "anchor_entropy": 0.4466,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "代理问题缓解": {
+        "theory": "代理问题缓解",
+        "diversity_score": 0.8214,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.9183,
+        "anchor_entropy": 0.5,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "价值共创扭曲": {
+        "theory": "价值共创扭曲",
+        "diversity_score": 0.6255,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9183,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "价值判断建构": {
+        "theory": "价值判断建构",
+        "diversity_score": 0.6382,
+        "source_entropy": 0.9298,
+        "theme_entropy": 0.469,
+        "anchor_entropy": 0.4955,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "企业-网络-集群三层互动": {
+        "theory": "企业-网络-集群三层互动",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "企业主导阶段": {
+        "theory": "企业主导阶段",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "低价竞加剧": {
+        "theory": "低价竞加剧",
+        "diversity_score": 0.634,
+        "source_entropy": 0.9671,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9851,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "作业长制为核心": {
+        "theory": "作业长制为核心",
+        "diversity_score": 0.6191,
+        "source_entropy": 0.9763,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9248,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "供应商/顾客/员工共赢": {
+        "theory": "供应商/顾客/员工共赢",
+        "diversity_score": 0.587,
+        "source_entropy": 0.9483,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.8504,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "保证金/质押导致现金不可用": {
+        "theory": "保证金/质押导致现金不可用",
+        "diversity_score": 0.9514,
+        "source_entropy": 0.9487,
+        "theme_entropy": 0.935,
+        "anchor_entropy": 0.9736,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "信任基础": {
+        "theory": "信任基础",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "修辞方式": {
+        "theory": "修辞方式",
+        "diversity_score": 0.9767,
+        "source_entropy": 0.9544,
+        "theme_entropy": 0.9986,
+        "anchor_entropy": 0.977,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "修辞策略": {
+        "theory": "修辞策略",
+        "diversity_score": 0.6278,
+        "source_entropy": 0.954,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9795,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "先借鉴后经验": {
+        "theory": "先借鉴后经验",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [
+          "anchor_dominance"
+        ],
+        "interpretation": "证据来源单一 — 检测到偏倚: anchor_dominance"
+      },
+      "先抑后扬粉饰业绩": {
+        "theory": "先抑后扬粉饰业绩",
+        "diversity_score": 0.6203,
+        "source_entropy": 0.9485,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.961,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "关系资本弥补资源不足": {
+        "theory": "关系资本弥补资源不足",
+        "diversity_score": 0.7,
+        "source_entropy": 1.0,
+        "theme_entropy": 1.0,
+        "anchor_entropy": 0.0,
+        "biases": [
+          "anchor_dominance"
+        ],
+        "interpretation": "证据来源丰富，多源支撑 — 检测到偏倚: anchor_dominance"
+      },
+      "关联交易、资金挪用": {
+        "theory": "关联交易、资金挪用",
+        "diversity_score": 0.6398,
+        "source_entropy": 0.9708,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 1.0,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "具体路径": {
+        "theory": "具体路径",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "内主外辅转型动力": {
+        "theory": "内主外辅转型动力",
+        "diversity_score": 0.6322,
+        "source_entropy": 0.9746,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9703,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "内幕信息获利": {
+        "theory": "内幕信息获利",
+        "diversity_score": 0.6367,
+        "source_entropy": 0.9738,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9864,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "农户+本地大户": {
+        "theory": "农户+本地大户",
+        "diversity_score": 0.5977,
+        "source_entropy": 0.911,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9296,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "创业集聚驱动": {
+        "theory": "创业集聚驱动",
+        "diversity_score": 0.8749,
+        "source_entropy": 0.9598,
+        "theme_entropy": 0.7219,
+        "anchor_entropy": 0.9542,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "创新基础": {
+        "theory": "创新基础",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "创新性认知": {
+        "theory": "创新性认知",
+        "diversity_score": 0.638,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9601,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "创造力来源": {
+        "theory": "创造力来源",
+        "diversity_score": 0.6313,
+        "source_entropy": 0.9586,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9861,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "制度重塑": {
+        "theory": "制度重塑",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [
+          "anchor_dominance"
+        ],
+        "interpretation": "证据来源单一 — 检测到偏倚: anchor_dominance"
+      },
+      "制造环节优势": {
+        "theory": "制造环节优势",
+        "diversity_score": 0.6293,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9311,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "前期": {
+        "theory": "前期",
+        "diversity_score": 0.6428,
+        "source_entropy": 0.9893,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9886,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "功能使命定位": {
+        "theory": "功能使命定位",
+        "diversity_score": 0.6199,
+        "source_entropy": 0.9631,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9426,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "升级前提": {
+        "theory": "升级前提",
+        "diversity_score": 0.644,
+        "source_entropy": 0.9893,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9925,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "发展期": {
+        "theory": "发展期",
+        "diversity_score": 0.6004,
+        "source_entropy": 0.9755,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.8631,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "变化阶段": {
+        "theory": "变化阶段",
+        "diversity_score": 0.6308,
+        "source_entropy": 0.963,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9791,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "合：治理建构": {
+        "theory": "合：治理建构",
+        "diversity_score": 0.6089,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.8631,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "同源性技术初始积累": {
+        "theory": "同源性技术初始积累",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "同质竞加剧": {
+        "theory": "同质竞加剧",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "否决项与月度考核": {
+        "theory": "否决项与月度考核",
+        "diversity_score": 0.6284,
+        "source_entropy": 0.9513,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9849,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "品牌形象提升": {
+        "theory": "品牌形象提升",
+        "diversity_score": 0.8698,
+        "source_entropy": 0.9668,
+        "theme_entropy": 0.6723,
+        "anchor_entropy": 0.9871,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "国资放任掏空": {
+        "theory": "国资放任掏空",
+        "diversity_score": 0.642,
+        "source_entropy": 0.9881,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9873,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "在位者劣势": {
+        "theory": "在位者劣势",
+        "diversity_score": 0.6255,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9183,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "均等控制权": {
+        "theory": "均等控制权",
+        "diversity_score": 0.6413,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.971,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "外生式学习": {
+        "theory": "外生式学习",
+        "diversity_score": 0.6295,
+        "source_entropy": 0.9685,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9684,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "外部环境因素": {
+        "theory": "外部环境因素",
+        "diversity_score": 0.6323,
+        "source_entropy": 0.9811,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9631,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "外部监管不足": {
+        "theory": "外部监管不足",
+        "diversity_score": 0.6413,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.971,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "多技能提升": {
+        "theory": "多技能提升",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "大库存优势": {
+        "theory": "大库存优势",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "大股东困境": {
+        "theory": "大股东困境",
+        "diversity_score": 0.6439,
+        "source_entropy": 0.9826,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 1.0,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "学习机制": {
+        "theory": "学习机制",
+        "diversity_score": 0.7823,
+        "source_entropy": 0.9556,
+        "theme_entropy": 0.7188,
+        "anchor_entropy": 0.6542,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "实施原则": {
+        "theory": "实施原则",
+        "diversity_score": 0.5817,
+        "source_entropy": 0.9165,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.8699,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "家族创业培育要素": {
+        "theory": "家族创业培育要素",
+        "diversity_score": 0.6929,
+        "source_entropy": 0.9796,
+        "theme_entropy": 1.0,
+        "anchor_entropy": 0.0,
+        "biases": [
+          "anchor_dominance"
+        ],
+        "interpretation": "证据来源较多样 — 检测到偏倚: anchor_dominance"
+      },
+      "对价争议": {
+        "theory": "对价争议",
+        "diversity_score": 0.622,
+        "source_entropy": 0.9893,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.919,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "封建层级文化诱因": {
+        "theory": "封建层级文化诱因",
+        "diversity_score": 0.7122,
+        "source_entropy": 0.9665,
+        "theme_entropy": 0.5718,
+        "anchor_entropy": 0.5794,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "工资与市场业绩挂钩": {
+        "theory": "工资与市场业绩挂钩",
+        "diversity_score": 0.6378,
+        "source_entropy": 0.975,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9886,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "差异起源": {
+        "theory": "差异起源",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "市场导向模式": {
+        "theory": "市场导向模式",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "市场约束无效": {
+        "theory": "市场约束无效",
+        "diversity_score": 0.7897,
+        "source_entropy": 0.9309,
+        "theme_entropy": 0.7789,
+        "anchor_entropy": 0.6375,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "市场能力积累": {
+        "theory": "市场能力积累",
+        "diversity_score": 0.0,
+        "source_entropy": 0.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [
+          "single_source_bias"
+        ],
+        "interpretation": "证据来源单一 — 检测到偏倚: single_source_bias"
+      },
+      "市属国企整合": {
+        "theory": "市属国企整合",
+        "diversity_score": 0.6297,
+        "source_entropy": 0.9569,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9828,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "延展高价值业务": {
+        "theory": "延展高价值业务",
+        "diversity_score": 0.629,
+        "source_entropy": 0.9881,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.944,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "建构型学习": {
+        "theory": "建构型学习",
+        "diversity_score": 0.8105,
+        "source_entropy": 0.9772,
+        "theme_entropy": 0.7974,
+        "anchor_entropy": 0.6315,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "循环动力": {
+        "theory": "循环动力",
+        "diversity_score": 0.6413,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.971,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "心化内控归宿": {
+        "theory": "心化内控归宿",
+        "diversity_score": 0.6149,
+        "source_entropy": 0.9697,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9183,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "志愿者能动阶段": {
+        "theory": "志愿者能动阶段",
+        "diversity_score": 0.6377,
+        "source_entropy": 0.9823,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9796,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "忽视长期技术积累": {
+        "theory": "忽视长期技术积累",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "思维基础": {
+        "theory": "思维基础",
+        "diversity_score": 0.9713,
+        "source_entropy": 0.9723,
+        "theme_entropy": 0.971,
+        "anchor_entropy": 0.9707,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "成长增速放缓": {
+        "theory": "成长增速放缓",
+        "diversity_score": 0.6455,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9851,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "成长空被挤压": {
+        "theory": "成长空被挤压",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "技术准入合法性缺乏": {
+        "theory": "技术准入合法性缺乏",
+        "diversity_score": 0.6255,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9183,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "技术杠杆": {
+        "theory": "技术杠杆",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "抚育成长经历": {
+        "theory": "抚育成长经历",
+        "diversity_score": 0.7,
+        "source_entropy": 1.0,
+        "theme_entropy": 1.0,
+        "anchor_entropy": 0.0,
+        "biases": [
+          "anchor_dominance"
+        ],
+        "interpretation": "证据来源丰富，多源支撑 — 检测到偏倚: anchor_dominance"
+      },
+      "拓展前沿技术": {
+        "theory": "拓展前沿技术",
+        "diversity_score": 0.7434,
+        "source_entropy": 0.9911,
+        "theme_entropy": 0.7219,
+        "anchor_entropy": 0.4796,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "挤水分": {
+        "theory": "挤水分",
+        "diversity_score": 0.6231,
+        "source_entropy": 0.9599,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9573,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "探索式即兴": {
+        "theory": "探索式即兴",
+        "diversity_score": 0.6292,
+        "source_entropy": 0.9529,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9855,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "数字化": {
+        "theory": "数字化",
+        "diversity_score": 0.6289,
+        "source_entropy": 0.9523,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9852,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "整合阶段主导": {
+        "theory": "整合阶段主导",
+        "diversity_score": 0.6273,
+        "source_entropy": 0.9503,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9824,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "文化创新核心载体": {
+        "theory": "文化创新核心载体",
+        "diversity_score": 0.7,
+        "source_entropy": 1.0,
+        "theme_entropy": 1.0,
+        "anchor_entropy": 0.0,
+        "biases": [
+          "anchor_dominance"
+        ],
+        "interpretation": "证据来源丰富，多源支撑 — 检测到偏倚: anchor_dominance"
+      },
+      "文化情境特征": {
+        "theory": "文化情境特征",
+        "diversity_score": 0.6255,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9183,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "文化框架激活": {
+        "theory": "文化框架激活",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "新旧更替": {
+        "theory": "新旧更替",
+        "diversity_score": 0.6397,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9656,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "替代放大因素": {
+        "theory": "替代放大因素",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "未审议、董事会独断": {
+        "theory": "未审议、董事会独断",
+        "diversity_score": 0.6394,
+        "source_entropy": 0.975,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9939,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "本土适配": {
+        "theory": "本土适配",
+        "diversity_score": 0.9825,
+        "source_entropy": 0.9849,
+        "theme_entropy": 1.0,
+        "anchor_entropy": 0.9591,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "机会识别能力": {
+        "theory": "机会识别能力",
+        "diversity_score": 0.7349,
+        "source_entropy": 0.9579,
+        "theme_entropy": 0.7219,
+        "anchor_entropy": 0.4898,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "松散关联功能特征": {
+        "theory": "松散关联功能特征",
+        "diversity_score": 0.0,
+        "source_entropy": 0.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [
+          "single_source_bias"
+        ],
+        "interpretation": "证据来源单一 — 检测到偏倚: single_source_bias"
+      },
+      "核心冲突": {
+        "theory": "核心冲突",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "核心影响因素": {
+        "theory": "核心影响因素",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "核心目标": {
+        "theory": "核心目标",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [
+          "anchor_dominance"
+        ],
+        "interpretation": "证据来源单一 — 检测到偏倚: anchor_dominance"
+      },
+      "核心问题": {
+        "theory": "核心问题",
+        "diversity_score": 0.6413,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.971,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "模块化组织核心": {
+        "theory": "模块化组织核心",
+        "diversity_score": 0.633,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9432,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "模式二": {
+        "theory": "模式二",
+        "diversity_score": 0.6352,
+        "source_entropy": 0.9903,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9621,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "治理机制": {
+        "theory": "治理机制",
+        "diversity_score": 0.6298,
+        "source_entropy": 0.9766,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9601,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "治理缺陷": {
+        "theory": "治理缺陷",
+        "diversity_score": 0.5862,
+        "source_entropy": 0.9796,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.8113,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "海外获取": {
+        "theory": "海外获取",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "满足感与地位": {
+        "theory": "满足感与地位",
+        "diversity_score": 0.8091,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.9183,
+        "anchor_entropy": 0.4591,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "演化机制": {
+        "theory": "演化机制",
+        "diversity_score": 0.6446,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9821,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "激励型政策认知": {
+        "theory": "激励型政策认知",
+        "diversity_score": 0.6271,
+        "source_entropy": 0.9547,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9765,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "特新优丧失": {
+        "theory": "特新优丧失",
+        "diversity_score": 0.6312,
+        "source_entropy": 0.9506,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9948,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "特新优势难以拓展": {
+        "theory": "特新优势难以拓展",
+        "diversity_score": 0.9765,
+        "source_entropy": 0.9818,
+        "theme_entropy": 0.994,
+        "anchor_entropy": 0.9498,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "现有知识深化": {
+        "theory": "现有知识深化",
+        "diversity_score": 0.6447,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9824,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "生产制造+技术引进": {
+        "theory": "生产制造+技术引进",
+        "diversity_score": 0.6267,
+        "source_entropy": 0.9453,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9862,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "生产效率提升": {
+        "theory": "生产效率提升",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "生命周期+政商关系": {
+        "theory": "生命周期+政商关系",
+        "diversity_score": 0.6397,
+        "source_entropy": 0.9881,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9796,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "盲目轻信媒体": {
+        "theory": "盲目轻信媒体",
+        "diversity_score": 0.5997,
+        "source_entropy": 0.9826,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.8528,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "直觉创业学习": {
+        "theory": "直觉创业学习",
+        "diversity_score": 0.65,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 1.0,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "研发网络结构": {
+        "theory": "研发网络结构",
+        "diversity_score": 0.631,
+        "source_entropy": 0.9597,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9837,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "研发设计能力": {
+        "theory": "研发设计能力",
+        "diversity_score": 0.8135,
+        "source_entropy": 0.9745,
+        "theme_entropy": 0.7974,
+        "anchor_entropy": 0.6444,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "社会共治机制": {
+        "theory": "社会共治机制",
+        "diversity_score": 0.6358,
+        "source_entropy": 0.9867,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9681,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "社群构建": {
+        "theory": "社群构建",
+        "diversity_score": 0.802,
+        "source_entropy": 0.9796,
+        "theme_entropy": 0.9183,
+        "anchor_entropy": 0.4591,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "组织印记": {
+        "theory": "组织印记",
+        "diversity_score": 0.63,
+        "source_entropy": 0.9532,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9879,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "组装制造能力": {
+        "theory": "组装制造能力",
+        "diversity_score": 0.9678,
+        "source_entropy": 0.9814,
+        "theme_entropy": 0.971,
+        "anchor_entropy": 0.9484,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "绿色转型阶段": {
+        "theory": "绿色转型阶段",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "自主创新": {
+        "theory": "自主创新",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "自利动机驱动": {
+        "theory": "自利动机驱动",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "表外融资": {
+        "theory": "表外融资",
+        "diversity_score": 0.642,
+        "source_entropy": 0.9881,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9873,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "规模扩张、制度建设": {
+        "theory": "规模扩张、制度建设",
+        "diversity_score": 0.0,
+        "source_entropy": 0.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [
+          "single_source_bias"
+        ],
+        "interpretation": "证据来源单一 — 检测到偏倚: single_source_bias"
+      },
+      "规避监管": {
+        "theory": "规避监管",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "解错试验组合": {
+        "theory": "解错试验组合",
+        "diversity_score": 0.6255,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9183,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "话语时间策略": {
+        "theory": "话语时间策略",
+        "diversity_score": 0.6274,
+        "source_entropy": 0.9515,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9814,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "话语经验建构": {
+        "theory": "话语经验建构",
+        "diversity_score": 0.6155,
+        "source_entropy": 0.9709,
+        "theme_entropy": 0.3712,
+        "anchor_entropy": 0.4858,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "负面超额收益": {
+        "theory": "负面超额收益",
+        "diversity_score": 0.6394,
+        "source_entropy": 0.9697,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 1.0,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "财务战略传递路径": {
+        "theory": "财务战略传递路径",
+        "diversity_score": 0.6358,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9528,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "资本市场层面": {
+        "theory": "资本市场层面",
+        "diversity_score": 0.65,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 1.0,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "资源能力化": {
+        "theory": "资源能力化",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [
+          "anchor_dominance"
+        ],
+        "interpretation": "证据来源单一 — 检测到偏倚: anchor_dominance"
+      },
+      "资源蓄能": {
+        "theory": "资源蓄能",
+        "diversity_score": 0.0,
+        "source_entropy": 0.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [
+          "single_source_bias"
+        ],
+        "interpretation": "证据来源单一 — 检测到偏倚: single_source_bias"
+      },
+      "资金筹集关键手段": {
+        "theory": "资金筹集关键手段",
+        "diversity_score": 0.643,
+        "source_entropy": 0.9867,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9922,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "赔偿机制改善": {
+        "theory": "赔偿机制改善",
+        "diversity_score": 0.6413,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.971,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "超越追赶阶段": {
+        "theory": "超越追赶阶段",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "跨国并购前提": {
+        "theory": "跨国并购前提",
+        "diversity_score": 0.6267,
+        "source_entropy": 0.9472,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9838,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "转型驱动因素": {
+        "theory": "转型驱动因素",
+        "diversity_score": 0.7,
+        "source_entropy": 1.0,
+        "theme_entropy": 1.0,
+        "anchor_entropy": 0.0,
+        "biases": [
+          "anchor_dominance"
+        ],
+        "interpretation": "证据来源丰富，多源支撑 — 检测到偏倚: anchor_dominance"
+      },
+      "远景+经营重心": {
+        "theory": "远景+经营重心",
+        "diversity_score": 0.6345,
+        "source_entropy": 0.9802,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9713,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "部分结局": {
+        "theory": "部分结局",
+        "diversity_score": 0.6379,
+        "source_entropy": 0.984,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9783,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "配置与投资机会背离": {
+        "theory": "配置与投资机会背离",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "长期效果": {
+        "theory": "长期效果",
+        "diversity_score": 0.6395,
+        "source_entropy": 0.9747,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9946,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "间断平衡支撑": {
+        "theory": "间断平衡支撑",
+        "diversity_score": 0.6404,
+        "source_entropy": 0.9849,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9855,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "隐蔽性操作": {
+        "theory": "隐蔽性操作",
+        "diversity_score": 0.8981,
+        "source_entropy": 0.9508,
+        "theme_entropy": 0.8113,
+        "anchor_entropy": 0.938,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "集权式领导": {
+        "theory": "集权式领导",
+        "diversity_score": 0.8461,
+        "source_entropy": 0.9639,
+        "theme_entropy": 0.6194,
+        "anchor_entropy": 0.9732,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "雇佣关系主体": {
+        "theory": "雇佣关系主体",
+        "diversity_score": 0.7287,
+        "source_entropy": 0.9638,
+        "theme_entropy": 0.7219,
+        "anchor_entropy": 0.4624,
+        "biases": [],
+        "interpretation": "证据来源丰富，多源支撑"
+      },
+      "青春期": {
+        "theory": "青春期",
+        "diversity_score": 0.6353,
+        "source_entropy": 0.9811,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.973,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "风险情境": {
+        "theory": "风险情境",
+        "diversity_score": 0.35,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.0,
+        "biases": [],
+        "interpretation": "证据来源单一"
+      },
+      "驱动因素": {
+        "theory": "驱动因素",
+        "diversity_score": 0.6315,
+        "source_entropy": 1.0,
+        "theme_entropy": 0.0,
+        "anchor_entropy": 0.9384,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      },
+      "高端增值": {
+        "theory": "高端增值",
+        "diversity_score": 0.6515,
+        "source_entropy": 0.966,
+        "theme_entropy": 0.469,
+        "anchor_entropy": 0.4976,
+        "biases": [],
+        "interpretation": "证据来源较多样"
+      }
+    },
+    "summary": {
+      "avg_diversity": 0.5915,
+      "high_diversity": 110,
+      "medium_diversity": 38,
+      "low_diversity": 4,
+      "biased_theories": 13
+    }
+  }
+}

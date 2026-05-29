@@ -1,0 +1,4300 @@
+{
+  "metadata": {
+    "version": "2.0",
+    "created_at": "2026-05-29T10:05:30.090461",
+    "formula": "evidence_confidence = base_confidence × (1 + density×0.25) × (1 + diversity×0.20)"
+  },
+  "summary": {
+    "timestamp": "2026-05-29T10:05:30.090461",
+    "total_theories": 152,
+    "avg_confidence": 0.7982,
+    "avg_base_confidence": 0.5756,
+    "avg_evidence_multiplier": 1.3857,
+    "max_multiplier": 1.4956,
+    "confidence_gain": 0.2226
+  },
+  "scores": {
+    "EM阶段核心": {
+      "confidence": 0.8065,
+      "base_confidence": 0.574,
+      "evidence_multiplier": 1.405,
+      "components": {
+        "grounding": 0.8957,
+        "support_diversity": 0.1771,
+        "semantic_stability": 0.621,
+        "provenance_depth": 0.46,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.62
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5906,
+        "l2_count": 1,
+        "l1_count": 7,
+        "sentence_count": 23,
+        "network_degree": 10,
+        "avg_edge_weight": 0.242
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.62,
+        "sources": 18,
+        "sentences": 21,
+        "biases": []
+      }
+    },
+    "上海国资存量更大": {
+      "confidence": 0.8108,
+      "base_confidence": 0.5711,
+      "evidence_multiplier": 1.4198,
+      "components": {
+        "grounding": 0.7863,
+        "support_diversity": 0.32,
+        "semantic_stability": 0.6192,
+        "provenance_depth": 0.46,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6791
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5185,
+        "l2_count": 2,
+        "l1_count": 10,
+        "sentence_count": 23,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2385
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6791,
+        "sources": 14,
+        "sentences": 18,
+        "biases": []
+      }
+    },
+    "专业胜任": {
+      "confidence": 0.739,
+      "base_confidence": 0.5592,
+      "evidence_multiplier": 1.3214,
+      "components": {
+        "grounding": 0.7919,
+        "support_diversity": 0.3543,
+        "semantic_stability": 0.6071,
+        "provenance_depth": 0.36,
+        "evidence_density": 0.94,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5222,
+        "l2_count": 2,
+        "l1_count": 7,
+        "sentence_count": 18,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2141
+      },
+      "evidence": {
+        "density_score": 0.94,
+        "diversity_score": 0.35,
+        "sources": 2,
+        "sentences": 2,
+        "biases": []
+      }
+    },
+    "专精优势无法适用": {
+      "confidence": 0.8894,
+      "base_confidence": 0.6341,
+      "evidence_multiplier": 1.4026,
+      "components": {
+        "grounding": 0.8459,
+        "support_diversity": 0.1533,
+        "semantic_stability": 0.6187,
+        "provenance_depth": 0.88,
+        "evidence_density": 0.9773,
+        "evidence_diversity": 0.6358
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5578,
+        "l2_count": 1,
+        "l1_count": 12,
+        "sentence_count": 44,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2374
+      },
+      "evidence": {
+        "density_score": 0.9773,
+        "diversity_score": 0.6358,
+        "sources": 22,
+        "sentences": 34,
+        "biases": []
+      }
+    },
+    "专精优衰减": {
+      "confidence": 0.9841,
+      "base_confidence": 0.6587,
+      "evidence_multiplier": 1.4941,
+      "components": {
+        "grounding": 0.8631,
+        "support_diversity": 0.56,
+        "semantic_stability": 0.6231,
+        "provenance_depth": 0.46,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.9762
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5691,
+        "l2_count": 3,
+        "l1_count": 6,
+        "sentence_count": 23,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2461
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.9762,
+        "sources": 16,
+        "sentences": 23,
+        "biases": []
+      }
+    },
+    "中国情境局限": {
+      "confidence": 0.6798,
+      "base_confidence": 0.4835,
+      "evidence_multiplier": 1.4059,
+      "components": {
+        "grounding": 0.7376,
+        "support_diversity": 0.1644,
+        "semantic_stability": 0.601,
+        "provenance_depth": 0.32,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6236
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.4864,
+        "l2_count": 1,
+        "l1_count": 9,
+        "sentence_count": 16,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2021
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6236,
+        "sources": 11,
+        "sentences": 13,
+        "biases": []
+      }
+    },
+    "主从关系": {
+      "confidence": 0.8691,
+      "base_confidence": 0.6157,
+      "evidence_multiplier": 1.4116,
+      "components": {
+        "grounding": 0.8204,
+        "support_diversity": 0.4933,
+        "semantic_stability": 0.606,
+        "provenance_depth": 0.42,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6462
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.541,
+        "l2_count": 3,
+        "l1_count": 9,
+        "sentence_count": 21,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2119
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6462,
+        "sources": 9,
+        "sentences": 9,
+        "biases": []
+      }
+    },
+    "乡村治理困境": {
+      "confidence": 1.0,
+      "base_confidence": 0.7088,
+      "evidence_multiplier": 1.438,
+      "components": {
+        "grounding": 0.8044,
+        "support_diversity": 0.4122,
+        "semantic_stability": 0.6211,
+        "provenance_depth": 1.0,
+        "evidence_density": 0.9565,
+        "evidence_diversity": 0.8025
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5304,
+        "l2_count": 3,
+        "l1_count": 23,
+        "sentence_count": 65,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2422
+      },
+      "evidence": {
+        "density_score": 0.9565,
+        "diversity_score": 0.8025,
+        "sources": 32,
+        "sentences": 51,
+        "biases": []
+      }
+    },
+    "乡村社会基础": {
+      "confidence": 0.6936,
+      "base_confidence": 0.4925,
+      "evidence_multiplier": 1.4084,
+      "components": {
+        "grounding": 0.7616,
+        "support_diversity": 0.16,
+        "semantic_stability": 0.6296,
+        "provenance_depth": 0.3,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6336
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5022,
+        "l2_count": 1,
+        "l1_count": 10,
+        "sentence_count": 15,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2592
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6336,
+        "sources": 7,
+        "sentences": 8,
+        "biases": []
+      }
+    },
+    "亏损脱困为主": {
+      "confidence": 0.6376,
+      "base_confidence": 0.4825,
+      "evidence_multiplier": 1.3214,
+      "components": {
+        "grounding": 0.7514,
+        "support_diversity": 0.32,
+        "semantic_stability": 0.6173,
+        "provenance_depth": 0.08,
+        "evidence_density": 0.94,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.4955,
+        "l2_count": 1,
+        "l1_count": 2,
+        "sentence_count": 4,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2346
+      },
+      "evidence": {
+        "density_score": 0.94,
+        "diversity_score": 0.35,
+        "sources": 2,
+        "sentences": 2,
+        "biases": []
+      }
+    },
+    "产品层面": {
+      "confidence": 0.6939,
+      "base_confidence": 0.4862,
+      "evidence_multiplier": 1.4271,
+      "components": {
+        "grounding": 0.7375,
+        "support_diversity": 0.1771,
+        "semantic_stability": 0.5992,
+        "provenance_depth": 0.32,
+        "evidence_density": 0.8557,
+        "evidence_diversity": 0.8781
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.4863,
+        "l2_count": 1,
+        "l1_count": 7,
+        "sentence_count": 16,
+        "network_degree": 10,
+        "avg_edge_weight": 0.1984
+      },
+      "evidence": {
+        "density_score": 0.8557,
+        "diversity_score": 0.8781,
+        "sources": 34,
+        "sentences": 78,
+        "biases": []
+      }
+    },
+    "人心式领导": {
+      "confidence": 0.8685,
+      "base_confidence": 0.6163,
+      "evidence_multiplier": 1.4092,
+      "components": {
+        "grounding": 0.8063,
+        "support_diversity": 0.3127,
+        "semantic_stability": 0.6194,
+        "provenance_depth": 0.66,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6368
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5317,
+        "l2_count": 2,
+        "l1_count": 11,
+        "sentence_count": 33,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2387
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6368,
+        "sources": 17,
+        "sentences": 20,
+        "biases": []
+      }
+    },
+    "人缘式领导": {
+      "confidence": 0.9158,
+      "base_confidence": 0.6423,
+      "evidence_multiplier": 1.4258,
+      "components": {
+        "grounding": 0.9296,
+        "support_diversity": 0.3543,
+        "semantic_stability": 0.622,
+        "provenance_depth": 0.52,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.7032
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.613,
+        "l2_count": 2,
+        "l1_count": 7,
+        "sentence_count": 26,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2441
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.7032,
+        "sources": 12,
+        "sentences": 16,
+        "biases": []
+      }
+    },
+    "代理问题缓解": {
+      "confidence": 0.8009,
+      "base_confidence": 0.5503,
+      "evidence_multiplier": 1.4554,
+      "components": {
+        "grounding": 0.7715,
+        "support_diversity": 0.44,
+        "semantic_stability": 0.6117,
+        "provenance_depth": 0.24,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.8214
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5087,
+        "l2_count": 2,
+        "l1_count": 4,
+        "sentence_count": 12,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2233
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.8214,
+        "sources": 8,
+        "sentences": 8,
+        "biases": []
+      }
+    },
+    "价值共创扭曲": {
+      "confidence": 0.7465,
+      "base_confidence": 0.5308,
+      "evidence_multiplier": 1.4064,
+      "components": {
+        "grounding": 0.88,
+        "support_diversity": 0.2533,
+        "semantic_stability": 0.6171,
+        "provenance_depth": 0.18,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6255
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5803,
+        "l2_count": 1,
+        "l1_count": 3,
+        "sentence_count": 9,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2342
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6255,
+        "sources": 6,
+        "sentences": 6,
+        "biases": []
+      }
+    },
+    "价值判断建构": {
+      "confidence": 0.7626,
+      "base_confidence": 0.5482,
+      "evidence_multiplier": 1.391,
+      "components": {
+        "grounding": 0.7511,
+        "support_diversity": 0.1533,
+        "semantic_stability": 0.6147,
+        "provenance_depth": 0.62,
+        "evidence_density": 0.9343,
+        "evidence_diversity": 0.6382
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.4953,
+        "l2_count": 1,
+        "l1_count": 12,
+        "sentence_count": 31,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2294
+      },
+      "evidence": {
+        "density_score": 0.9343,
+        "diversity_score": 0.6382,
+        "sources": 16,
+        "sentences": 26,
+        "biases": []
+      }
+    },
+    "企业-网络-集群三层互动": {
+      "confidence": 0.7008,
+      "base_confidence": 0.5303,
+      "evidence_multiplier": 1.3214,
+      "components": {
+        "grounding": 0.766,
+        "support_diversity": 0.52,
+        "semantic_stability": 0.6208,
+        "provenance_depth": 0.04,
+        "evidence_density": 0.94,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5051,
+        "l2_count": 1,
+        "l1_count": 1,
+        "sentence_count": 2,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2417
+      },
+      "evidence": {
+        "density_score": 0.94,
+        "diversity_score": 0.35,
+        "sources": 2,
+        "sentences": 2,
+        "biases": []
+      }
+    },
+    "企业主导阶段": {
+      "confidence": 0.7416,
+      "base_confidence": 0.5612,
+      "evidence_multiplier": 1.3214,
+      "components": {
+        "grounding": 0.8027,
+        "support_diversity": 0.3733,
+        "semantic_stability": 0.6347,
+        "provenance_depth": 0.3,
+        "evidence_density": 0.94,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5293,
+        "l2_count": 2,
+        "l1_count": 6,
+        "sentence_count": 15,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2693
+      },
+      "evidence": {
+        "density_score": 0.94,
+        "diversity_score": 0.35,
+        "sources": 2,
+        "sentences": 2,
+        "biases": []
+      }
+    },
+    "低价竞加剧": {
+      "confidence": 0.8274,
+      "base_confidence": 0.5874,
+      "evidence_multiplier": 1.4085,
+      "components": {
+        "grounding": 0.8678,
+        "support_diversity": 0.32,
+        "semantic_stability": 0.6182,
+        "provenance_depth": 0.4,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.634
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5722,
+        "l2_count": 2,
+        "l1_count": 10,
+        "sentence_count": 20,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2364
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.634,
+        "sources": 6,
+        "sentences": 8,
+        "biases": []
+      }
+    },
+    "作业长制为核心": {
+      "confidence": 0.7275,
+      "base_confidence": 0.5179,
+      "evidence_multiplier": 1.4048,
+      "components": {
+        "grounding": 0.7378,
+        "support_diversity": 0.52,
+        "semantic_stability": 0.6084,
+        "provenance_depth": 0.04,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6191
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.4865,
+        "l2_count": 1,
+        "l1_count": 1,
+        "sentence_count": 2,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2168
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6191,
+        "sources": 12,
+        "sentences": 16,
+        "biases": []
+      }
+    },
+    "供应商/顾客/员工共赢": {
+      "confidence": 0.7823,
+      "base_confidence": 0.5601,
+      "evidence_multiplier": 1.3968,
+      "components": {
+        "grounding": 0.8462,
+        "support_diversity": 0.17,
+        "semantic_stability": 0.607,
+        "provenance_depth": 0.5,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.587
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.558,
+        "l2_count": 1,
+        "l1_count": 8,
+        "sentence_count": 25,
+        "network_degree": 10,
+        "avg_edge_weight": 0.214
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.587,
+        "sources": 11,
+        "sentences": 16,
+        "biases": []
+      }
+    },
+    "保证金/质押导致现金不可用": {
+      "confidence": 0.9278,
+      "base_confidence": 0.6721,
+      "evidence_multiplier": 1.3804,
+      "components": {
+        "grounding": 0.7991,
+        "support_diversity": 0.2748,
+        "semantic_stability": 0.6187,
+        "provenance_depth": 1.0,
+        "evidence_density": 0.6389,
+        "evidence_diversity": 0.9514
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5269,
+        "l2_count": 2,
+        "l1_count": 23,
+        "sentence_count": 67,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2374
+      },
+      "evidence": {
+        "density_score": 0.6389,
+        "diversity_score": 0.9514,
+        "sources": 33,
+        "sentences": 105,
+        "biases": []
+      }
+    },
+    "信任基础": {
+      "confidence": 0.812,
+      "base_confidence": 0.6145,
+      "evidence_multiplier": 1.3214,
+      "components": {
+        "grounding": 0.818,
+        "support_diversity": 0.5314,
+        "semantic_stability": 0.5967,
+        "provenance_depth": 0.38,
+        "evidence_density": 0.94,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5394,
+        "l2_count": 3,
+        "l1_count": 7,
+        "sentence_count": 19,
+        "network_degree": 10,
+        "avg_edge_weight": 0.1934
+      },
+      "evidence": {
+        "density_score": 0.94,
+        "diversity_score": 0.35,
+        "sources": 2,
+        "sentences": 2,
+        "biases": []
+      }
+    },
+    "修辞方式": {
+      "confidence": 0.945,
+      "base_confidence": 0.6563,
+      "evidence_multiplier": 1.44,
+      "components": {
+        "grounding": 0.8625,
+        "support_diversity": 0.145,
+        "semantic_stability": 0.5909,
+        "provenance_depth": 1.0,
+        "evidence_density": 0.8186,
+        "evidence_diversity": 0.9767
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5687,
+        "l2_count": 1,
+        "l1_count": 16,
+        "sentence_count": 52,
+        "network_degree": 10,
+        "avg_edge_weight": 0.1817
+      },
+      "evidence": {
+        "density_score": 0.8186,
+        "diversity_score": 0.9767,
+        "sources": 32,
+        "sentences": 65,
+        "biases": []
+      }
+    },
+    "修辞策略": {
+      "confidence": 0.8195,
+      "base_confidence": 0.6393,
+      "evidence_multiplier": 1.2818,
+      "components": {
+        "grounding": 0.8174,
+        "support_diversity": 0.1293,
+        "semantic_stability": 0.6042,
+        "provenance_depth": 1.0,
+        "evidence_density": 0.5553,
+        "evidence_diversity": 0.6278
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.539,
+        "l2_count": 1,
+        "l1_count": 43,
+        "sentence_count": 142,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2083
+      },
+      "evidence": {
+        "density_score": 0.5553,
+        "diversity_score": 0.6278,
+        "sources": 41,
+        "sentences": 179,
+        "biases": []
+      }
+    },
+    "先借鉴后经验": {
+      "confidence": 0.765,
+      "base_confidence": 0.572,
+      "evidence_multiplier": 1.3375,
+      "components": {
+        "grounding": 0.928,
+        "support_diversity": 0.32,
+        "semantic_stability": 0.6161,
+        "provenance_depth": 0.22,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.6119,
+        "l2_count": 1,
+        "l1_count": 2,
+        "sentence_count": 11,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2321
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.35,
+        "sources": 5,
+        "sentences": 5,
+        "biases": [
+          "anchor_dominance"
+        ]
+      }
+    },
+    "先抑后扬粉饰业绩": {
+      "confidence": 0.7382,
+      "base_confidence": 0.5254,
+      "evidence_multiplier": 1.4051,
+      "components": {
+        "grounding": 0.8901,
+        "support_diversity": 0.2,
+        "semantic_stability": 0.5994,
+        "provenance_depth": 0.22,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6203
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5869,
+        "l2_count": 1,
+        "l1_count": 5,
+        "sentence_count": 11,
+        "network_degree": 10,
+        "avg_edge_weight": 0.1988
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6203,
+        "sources": 8,
+        "sentences": 11,
+        "biases": []
+      }
+    },
+    "关系资本弥补资源不足": {
+      "confidence": 0.752,
+      "base_confidence": 0.5277,
+      "evidence_multiplier": 1.425,
+      "components": {
+        "grounding": 0.7147,
+        "support_diversity": 0.5067,
+        "semantic_stability": 0.6345,
+        "provenance_depth": 0.12,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.7
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.4713,
+        "l2_count": 2,
+        "l1_count": 3,
+        "sentence_count": 6,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2689
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.7,
+        "sources": 4,
+        "sentences": 4,
+        "biases": [
+          "anchor_dominance"
+        ]
+      }
+    },
+    "关联交易、资金挪用": {
+      "confidence": 0.7249,
+      "base_confidence": 0.5141,
+      "evidence_multiplier": 1.41,
+      "components": {
+        "grounding": 0.8198,
+        "support_diversity": 0.2,
+        "semantic_stability": 0.6259,
+        "provenance_depth": 0.26,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6398
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5406,
+        "l2_count": 1,
+        "l1_count": 5,
+        "sentence_count": 13,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2518
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6398,
+        "sources": 7,
+        "sentences": 9,
+        "biases": []
+      }
+    },
+    "具体路径": {
+      "confidence": 0.6023,
+      "base_confidence": 0.4558,
+      "evidence_multiplier": 1.3214,
+      "components": {
+        "grounding": 0.5667,
+        "support_diversity": 0.52,
+        "semantic_stability": 0.5974,
+        "provenance_depth": 0.04,
+        "evidence_density": 0.94,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.3737,
+        "l2_count": 1,
+        "l1_count": 1,
+        "sentence_count": 2,
+        "network_degree": 10,
+        "avg_edge_weight": 0.1947
+      },
+      "evidence": {
+        "density_score": 0.94,
+        "diversity_score": 0.35,
+        "sources": 2,
+        "sentences": 2,
+        "biases": []
+      }
+    },
+    "内主外辅转型动力": {
+      "confidence": 0.7316,
+      "base_confidence": 0.5196,
+      "evidence_multiplier": 1.4081,
+      "components": {
+        "grounding": 0.8053,
+        "support_diversity": 0.1564,
+        "semantic_stability": 0.6333,
+        "provenance_depth": 0.36,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6322
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.531,
+        "l2_count": 1,
+        "l1_count": 11,
+        "sentence_count": 18,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2665
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6322,
+        "sources": 15,
+        "sentences": 17,
+        "biases": []
+      }
+    },
+    "内幕信息获利": {
+      "confidence": 0.789,
+      "base_confidence": 0.5599,
+      "evidence_multiplier": 1.4092,
+      "components": {
+        "grounding": 0.8041,
+        "support_diversity": 0.16,
+        "semantic_stability": 0.6124,
+        "provenance_depth": 0.58,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6367
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5302,
+        "l2_count": 1,
+        "l1_count": 10,
+        "sentence_count": 29,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2248
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6367,
+        "sources": 19,
+        "sentences": 24,
+        "biases": []
+      }
+    },
+    "农户+本地大户": {
+      "confidence": 0.6888,
+      "base_confidence": 0.4922,
+      "evidence_multiplier": 1.3994,
+      "components": {
+        "grounding": 0.8171,
+        "support_diversity": 0.22,
+        "semantic_stability": 0.6159,
+        "provenance_depth": 0.14,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.5977
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5388,
+        "l2_count": 1,
+        "l1_count": 4,
+        "sentence_count": 7,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2317
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.5977,
+        "sources": 14,
+        "sentences": 23,
+        "biases": []
+      }
+    },
+    "创业集聚驱动": {
+      "confidence": 0.9207,
+      "base_confidence": 0.6296,
+      "evidence_multiplier": 1.4624,
+      "components": {
+        "grounding": 0.8129,
+        "support_diversity": 0.145,
+        "semantic_stability": 0.6442,
+        "provenance_depth": 0.9,
+        "evidence_density": 0.9783,
+        "evidence_diversity": 0.8749
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.536,
+        "l2_count": 1,
+        "l1_count": 16,
+        "sentence_count": 45,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2885
+      },
+      "evidence": {
+        "density_score": 0.9783,
+        "diversity_score": 0.8749,
+        "sources": 32,
+        "sentences": 63,
+        "biases": []
+      }
+    },
+    "创新基础": {
+      "confidence": 0.8631,
+      "base_confidence": 0.6453,
+      "evidence_multiplier": 1.3375,
+      "components": {
+        "grounding": 0.8603,
+        "support_diversity": 0.6,
+        "semantic_stability": 0.6308,
+        "provenance_depth": 0.34,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5673,
+        "l2_count": 3,
+        "l1_count": 5,
+        "sentence_count": 17,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2616
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.35,
+        "sources": 3,
+        "sentences": 3,
+        "biases": []
+      }
+    },
+    "创新性认知": {
+      "confidence": 0.8599,
+      "base_confidence": 0.6101,
+      "evidence_multiplier": 1.4095,
+      "components": {
+        "grounding": 0.8095,
+        "support_diversity": 0.46,
+        "semantic_stability": 0.6186,
+        "provenance_depth": 0.44,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.638
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5338,
+        "l2_count": 3,
+        "l1_count": 12,
+        "sentence_count": 22,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2373
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.638,
+        "sources": 11,
+        "sentences": 11,
+        "biases": []
+      }
+    },
+    "创造力来源": {
+      "confidence": 0.8678,
+      "base_confidence": 0.6327,
+      "evidence_multiplier": 1.3716,
+      "components": {
+        "grounding": 0.791,
+        "support_diversity": 0.1374,
+        "semantic_stability": 0.6074,
+        "provenance_depth": 1.0,
+        "evidence_density": 0.8714,
+        "evidence_diversity": 0.6313
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5216,
+        "l2_count": 1,
+        "l1_count": 23,
+        "sentence_count": 61,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2147
+      },
+      "evidence": {
+        "density_score": 0.8714,
+        "diversity_score": 0.6313,
+        "sources": 31,
+        "sentences": 57,
+        "biases": []
+      }
+    },
+    "制度重塑": {
+      "confidence": 0.7938,
+      "base_confidence": 0.5935,
+      "evidence_multiplier": 1.3375,
+      "components": {
+        "grounding": 0.8095,
+        "support_diversity": 0.64,
+        "semantic_stability": 0.6109,
+        "provenance_depth": 0.14,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5338,
+        "l2_count": 2,
+        "l1_count": 2,
+        "sentence_count": 7,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2218
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.35,
+        "sources": 4,
+        "sentences": 4,
+        "biases": [
+          "anchor_dominance"
+        ]
+      }
+    },
+    "制造环节优势": {
+      "confidence": 0.9468,
+      "base_confidence": 0.6728,
+      "evidence_multiplier": 1.4073,
+      "components": {
+        "grounding": 0.8047,
+        "support_diversity": 0.2686,
+        "semantic_stability": 0.6201,
+        "provenance_depth": 1.0,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6293
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5306,
+        "l2_count": 2,
+        "l1_count": 28,
+        "sentence_count": 79,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2403
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6293,
+        "sources": 13,
+        "sentences": 13,
+        "biases": []
+      }
+    },
+    "前期": {
+      "confidence": 0.7268,
+      "base_confidence": 0.5152,
+      "evidence_multiplier": 1.4107,
+      "components": {
+        "grounding": 0.8041,
+        "support_diversity": 0.1867,
+        "semantic_stability": 0.6155,
+        "provenance_depth": 0.32,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6428
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5302,
+        "l2_count": 1,
+        "l1_count": 6,
+        "sentence_count": 16,
+        "network_degree": 10,
+        "avg_edge_weight": 0.231
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6428,
+        "sources": 12,
+        "sentences": 13,
+        "biases": []
+      }
+    },
+    "功能使命定位": {
+      "confidence": 0.9257,
+      "base_confidence": 0.6589,
+      "evidence_multiplier": 1.405,
+      "components": {
+        "grounding": 0.7837,
+        "support_diversity": 0.2658,
+        "semantic_stability": 0.5908,
+        "provenance_depth": 1.0,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6199
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5168,
+        "l2_count": 2,
+        "l1_count": 31,
+        "sentence_count": 76,
+        "network_degree": 10,
+        "avg_edge_weight": 0.1815
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6199,
+        "sources": 12,
+        "sentences": 16,
+        "biases": []
+      }
+    },
+    "升级前提": {
+      "confidence": 0.9023,
+      "base_confidence": 0.6395,
+      "evidence_multiplier": 1.411,
+      "components": {
+        "grounding": 0.7645,
+        "support_diversity": 0.4232,
+        "semantic_stability": 0.6306,
+        "provenance_depth": 0.7,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.644
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5041,
+        "l2_count": 3,
+        "l1_count": 19,
+        "sentence_count": 35,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2612
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.644,
+        "sources": 12,
+        "sentences": 13,
+        "biases": []
+      }
+    },
+    "发展期": {
+      "confidence": 0.8669,
+      "base_confidence": 0.6192,
+      "evidence_multiplier": 1.4001,
+      "components": {
+        "grounding": 0.8386,
+        "support_diversity": 0.4933,
+        "semantic_stability": 0.6317,
+        "provenance_depth": 0.38,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6004
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.553,
+        "l2_count": 3,
+        "l1_count": 9,
+        "sentence_count": 19,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2634
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6004,
+        "sources": 6,
+        "sentences": 7,
+        "biases": []
+      }
+    },
+    "变化阶段": {
+      "confidence": 0.8335,
+      "base_confidence": 0.5926,
+      "evidence_multiplier": 1.4065,
+      "components": {
+        "grounding": 0.8394,
+        "support_diversity": 0.1508,
+        "semantic_stability": 0.6254,
+        "provenance_depth": 0.68,
+        "evidence_density": 0.9956,
+        "evidence_diversity": 0.6308
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5535,
+        "l2_count": 1,
+        "l1_count": 13,
+        "sentence_count": 34,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2508
+      },
+      "evidence": {
+        "density_score": 0.9956,
+        "diversity_score": 0.6308,
+        "sources": 22,
+        "sentences": 33,
+        "biases": []
+      }
+    },
+    "合：治理建构": {
+      "confidence": 0.8178,
+      "base_confidence": 0.5832,
+      "evidence_multiplier": 1.4022,
+      "components": {
+        "grounding": 0.8197,
+        "support_diversity": 0.5067,
+        "semantic_stability": 0.6281,
+        "provenance_depth": 0.22,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6089
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5405,
+        "l2_count": 2,
+        "l1_count": 3,
+        "sentence_count": 11,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2563
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6089,
+        "sources": 7,
+        "sentences": 7,
+        "biases": []
+      }
+    },
+    "同源性技术初始积累": {
+      "confidence": 0.8248,
+      "base_confidence": 0.6167,
+      "evidence_multiplier": 1.3375,
+      "components": {
+        "grounding": 1.0,
+        "support_diversity": 0.52,
+        "semantic_stability": 0.6234,
+        "provenance_depth": 0.06,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.6594,
+        "l2_count": 1,
+        "l1_count": 1,
+        "sentence_count": 3,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2468
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.35,
+        "sources": 3,
+        "sentences": 3,
+        "biases": []
+      }
+    },
+    "同质竞加剧": {
+      "confidence": 0.682,
+      "base_confidence": 0.5161,
+      "evidence_multiplier": 1.3214,
+      "components": {
+        "grounding": 0.7392,
+        "support_diversity": 0.52,
+        "semantic_stability": 0.5969,
+        "provenance_depth": 0.04,
+        "evidence_density": 0.94,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.4874,
+        "l2_count": 1,
+        "l1_count": 1,
+        "sentence_count": 2,
+        "network_degree": 10,
+        "avg_edge_weight": 0.1938
+      },
+      "evidence": {
+        "density_score": 0.94,
+        "diversity_score": 0.35,
+        "sources": 2,
+        "sentences": 2,
+        "biases": []
+      }
+    },
+    "否决项与月度考核": {
+      "confidence": 0.7942,
+      "base_confidence": 0.5644,
+      "evidence_multiplier": 1.4071,
+      "components": {
+        "grounding": 0.8371,
+        "support_diversity": 0.17,
+        "semantic_stability": 0.5845,
+        "provenance_depth": 0.56,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6284
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.552,
+        "l2_count": 1,
+        "l1_count": 8,
+        "sentence_count": 28,
+        "network_degree": 10,
+        "avg_edge_weight": 0.1691
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6284,
+        "sources": 21,
+        "sentences": 28,
+        "biases": []
+      }
+    },
+    "品牌形象提升": {
+      "confidence": 0.9058,
+      "base_confidence": 0.6272,
+      "evidence_multiplier": 1.4442,
+      "components": {
+        "grounding": 0.881,
+        "support_diversity": 0.145,
+        "semantic_stability": 0.5932,
+        "provenance_depth": 0.82,
+        "evidence_density": 0.9209,
+        "evidence_diversity": 0.8698
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5809,
+        "l2_count": 1,
+        "l1_count": 16,
+        "sentence_count": 41,
+        "network_degree": 10,
+        "avg_edge_weight": 0.1864
+      },
+      "evidence": {
+        "density_score": 0.9209,
+        "diversity_score": 0.8698,
+        "sources": 26,
+        "sentences": 44,
+        "biases": []
+      }
+    },
+    "国资放任掏空": {
+      "confidence": 0.8263,
+      "base_confidence": 0.5858,
+      "evidence_multiplier": 1.4105,
+      "components": {
+        "grounding": 0.8179,
+        "support_diversity": 0.3289,
+        "semantic_stability": 0.6266,
+        "provenance_depth": 0.46,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.642
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5393,
+        "l2_count": 2,
+        "l1_count": 9,
+        "sentence_count": 23,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2532
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.642,
+        "sources": 11,
+        "sentences": 12,
+        "biases": []
+      }
+    },
+    "在位者劣势": {
+      "confidence": 0.8112,
+      "base_confidence": 0.5768,
+      "evidence_multiplier": 1.4064,
+      "components": {
+        "grounding": 0.83,
+        "support_diversity": 0.44,
+        "semantic_stability": 0.6016,
+        "provenance_depth": 0.28,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6255
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5473,
+        "l2_count": 2,
+        "l1_count": 4,
+        "sentence_count": 14,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2031
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6255,
+        "sources": 9,
+        "sentences": 9,
+        "biases": []
+      }
+    },
+    "均等控制权": {
+      "confidence": 0.9751,
+      "base_confidence": 0.6914,
+      "evidence_multiplier": 1.4103,
+      "components": {
+        "grounding": 0.7665,
+        "support_diversity": 0.41,
+        "semantic_stability": 0.6031,
+        "provenance_depth": 1.0,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6413
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5054,
+        "l2_count": 3,
+        "l1_count": 24,
+        "sentence_count": 58,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2062
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6413,
+        "sources": 5,
+        "sentences": 5,
+        "biases": []
+      }
+    },
+    "外生式学习": {
+      "confidence": 0.8575,
+      "base_confidence": 0.6096,
+      "evidence_multiplier": 1.4066,
+      "components": {
+        "grounding": 0.8151,
+        "support_diversity": 0.1422,
+        "semantic_stability": 0.6236,
+        "provenance_depth": 0.82,
+        "evidence_density": 0.9972,
+        "evidence_diversity": 0.6295
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5375,
+        "l2_count": 1,
+        "l1_count": 18,
+        "sentence_count": 41,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2473
+      },
+      "evidence": {
+        "density_score": 0.9972,
+        "diversity_score": 0.6295,
+        "sources": 24,
+        "sentences": 36,
+        "biases": []
+      }
+    },
+    "外部环境因素": {
+      "confidence": 0.796,
+      "base_confidence": 0.5653,
+      "evidence_multiplier": 1.4081,
+      "components": {
+        "grounding": 0.8003,
+        "support_diversity": 0.1486,
+        "semantic_stability": 0.6202,
+        "provenance_depth": 0.62,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6323
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5277,
+        "l2_count": 1,
+        "l1_count": 14,
+        "sentence_count": 31,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2404
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6323,
+        "sources": 22,
+        "sentences": 29,
+        "biases": []
+      }
+    },
+    "外部监管不足": {
+      "confidence": 0.9861,
+      "base_confidence": 0.6992,
+      "evidence_multiplier": 1.4103,
+      "components": {
+        "grounding": 0.7891,
+        "support_diversity": 0.6031,
+        "semantic_stability": 0.6214,
+        "provenance_depth": 0.74,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6413
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5203,
+        "l2_count": 4,
+        "l1_count": 13,
+        "sentence_count": 37,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2428
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6413,
+        "sources": 5,
+        "sentences": 5,
+        "biases": []
+      }
+    },
+    "多技能提升": {
+      "confidence": 0.6764,
+      "base_confidence": 0.5057,
+      "evidence_multiplier": 1.3375,
+      "components": {
+        "grounding": 0.687,
+        "support_diversity": 0.52,
+        "semantic_stability": 0.616,
+        "provenance_depth": 0.06,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.453,
+        "l2_count": 1,
+        "l1_count": 1,
+        "sentence_count": 3,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2321
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.35,
+        "sources": 3,
+        "sentences": 3,
+        "biases": []
+      }
+    },
+    "大库存优势": {
+      "confidence": 0.6657,
+      "base_confidence": 0.4977,
+      "evidence_multiplier": 1.3375,
+      "components": {
+        "grounding": 0.7801,
+        "support_diversity": 0.32,
+        "semantic_stability": 0.6034,
+        "provenance_depth": 0.12,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5144,
+        "l2_count": 1,
+        "l1_count": 2,
+        "sentence_count": 6,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2069
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.35,
+        "sources": 3,
+        "sentences": 3,
+        "biases": []
+      }
+    },
+    "大股东困境": {
+      "confidence": 0.8242,
+      "base_confidence": 0.5841,
+      "evidence_multiplier": 1.411,
+      "components": {
+        "grounding": 0.8241,
+        "support_diversity": 0.3543,
+        "semantic_stability": 0.6353,
+        "provenance_depth": 0.4,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6439
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5434,
+        "l2_count": 2,
+        "l1_count": 7,
+        "sentence_count": 20,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2706
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6439,
+        "sources": 8,
+        "sentences": 9,
+        "biases": []
+      }
+    },
+    "学习机制": {
+      "confidence": 0.9764,
+      "base_confidence": 0.7053,
+      "evidence_multiplier": 1.3843,
+      "components": {
+        "grounding": 0.8047,
+        "support_diversity": 0.3975,
+        "semantic_stability": 0.6213,
+        "provenance_depth": 1.0,
+        "evidence_density": 0.7882,
+        "evidence_diversity": 0.7823
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5306,
+        "l2_count": 3,
+        "l1_count": 32,
+        "sentence_count": 92,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2427
+      },
+      "evidence": {
+        "density_score": 0.7882,
+        "diversity_score": 0.7823,
+        "sources": 36,
+        "sentences": 78,
+        "biases": []
+      }
+    },
+    "实施原则": {
+      "confidence": 0.6794,
+      "base_confidence": 0.4869,
+      "evidence_multiplier": 1.3954,
+      "components": {
+        "grounding": 0.793,
+        "support_diversity": 0.2533,
+        "semantic_stability": 0.5903,
+        "provenance_depth": 0.14,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.5817
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5229,
+        "l2_count": 1,
+        "l1_count": 3,
+        "sentence_count": 7,
+        "network_degree": 10,
+        "avg_edge_weight": 0.1807
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.5817,
+        "sources": 5,
+        "sentences": 7,
+        "biases": []
+      }
+    },
+    "家族创业培育要素": {
+      "confidence": 0.8599,
+      "base_confidence": 0.6042,
+      "evidence_multiplier": 1.4232,
+      "components": {
+        "grounding": 0.8324,
+        "support_diversity": 0.64,
+        "semantic_stability": 0.6042,
+        "provenance_depth": 0.16,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6929
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5489,
+        "l2_count": 2,
+        "l1_count": 2,
+        "sentence_count": 8,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2083
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6929,
+        "sources": 7,
+        "sentences": 8,
+        "biases": [
+          "anchor_dominance"
+        ]
+      }
+    },
+    "对价争议": {
+      "confidence": 0.7144,
+      "base_confidence": 0.5083,
+      "evidence_multiplier": 1.4055,
+      "components": {
+        "grounding": 0.7749,
+        "support_diversity": 0.1771,
+        "semantic_stability": 0.6037,
+        "provenance_depth": 0.36,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.622
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.511,
+        "l2_count": 1,
+        "l1_count": 7,
+        "sentence_count": 18,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2074
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.622,
+        "sources": 12,
+        "sentences": 13,
+        "biases": []
+      }
+    },
+    "封建层级文化诱因": {
+      "confidence": 0.9499,
+      "base_confidence": 0.6652,
+      "evidence_multiplier": 1.4281,
+      "components": {
+        "grounding": 0.7687,
+        "support_diversity": 0.6133,
+        "semantic_stability": 0.614,
+        "provenance_depth": 0.6,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.7122
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5069,
+        "l2_count": 4,
+        "l1_count": 12,
+        "sentence_count": 30,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2281
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.7122,
+        "sources": 42,
+        "sentences": 209,
+        "biases": []
+      }
+    },
+    "工资与市场业绩挂钩": {
+      "confidence": 0.7789,
+      "base_confidence": 0.5526,
+      "evidence_multiplier": 1.4094,
+      "components": {
+        "grounding": 0.8467,
+        "support_diversity": 0.17,
+        "semantic_stability": 0.5886,
+        "provenance_depth": 0.48,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6378
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5583,
+        "l2_count": 1,
+        "l1_count": 8,
+        "sentence_count": 24,
+        "network_degree": 10,
+        "avg_edge_weight": 0.1772
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6378,
+        "sources": 10,
+        "sentences": 13,
+        "biases": []
+      }
+    },
+    "差异起源": {
+      "confidence": 0.713,
+      "base_confidence": 0.5331,
+      "evidence_multiplier": 1.3375,
+      "components": {
+        "grounding": 0.786,
+        "support_diversity": 0.52,
+        "semantic_stability": 0.5801,
+        "provenance_depth": 0.06,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5183,
+        "l2_count": 1,
+        "l1_count": 1,
+        "sentence_count": 3,
+        "network_degree": 10,
+        "avg_edge_weight": 0.1603
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.35,
+        "sources": 3,
+        "sentences": 3,
+        "biases": []
+      }
+    },
+    "市场导向模式": {
+      "confidence": 0.7538,
+      "base_confidence": 0.5704,
+      "evidence_multiplier": 1.3214,
+      "components": {
+        "grounding": 0.7108,
+        "support_diversity": 0.66,
+        "semantic_stability": 0.6233,
+        "provenance_depth": 0.16,
+        "evidence_density": 0.94,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.4687,
+        "l2_count": 3,
+        "l1_count": 4,
+        "sentence_count": 8,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2466
+      },
+      "evidence": {
+        "density_score": 0.94,
+        "diversity_score": 0.35,
+        "sources": 2,
+        "sentences": 2,
+        "biases": []
+      }
+    },
+    "市场约束无效": {
+      "confidence": 0.7482,
+      "base_confidence": 0.5169,
+      "evidence_multiplier": 1.4474,
+      "components": {
+        "grounding": 0.717,
+        "support_diversity": 0.5067,
+        "semantic_stability": 0.6164,
+        "provenance_depth": 0.08,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.7897
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.4728,
+        "l2_count": 2,
+        "l1_count": 3,
+        "sentence_count": 4,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2327
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.7897,
+        "sources": 25,
+        "sentences": 44,
+        "biases": []
+      }
+    },
+    "市场能力积累": {
+      "confidence": 0.5717,
+      "base_confidence": 0.5269,
+      "evidence_multiplier": 1.085,
+      "components": {
+        "grounding": 0.7662,
+        "support_diversity": 0.52,
+        "semantic_stability": 0.6239,
+        "provenance_depth": 0.02,
+        "evidence_density": 0.34,
+        "evidence_diversity": 0.0
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5052,
+        "l2_count": 1,
+        "l1_count": 1,
+        "sentence_count": 1,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2477
+      },
+      "evidence": {
+        "density_score": 0.34,
+        "diversity_score": 0.0,
+        "sources": 1,
+        "sentences": 1,
+        "biases": [
+          "single_source_bias"
+        ]
+      }
+    },
+    "市属国企整合": {
+      "confidence": 0.7853,
+      "base_confidence": 0.558,
+      "evidence_multiplier": 1.4074,
+      "components": {
+        "grounding": 0.7695,
+        "support_diversity": 0.1486,
+        "semantic_stability": 0.6174,
+        "provenance_depth": 0.64,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6297
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5074,
+        "l2_count": 1,
+        "l1_count": 14,
+        "sentence_count": 32,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2349
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6297,
+        "sources": 24,
+        "sentences": 32,
+        "biases": []
+      }
+    },
+    "延展高价值业务": {
+      "confidence": 0.7871,
+      "base_confidence": 0.5593,
+      "evidence_multiplier": 1.4072,
+      "components": {
+        "grounding": 0.9263,
+        "support_diversity": 0.2,
+        "semantic_stability": 0.6255,
+        "provenance_depth": 0.3,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.629
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.6108,
+        "l2_count": 1,
+        "l1_count": 5,
+        "sentence_count": 15,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2509
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.629,
+        "sources": 11,
+        "sentences": 12,
+        "biases": []
+      }
+    },
+    "建构型学习": {
+      "confidence": 0.9837,
+      "base_confidence": 0.6772,
+      "evidence_multiplier": 1.4526,
+      "components": {
+        "grounding": 0.9114,
+        "support_diversity": 0.4691,
+        "semantic_stability": 0.6248,
+        "provenance_depth": 0.58,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.8105
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.601,
+        "l2_count": 3,
+        "l1_count": 11,
+        "sentence_count": 29,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2497
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.8105,
+        "sources": 25,
+        "sentences": 36,
+        "biases": []
+      }
+    },
+    "循环动力": {
+      "confidence": 0.8249,
+      "base_confidence": 0.5849,
+      "evidence_multiplier": 1.4103,
+      "components": {
+        "grounding": 0.8432,
+        "support_diversity": 0.4,
+        "semantic_stability": 0.6287,
+        "provenance_depth": 0.32,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6413
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.556,
+        "l2_count": 2,
+        "l1_count": 5,
+        "sentence_count": 16,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2574
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6413,
+        "sources": 5,
+        "sentences": 5,
+        "biases": []
+      }
+    },
+    "心化内控归宿": {
+      "confidence": 0.6711,
+      "base_confidence": 0.4781,
+      "evidence_multiplier": 1.4037,
+      "components": {
+        "grounding": 0.754,
+        "support_diversity": 0.2533,
+        "semantic_stability": 0.6144,
+        "provenance_depth": 0.14,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6149
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.4972,
+        "l2_count": 1,
+        "l1_count": 3,
+        "sentence_count": 7,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2288
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6149,
+        "sources": 5,
+        "sentences": 6,
+        "biases": []
+      }
+    },
+    "志愿者能动阶段": {
+      "confidence": 0.7251,
+      "base_confidence": 0.5145,
+      "evidence_multiplier": 1.4094,
+      "components": {
+        "grounding": 0.7825,
+        "support_diversity": 0.2,
+        "semantic_stability": 0.593,
+        "provenance_depth": 0.36,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6377
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.516,
+        "l2_count": 1,
+        "l1_count": 5,
+        "sentence_count": 18,
+        "network_degree": 10,
+        "avg_edge_weight": 0.186
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6377,
+        "sources": 12,
+        "sentences": 14,
+        "biases": []
+      }
+    },
+    "忽视长期技术积累": {
+      "confidence": 0.7289,
+      "base_confidence": 0.545,
+      "evidence_multiplier": 1.3375,
+      "components": {
+        "grounding": 0.793,
+        "support_diversity": 0.52,
+        "semantic_stability": 0.6273,
+        "provenance_depth": 0.06,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5229,
+        "l2_count": 1,
+        "l1_count": 1,
+        "sentence_count": 3,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2546
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.35,
+        "sources": 3,
+        "sentences": 3,
+        "biases": []
+      }
+    },
+    "思维基础": {
+      "confidence": 0.9823,
+      "base_confidence": 0.6859,
+      "evidence_multiplier": 1.4321,
+      "components": {
+        "grounding": 0.845,
+        "support_diversity": 0.2676,
+        "semantic_stability": 0.6161,
+        "provenance_depth": 1.0,
+        "evidence_density": 0.7965,
+        "evidence_diversity": 0.9713
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5572,
+        "l2_count": 2,
+        "l1_count": 29,
+        "sentence_count": 82,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2321
+      },
+      "evidence": {
+        "density_score": 0.7965,
+        "diversity_score": 0.9713,
+        "sources": 33,
+        "sentences": 71,
+        "biases": []
+      }
+    },
+    "成长增速放缓": {
+      "confidence": 0.7901,
+      "base_confidence": 0.5598,
+      "evidence_multiplier": 1.4114,
+      "components": {
+        "grounding": 0.803,
+        "support_diversity": 0.4,
+        "semantic_stability": 0.6337,
+        "provenance_depth": 0.26,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6455
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5295,
+        "l2_count": 2,
+        "l1_count": 5,
+        "sentence_count": 13,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2674
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6455,
+        "sources": 8,
+        "sentences": 8,
+        "biases": []
+      }
+    },
+    "成长空被挤压": {
+      "confidence": 0.7059,
+      "base_confidence": 0.5278,
+      "evidence_multiplier": 1.3375,
+      "components": {
+        "grounding": 0.7446,
+        "support_diversity": 0.52,
+        "semantic_stability": 0.626,
+        "provenance_depth": 0.06,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.491,
+        "l2_count": 1,
+        "l1_count": 1,
+        "sentence_count": 3,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2521
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.35,
+        "sources": 3,
+        "sentences": 3,
+        "biases": []
+      }
+    },
+    "技术准入合法性缺乏": {
+      "confidence": 0.752,
+      "base_confidence": 0.5347,
+      "evidence_multiplier": 1.4064,
+      "components": {
+        "grounding": 0.906,
+        "support_diversity": 0.2533,
+        "semantic_stability": 0.6112,
+        "provenance_depth": 0.16,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6255
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5974,
+        "l2_count": 1,
+        "l1_count": 3,
+        "sentence_count": 8,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2225
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6255,
+        "sources": 6,
+        "sentences": 6,
+        "biases": []
+      }
+    },
+    "技术杠杆": {
+      "confidence": 0.9731,
+      "base_confidence": 0.7364,
+      "evidence_multiplier": 1.3214,
+      "components": {
+        "grounding": 0.8083,
+        "support_diversity": 0.5164,
+        "semantic_stability": 0.6221,
+        "provenance_depth": 1.0,
+        "evidence_density": 0.94,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.533,
+        "l2_count": 4,
+        "l1_count": 44,
+        "sentence_count": 88,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2442
+      },
+      "evidence": {
+        "density_score": 0.94,
+        "diversity_score": 0.35,
+        "sources": 2,
+        "sentences": 2,
+        "biases": []
+      }
+    },
+    "抚育成长经历": {
+      "confidence": 0.7996,
+      "base_confidence": 0.5611,
+      "evidence_multiplier": 1.425,
+      "components": {
+        "grounding": 0.7578,
+        "support_diversity": 0.64,
+        "semantic_stability": 0.5993,
+        "provenance_depth": 0.08,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.7
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.4997,
+        "l2_count": 2,
+        "l1_count": 2,
+        "sentence_count": 4,
+        "network_degree": 10,
+        "avg_edge_weight": 0.1986
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.7,
+        "sources": 4,
+        "sentences": 4,
+        "biases": [
+          "anchor_dominance"
+        ]
+      }
+    },
+    "拓展前沿技术": {
+      "confidence": 0.8908,
+      "base_confidence": 0.6204,
+      "evidence_multiplier": 1.4358,
+      "components": {
+        "grounding": 0.8908,
+        "support_diversity": 0.3543,
+        "semantic_stability": 0.6202,
+        "provenance_depth": 0.48,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.7434
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5874,
+        "l2_count": 2,
+        "l1_count": 7,
+        "sentence_count": 24,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2404
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.7434,
+        "sources": 14,
+        "sentences": 15,
+        "biases": []
+      }
+    },
+    "挤水分": {
+      "confidence": 0.8248,
+      "base_confidence": 0.5867,
+      "evidence_multiplier": 1.4058,
+      "components": {
+        "grounding": 0.7719,
+        "support_diversity": 0.1422,
+        "semantic_stability": 0.5848,
+        "provenance_depth": 0.82,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6231
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.509,
+        "l2_count": 1,
+        "l1_count": 18,
+        "sentence_count": 41,
+        "network_degree": 10,
+        "avg_edge_weight": 0.1697
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6231,
+        "sources": 25,
+        "sentences": 35,
+        "biases": []
+      }
+    },
+    "探索式即兴": {
+      "confidence": 0.868,
+      "base_confidence": 0.6279,
+      "evidence_multiplier": 1.3823,
+      "components": {
+        "grounding": 0.7786,
+        "support_diversity": 0.1382,
+        "semantic_stability": 0.6041,
+        "provenance_depth": 1.0,
+        "evidence_density": 0.9112,
+        "evidence_diversity": 0.6292
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5134,
+        "l2_count": 1,
+        "l1_count": 22,
+        "sentence_count": 57,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2082
+      },
+      "evidence": {
+        "density_score": 0.9112,
+        "diversity_score": 0.6292,
+        "sources": 24,
+        "sentences": 41,
+        "biases": []
+      }
+    },
+    "数字化": {
+      "confidence": 0.9543,
+      "base_confidence": 0.7202,
+      "evidence_multiplier": 1.325,
+      "components": {
+        "grounding": 0.9598,
+        "support_diversity": 0.2642,
+        "semantic_stability": 0.5909,
+        "provenance_depth": 1.0,
+        "evidence_density": 0.708,
+        "evidence_diversity": 0.6289
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.6329,
+        "l2_count": 2,
+        "l1_count": 33,
+        "sentence_count": 135,
+        "network_degree": 10,
+        "avg_edge_weight": 0.1818
+      },
+      "evidence": {
+        "density_score": 0.708,
+        "diversity_score": 0.6289,
+        "sources": 39,
+        "sentences": 102,
+        "biases": []
+      }
+    },
+    "整合阶段主导": {
+      "confidence": 0.8415,
+      "base_confidence": 0.6036,
+      "evidence_multiplier": 1.3941,
+      "components": {
+        "grounding": 0.8221,
+        "support_diversity": 0.3127,
+        "semantic_stability": 0.6282,
+        "provenance_depth": 0.56,
+        "evidence_density": 0.9547,
+        "evidence_diversity": 0.6273
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5421,
+        "l2_count": 2,
+        "l1_count": 11,
+        "sentence_count": 28,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2564
+      },
+      "evidence": {
+        "density_score": 0.9547,
+        "diversity_score": 0.6273,
+        "sources": 17,
+        "sentences": 27,
+        "biases": []
+      }
+    },
+    "文化创新核心载体": {
+      "confidence": 0.811,
+      "base_confidence": 0.5691,
+      "evidence_multiplier": 1.425,
+      "components": {
+        "grounding": 0.8183,
+        "support_diversity": 0.5067,
+        "semantic_stability": 0.6199,
+        "provenance_depth": 0.16,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.7
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5396,
+        "l2_count": 2,
+        "l1_count": 3,
+        "sentence_count": 8,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2398
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.7,
+        "sources": 5,
+        "sentences": 5,
+        "biases": [
+          "anchor_dominance"
+        ]
+      }
+    },
+    "文化情境特征": {
+      "confidence": 0.673,
+      "base_confidence": 0.4785,
+      "evidence_multiplier": 1.4064,
+      "components": {
+        "grounding": 0.7564,
+        "support_diversity": 0.32,
+        "semantic_stability": 0.6089,
+        "provenance_depth": 0.06,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6255
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.4988,
+        "l2_count": 1,
+        "l1_count": 2,
+        "sentence_count": 3,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2178
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6255,
+        "sources": 3,
+        "sentences": 3,
+        "biases": []
+      }
+    },
+    "文化框架激活": {
+      "confidence": 0.6381,
+      "base_confidence": 0.4771,
+      "evidence_multiplier": 1.3375,
+      "components": {
+        "grounding": 0.7633,
+        "support_diversity": 0.32,
+        "semantic_stability": 0.59,
+        "provenance_depth": 0.06,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5033,
+        "l2_count": 1,
+        "l1_count": 2,
+        "sentence_count": 3,
+        "network_degree": 10,
+        "avg_edge_weight": 0.1799
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.35,
+        "sources": 3,
+        "sentences": 3,
+        "biases": []
+      }
+    },
+    "新旧更替": {
+      "confidence": 0.6748,
+      "base_confidence": 0.4786,
+      "evidence_multiplier": 1.4099,
+      "components": {
+        "grounding": 0.7272,
+        "support_diversity": 0.22,
+        "semantic_stability": 0.6053,
+        "provenance_depth": 0.24,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6397
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.4795,
+        "l2_count": 1,
+        "l1_count": 4,
+        "sentence_count": 12,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2106
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6397,
+        "sources": 9,
+        "sentences": 9,
+        "biases": []
+      }
+    },
+    "替代放大因素": {
+      "confidence": 0.7697,
+      "base_confidence": 0.5755,
+      "evidence_multiplier": 1.3375,
+      "components": {
+        "grounding": 0.8793,
+        "support_diversity": 0.52,
+        "semantic_stability": 0.6289,
+        "provenance_depth": 0.06,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5798,
+        "l2_count": 1,
+        "l1_count": 1,
+        "sentence_count": 3,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2578
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.35,
+        "sources": 3,
+        "sentences": 3,
+        "biases": []
+      }
+    },
+    "未审议、董事会独断": {
+      "confidence": 0.701,
+      "base_confidence": 0.4972,
+      "evidence_multiplier": 1.4098,
+      "components": {
+        "grounding": 0.7739,
+        "support_diversity": 0.22,
+        "semantic_stability": 0.5967,
+        "provenance_depth": 0.26,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6394
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5103,
+        "l2_count": 1,
+        "l1_count": 4,
+        "sentence_count": 13,
+        "network_degree": 10,
+        "avg_edge_weight": 0.1934
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6394,
+        "sources": 10,
+        "sentences": 13,
+        "biases": []
+      }
+    },
+    "本土适配": {
+      "confidence": 0.844,
+      "base_confidence": 0.5643,
+      "evidence_multiplier": 1.4956,
+      "components": {
+        "grounding": 0.8565,
+        "support_diversity": 0.4,
+        "semantic_stability": 0.6026,
+        "provenance_depth": 0.22,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.9825
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5648,
+        "l2_count": 2,
+        "l1_count": 5,
+        "sentence_count": 11,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2052
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.9825,
+        "sources": 9,
+        "sentences": 10,
+        "biases": []
+      }
+    },
+    "机会识别能力": {
+      "confidence": 0.8115,
+      "base_confidence": 0.566,
+      "evidence_multiplier": 1.4337,
+      "components": {
+        "grounding": 0.796,
+        "support_diversity": 0.3543,
+        "semantic_stability": 0.6143,
+        "provenance_depth": 0.38,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.7349
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5249,
+        "l2_count": 2,
+        "l1_count": 7,
+        "sentence_count": 19,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2285
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.7349,
+        "sources": 10,
+        "sentences": 14,
+        "biases": []
+      }
+    },
+    "松散关联功能特征": {
+      "confidence": 0.5186,
+      "base_confidence": 0.478,
+      "evidence_multiplier": 1.085,
+      "components": {
+        "grounding": 0.6338,
+        "support_diversity": 0.52,
+        "semantic_stability": 0.6109,
+        "provenance_depth": 0.02,
+        "evidence_density": 0.34,
+        "evidence_diversity": 0.0
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.4179,
+        "l2_count": 1,
+        "l1_count": 1,
+        "sentence_count": 1,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2219
+      },
+      "evidence": {
+        "density_score": 0.34,
+        "diversity_score": 0.0,
+        "sources": 1,
+        "sentences": 1,
+        "biases": [
+          "single_source_bias"
+        ]
+      }
+    },
+    "核心冲突": {
+      "confidence": 0.6407,
+      "base_confidence": 0.479,
+      "evidence_multiplier": 1.3375,
+      "components": {
+        "grounding": 0.6166,
+        "support_diversity": 0.52,
+        "semantic_stability": 0.6057,
+        "provenance_depth": 0.06,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.4066,
+        "l2_count": 1,
+        "l1_count": 1,
+        "sentence_count": 3,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2114
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.35,
+        "sources": 3,
+        "sentences": 3,
+        "biases": []
+      }
+    },
+    "核心影响因素": {
+      "confidence": 0.7403,
+      "base_confidence": 0.5535,
+      "evidence_multiplier": 1.3375,
+      "components": {
+        "grounding": 0.7681,
+        "support_diversity": 0.44,
+        "semantic_stability": 0.633,
+        "provenance_depth": 0.24,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5065,
+        "l2_count": 2,
+        "l1_count": 4,
+        "sentence_count": 12,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2661
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.35,
+        "sources": 3,
+        "sentences": 3,
+        "biases": []
+      }
+    },
+    "核心目标": {
+      "confidence": 0.7074,
+      "base_confidence": 0.5289,
+      "evidence_multiplier": 1.3375,
+      "components": {
+        "grounding": 0.8438,
+        "support_diversity": 0.32,
+        "semantic_stability": 0.6279,
+        "provenance_depth": 0.14,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5564,
+        "l2_count": 1,
+        "l1_count": 2,
+        "sentence_count": 7,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2557
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.35,
+        "sources": 5,
+        "sentences": 5,
+        "biases": [
+          "anchor_dominance"
+        ]
+      }
+    },
+    "核心问题": {
+      "confidence": 0.7396,
+      "base_confidence": 0.5244,
+      "evidence_multiplier": 1.4103,
+      "components": {
+        "grounding": 0.8705,
+        "support_diversity": 0.32,
+        "semantic_stability": 0.5987,
+        "provenance_depth": 0.1,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6413
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.574,
+        "l2_count": 1,
+        "l1_count": 2,
+        "sentence_count": 5,
+        "network_degree": 10,
+        "avg_edge_weight": 0.1974
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6413,
+        "sources": 5,
+        "sentences": 5,
+        "biases": []
+      }
+    },
+    "模块化组织核心": {
+      "confidence": 0.7699,
+      "base_confidence": 0.5467,
+      "evidence_multiplier": 1.4082,
+      "components": {
+        "grounding": 0.8928,
+        "support_diversity": 0.2533,
+        "semantic_stability": 0.6347,
+        "provenance_depth": 0.22,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.633
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5887,
+        "l2_count": 1,
+        "l1_count": 3,
+        "sentence_count": 11,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2693
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.633,
+        "sources": 11,
+        "sentences": 11,
+        "biases": []
+      }
+    },
+    "模式二": {
+      "confidence": 0.7653,
+      "base_confidence": 0.5432,
+      "evidence_multiplier": 1.4088,
+      "components": {
+        "grounding": 0.8294,
+        "support_diversity": 0.1867,
+        "semantic_stability": 0.591,
+        "provenance_depth": 0.44,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6352
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5469,
+        "l2_count": 1,
+        "l1_count": 6,
+        "sentence_count": 22,
+        "network_degree": 10,
+        "avg_edge_weight": 0.182
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6352,
+        "sources": 13,
+        "sentences": 14,
+        "biases": []
+      }
+    },
+    "治理机制": {
+      "confidence": 0.7786,
+      "base_confidence": 0.5532,
+      "evidence_multiplier": 1.4074,
+      "components": {
+        "grounding": 0.7916,
+        "support_diversity": 0.34,
+        "semantic_stability": 0.6355,
+        "provenance_depth": 0.32,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6298
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.522,
+        "l2_count": 2,
+        "l1_count": 8,
+        "sentence_count": 16,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2709
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6298,
+        "sources": 9,
+        "sentences": 11,
+        "biases": []
+      }
+    },
+    "治理缺陷": {
+      "confidence": 0.7452,
+      "base_confidence": 0.5336,
+      "evidence_multiplier": 1.3966,
+      "components": {
+        "grounding": 0.8479,
+        "support_diversity": 0.32,
+        "semantic_stability": 0.624,
+        "provenance_depth": 0.16,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.5862
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5591,
+        "l2_count": 1,
+        "l1_count": 2,
+        "sentence_count": 8,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2481
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.5862,
+        "sources": 7,
+        "sentences": 8,
+        "biases": []
+      }
+    },
+    "海外获取": {
+      "confidence": 0.6955,
+      "base_confidence": 0.52,
+      "evidence_multiplier": 1.3375,
+      "components": {
+        "grounding": 0.7389,
+        "support_diversity": 0.52,
+        "semantic_stability": 0.5972,
+        "provenance_depth": 0.06,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.4872,
+        "l2_count": 1,
+        "l1_count": 1,
+        "sentence_count": 3,
+        "network_degree": 10,
+        "avg_edge_weight": 0.1945
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.35,
+        "sources": 3,
+        "sentences": 3,
+        "biases": []
+      }
+    },
+    "满足感与地位": {
+      "confidence": 0.8682,
+      "base_confidence": 0.5978,
+      "evidence_multiplier": 1.4523,
+      "components": {
+        "grounding": 0.8802,
+        "support_diversity": 0.5067,
+        "semantic_stability": 0.5755,
+        "provenance_depth": 0.24,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.8091
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5804,
+        "l2_count": 2,
+        "l1_count": 3,
+        "sentence_count": 12,
+        "network_degree": 10,
+        "avg_edge_weight": 0.151
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.8091,
+        "sources": 12,
+        "sentences": 12,
+        "biases": []
+      }
+    },
+    "演化机制": {
+      "confidence": 1.0,
+      "base_confidence": 0.7211,
+      "evidence_multiplier": 1.4111,
+      "components": {
+        "grounding": 0.7696,
+        "support_diversity": 0.5496,
+        "semantic_stability": 0.6315,
+        "provenance_depth": 0.94,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6446
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5075,
+        "l2_count": 4,
+        "l1_count": 23,
+        "sentence_count": 47,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2631
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6446,
+        "sources": 7,
+        "sentences": 7,
+        "biases": []
+      }
+    },
+    "激励型政策认知": {
+      "confidence": 0.89,
+      "base_confidence": 0.6352,
+      "evidence_multiplier": 1.4012,
+      "components": {
+        "grounding": 0.7651,
+        "support_diversity": 0.2821,
+        "semantic_stability": 0.5845,
+        "provenance_depth": 0.9,
+        "evidence_density": 0.9802,
+        "evidence_diversity": 0.6271
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5045,
+        "l2_count": 2,
+        "l1_count": 19,
+        "sentence_count": 45,
+        "network_degree": 10,
+        "avg_edge_weight": 0.169
+      },
+      "evidence": {
+        "density_score": 0.9802,
+        "diversity_score": 0.6271,
+        "sources": 17,
+        "sentences": 26,
+        "biases": []
+      }
+    },
+    "特新优丧失": {
+      "confidence": 0.9005,
+      "base_confidence": 0.6537,
+      "evidence_multiplier": 1.3776,
+      "components": {
+        "grounding": 0.8418,
+        "support_diversity": 0.14,
+        "semantic_stability": 0.6202,
+        "provenance_depth": 1.0,
+        "evidence_density": 0.8927,
+        "evidence_diversity": 0.6312
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5551,
+        "l2_count": 1,
+        "l1_count": 20,
+        "sentence_count": 63,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2404
+      },
+      "evidence": {
+        "density_score": 0.8927,
+        "diversity_score": 0.6312,
+        "sources": 21,
+        "sentences": 37,
+        "biases": []
+      }
+    },
+    "特新优势难以拓展": {
+      "confidence": 0.7702,
+      "base_confidence": 0.5155,
+      "evidence_multiplier": 1.4941,
+      "components": {
+        "grounding": 0.8314,
+        "support_diversity": 0.22,
+        "semantic_stability": 0.6076,
+        "provenance_depth": 0.24,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.9765
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5482,
+        "l2_count": 1,
+        "l1_count": 4,
+        "sentence_count": 12,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2152
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.9765,
+        "sources": 25,
+        "sentences": 33,
+        "biases": []
+      }
+    },
+    "现有知识深化": {
+      "confidence": 0.7406,
+      "base_confidence": 0.5248,
+      "evidence_multiplier": 1.4112,
+      "components": {
+        "grounding": 0.736,
+        "support_diversity": 0.32,
+        "semantic_stability": 0.616,
+        "provenance_depth": 0.32,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6447
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.4853,
+        "l2_count": 2,
+        "l1_count": 10,
+        "sentence_count": 16,
+        "network_degree": 10,
+        "avg_edge_weight": 0.232
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6447,
+        "sources": 9,
+        "sentences": 9,
+        "biases": []
+      }
+    },
+    "生产制造+技术引进": {
+      "confidence": 0.7313,
+      "base_confidence": 0.5199,
+      "evidence_multiplier": 1.4067,
+      "components": {
+        "grounding": 0.8218,
+        "support_diversity": 0.17,
+        "semantic_stability": 0.6287,
+        "provenance_depth": 0.32,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6267
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5419,
+        "l2_count": 1,
+        "l1_count": 8,
+        "sentence_count": 16,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2575
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6267,
+        "sources": 32,
+        "sentences": 65,
+        "biases": []
+      }
+    },
+    "生产效率提升": {
+      "confidence": 0.728,
+      "base_confidence": 0.5443,
+      "evidence_multiplier": 1.3375,
+      "components": {
+        "grounding": 0.7508,
+        "support_diversity": 0.3543,
+        "semantic_stability": 0.6248,
+        "provenance_depth": 0.34,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.4951,
+        "l2_count": 2,
+        "l1_count": 7,
+        "sentence_count": 17,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2497
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.35,
+        "sources": 3,
+        "sentences": 3,
+        "biases": []
+      }
+    },
+    "生命周期+政商关系": {
+      "confidence": 0.7521,
+      "base_confidence": 0.5334,
+      "evidence_multiplier": 1.4099,
+      "components": {
+        "grounding": 0.8312,
+        "support_diversity": 0.1771,
+        "semantic_stability": 0.6108,
+        "provenance_depth": 0.38,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6397
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5481,
+        "l2_count": 1,
+        "l1_count": 7,
+        "sentence_count": 19,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2216
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6397,
+        "sources": 11,
+        "sentences": 12,
+        "biases": []
+      }
+    },
+    "盲目轻信媒体": {
+      "confidence": 0.7327,
+      "base_confidence": 0.5234,
+      "evidence_multiplier": 1.3999,
+      "components": {
+        "grounding": 0.8647,
+        "support_diversity": 0.2,
+        "semantic_stability": 0.5735,
+        "provenance_depth": 0.28,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.5997
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5702,
+        "l2_count": 1,
+        "l1_count": 5,
+        "sentence_count": 14,
+        "network_degree": 10,
+        "avg_edge_weight": 0.147
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.5997,
+        "sources": 8,
+        "sentences": 9,
+        "biases": []
+      }
+    },
+    "直觉创业学习": {
+      "confidence": 0.8109,
+      "base_confidence": 0.5741,
+      "evidence_multiplier": 1.4125,
+      "components": {
+        "grounding": 0.8465,
+        "support_diversity": 0.44,
+        "semantic_stability": 0.6189,
+        "provenance_depth": 0.22,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.65
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5582,
+        "l2_count": 2,
+        "l1_count": 4,
+        "sentence_count": 11,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2378
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.65,
+        "sources": 9,
+        "sentences": 9,
+        "biases": []
+      }
+    },
+    "研发网络结构": {
+      "confidence": 0.8744,
+      "base_confidence": 0.6218,
+      "evidence_multiplier": 1.4062,
+      "components": {
+        "grounding": 0.8142,
+        "support_diversity": 0.145,
+        "semantic_stability": 0.623,
+        "provenance_depth": 0.88,
+        "evidence_density": 0.9946,
+        "evidence_diversity": 0.631
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5369,
+        "l2_count": 1,
+        "l1_count": 16,
+        "sentence_count": 44,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2461
+      },
+      "evidence": {
+        "density_score": 0.9946,
+        "diversity_score": 0.631,
+        "sources": 14,
+        "sentences": 21,
+        "biases": []
+      }
+    },
+    "研发设计能力": {
+      "confidence": 0.8177,
+      "base_confidence": 0.5626,
+      "evidence_multiplier": 1.4534,
+      "components": {
+        "grounding": 0.7868,
+        "support_diversity": 0.3127,
+        "semantic_stability": 0.6254,
+        "provenance_depth": 0.42,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.8135
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5188,
+        "l2_count": 2,
+        "l1_count": 11,
+        "sentence_count": 21,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2508
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.8135,
+        "sources": 21,
+        "sentences": 28,
+        "biases": []
+      }
+    },
+    "社会共治机制": {
+      "confidence": 0.6981,
+      "base_confidence": 0.4955,
+      "evidence_multiplier": 1.409,
+      "components": {
+        "grounding": 0.7419,
+        "support_diversity": 0.1867,
+        "semantic_stability": 0.626,
+        "provenance_depth": 0.32,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6358
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.4892,
+        "l2_count": 1,
+        "l1_count": 6,
+        "sentence_count": 16,
+        "network_degree": 10,
+        "avg_edge_weight": 0.252
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6358,
+        "sources": 10,
+        "sentences": 11,
+        "biases": []
+      }
+    },
+    "社群构建": {
+      "confidence": 0.7978,
+      "base_confidence": 0.55,
+      "evidence_multiplier": 1.4505,
+      "components": {
+        "grounding": 0.7625,
+        "support_diversity": 0.4,
+        "semantic_stability": 0.6157,
+        "provenance_depth": 0.3,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.802
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5028,
+        "l2_count": 2,
+        "l1_count": 5,
+        "sentence_count": 15,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2315
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.802,
+        "sources": 7,
+        "sentences": 8,
+        "biases": []
+      }
+    },
+    "组织印记": {
+      "confidence": 0.8078,
+      "base_confidence": 0.6186,
+      "evidence_multiplier": 1.3059,
+      "components": {
+        "grounding": 0.7762,
+        "support_diversity": 0.1278,
+        "semantic_stability": 0.5748,
+        "provenance_depth": 1.0,
+        "evidence_density": 0.639,
+        "evidence_diversity": 0.63
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5118,
+        "l2_count": 1,
+        "l1_count": 51,
+        "sentence_count": 112,
+        "network_degree": 9,
+        "avg_edge_weight": 0.1496
+      },
+      "evidence": {
+        "density_score": 0.639,
+        "diversity_score": 0.63,
+        "sources": 41,
+        "sentences": 140,
+        "biases": []
+      }
+    },
+    "组装制造能力": {
+      "confidence": 0.9463,
+      "base_confidence": 0.6343,
+      "evidence_multiplier": 1.4919,
+      "components": {
+        "grounding": 0.8518,
+        "support_diversity": 0.3067,
+        "semantic_stability": 0.6374,
+        "provenance_depth": 0.66,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.9678
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5617,
+        "l2_count": 2,
+        "l1_count": 12,
+        "sentence_count": 33,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2749
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.9678,
+        "sources": 21,
+        "sentences": 27,
+        "biases": []
+      }
+    },
+    "绿色转型阶段": {
+      "confidence": 0.6412,
+      "base_confidence": 0.4852,
+      "evidence_multiplier": 1.3214,
+      "components": {
+        "grounding": 0.7985,
+        "support_diversity": 0.2533,
+        "semantic_stability": 0.632,
+        "provenance_depth": 0.08,
+        "evidence_density": 0.94,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5265,
+        "l2_count": 1,
+        "l1_count": 3,
+        "sentence_count": 4,
+        "network_degree": 10,
+        "avg_edge_weight": 0.264
+      },
+      "evidence": {
+        "density_score": 0.94,
+        "diversity_score": 0.35,
+        "sources": 2,
+        "sentences": 2,
+        "biases": []
+      }
+    },
+    "自主创新": {
+      "confidence": 0.9271,
+      "base_confidence": 0.7016,
+      "evidence_multiplier": 1.3214,
+      "components": {
+        "grounding": 0.788,
+        "support_diversity": 0.4029,
+        "semantic_stability": 0.6256,
+        "provenance_depth": 1.0,
+        "evidence_density": 0.94,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5196,
+        "l2_count": 3,
+        "l1_count": 28,
+        "sentence_count": 71,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2513
+      },
+      "evidence": {
+        "density_score": 0.94,
+        "diversity_score": 0.35,
+        "sources": 2,
+        "sentences": 2,
+        "biases": []
+      }
+    },
+    "自利动机驱动": {
+      "confidence": 0.839,
+      "base_confidence": 0.6273,
+      "evidence_multiplier": 1.3375,
+      "components": {
+        "grounding": 0.8872,
+        "support_diversity": 0.3543,
+        "semantic_stability": 0.641,
+        "provenance_depth": 0.5,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.585,
+        "l2_count": 2,
+        "l1_count": 7,
+        "sentence_count": 25,
+        "network_degree": 10,
+        "avg_edge_weight": 0.282
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.35,
+        "sources": 3,
+        "sentences": 3,
+        "biases": []
+      }
+    },
+    "表外融资": {
+      "confidence": 0.702,
+      "base_confidence": 0.4977,
+      "evidence_multiplier": 1.4105,
+      "components": {
+        "grounding": 0.7843,
+        "support_diversity": 0.1771,
+        "semantic_stability": 0.6147,
+        "provenance_depth": 0.28,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.642
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5172,
+        "l2_count": 1,
+        "l1_count": 7,
+        "sentence_count": 14,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2293
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.642,
+        "sources": 11,
+        "sentences": 12,
+        "biases": []
+      }
+    },
+    "规模扩张、制度建设": {
+      "confidence": 0.5187,
+      "base_confidence": 0.4781,
+      "evidence_multiplier": 1.085,
+      "components": {
+        "grounding": 0.6365,
+        "support_diversity": 0.52,
+        "semantic_stability": 0.6067,
+        "provenance_depth": 0.02,
+        "evidence_density": 0.34,
+        "evidence_diversity": 0.0
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.4197,
+        "l2_count": 1,
+        "l1_count": 1,
+        "sentence_count": 1,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2134
+      },
+      "evidence": {
+        "density_score": 0.34,
+        "diversity_score": 0.0,
+        "sources": 1,
+        "sentences": 1,
+        "biases": [
+          "single_source_bias"
+        ]
+      }
+    },
+    "规避监管": {
+      "confidence": 0.6209,
+      "base_confidence": 0.4699,
+      "evidence_multiplier": 1.3214,
+      "components": {
+        "grounding": 0.7364,
+        "support_diversity": 0.2,
+        "semantic_stability": 0.6106,
+        "provenance_depth": 0.2,
+        "evidence_density": 0.94,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.4856,
+        "l2_count": 1,
+        "l1_count": 5,
+        "sentence_count": 10,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2211
+      },
+      "evidence": {
+        "density_score": 0.94,
+        "diversity_score": 0.35,
+        "sources": 2,
+        "sentences": 2,
+        "biases": []
+      }
+    },
+    "解错试验组合": {
+      "confidence": 0.7575,
+      "base_confidence": 0.5386,
+      "evidence_multiplier": 1.4064,
+      "components": {
+        "grounding": 0.8988,
+        "support_diversity": 0.32,
+        "semantic_stability": 0.6001,
+        "provenance_depth": 0.12,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6255
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5927,
+        "l2_count": 1,
+        "l1_count": 2,
+        "sentence_count": 6,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2003
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6255,
+        "sources": 6,
+        "sentences": 6,
+        "biases": []
+      }
+    },
+    "话语时间策略": {
+      "confidence": 0.901,
+      "base_confidence": 0.6581,
+      "evidence_multiplier": 1.3691,
+      "components": {
+        "grounding": 0.875,
+        "support_diversity": 0.1382,
+        "semantic_stability": 0.5867,
+        "provenance_depth": 1.0,
+        "evidence_density": 0.866,
+        "evidence_diversity": 0.6274
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.577,
+        "l2_count": 1,
+        "l1_count": 22,
+        "sentence_count": 77,
+        "network_degree": 10,
+        "avg_edge_weight": 0.1734
+      },
+      "evidence": {
+        "density_score": 0.866,
+        "diversity_score": 0.6274,
+        "sources": 40,
+        "sentences": 74,
+        "biases": []
+      }
+    },
+    "话语经验建构": {
+      "confidence": 0.9284,
+      "base_confidence": 0.6736,
+      "evidence_multiplier": 1.3783,
+      "components": {
+        "grounding": 0.8741,
+        "support_diversity": 0.3067,
+        "semantic_stability": 0.6148,
+        "provenance_depth": 0.84,
+        "evidence_density": 0.909,
+        "evidence_diversity": 0.6155
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5764,
+        "l2_count": 2,
+        "l1_count": 12,
+        "sentence_count": 42,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2295
+      },
+      "evidence": {
+        "density_score": 0.909,
+        "diversity_score": 0.6155,
+        "sources": 26,
+        "sentences": 45,
+        "biases": []
+      }
+    },
+    "负面超额收益": {
+      "confidence": 0.7175,
+      "base_confidence": 0.5089,
+      "evidence_multiplier": 1.4098,
+      "components": {
+        "grounding": 0.78,
+        "support_diversity": 0.2,
+        "semantic_stability": 0.6096,
+        "provenance_depth": 0.32,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6394
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5143,
+        "l2_count": 1,
+        "l1_count": 5,
+        "sentence_count": 16,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2192
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6394,
+        "sources": 5,
+        "sentences": 6,
+        "biases": []
+      }
+    },
+    "财务战略传递路径": {
+      "confidence": 0.7469,
+      "base_confidence": 0.5301,
+      "evidence_multiplier": 1.409,
+      "components": {
+        "grounding": 0.8712,
+        "support_diversity": 0.2,
+        "semantic_stability": 0.6357,
+        "provenance_depth": 0.24,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6358
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5745,
+        "l2_count": 1,
+        "l1_count": 5,
+        "sentence_count": 12,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2714
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6358,
+        "sources": 8,
+        "sentences": 8,
+        "biases": []
+      }
+    },
+    "资本市场层面": {
+      "confidence": 0.7776,
+      "base_confidence": 0.5505,
+      "evidence_multiplier": 1.4125,
+      "components": {
+        "grounding": 0.7836,
+        "support_diversity": 0.44,
+        "semantic_stability": 0.6311,
+        "provenance_depth": 0.2,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.65
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5167,
+        "l2_count": 2,
+        "l1_count": 4,
+        "sentence_count": 10,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2622
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.65,
+        "sources": 4,
+        "sentences": 4,
+        "biases": []
+      }
+    },
+    "资源能力化": {
+      "confidence": 0.7937,
+      "base_confidence": 0.5934,
+      "evidence_multiplier": 1.3375,
+      "components": {
+        "grounding": 0.8056,
+        "support_diversity": 0.64,
+        "semantic_stability": 0.637,
+        "provenance_depth": 0.12,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5312,
+        "l2_count": 2,
+        "l1_count": 2,
+        "sentence_count": 6,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2741
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.35,
+        "sources": 5,
+        "sentences": 5,
+        "biases": [
+          "anchor_dominance"
+        ]
+      }
+    },
+    "资源蓄能": {
+      "confidence": 0.587,
+      "base_confidence": 0.541,
+      "evidence_multiplier": 1.085,
+      "components": {
+        "grounding": 0.8025,
+        "support_diversity": 0.44,
+        "semantic_stability": 0.6307,
+        "provenance_depth": 0.12,
+        "evidence_density": 0.34,
+        "evidence_diversity": 0.0
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5292,
+        "l2_count": 2,
+        "l1_count": 4,
+        "sentence_count": 6,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2615
+      },
+      "evidence": {
+        "density_score": 0.34,
+        "diversity_score": 0.0,
+        "sources": 1,
+        "sentences": 1,
+        "biases": [
+          "single_source_bias"
+        ]
+      }
+    },
+    "资金筹集关键手段": {
+      "confidence": 0.8806,
+      "base_confidence": 0.6242,
+      "evidence_multiplier": 1.4108,
+      "components": {
+        "grounding": 0.8808,
+        "support_diversity": 0.32,
+        "semantic_stability": 0.6198,
+        "provenance_depth": 0.56,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.643
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5808,
+        "l2_count": 2,
+        "l1_count": 10,
+        "sentence_count": 28,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2396
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.643,
+        "sources": 10,
+        "sentences": 11,
+        "biases": []
+      }
+    },
+    "赔偿机制改善": {
+      "confidence": 0.843,
+      "base_confidence": 0.5977,
+      "evidence_multiplier": 1.4103,
+      "components": {
+        "grounding": 0.8565,
+        "support_diversity": 0.3543,
+        "semantic_stability": 0.6066,
+        "provenance_depth": 0.44,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6413
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5648,
+        "l2_count": 2,
+        "l1_count": 7,
+        "sentence_count": 22,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2133
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6413,
+        "sources": 5,
+        "sentences": 5,
+        "biases": []
+      }
+    },
+    "超越追赶阶段": {
+      "confidence": 0.7095,
+      "base_confidence": 0.5369,
+      "evidence_multiplier": 1.3214,
+      "components": {
+        "grounding": 0.7825,
+        "support_diversity": 0.44,
+        "semantic_stability": 0.6249,
+        "provenance_depth": 0.14,
+        "evidence_density": 0.94,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.516,
+        "l2_count": 2,
+        "l1_count": 4,
+        "sentence_count": 7,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2499
+      },
+      "evidence": {
+        "density_score": 0.94,
+        "diversity_score": 0.35,
+        "sources": 2,
+        "sentences": 2,
+        "biases": []
+      }
+    },
+    "跨国并购前提": {
+      "confidence": 0.8669,
+      "base_confidence": 0.6377,
+      "evidence_multiplier": 1.3594,
+      "components": {
+        "grounding": 0.7962,
+        "support_diversity": 0.1354,
+        "semantic_stability": 0.6258,
+        "provenance_depth": 1.0,
+        "evidence_density": 0.8318,
+        "evidence_diversity": 0.6267
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.525,
+        "l2_count": 1,
+        "l1_count": 26,
+        "sentence_count": 79,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2516
+      },
+      "evidence": {
+        "density_score": 0.8318,
+        "diversity_score": 0.6267,
+        "sources": 33,
+        "sentences": 65,
+        "biases": []
+      }
+    },
+    "转型驱动因素": {
+      "confidence": 0.835,
+      "base_confidence": 0.586,
+      "evidence_multiplier": 1.425,
+      "components": {
+        "grounding": 0.7754,
+        "support_diversity": 0.64,
+        "semantic_stability": 0.6532,
+        "provenance_depth": 0.12,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.7
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5113,
+        "l2_count": 2,
+        "l1_count": 2,
+        "sentence_count": 6,
+        "network_degree": 10,
+        "avg_edge_weight": 0.3063
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.7,
+        "sources": 6,
+        "sentences": 6,
+        "biases": [
+          "anchor_dominance"
+        ]
+      }
+    },
+    "远景+经营重心": {
+      "confidence": 0.8253,
+      "base_confidence": 0.5859,
+      "evidence_multiplier": 1.4086,
+      "components": {
+        "grounding": 0.8412,
+        "support_diversity": 0.1564,
+        "semantic_stability": 0.6219,
+        "provenance_depth": 0.64,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6345
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5547,
+        "l2_count": 1,
+        "l1_count": 11,
+        "sentence_count": 32,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2438
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6345,
+        "sources": 19,
+        "sentences": 25,
+        "biases": []
+      }
+    },
+    "部分结局": {
+      "confidence": 0.7611,
+      "base_confidence": 0.54,
+      "evidence_multiplier": 1.4095,
+      "components": {
+        "grounding": 0.8286,
+        "support_diversity": 0.17,
+        "semantic_stability": 0.5772,
+        "provenance_depth": 0.46,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6379
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5464,
+        "l2_count": 1,
+        "l1_count": 8,
+        "sentence_count": 23,
+        "network_degree": 10,
+        "avg_edge_weight": 0.1545
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6379,
+        "sources": 17,
+        "sentences": 20,
+        "biases": []
+      }
+    },
+    "配置与投资机会背离": {
+      "confidence": 0.7338,
+      "base_confidence": 0.5486,
+      "evidence_multiplier": 1.3375,
+      "components": {
+        "grounding": 0.796,
+        "support_diversity": 0.52,
+        "semantic_stability": 0.6399,
+        "provenance_depth": 0.06,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5249,
+        "l2_count": 1,
+        "l1_count": 1,
+        "sentence_count": 3,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2799
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.35,
+        "sources": 3,
+        "sentences": 3,
+        "biases": []
+      }
+    },
+    "长期效果": {
+      "confidence": 0.8165,
+      "base_confidence": 0.5791,
+      "evidence_multiplier": 1.4099,
+      "components": {
+        "grounding": 0.8715,
+        "support_diversity": 0.1644,
+        "semantic_stability": 0.6246,
+        "provenance_depth": 0.54,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6395
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5747,
+        "l2_count": 1,
+        "l1_count": 9,
+        "sentence_count": 27,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2491
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6395,
+        "sources": 17,
+        "sentences": 20,
+        "biases": []
+      }
+    },
+    "间断平衡支撑": {
+      "confidence": 0.6973,
+      "base_confidence": 0.4945,
+      "evidence_multiplier": 1.4101,
+      "components": {
+        "grounding": 0.7871,
+        "support_diversity": 0.22,
+        "semantic_stability": 0.6202,
+        "provenance_depth": 0.2,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6404
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.519,
+        "l2_count": 1,
+        "l1_count": 4,
+        "sentence_count": 10,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2405
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6404,
+        "sources": 9,
+        "sentences": 10,
+        "biases": []
+      }
+    },
+    "隐蔽性操作": {
+      "confidence": 0.955,
+      "base_confidence": 0.6501,
+      "evidence_multiplier": 1.4691,
+      "components": {
+        "grounding": 0.7825,
+        "support_diversity": 0.29,
+        "semantic_stability": 0.5984,
+        "provenance_depth": 0.92,
+        "evidence_density": 0.9815,
+        "evidence_diversity": 0.8981
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.516,
+        "l2_count": 2,
+        "l1_count": 16,
+        "sentence_count": 46,
+        "network_degree": 10,
+        "avg_edge_weight": 0.1967
+      },
+      "evidence": {
+        "density_score": 0.9815,
+        "diversity_score": 0.8981,
+        "sources": 21,
+        "sentences": 32,
+        "biases": []
+      }
+    },
+    "集权式领导": {
+      "confidence": 0.9708,
+      "base_confidence": 0.6823,
+      "evidence_multiplier": 1.4228,
+      "components": {
+        "grounding": 0.8254,
+        "support_diversity": 0.2871,
+        "semantic_stability": 0.6279,
+        "provenance_depth": 0.98,
+        "evidence_density": 0.8676,
+        "evidence_diversity": 0.8461
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5443,
+        "l2_count": 2,
+        "l1_count": 17,
+        "sentence_count": 49,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2558
+      },
+      "evidence": {
+        "density_score": 0.8676,
+        "diversity_score": 0.8461,
+        "sources": 21,
+        "sentences": 39,
+        "biases": []
+      }
+    },
+    "雇佣关系主体": {
+      "confidence": 0.9428,
+      "base_confidence": 0.6583,
+      "evidence_multiplier": 1.4322,
+      "components": {
+        "grounding": 0.9292,
+        "support_diversity": 0.4,
+        "semantic_stability": 0.6252,
+        "provenance_depth": 0.54,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.7287
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.6127,
+        "l2_count": 2,
+        "l1_count": 5,
+        "sentence_count": 27,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2504
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.7287,
+        "sources": 16,
+        "sentences": 24,
+        "biases": []
+      }
+    },
+    "青春期": {
+      "confidence": 0.8337,
+      "base_confidence": 0.5918,
+      "evidence_multiplier": 1.4088,
+      "components": {
+        "grounding": 0.8186,
+        "support_diversity": 0.1533,
+        "semantic_stability": 0.575,
+        "provenance_depth": 0.76,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6353
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5398,
+        "l2_count": 1,
+        "l1_count": 12,
+        "sentence_count": 38,
+        "network_degree": 9,
+        "avg_edge_weight": 0.15
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6353,
+        "sources": 23,
+        "sentences": 31,
+        "biases": []
+      }
+    },
+    "风险情境": {
+      "confidence": 0.7976,
+      "base_confidence": 0.6036,
+      "evidence_multiplier": 1.3214,
+      "components": {
+        "grounding": 0.7894,
+        "support_diversity": 0.5314,
+        "semantic_stability": 0.6121,
+        "provenance_depth": 0.36,
+        "evidence_density": 0.94,
+        "evidence_diversity": 0.35
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5205,
+        "l2_count": 3,
+        "l1_count": 7,
+        "sentence_count": 18,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2242
+      },
+      "evidence": {
+        "density_score": 0.94,
+        "diversity_score": 0.35,
+        "sources": 2,
+        "sentences": 2,
+        "biases": []
+      }
+    },
+    "驱动因素": {
+      "confidence": 1.0,
+      "base_confidence": 0.7172,
+      "evidence_multiplier": 1.4079,
+      "components": {
+        "grounding": 0.8039,
+        "support_diversity": 0.5689,
+        "semantic_stability": 0.6479,
+        "provenance_depth": 0.82,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6315
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.5301,
+        "l2_count": 4,
+        "l1_count": 18,
+        "sentence_count": 41,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2958
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6315,
+        "sources": 13,
+        "sentences": 13,
+        "biases": []
+      }
+    },
+    "高端增值": {
+      "confidence": 0.9483,
+      "base_confidence": 0.6712,
+      "evidence_multiplier": 1.4129,
+      "components": {
+        "grounding": 0.8675,
+        "support_diversity": 0.3067,
+        "semantic_stability": 0.6347,
+        "provenance_depth": 0.82,
+        "evidence_density": 1.0,
+        "evidence_diversity": 0.6515
+      },
+      "raw_metrics": {
+        "avg_grounding": 0.572,
+        "l2_count": 2,
+        "l1_count": 12,
+        "sentence_count": 41,
+        "network_degree": 10,
+        "avg_edge_weight": 0.2694
+      },
+      "evidence": {
+        "density_score": 1.0,
+        "diversity_score": 0.6515,
+        "sources": 23,
+        "sentences": 33,
+        "biases": []
+      }
+    }
+  }
+}

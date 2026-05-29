@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 TEST_DIR = r"D:\c盘\文本样本"
 OUTPUT_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "coding_test_results.json")
 OUTPUT_TEXT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "coding_test_results.txt")
+PROVENANCE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "provenance_report.json")
 
 
 def extract_sentences_from_docx(filepath):
@@ -85,22 +86,16 @@ def extract_sentences_from_docx(filepath):
     return sentences
 
 
-def grade_code_quality(code: str, original: str) -> str:
-    """根据一阶编码质量标准自动评分 (A/B/C/D)"""
+def grade_code_quality(code: str, original: str, is_anchor: bool = False) -> str:
+    """根据一阶编码质量标准自动评分 (A/B/C/D)
+
+    Anchor编码标准（改进7）：2-8字、名词化、语义完整、可跨文本复用
+    抽取式编码标准（旧）：动词+名词结构、6-20字、书面化
+    """
     if not code:
         return 'D'
 
-    # D级检查：硬性淘汰条件
-    # 语义残缺
-    if re.search(r'(的|了|着|过|到|在|中|和|与|或|又|还|也|只|不|没)$', code):
-        if not re.search(r'(机制|流程|资源|策略|路径|模式|结构|能力|需求|服务|创新|管理|评估|质量|安全|风险|'
-                        r'种植|养殖|加工|收购|销售|市场|价格|成本|利润|工艺|技术|生产|标准|检验|认证)', code):
-            return 'D'
-    if re.search(r'^(因为|所以|但是|不过|然后|如果|就是|其实|那个|这个|后来|当时|而且|而|但)', code):
-        if not re.search(r'(导致|影响|推动|形成|引入|转变|降低|提高|获得|支持|需求|资源|客户)', code):
-            return 'D'
-    if re.search(r'(什么|怎么|哪些|怎么样|如何|哪方面|什么时候)', code):
-        return 'D'
+    # === 通用硬性淘汰条件 ===
     # 口语残留
     if re.search(r'[吧呢啊嘛呀哦哈哎诶噢呃]', code):
         return 'D'
@@ -110,13 +105,65 @@ def grade_code_quality(code: str, original: str) -> str:
         return 'D'
     if re.search(r'(对不对|是不是|行不行|能不能|有没有|要不要)', code):
         return 'D'
-    # 长度检查
-    if len(code) < 4:
+    if re.search(r'(什么|怎么|哪些|怎么样|如何|哪方面|什么时候)', code):
+        return 'D'
+    # 长度极限
+    if len(code) < 3:
         return 'D'
     if len(code) > 30:
         return 'D'
 
-    # 信息量检查
+    # === 锚点编码评分（改进7） ===
+    # 锚点编码是预验证的稳定概念,标准不同:
+    # - 短(2-8字)是优点不是缺点
+    # - 纯名词短语是目标不是缺陷
+    # - 不需要动词+名词结构
+    if is_anchor:
+        # 语义完整性: 不能以残片标记结尾
+        if re.search(r'(的|了|着|过|到|在|中|和|与|或|又|还|也|只|不|没)$', code):
+            return 'D'
+        if re.search(r'^(因为|所以|但是|不过|然后|如果|就是|其实|那个|这个|后来|当时|而且|而|但)', code):
+            return 'D'
+
+        # 锚点编码质量分级
+        noun_indicators = r'(机制|流程|资源|策略|路径|模式|结构|能力|需求|服务|创新|管理|评估|质量|安全|风险|'
+        noun_indicators += r'种植|养殖|加工|收购|销售|市场|价格|成本|利润|工艺|技术|生产|标准|检验|认证|'
+        noun_indicators += r'审批|协调|整合|压力|约束|冲突|规范|培训|投资|收入|资金|设备|工具|原料|'
+        noun_indicators += r'制度|监督|治理|品牌|组织|团队|客户|绩效|渠道|运营|营销|供应链|'
+        noun_indicators += r'传承|保护|非遗|技艺|文创|文旅|景区|教育|医疗|社区|公益|'
+        noun_indicators += r'方式|方法|途径|手段|策略|模式|机制|体系|平台|系统|'
+        noun_indicators += r'关系|认知|意愿|意识|态度|行为|观念|价值|文化|氛围|环境)'
+        has_noun = bool(re.search(noun_indicators, code))
+
+        verb_indicators = r'(缺乏|缺少|不足|受限|导致|影响|推动|降低|提高|优化|开展|进行|建立|引入|获得|调整|转变|对接|合作|协调|整合|增加|减少|推进|执行|实施|完成|实现)'
+        has_verb = bool(re.search(verb_indicators, code))
+
+        # A级锚点: 4-8字 + 名词化 + 语义自足
+        if 4 <= len(code) <= 8 and has_noun:
+            return 'A'
+        # B级锚点: 4-10字 + 名词化（可能略长但仍是稳定概念）
+        if 4 <= len(code) <= 10 and has_noun:
+            return 'B'
+        # B级锚点: 有动词结构 + 短（3-6字）
+        if has_verb and 3 <= len(code) <= 6:
+            return 'B'
+        # C级锚点: 长度合理但概念性弱
+        if 4 <= len(code) <= 12:
+            return 'C'
+        return 'D'
+
+    # === 抽取式编码评分（旧标准） ===
+    # 语义残缺
+    if re.search(r'(的|了|着|过|到|在|中|和|与|或|又|还|也|只|不|没)$', code):
+        if not re.search(r'(机制|流程|资源|策略|路径|模式|结构|能力|需求|服务|创新|管理|评估|质量|安全|风险|'
+                        r'种植|养殖|加工|收购|销售|市场|价格|成本|利润|工艺|技术|生产|标准|检验|认证)', code):
+            return 'D'
+    if re.search(r'^(因为|所以|但是|不过|然后|如果|就是|其实|那个|这个|后来|当时|而且|而|但)', code):
+        if not re.search(r'(导致|影响|推动|形成|引入|转变|降低|提高|获得|支持|需求|资源|客户)', code):
+            return 'D'
+    if len(code) < 4:
+        return 'D'
+
     info_terms = r'(机制|流程|资源|策略|路径|模式|结构|能力|需求|服务|创新|管理|评估|质量|安全|风险|'
     info_terms += r'种植|养殖|加工|收购|销售|市场|价格|成本|利润|工艺|技术|生产|标准|检验|认证|'
     info_terms += r'引入|建立|调整|获得|降低|提高|推动|解决|分析|反馈|合作|转变|优化|对接|支持|'
@@ -124,29 +171,21 @@ def grade_code_quality(code: str, original: str) -> str:
     info_terms += r'影响|导致|受限|不足|短板|风险|延迟|缺乏|缺少|推动|推进|降低|增加)'
     has_info = bool(re.search(info_terms, code))
 
-    # 纯名词短语检查（缺谓语，概念不完整）
-    verb_indicators = r'(缺乏|缺少|不足|受限|导致|影响|推动|降低|提高|优化|开展|进行|建立|引入|获得|调整|转变|对接|合作|协调|整合|增加|减少|推进|执行|实施|完成|实现)'
-    has_verb = bool(re.search(verb_indicators, code))
+    verb_indicators_ext = r'(缺乏|缺少|不足|受限|导致|影响|推动|降低|提高|优化|开展|进行|建立|引入|获得|调整|转变|对接|合作|协调|整合|增加|减少|推进|执行|实施|完成|实现)'
+    has_verb_ext = bool(re.search(verb_indicators_ext, code))
 
-    # 评分逻辑
-    if not has_info and not has_verb and len(code) <= 6:
-        return 'D'  # 太短且无信息
+    if not has_info and not has_verb_ext and len(code) <= 6:
+        return 'D'
     if not has_info and len(code) <= 5:
-        return 'C'  # 很短但也许可接受
-
-    # A级: 有信息词+有动词结构+长度适中
-    if has_info and has_verb and 6 <= len(code) <= 20:
+        return 'C'
+    if has_info and has_verb_ext and 6 <= len(code) <= 20:
         return 'A'
-    # B级: 有信息词但无动词结构，或长度稍长但完整
     if has_info and 6 <= len(code) <= 24:
         return 'B'
-    # B级: 有动词结构且长度适中
-    if has_verb and 6 <= len(code) <= 20:
+    if has_verb_ext and 6 <= len(code) <= 20:
         return 'B'
-    # C级: 长度合理但信息量少
     if 6 <= len(code) <= 20:
         return 'C'
-    # 其他情况
     if len(code) >= 4:
         return 'C'
 
@@ -195,7 +234,10 @@ def main():
     results = []
     candidate_details = []
 
+    total_count = len(all_sentences)
     for i, sent_info in enumerate(all_sentences):
+        if i > 0 and i % 200 == 0:
+            print(f"  进度: {i}/{total_count} ({i/total_count*100:.0f}%)", flush=True)
         content = sent_info['content']
         trace = generator.build_first_level_candidate_trace(
             content,
@@ -205,6 +247,16 @@ def main():
         candidates = trace.get('candidates', [])
         top3 = [c.get('text', '') for c in candidates[:3]]
 
+        anchor_selected = trace.get('anchor_selected', False)
+        anchor_source = trace.get('anchor_source', '')
+        # Count anchor candidates in the pool
+        anchor_count = sum(1 for c in candidates if c.get('anchor_source'))
+
+        # Priority 7: Extract provenance, grounding, and hierarchy from trace
+        grounding = trace.get('grounding')
+        provenance = trace.get('provenance')
+        hierarchy = trace.get('hierarchy', {})
+
         results.append({
             'index': i + 1,
             'file': sent_info['file'],
@@ -212,18 +264,28 @@ def main():
             'original': content,
             'code': code,
             'top3_candidates': top3,
+            'anchor_selected': anchor_selected,
+            'anchor_source': anchor_source,
+            'anchor_count': anchor_count,
+            'grounding': grounding,
+            'provenance': provenance,
+            'hierarchy': hierarchy,
         })
 
         candidate_details.append({
             'index': i + 1,
             'original': content[:80],
             'code': code,
+            'anchor_selected': anchor_selected,
+            'anchor_source': anchor_source,
             'all_candidates': [
                 {
                     'text': c.get('text', ''),
                     'rule_score': c.get('rule_score'),
                     'rerank_score': c.get('rerank_score'),
                     'conservative_score': c.get('conservative_score'),
+                    'anchor_source': c.get('anchor_source', ''),
+                    'anchor_score': c.get('anchor_score'),
                 }
                 for c in candidates[:10]
             ],
@@ -231,7 +293,7 @@ def main():
 
     # 5. 质量评分
     for r in results:
-        r['grade'] = grade_code_quality(r['code'], r['original'])
+        r['grade'] = grade_code_quality(r['code'], r['original'], is_anchor=r.get('anchor_selected', False))
 
     # 6. 统计
     total = len(results)
@@ -283,6 +345,12 @@ def main():
     too_short = sum(1 for r in results if r['code'] and len(r['code']) < 4)
     too_long = sum(1 for r in results if r['code'] and len(r['code']) > 30)
 
+    # 锚点候选统计（改进7）
+    anchor_selected_count = sum(1 for r in results if r.get('anchor_selected'))
+    anchor_pool_avg = sum(r.get('anchor_count', 0) for r in results) / max(len(results), 1)
+    anchor_library_count = sum(1 for r in results if r.get('anchor_source') == 'library')
+    anchor_v11_count = sum(1 for r in results if r.get('anchor_source') == 'v11_anchor')
+
     print(f"\n{'=' * 60}")
     print(f"编码统计")
     print(f"{'=' * 60}")
@@ -305,6 +373,13 @@ def main():
     print(f"  语义残缺:       {incomplete_count}")
     print(f"  过短(<4字):     {too_short}")
     print(f"  过长(>30字):    {too_long}")
+    print(f"")
+    print(f"  概念锚点统计 (改进7):")
+    print(f"    锚点候选平均/句:  {anchor_pool_avg:.1f}")
+    print(f"    锚点编码被选中:   {anchor_selected_count} ({anchor_selected_count/max(coded,1)*100:.1f}% of coded)")
+    print(f"    选中锚点来源:")
+    print(f"      library:        {anchor_library_count}")
+    print(f"      v11_anchor:     {anchor_v11_count}")
 
     # 7. 输出结果
     # JSON 详细结果
@@ -362,6 +437,62 @@ def main():
     print(f"\n详细结果已保存到:")
     print(f"  JSON: {OUTPUT_FILE}")
     print(f"  TXT:  {OUTPUT_TEXT}")
+
+    # Priority 7: Generate provenance report with full L3→L2→L1→source chains
+    print(f"\n{'=' * 60}")
+    print(f"生成语义溯源报告 (Provenance Report)...")
+    print(f"{'=' * 60}")
+    try:
+        from provenance_store import ProvenanceStore
+        import json as _json
+
+        # Load anchor hierarchy for L2/L3 mapping
+        _hier_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                   "data", "anchor_hierarchy.json")
+        _anchor_hierarchy = {}
+        if os.path.exists(_hier_path):
+            with open(_hier_path, "r", encoding="utf-8") as _hf:
+                _anchor_hierarchy = _json.load(_hf).get("mappings", {})
+
+        ps = ProvenanceStore()
+        ps.build_from_coding_results(results, _anchor_hierarchy)
+
+        # Record compression provenance from merge maps
+        _merge_map_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                        "cache", "anchor_index", "merge_map.json")
+        if os.path.exists(_merge_map_path):
+            with open(_merge_map_path, "r", encoding="utf-8") as _mf:
+                _merge_data = _json.load(_mf)
+            if isinstance(_merge_data, list):
+                for _mg in _merge_data:
+                    ps.record_compression(
+                        merged_into=_mg.get("canonical", _mg.get("merged_into", "")),
+                        merged_items=_mg.get("members", _mg.get("merged_items", [])),
+                        reason=_mg.get("reason", {}),
+                    )
+
+        # Save full provenance
+        ps.save(PROVENANCE_FILE)
+
+        # Print summary
+        _stats = ps.compute_stats()
+        print(f"  锚点溯源记录: {_stats['total_anchors']} 个概念锚点")
+        print(f"  句子覆盖:     {_stats['total_sentences']} 条")
+        print(f"  主题溯源:     {_stats['total_themes']} 个L2主题")
+        print(f"  理论溯源:     {_stats['total_theories']} 个L3理论")
+        print(f"  压缩溯源:     {_stats['total_compression_merges']} 条合并记录")
+        print(f"  接地质量:     {_stats['grounding_quality']['well_grounded_ratio']:.1%} well-grounded")
+        print(f"  溯源覆盖率:   {_stats['provenance_coverage']['bridge_coverage_ratio']:.1%} with keyword bridge")
+        print(f"  溯源报告:     {PROVENANCE_FILE}")
+
+        # Print the report summary
+        _report = ps.generate_report()
+        print(f"\n{_report}")
+
+    except Exception as e:
+        print(f"  溯源报告生成失败: {e}")
+        import traceback
+        traceback.print_exc()
 
     # 8. 输出一些样本供快速查看
     print(f"\n{'=' * 60}")

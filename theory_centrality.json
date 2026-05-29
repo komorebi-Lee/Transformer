@@ -1,0 +1,1536 @@
+{
+  "summary": {
+    "timestamp": "2026-05-29T10:07:22.294530",
+    "total_theories": 152,
+    "role_distribution": {
+      "bridge": 66,
+      "peripheral": 65,
+      "core": 21
+    },
+    "avg_degree_centrality": 0.749,
+    "avg_eigenvector": 0.3974,
+    "avg_betweenness": 0.5965
+  },
+  "scores": {
+    "EM阶段核心": {
+      "theory": "EM阶段核心",
+      "role": "bridge",
+      "degree_centrality": 0.7899,
+      "eigenvector_centrality": 0.5219,
+      "betweenness_centrality": 0.5941,
+      "composite_centrality": 0.624,
+      "confidence": 0.8065,
+      "degree": 2
+    },
+    "上海国资存量更大": {
+      "theory": "上海国资存量更大",
+      "role": "bridge",
+      "degree_centrality": 0.7785,
+      "eigenvector_centrality": 0.3786,
+      "betweenness_centrality": 0.534,
+      "composite_centrality": 0.5452,
+      "confidence": 0.8108,
+      "degree": 2
+    },
+    "专业胜任": {
+      "theory": "专业胜任",
+      "role": "peripheral",
+      "degree_centrality": 0.699,
+      "eigenvector_centrality": 0.2636,
+      "betweenness_centrality": 0.6353,
+      "composite_centrality": 0.5057,
+      "confidence": 0.739,
+      "degree": 2
+    },
+    "专精优势无法适用": {
+      "theory": "专精优势无法适用",
+      "role": "peripheral",
+      "degree_centrality": 0.775,
+      "eigenvector_centrality": 0.2813,
+      "betweenness_centrality": 0.5958,
+      "composite_centrality": 0.5238,
+      "confidence": 0.8894,
+      "degree": 2
+    },
+    "专精优衰减": {
+      "theory": "专精优衰减",
+      "role": "bridge",
+      "degree_centrality": 0.8035,
+      "eigenvector_centrality": 0.326,
+      "betweenness_centrality": 0.6733,
+      "composite_centrality": 0.5734,
+      "confidence": 0.9841,
+      "degree": 2
+    },
+    "中国情境局限": {
+      "theory": "中国情境局限",
+      "role": "peripheral",
+      "degree_centrality": 0.6598,
+      "eigenvector_centrality": 0.2357,
+      "betweenness_centrality": 0.5904,
+      "composite_centrality": 0.4693,
+      "confidence": 0.6798,
+      "degree": 2
+    },
+    "主从关系": {
+      "theory": "主从关系",
+      "role": "peripheral",
+      "degree_centrality": 0.6919,
+      "eigenvector_centrality": 0.2484,
+      "betweenness_centrality": 0.4054,
+      "composite_centrality": 0.4286,
+      "confidence": 0.8691,
+      "degree": 2
+    },
+    "乡村治理困境": {
+      "theory": "乡村治理困境",
+      "role": "bridge",
+      "degree_centrality": 0.7907,
+      "eigenvector_centrality": 0.34,
+      "betweenness_centrality": 0.5072,
+      "composite_centrality": 0.5254,
+      "confidence": 1.0,
+      "degree": 2
+    },
+    "乡村社会基础": {
+      "theory": "乡村社会基础",
+      "role": "bridge",
+      "degree_centrality": 0.8461,
+      "eigenvector_centrality": 0.3494,
+      "betweenness_centrality": 0.6861,
+      "composite_centrality": 0.5994,
+      "confidence": 0.6936,
+      "degree": 2
+    },
+    "亏损脱困为主": {
+      "theory": "亏损脱困为主",
+      "role": "bridge",
+      "degree_centrality": 0.766,
+      "eigenvector_centrality": 0.3507,
+      "betweenness_centrality": 0.507,
+      "composite_centrality": 0.5222,
+      "confidence": 0.6376,
+      "degree": 2
+    },
+    "产品层面": {
+      "theory": "产品层面",
+      "role": "peripheral",
+      "degree_centrality": 0.6478,
+      "eigenvector_centrality": 0.258,
+      "betweenness_centrality": 0.6077,
+      "composite_centrality": 0.4798,
+      "confidence": 0.6939,
+      "degree": 1
+    },
+    "人心式领导": {
+      "theory": "人心式领导",
+      "role": "peripheral",
+      "degree_centrality": 0.7793,
+      "eigenvector_centrality": 0.2976,
+      "betweenness_centrality": 0.5473,
+      "composite_centrality": 0.517,
+      "confidence": 0.8685,
+      "degree": 2
+    },
+    "人缘式领导": {
+      "theory": "人缘式领导",
+      "role": "bridge",
+      "degree_centrality": 0.7967,
+      "eigenvector_centrality": 0.3133,
+      "betweenness_centrality": 0.5198,
+      "composite_centrality": 0.5203,
+      "confidence": 0.9158,
+      "degree": 2
+    },
+    "代理问题缓解": {
+      "theory": "代理问题缓解",
+      "role": "bridge",
+      "degree_centrality": 0.7291,
+      "eigenvector_centrality": 0.312,
+      "betweenness_centrality": 0.6656,
+      "composite_centrality": 0.5432,
+      "confidence": 0.8009,
+      "degree": 2
+    },
+    "价值共创扭曲": {
+      "theory": "价值共创扭曲",
+      "role": "bridge",
+      "degree_centrality": 0.7645,
+      "eigenvector_centrality": 0.4147,
+      "betweenness_centrality": 0.7282,
+      "composite_centrality": 0.6137,
+      "confidence": 0.7465,
+      "degree": 2
+    },
+    "价值判断建构": {
+      "theory": "价值判断建构",
+      "role": "bridge",
+      "degree_centrality": 0.749,
+      "eigenvector_centrality": 0.3504,
+      "betweenness_centrality": 1.0,
+      "composite_centrality": 0.6649,
+      "confidence": 0.7626,
+      "degree": 2
+    },
+    "企业-网络-集群三层互动": {
+      "theory": "企业-网络-集群三层互动",
+      "role": "bridge",
+      "degree_centrality": 0.789,
+      "eigenvector_centrality": 0.4478,
+      "betweenness_centrality": 0.6747,
+      "composite_centrality": 0.6182,
+      "confidence": 0.7008,
+      "degree": 2
+    },
+    "企业主导阶段": {
+      "theory": "企业主导阶段",
+      "role": "core",
+      "degree_centrality": 0.8792,
+      "eigenvector_centrality": 0.6048,
+      "betweenness_centrality": 0.5762,
+      "composite_centrality": 0.6785,
+      "confidence": 0.7416,
+      "degree": 2
+    },
+    "低价竞加剧": {
+      "theory": "低价竞加剧",
+      "role": "bridge",
+      "degree_centrality": 0.7716,
+      "eigenvector_centrality": 0.3373,
+      "betweenness_centrality": 0.5606,
+      "composite_centrality": 0.5346,
+      "confidence": 0.8274,
+      "degree": 2
+    },
+    "作业长制为核心": {
+      "theory": "作业长制为核心",
+      "role": "peripheral",
+      "degree_centrality": 0.7078,
+      "eigenvector_centrality": 0.2838,
+      "betweenness_centrality": 0.5766,
+      "composite_centrality": 0.4988,
+      "confidence": 0.7275,
+      "degree": 2
+    },
+    "供应商/顾客/员工共赢": {
+      "theory": "供应商/顾客/员工共赢",
+      "role": "peripheral",
+      "degree_centrality": 0.6987,
+      "eigenvector_centrality": 0.289,
+      "betweenness_centrality": 0.5132,
+      "composite_centrality": 0.4792,
+      "confidence": 0.7823,
+      "degree": 2
+    },
+    "保证金/质押导致现金不可用": {
+      "theory": "保证金/质押导致现金不可用",
+      "role": "peripheral",
+      "degree_centrality": 0.7749,
+      "eigenvector_centrality": 0.3752,
+      "betweenness_centrality": 0.4221,
+      "composite_centrality": 0.5092,
+      "confidence": 0.9278,
+      "degree": 2
+    },
+    "信任基础": {
+      "theory": "信任基础",
+      "role": "peripheral",
+      "degree_centrality": 0.6314,
+      "eigenvector_centrality": 0.2143,
+      "betweenness_centrality": 0.5948,
+      "composite_centrality": 0.4536,
+      "confidence": 0.812,
+      "degree": 1
+    },
+    "修辞方式": {
+      "theory": "修辞方式",
+      "role": "peripheral",
+      "degree_centrality": 0.5933,
+      "eigenvector_centrality": 0.1402,
+      "betweenness_centrality": 0.495,
+      "composite_centrality": 0.3825,
+      "confidence": 0.945,
+      "degree": 1
+    },
+    "修辞策略": {
+      "theory": "修辞策略",
+      "role": "peripheral",
+      "degree_centrality": 0.6801,
+      "eigenvector_centrality": 0.1849,
+      "betweenness_centrality": 0.6051,
+      "composite_centrality": 0.4595,
+      "confidence": 0.8195,
+      "degree": 2
+    },
+    "先借鉴后经验": {
+      "theory": "先借鉴后经验",
+      "role": "bridge",
+      "degree_centrality": 0.7578,
+      "eigenvector_centrality": 0.3162,
+      "betweenness_centrality": 0.6931,
+      "composite_centrality": 0.5618,
+      "confidence": 0.765,
+      "degree": 2
+    },
+    "先抑后扬粉饰业绩": {
+      "theory": "先抑后扬粉饰业绩",
+      "role": "peripheral",
+      "degree_centrality": 0.6488,
+      "eigenvector_centrality": 0.2215,
+      "betweenness_centrality": 0.5289,
+      "composite_centrality": 0.4419,
+      "confidence": 0.7382,
+      "degree": 1
+    },
+    "关系资本弥补资源不足": {
+      "theory": "关系资本弥补资源不足",
+      "role": "core",
+      "degree_centrality": 0.8779,
+      "eigenvector_centrality": 0.6005,
+      "betweenness_centrality": 0.4833,
+      "composite_centrality": 0.6485,
+      "confidence": 0.752,
+      "degree": 2
+    },
+    "关联交易、资金挪用": {
+      "theory": "关联交易、资金挪用",
+      "role": "peripheral",
+      "degree_centrality": 0.8221,
+      "eigenvector_centrality": 0.4785,
+      "betweenness_centrality": 0.4097,
+      "composite_centrality": 0.5609,
+      "confidence": 0.7249,
+      "degree": 2
+    },
+    "具体路径": {
+      "theory": "具体路径",
+      "role": "bridge",
+      "degree_centrality": 0.6358,
+      "eigenvector_centrality": 0.3445,
+      "betweenness_centrality": 0.8624,
+      "composite_centrality": 0.5873,
+      "confidence": 0.6023,
+      "degree": 1
+    },
+    "内主外辅转型动力": {
+      "theory": "内主外辅转型动力",
+      "role": "core",
+      "degree_centrality": 0.8701,
+      "eigenvector_centrality": 0.8185,
+      "betweenness_centrality": 0.4368,
+      "composite_centrality": 0.7195,
+      "confidence": 0.7316,
+      "degree": 2
+    },
+    "内幕信息获利": {
+      "theory": "内幕信息获利",
+      "role": "bridge",
+      "degree_centrality": 0.7339,
+      "eigenvector_centrality": 0.4149,
+      "betweenness_centrality": 0.8577,
+      "composite_centrality": 0.6434,
+      "confidence": 0.789,
+      "degree": 2
+    },
+    "农户+本地大户": {
+      "theory": "农户+本地大户",
+      "role": "bridge",
+      "degree_centrality": 0.7565,
+      "eigenvector_centrality": 0.3398,
+      "betweenness_centrality": 0.6429,
+      "composite_centrality": 0.5557,
+      "confidence": 0.6888,
+      "degree": 2
+    },
+    "创业集聚驱动": {
+      "theory": "创业集聚驱动",
+      "role": "core",
+      "degree_centrality": 0.9418,
+      "eigenvector_centrality": 0.8381,
+      "betweenness_centrality": 0.6762,
+      "composite_centrality": 0.8206,
+      "confidence": 0.9207,
+      "degree": 2
+    },
+    "创新基础": {
+      "theory": "创新基础",
+      "role": "bridge",
+      "degree_centrality": 0.854,
+      "eigenvector_centrality": 0.4493,
+      "betweenness_centrality": 0.5203,
+      "composite_centrality": 0.592,
+      "confidence": 0.8631,
+      "degree": 2
+    },
+    "创新性认知": {
+      "theory": "创新性认知",
+      "role": "peripheral",
+      "degree_centrality": 0.7745,
+      "eigenvector_centrality": 0.3415,
+      "betweenness_centrality": 0.3471,
+      "composite_centrality": 0.4731,
+      "confidence": 0.8599,
+      "degree": 2
+    },
+    "创造力来源": {
+      "theory": "创造力来源",
+      "role": "peripheral",
+      "degree_centrality": 0.701,
+      "eigenvector_centrality": 0.2764,
+      "betweenness_centrality": 0.5238,
+      "composite_centrality": 0.478,
+      "confidence": 0.8678,
+      "degree": 2
+    },
+    "制度重塑": {
+      "theory": "制度重塑",
+      "role": "bridge",
+      "degree_centrality": 0.724,
+      "eigenvector_centrality": 0.3596,
+      "betweenness_centrality": 0.6409,
+      "composite_centrality": 0.5533,
+      "confidence": 0.7938,
+      "degree": 2
+    },
+    "制造环节优势": {
+      "theory": "制造环节优势",
+      "role": "bridge",
+      "degree_centrality": 0.7845,
+      "eigenvector_centrality": 0.5133,
+      "betweenness_centrality": 0.6554,
+      "composite_centrality": 0.6373,
+      "confidence": 0.9468,
+      "degree": 2
+    },
+    "前期": {
+      "theory": "前期",
+      "role": "bridge",
+      "degree_centrality": 0.7543,
+      "eigenvector_centrality": 0.4271,
+      "betweenness_centrality": 0.695,
+      "composite_centrality": 0.6056,
+      "confidence": 0.7268,
+      "degree": 2
+    },
+    "功能使命定位": {
+      "theory": "功能使命定位",
+      "role": "peripheral",
+      "degree_centrality": 0.5926,
+      "eigenvector_centrality": 0.2065,
+      "betweenness_centrality": 0.5754,
+      "composite_centrality": 0.433,
+      "confidence": 0.9257,
+      "degree": 1
+    },
+    "升级前提": {
+      "theory": "升级前提",
+      "role": "core",
+      "degree_centrality": 0.8528,
+      "eigenvector_centrality": 0.6538,
+      "betweenness_centrality": 0.5278,
+      "composite_centrality": 0.6757,
+      "confidence": 0.9023,
+      "degree": 2
+    },
+    "发展期": {
+      "theory": "发展期",
+      "role": "peripheral",
+      "degree_centrality": 0.8597,
+      "eigenvector_centrality": 0.5626,
+      "betweenness_centrality": 0.4865,
+      "composite_centrality": 0.6289,
+      "confidence": 0.8669,
+      "degree": 2
+    },
+    "变化阶段": {
+      "theory": "变化阶段",
+      "role": "peripheral",
+      "degree_centrality": 0.8188,
+      "eigenvector_centrality": 0.5954,
+      "betweenness_centrality": 0.4608,
+      "composite_centrality": 0.622,
+      "confidence": 0.8335,
+      "degree": 2
+    },
+    "合：治理建构": {
+      "theory": "合：治理建构",
+      "role": "bridge",
+      "degree_centrality": 0.8366,
+      "eigenvector_centrality": 0.4216,
+      "betweenness_centrality": 0.6675,
+      "composite_centrality": 0.6199,
+      "confidence": 0.8178,
+      "degree": 2
+    },
+    "同源性技术初始积累": {
+      "theory": "同源性技术初始积累",
+      "role": "bridge",
+      "degree_centrality": 0.8056,
+      "eigenvector_centrality": 0.5132,
+      "betweenness_centrality": 0.5366,
+      "composite_centrality": 0.6079,
+      "confidence": 0.8248,
+      "degree": 2
+    },
+    "同质竞加剧": {
+      "theory": "同质竞加剧",
+      "role": "peripheral",
+      "degree_centrality": 0.6326,
+      "eigenvector_centrality": 0.226,
+      "betweenness_centrality": 0.6804,
+      "composite_centrality": 0.4843,
+      "confidence": 0.682,
+      "degree": 1
+    },
+    "否决项与月度考核": {
+      "theory": "否决项与月度考核",
+      "role": "peripheral",
+      "degree_centrality": 0.5519,
+      "eigenvector_centrality": 0.1494,
+      "betweenness_centrality": 0.5445,
+      "composite_centrality": 0.3887,
+      "confidence": 0.7942,
+      "degree": 1
+    },
+    "品牌形象提升": {
+      "theory": "品牌形象提升",
+      "role": "peripheral",
+      "degree_centrality": 0.6087,
+      "eigenvector_centrality": 0.2699,
+      "betweenness_centrality": 0.6472,
+      "composite_centrality": 0.4847,
+      "confidence": 0.9058,
+      "degree": 1
+    },
+    "国资放任掏空": {
+      "theory": "国资放任掏空",
+      "role": "peripheral",
+      "degree_centrality": 0.8267,
+      "eigenvector_centrality": 0.5062,
+      "betweenness_centrality": 0.4524,
+      "composite_centrality": 0.5862,
+      "confidence": 0.8263,
+      "degree": 2
+    },
+    "在位者劣势": {
+      "theory": "在位者劣势",
+      "role": "peripheral",
+      "degree_centrality": 0.6631,
+      "eigenvector_centrality": 0.2109,
+      "betweenness_centrality": 0.6303,
+      "composite_centrality": 0.4724,
+      "confidence": 0.8112,
+      "degree": 2
+    },
+    "均等控制权": {
+      "theory": "均等控制权",
+      "role": "peripheral",
+      "degree_centrality": 0.6733,
+      "eigenvector_centrality": 0.2883,
+      "betweenness_centrality": 0.7009,
+      "composite_centrality": 0.5276,
+      "confidence": 0.9751,
+      "degree": 2
+    },
+    "外生式学习": {
+      "theory": "外生式学习",
+      "role": "bridge",
+      "degree_centrality": 0.8072,
+      "eigenvector_centrality": 0.3248,
+      "betweenness_centrality": 0.5271,
+      "composite_centrality": 0.5302,
+      "confidence": 0.8575,
+      "degree": 2
+    },
+    "外部环境因素": {
+      "theory": "外部环境因素",
+      "role": "bridge",
+      "degree_centrality": 0.7849,
+      "eigenvector_centrality": 0.5723,
+      "betweenness_centrality": 0.8721,
+      "composite_centrality": 0.726,
+      "confidence": 0.796,
+      "degree": 2
+    },
+    "外部监管不足": {
+      "theory": "外部监管不足",
+      "role": "bridge",
+      "degree_centrality": 0.7926,
+      "eigenvector_centrality": 0.3913,
+      "betweenness_centrality": 0.6934,
+      "composite_centrality": 0.6023,
+      "confidence": 0.9861,
+      "degree": 2
+    },
+    "多技能提升": {
+      "theory": "多技能提升",
+      "role": "bridge",
+      "degree_centrality": 0.7576,
+      "eigenvector_centrality": 0.3344,
+      "betweenness_centrality": 0.6019,
+      "composite_centrality": 0.5416,
+      "confidence": 0.6764,
+      "degree": 2
+    },
+    "大库存优势": {
+      "theory": "大库存优势",
+      "role": "bridge",
+      "degree_centrality": 0.6754,
+      "eigenvector_centrality": 0.3411,
+      "betweenness_centrality": 0.7937,
+      "composite_centrality": 0.5772,
+      "confidence": 0.6657,
+      "degree": 2
+    },
+    "大股东困境": {
+      "theory": "大股东困境",
+      "role": "peripheral",
+      "degree_centrality": 0.8834,
+      "eigenvector_centrality": 0.5624,
+      "betweenness_centrality": 0.4979,
+      "composite_centrality": 0.6393,
+      "confidence": 0.8242,
+      "degree": 2
+    },
+    "学习机制": {
+      "theory": "学习机制",
+      "role": "peripheral",
+      "degree_centrality": 0.7922,
+      "eigenvector_centrality": 0.353,
+      "betweenness_centrality": 0.481,
+      "composite_centrality": 0.5232,
+      "confidence": 0.9764,
+      "degree": 2
+    },
+    "实施原则": {
+      "theory": "实施原则",
+      "role": "peripheral",
+      "degree_centrality": 0.5898,
+      "eigenvector_centrality": 0.1958,
+      "betweenness_centrality": 0.6617,
+      "composite_centrality": 0.4538,
+      "confidence": 0.6794,
+      "degree": 1
+    },
+    "家族创业培育要素": {
+      "theory": "家族创业培育要素",
+      "role": "bridge",
+      "degree_centrality": 0.6801,
+      "eigenvector_centrality": 0.3426,
+      "betweenness_centrality": 0.7703,
+      "composite_centrality": 0.5722,
+      "confidence": 0.8599,
+      "degree": 2
+    },
+    "对价争议": {
+      "theory": "对价争议",
+      "role": "peripheral",
+      "degree_centrality": 0.6772,
+      "eigenvector_centrality": 0.2242,
+      "betweenness_centrality": 0.5483,
+      "composite_centrality": 0.4573,
+      "confidence": 0.7144,
+      "degree": 2
+    },
+    "封建层级文化诱因": {
+      "theory": "封建层级文化诱因",
+      "role": "peripheral",
+      "degree_centrality": 0.7446,
+      "eigenvector_centrality": 0.2902,
+      "betweenness_centrality": 0.6816,
+      "composite_centrality": 0.5439,
+      "confidence": 0.9499,
+      "degree": 2
+    },
+    "工资与市场业绩挂钩": {
+      "theory": "工资与市场业绩挂钩",
+      "role": "peripheral",
+      "degree_centrality": 0.5785,
+      "eigenvector_centrality": 0.1663,
+      "betweenness_centrality": 0.5023,
+      "composite_centrality": 0.3907,
+      "confidence": 0.7789,
+      "degree": 1
+    },
+    "差异起源": {
+      "theory": "差异起源",
+      "role": "peripheral",
+      "degree_centrality": 0.5233,
+      "eigenvector_centrality": 0.1237,
+      "betweenness_centrality": 0.4752,
+      "composite_centrality": 0.349,
+      "confidence": 0.713,
+      "degree": 1
+    },
+    "市场导向模式": {
+      "theory": "市场导向模式",
+      "role": "core",
+      "degree_centrality": 0.8051,
+      "eigenvector_centrality": 0.7019,
+      "betweenness_centrality": 0.5782,
+      "composite_centrality": 0.6957,
+      "confidence": 0.7538,
+      "degree": 2
+    },
+    "市场约束无效": {
+      "theory": "市场约束无效",
+      "role": "bridge",
+      "degree_centrality": 0.7598,
+      "eigenvector_centrality": 0.3275,
+      "betweenness_centrality": 0.505,
+      "composite_centrality": 0.5104,
+      "confidence": 0.7482,
+      "degree": 2
+    },
+    "市场能力积累": {
+      "theory": "市场能力积累",
+      "role": "bridge",
+      "degree_centrality": 0.8088,
+      "eigenvector_centrality": 0.5996,
+      "betweenness_centrality": 0.6805,
+      "composite_centrality": 0.6866,
+      "confidence": 0.5717,
+      "degree": 2
+    },
+    "市属国企整合": {
+      "theory": "市属国企整合",
+      "role": "bridge",
+      "degree_centrality": 0.7667,
+      "eigenvector_centrality": 0.4623,
+      "betweenness_centrality": 0.7679,
+      "composite_centrality": 0.6453,
+      "confidence": 0.7853,
+      "degree": 2
+    },
+    "延展高价值业务": {
+      "theory": "延展高价值业务",
+      "role": "bridge",
+      "degree_centrality": 0.8192,
+      "eigenvector_centrality": 0.5879,
+      "betweenness_centrality": 0.6521,
+      "composite_centrality": 0.6765,
+      "confidence": 0.7871,
+      "degree": 2
+    },
+    "建构型学习": {
+      "theory": "建构型学习",
+      "role": "peripheral",
+      "degree_centrality": 0.815,
+      "eigenvector_centrality": 0.3379,
+      "betweenness_centrality": 0.3882,
+      "composite_centrality": 0.4962,
+      "confidence": 0.9837,
+      "degree": 2
+    },
+    "循环动力": {
+      "theory": "循环动力",
+      "role": "core",
+      "degree_centrality": 0.8403,
+      "eigenvector_centrality": 0.7047,
+      "betweenness_centrality": 0.6419,
+      "composite_centrality": 0.7265,
+      "confidence": 0.8249,
+      "degree": 2
+    },
+    "心化内控归宿": {
+      "theory": "心化内控归宿",
+      "role": "bridge",
+      "degree_centrality": 0.7468,
+      "eigenvector_centrality": 0.3812,
+      "betweenness_centrality": 0.7068,
+      "composite_centrality": 0.5885,
+      "confidence": 0.6711,
+      "degree": 2
+    },
+    "志愿者能动阶段": {
+      "theory": "志愿者能动阶段",
+      "role": "peripheral",
+      "degree_centrality": 0.6073,
+      "eigenvector_centrality": 0.2441,
+      "betweenness_centrality": 0.7117,
+      "composite_centrality": 0.4934,
+      "confidence": 0.7251,
+      "degree": 1
+    },
+    "忽视长期技术积累": {
+      "theory": "忽视长期技术积累",
+      "role": "bridge",
+      "degree_centrality": 0.8311,
+      "eigenvector_centrality": 0.5375,
+      "betweenness_centrality": 0.6258,
+      "composite_centrality": 0.652,
+      "confidence": 0.7289,
+      "degree": 2
+    },
+    "思维基础": {
+      "theory": "思维基础",
+      "role": "peripheral",
+      "degree_centrality": 0.7579,
+      "eigenvector_centrality": 0.3,
+      "betweenness_centrality": 0.5027,
+      "composite_centrality": 0.4982,
+      "confidence": 0.9823,
+      "degree": 2
+    },
+    "成长增速放缓": {
+      "theory": "成长增速放缓",
+      "role": "core",
+      "degree_centrality": 0.8729,
+      "eigenvector_centrality": 0.6112,
+      "betweenness_centrality": 0.5174,
+      "composite_centrality": 0.6616,
+      "confidence": 0.7901,
+      "degree": 2
+    },
+    "成长空被挤压": {
+      "theory": "成长空被挤压",
+      "role": "bridge",
+      "degree_centrality": 0.8229,
+      "eigenvector_centrality": 0.55,
+      "betweenness_centrality": 0.5499,
+      "composite_centrality": 0.6318,
+      "confidence": 0.7059,
+      "degree": 2
+    },
+    "技术准入合法性缺乏": {
+      "theory": "技术准入合法性缺乏",
+      "role": "peripheral",
+      "degree_centrality": 0.7262,
+      "eigenvector_centrality": 0.2967,
+      "betweenness_centrality": 0.563,
+      "composite_centrality": 0.5055,
+      "confidence": 0.752,
+      "degree": 2
+    },
+    "技术杠杆": {
+      "theory": "技术杠杆",
+      "role": "bridge",
+      "degree_centrality": 0.7971,
+      "eigenvector_centrality": 0.4728,
+      "betweenness_centrality": 0.781,
+      "composite_centrality": 0.6626,
+      "confidence": 0.9731,
+      "degree": 2
+    },
+    "抚育成长经历": {
+      "theory": "抚育成长经历",
+      "role": "peripheral",
+      "degree_centrality": 0.6485,
+      "eigenvector_centrality": 0.2239,
+      "betweenness_centrality": 0.6031,
+      "composite_centrality": 0.465,
+      "confidence": 0.7996,
+      "degree": 1
+    },
+    "拓展前沿技术": {
+      "theory": "拓展前沿技术",
+      "role": "bridge",
+      "degree_centrality": 0.7847,
+      "eigenvector_centrality": 0.4542,
+      "betweenness_centrality": 0.7515,
+      "composite_centrality": 0.6425,
+      "confidence": 0.8908,
+      "degree": 2
+    },
+    "挤水分": {
+      "theory": "挤水分",
+      "role": "peripheral",
+      "degree_centrality": 0.554,
+      "eigenvector_centrality": 0.1825,
+      "betweenness_centrality": 0.5842,
+      "composite_centrality": 0.4144,
+      "confidence": 0.8248,
+      "degree": 1
+    },
+    "探索式即兴": {
+      "theory": "探索式即兴",
+      "role": "peripheral",
+      "degree_centrality": 0.6797,
+      "eigenvector_centrality": 0.2745,
+      "betweenness_centrality": 0.3703,
+      "composite_centrality": 0.4248,
+      "confidence": 0.868,
+      "degree": 2
+    },
+    "数字化": {
+      "theory": "数字化",
+      "role": "peripheral",
+      "degree_centrality": 0.5934,
+      "eigenvector_centrality": 0.2274,
+      "betweenness_centrality": 0.6511,
+      "composite_centrality": 0.4643,
+      "confidence": 0.9543,
+      "degree": 1
+    },
+    "整合阶段主导": {
+      "theory": "整合阶段主导",
+      "role": "bridge",
+      "degree_centrality": 0.8371,
+      "eigenvector_centrality": 0.5838,
+      "betweenness_centrality": 0.6354,
+      "composite_centrality": 0.6753,
+      "confidence": 0.8415,
+      "degree": 2
+    },
+    "文化创新核心载体": {
+      "theory": "文化创新核心载体",
+      "role": "bridge",
+      "degree_centrality": 0.7828,
+      "eigenvector_centrality": 0.3336,
+      "betweenness_centrality": 0.5474,
+      "composite_centrality": 0.5325,
+      "confidence": 0.811,
+      "degree": 2
+    },
+    "文化情境特征": {
+      "theory": "文化情境特征",
+      "role": "peripheral",
+      "degree_centrality": 0.711,
+      "eigenvector_centrality": 0.2373,
+      "betweenness_centrality": 0.4764,
+      "composite_centrality": 0.4511,
+      "confidence": 0.673,
+      "degree": 2
+    },
+    "文化框架激活": {
+      "theory": "文化框架激活",
+      "role": "peripheral",
+      "degree_centrality": 0.5873,
+      "eigenvector_centrality": 0.191,
+      "betweenness_centrality": 0.5596,
+      "composite_centrality": 0.4205,
+      "confidence": 0.6381,
+      "degree": 1
+    },
+    "新旧更替": {
+      "theory": "新旧更替",
+      "role": "bridge",
+      "degree_centrality": 0.6876,
+      "eigenvector_centrality": 0.4185,
+      "betweenness_centrality": 0.8687,
+      "composite_centrality": 0.6343,
+      "confidence": 0.6748,
+      "degree": 2
+    },
+    "替代放大因素": {
+      "theory": "替代放大因素",
+      "role": "core",
+      "degree_centrality": 0.8416,
+      "eigenvector_centrality": 0.6703,
+      "betweenness_centrality": 0.6847,
+      "composite_centrality": 0.726,
+      "confidence": 0.7697,
+      "degree": 2
+    },
+    "未审议、董事会独断": {
+      "theory": "未审议、董事会独断",
+      "role": "peripheral",
+      "degree_centrality": 0.6314,
+      "eigenvector_centrality": 0.2094,
+      "betweenness_centrality": 0.5301,
+      "composite_centrality": 0.4322,
+      "confidence": 0.701,
+      "degree": 1
+    },
+    "本土适配": {
+      "theory": "本土适配",
+      "role": "peripheral",
+      "degree_centrality": 0.6698,
+      "eigenvector_centrality": 0.237,
+      "betweenness_centrality": 0.5406,
+      "composite_centrality": 0.4579,
+      "confidence": 0.844,
+      "degree": 2
+    },
+    "机会识别能力": {
+      "theory": "机会识别能力",
+      "role": "bridge",
+      "degree_centrality": 0.746,
+      "eigenvector_centrality": 0.3864,
+      "betweenness_centrality": 0.7982,
+      "composite_centrality": 0.6178,
+      "confidence": 0.8115,
+      "degree": 2
+    },
+    "松散关联功能特征": {
+      "theory": "松散关联功能特征",
+      "role": "bridge",
+      "degree_centrality": 0.7244,
+      "eigenvector_centrality": 0.3036,
+      "betweenness_centrality": 0.514,
+      "composite_centrality": 0.4929,
+      "confidence": 0.5186,
+      "degree": 2
+    },
+    "核心冲突": {
+      "theory": "核心冲突",
+      "role": "peripheral",
+      "degree_centrality": 0.6902,
+      "eigenvector_centrality": 0.2643,
+      "betweenness_centrality": 0.6203,
+      "composite_centrality": 0.4989,
+      "confidence": 0.6407,
+      "degree": 2
+    },
+    "核心影响因素": {
+      "theory": "核心影响因素",
+      "role": "core",
+      "degree_centrality": 0.8686,
+      "eigenvector_centrality": 0.7127,
+      "betweenness_centrality": 0.5999,
+      "composite_centrality": 0.7256,
+      "confidence": 0.7403,
+      "degree": 2
+    },
+    "核心目标": {
+      "theory": "核心目标",
+      "role": "bridge",
+      "degree_centrality": 0.8348,
+      "eigenvector_centrality": 0.4345,
+      "betweenness_centrality": 0.6791,
+      "composite_centrality": 0.628,
+      "confidence": 0.7074,
+      "degree": 2
+    },
+    "核心问题": {
+      "theory": "核心问题",
+      "role": "peripheral",
+      "degree_centrality": 0.6443,
+      "eigenvector_centrality": 0.2638,
+      "betweenness_centrality": 0.5745,
+      "composite_centrality": 0.4711,
+      "confidence": 0.7396,
+      "degree": 1
+    },
+    "模块化组织核心": {
+      "theory": "模块化组织核心",
+      "role": "bridge",
+      "degree_centrality": 0.8792,
+      "eigenvector_centrality": 0.5004,
+      "betweenness_centrality": 0.783,
+      "composite_centrality": 0.6988,
+      "confidence": 0.7699,
+      "degree": 2
+    },
+    "模式二": {
+      "theory": "模式二",
+      "role": "peripheral",
+      "degree_centrality": 0.5941,
+      "eigenvector_centrality": 0.1698,
+      "betweenness_centrality": 0.6001,
+      "composite_centrality": 0.4262,
+      "confidence": 0.7653,
+      "degree": 1
+    },
+    "治理机制": {
+      "theory": "治理机制",
+      "role": "bridge",
+      "degree_centrality": 0.8845,
+      "eigenvector_centrality": 0.4288,
+      "betweenness_centrality": 0.6092,
+      "composite_centrality": 0.6196,
+      "confidence": 0.7786,
+      "degree": 2
+    },
+    "治理缺陷": {
+      "theory": "治理缺陷",
+      "role": "bridge",
+      "degree_centrality": 0.8099,
+      "eigenvector_centrality": 0.331,
+      "betweenness_centrality": 0.5397,
+      "composite_centrality": 0.5373,
+      "confidence": 0.7452,
+      "degree": 2
+    },
+    "海外获取": {
+      "theory": "海外获取",
+      "role": "peripheral",
+      "degree_centrality": 0.6349,
+      "eigenvector_centrality": 0.2458,
+      "betweenness_centrality": 0.8478,
+      "composite_centrality": 0.5431,
+      "confidence": 0.6955,
+      "degree": 1
+    },
+    "满足感与地位": {
+      "theory": "满足感与地位",
+      "role": "peripheral",
+      "degree_centrality": 0.4929,
+      "eigenvector_centrality": 0.1436,
+      "betweenness_centrality": 0.6498,
+      "composite_centrality": 0.4002,
+      "confidence": 0.8682,
+      "degree": 1
+    },
+    "演化机制": {
+      "theory": "演化机制",
+      "role": "bridge",
+      "degree_centrality": 0.8588,
+      "eigenvector_centrality": 0.5837,
+      "betweenness_centrality": 0.824,
+      "composite_centrality": 0.7383,
+      "confidence": 1.0,
+      "degree": 2
+    },
+    "激励型政策认知": {
+      "theory": "激励型政策认知",
+      "role": "peripheral",
+      "degree_centrality": 0.5516,
+      "eigenvector_centrality": 0.1801,
+      "betweenness_centrality": 0.6645,
+      "composite_centrality": 0.4369,
+      "confidence": 0.89,
+      "degree": 1
+    },
+    "特新优丧失": {
+      "theory": "特新优丧失",
+      "role": "bridge",
+      "degree_centrality": 0.7847,
+      "eigenvector_centrality": 0.3601,
+      "betweenness_centrality": 0.7902,
+      "composite_centrality": 0.6165,
+      "confidence": 0.9005,
+      "degree": 2
+    },
+    "特新优势难以拓展": {
+      "theory": "特新优势难以拓展",
+      "role": "peripheral",
+      "degree_centrality": 0.7026,
+      "eigenvector_centrality": 0.2619,
+      "betweenness_centrality": 0.7001,
+      "composite_centrality": 0.5256,
+      "confidence": 0.7702,
+      "degree": 2
+    },
+    "现有知识深化": {
+      "theory": "现有知识深化",
+      "role": "peripheral",
+      "degree_centrality": 0.7574,
+      "eigenvector_centrality": 0.3301,
+      "betweenness_centrality": 0.4451,
+      "composite_centrality": 0.4928,
+      "confidence": 0.7406,
+      "degree": 2
+    },
+    "生产制造+技术引进": {
+      "theory": "生产制造+技术引进",
+      "role": "peripheral",
+      "degree_centrality": 0.8406,
+      "eigenvector_centrality": 0.5346,
+      "betweenness_centrality": 0.4,
+      "composite_centrality": 0.586,
+      "confidence": 0.7313,
+      "degree": 2
+    },
+    "生产效率提升": {
+      "theory": "生产效率提升",
+      "role": "core",
+      "degree_centrality": 0.815,
+      "eigenvector_centrality": 0.6068,
+      "betweenness_centrality": 0.5149,
+      "composite_centrality": 0.6417,
+      "confidence": 0.728,
+      "degree": 2
+    },
+    "生命周期+政商关系": {
+      "theory": "生命周期+政商关系",
+      "role": "bridge",
+      "degree_centrality": 0.7233,
+      "eigenvector_centrality": 0.3234,
+      "betweenness_centrality": 0.6115,
+      "composite_centrality": 0.5298,
+      "confidence": 0.7521,
+      "degree": 2
+    },
+    "盲目轻信媒体": {
+      "theory": "盲目轻信媒体",
+      "role": "peripheral",
+      "degree_centrality": 0.4798,
+      "eigenvector_centrality": 0.1363,
+      "betweenness_centrality": 0.5907,
+      "composite_centrality": 0.3757,
+      "confidence": 0.7327,
+      "degree": 1
+    },
+    "直觉创业学习": {
+      "theory": "直觉创业学习",
+      "role": "bridge",
+      "degree_centrality": 0.7764,
+      "eigenvector_centrality": 0.3837,
+      "betweenness_centrality": 0.6366,
+      "composite_centrality": 0.5774,
+      "confidence": 0.8109,
+      "degree": 2
+    },
+    "研发网络结构": {
+      "theory": "研发网络结构",
+      "role": "bridge",
+      "degree_centrality": 0.8034,
+      "eigenvector_centrality": 0.4895,
+      "betweenness_centrality": 0.5031,
+      "composite_centrality": 0.5877,
+      "confidence": 0.8744,
+      "degree": 2
+    },
+    "研发设计能力": {
+      "theory": "研发设计能力",
+      "role": "peripheral",
+      "degree_centrality": 0.8187,
+      "eigenvector_centrality": 0.5189,
+      "betweenness_centrality": 0.482,
+      "composite_centrality": 0.5978,
+      "confidence": 0.8177,
+      "degree": 2
+    },
+    "社会共治机制": {
+      "theory": "社会共治机制",
+      "role": "bridge",
+      "degree_centrality": 0.8225,
+      "eigenvector_centrality": 0.4221,
+      "betweenness_centrality": 0.7113,
+      "composite_centrality": 0.629,
+      "confidence": 0.6981,
+      "degree": 2
+    },
+    "社群构建": {
+      "theory": "社群构建",
+      "role": "bridge",
+      "degree_centrality": 0.7557,
+      "eigenvector_centrality": 0.3768,
+      "betweenness_centrality": 0.6024,
+      "composite_centrality": 0.5582,
+      "confidence": 0.7978,
+      "degree": 2
+    },
+    "组织印记": {
+      "theory": "组织印记",
+      "role": "peripheral",
+      "degree_centrality": 0.4396,
+      "eigenvector_centrality": 0.1555,
+      "betweenness_centrality": 0.6166,
+      "composite_centrality": 0.379,
+      "confidence": 0.8078,
+      "degree": 1
+    },
+    "组装制造能力": {
+      "theory": "组装制造能力",
+      "role": "bridge",
+      "degree_centrality": 0.8973,
+      "eigenvector_centrality": 0.5621,
+      "betweenness_centrality": 0.5965,
+      "composite_centrality": 0.673,
+      "confidence": 0.9463,
+      "degree": 2
+    },
+    "绿色转型阶段": {
+      "theory": "绿色转型阶段",
+      "role": "core",
+      "degree_centrality": 0.8619,
+      "eigenvector_centrality": 0.7274,
+      "betweenness_centrality": 0.413,
+      "composite_centrality": 0.6735,
+      "confidence": 0.6412,
+      "degree": 2
+    },
+    "自主创新": {
+      "theory": "自主创新",
+      "role": "bridge",
+      "degree_centrality": 0.8203,
+      "eigenvector_centrality": 0.4059,
+      "betweenness_centrality": 0.5294,
+      "composite_centrality": 0.5672,
+      "confidence": 0.9271,
+      "degree": 2
+    },
+    "自利动机驱动": {
+      "theory": "自利动机驱动",
+      "role": "core",
+      "degree_centrality": 0.9206,
+      "eigenvector_centrality": 0.8626,
+      "betweenness_centrality": 0.5596,
+      "composite_centrality": 0.7891,
+      "confidence": 0.839,
+      "degree": 2
+    },
+    "表外融资": {
+      "theory": "表外融资",
+      "role": "bridge",
+      "degree_centrality": 0.7486,
+      "eigenvector_centrality": 0.387,
+      "betweenness_centrality": 0.5321,
+      "composite_centrality": 0.539,
+      "confidence": 0.702,
+      "degree": 2
+    },
+    "规模扩张、制度建设": {
+      "theory": "规模扩张、制度建设",
+      "role": "bridge",
+      "degree_centrality": 0.6967,
+      "eigenvector_centrality": 0.3882,
+      "betweenness_centrality": 0.6976,
+      "composite_centrality": 0.5736,
+      "confidence": 0.5187,
+      "degree": 2
+    },
+    "规避监管": {
+      "theory": "规避监管",
+      "role": "peripheral",
+      "degree_centrality": 0.7218,
+      "eigenvector_centrality": 0.2532,
+      "betweenness_centrality": 0.5597,
+      "composite_centrality": 0.4857,
+      "confidence": 0.6209,
+      "degree": 2
+    },
+    "解错试验组合": {
+      "theory": "解错试验组合",
+      "role": "peripheral",
+      "degree_centrality": 0.6538,
+      "eigenvector_centrality": 0.2257,
+      "betweenness_centrality": 0.5392,
+      "composite_centrality": 0.4482,
+      "confidence": 0.7575,
+      "degree": 2
+    },
+    "话语时间策略": {
+      "theory": "话语时间策略",
+      "role": "peripheral",
+      "degree_centrality": 0.566,
+      "eigenvector_centrality": 0.1769,
+      "betweenness_centrality": 0.587,
+      "composite_centrality": 0.4167,
+      "confidence": 0.901,
+      "degree": 1
+    },
+    "话语经验建构": {
+      "theory": "话语经验建构",
+      "role": "peripheral",
+      "degree_centrality": 0.7493,
+      "eigenvector_centrality": 0.2665,
+      "betweenness_centrality": 0.6142,
+      "composite_centrality": 0.5157,
+      "confidence": 0.9284,
+      "degree": 2
+    },
+    "负面超额收益": {
+      "theory": "负面超额收益",
+      "role": "bridge",
+      "degree_centrality": 0.7155,
+      "eigenvector_centrality": 0.3197,
+      "betweenness_centrality": 0.5773,
+      "composite_centrality": 0.5157,
+      "confidence": 0.7175,
+      "degree": 2
+    },
+    "财务战略传递路径": {
+      "theory": "财务战略传递路径",
+      "role": "core",
+      "degree_centrality": 0.8861,
+      "eigenvector_centrality": 0.8307,
+      "betweenness_centrality": 0.4043,
+      "composite_centrality": 0.7194,
+      "confidence": 0.7469,
+      "degree": 2
+    },
+    "资本市场层面": {
+      "theory": "资本市场层面",
+      "role": "bridge",
+      "degree_centrality": 0.856,
+      "eigenvector_centrality": 0.5508,
+      "betweenness_centrality": 0.6209,
+      "composite_centrality": 0.6634,
+      "confidence": 0.7776,
+      "degree": 2
+    },
+    "资源能力化": {
+      "theory": "资源能力化",
+      "role": "core",
+      "degree_centrality": 0.8948,
+      "eigenvector_centrality": 0.657,
+      "betweenness_centrality": 0.5528,
+      "composite_centrality": 0.6971,
+      "confidence": 0.7937,
+      "degree": 2
+    },
+    "资源蓄能": {
+      "theory": "资源蓄能",
+      "role": "bridge",
+      "degree_centrality": 0.8537,
+      "eigenvector_centrality": 0.5805,
+      "betweenness_centrality": 0.609,
+      "composite_centrality": 0.671,
+      "confidence": 0.587,
+      "degree": 2
+    },
+    "资金筹集关键手段": {
+      "theory": "资金筹集关键手段",
+      "role": "bridge",
+      "degree_centrality": 0.7823,
+      "eigenvector_centrality": 0.4792,
+      "betweenness_centrality": 0.7508,
+      "composite_centrality": 0.6516,
+      "confidence": 0.8806,
+      "degree": 2
+    },
+    "赔偿机制改善": {
+      "theory": "赔偿机制改善",
+      "role": "peripheral",
+      "degree_centrality": 0.6962,
+      "eigenvector_centrality": 0.2943,
+      "betweenness_centrality": 0.6069,
+      "composite_centrality": 0.5086,
+      "confidence": 0.843,
+      "degree": 2
+    },
+    "超越追赶阶段": {
+      "theory": "超越追赶阶段",
+      "role": "core",
+      "degree_centrality": 0.8157,
+      "eigenvector_centrality": 0.6059,
+      "betweenness_centrality": 0.4675,
+      "composite_centrality": 0.6273,
+      "confidence": 0.7095,
+      "degree": 2
+    },
+    "跨国并购前提": {
+      "theory": "跨国并购前提",
+      "role": "core",
+      "degree_centrality": 0.8214,
+      "eigenvector_centrality": 0.6455,
+      "betweenness_centrality": 0.4994,
+      "composite_centrality": 0.6544,
+      "confidence": 0.8669,
+      "degree": 2
+    },
+    "转型驱动因素": {
+      "theory": "转型驱动因素",
+      "role": "core",
+      "degree_centrality": 1.0,
+      "eigenvector_centrality": 1.0,
+      "betweenness_centrality": 0.3564,
+      "composite_centrality": 0.8069,
+      "confidence": 0.835,
+      "degree": 3
+    },
+    "远景+经营重心": {
+      "theory": "远景+经营重心",
+      "role": "core",
+      "degree_centrality": 0.796,
+      "eigenvector_centrality": 0.6159,
+      "betweenness_centrality": 0.5843,
+      "composite_centrality": 0.6604,
+      "confidence": 0.8253,
+      "degree": 2
+    },
+    "部分结局": {
+      "theory": "部分结局",
+      "role": "peripheral",
+      "degree_centrality": 0.5043,
+      "eigenvector_centrality": 0.1498,
+      "betweenness_centrality": 0.5805,
+      "composite_centrality": 0.3854,
+      "confidence": 0.7611,
+      "degree": 1
+    },
+    "配置与投资机会背离": {
+      "theory": "配置与投资机会背离",
+      "role": "core",
+      "degree_centrality": 0.9137,
+      "eigenvector_centrality": 0.6443,
+      "betweenness_centrality": 0.4203,
+      "composite_centrality": 0.6579,
+      "confidence": 0.7338,
+      "degree": 2
+    },
+    "长期效果": {
+      "theory": "长期效果",
+      "role": "bridge",
+      "degree_centrality": 0.8133,
+      "eigenvector_centrality": 0.4632,
+      "betweenness_centrality": 0.7629,
+      "composite_centrality": 0.6581,
+      "confidence": 0.8165,
+      "degree": 2
+    },
+    "间断平衡支撑": {
+      "theory": "间断平衡支撑",
+      "role": "bridge",
+      "degree_centrality": 0.7851,
+      "eigenvector_centrality": 0.5107,
+      "betweenness_centrality": 0.6346,
+      "composite_centrality": 0.6302,
+      "confidence": 0.6973,
+      "degree": 2
+    },
+    "隐蔽性操作": {
+      "theory": "隐蔽性操作",
+      "role": "peripheral",
+      "degree_centrality": 0.6422,
+      "eigenvector_centrality": 0.2161,
+      "betweenness_centrality": 0.725,
+      "composite_centrality": 0.4966,
+      "confidence": 0.955,
+      "degree": 1
+    },
+    "集权式领导": {
+      "theory": "集权式领导",
+      "role": "bridge",
+      "degree_centrality": 0.8352,
+      "eigenvector_centrality": 0.3971,
+      "betweenness_centrality": 0.5748,
+      "composite_centrality": 0.5819,
+      "confidence": 0.9708,
+      "degree": 2
+    },
+    "雇佣关系主体": {
+      "theory": "雇佣关系主体",
+      "role": "bridge",
+      "degree_centrality": 0.8176,
+      "eigenvector_centrality": 0.3651,
+      "betweenness_centrality": 0.6004,
+      "composite_centrality": 0.5714,
+      "confidence": 0.9428,
+      "degree": 2
+    },
+    "青春期": {
+      "theory": "青春期",
+      "role": "peripheral",
+      "degree_centrality": 0.4406,
+      "eigenvector_centrality": 0.1244,
+      "betweenness_centrality": 0.5652,
+      "composite_centrality": 0.3515,
+      "confidence": 0.8337,
+      "degree": 1
+    },
+    "风险情境": {
+      "theory": "风险情境",
+      "role": "peripheral",
+      "degree_centrality": 0.7319,
+      "eigenvector_centrality": 0.321,
+      "betweenness_centrality": 0.4487,
+      "composite_centrality": 0.4826,
+      "confidence": 0.7976,
+      "degree": 2
+    },
+    "驱动因素": {
+      "theory": "驱动因素",
+      "role": "core",
+      "degree_centrality": 0.9657,
+      "eigenvector_centrality": 0.9716,
+      "betweenness_centrality": 0.3584,
+      "composite_centrality": 0.7858,
+      "confidence": 1.0,
+      "degree": 2
+    },
+    "高端增值": {
+      "theory": "高端增值",
+      "role": "bridge",
+      "degree_centrality": 0.8795,
+      "eigenvector_centrality": 0.5147,
+      "betweenness_centrality": 0.6423,
+      "composite_centrality": 0.6624,
+      "confidence": 0.9483,
+      "degree": 2
+    }
+  }
+}

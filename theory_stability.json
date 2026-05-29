@@ -1,0 +1,1394 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "created_at": "2026-05-29T10:00:11.114078",
+    "total_theories": 152
+  },
+  "summary": {
+    "timestamp": "2026-05-29T10:00:11.114078",
+    "total_theories": 152,
+    "avg_stability": 0.6392,
+    "min_stability": 0.5627,
+    "max_stability": 0.7035,
+    "std_stability": 0.0275,
+    "stable_count": 142,
+    "moderate_count": 10,
+    "unstable_count": 0,
+    "component_averages": {
+      "confidence": 0.5756,
+      "neighborhood_consistency": 0.9771,
+      "provenance_density": 0.1348,
+      "temporal_stability": 0.943
+    }
+  },
+  "scores": {
+    "EM阶段核心": {
+      "theory": "EM阶段核心",
+      "stability": 0.6518,
+      "confidence": 0.574,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1643,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "上海国资存量更大": {
+      "theory": "上海国资存量更大",
+      "stability": 0.6386,
+      "confidence": 0.5711,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.115,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "专业胜任": {
+      "theory": "专业胜任",
+      "stability": 0.6384,
+      "confidence": 0.5592,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1286,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "专精优势无法适用": {
+      "theory": "专精优势无法适用",
+      "stability": 0.6746,
+      "confidence": 0.6341,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1833,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "专精优衰减": {
+      "theory": "专精优衰减",
+      "stability": 0.6841,
+      "confidence": 0.6587,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1917,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "中国情境局限": {
+      "theory": "中国情境局限",
+      "stability": 0.6056,
+      "confidence": 0.4835,
+      "neighborhood_consistency": 0.9992,
+      "provenance_density": 0.0889,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "主从关系": {
+      "theory": "主从关系",
+      "stability": 0.6524,
+      "confidence": 0.6157,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1167,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "乡村治理困境": {
+      "theory": "乡村治理困境",
+      "stability": 0.6865,
+      "confidence": 0.7088,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1413,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "乡村社会基础": {
+      "theory": "乡村社会基础",
+      "stability": 0.605,
+      "confidence": 0.4925,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.075,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "亏损脱困为主": {
+      "theory": "亏损脱困为主",
+      "stability": 0.6083,
+      "confidence": 0.4825,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "产品层面": {
+      "theory": "产品层面",
+      "stability": 0.6062,
+      "confidence": 0.4862,
+      "neighborhood_consistency": 0.9689,
+      "provenance_density": 0.1143,
+      "temporal_stability": 0.9478,
+      "staleness": "fresh"
+    },
+    "人心式领导": {
+      "theory": "人心式领导",
+      "stability": 0.6609,
+      "confidence": 0.6163,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.15,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "人缘式领导": {
+      "theory": "人缘式领导",
+      "stability": 0.6777,
+      "confidence": 0.6423,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1857,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "代理问题缓解": {
+      "theory": "代理问题缓解",
+      "stability": 0.6411,
+      "confidence": 0.5503,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.15,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "价值共创扭曲": {
+      "theory": "价值共创扭曲",
+      "stability": 0.6353,
+      "confidence": 0.5308,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.15,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "价值判断建构": {
+      "theory": "价值判断建构",
+      "stability": 0.6353,
+      "confidence": 0.5482,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1292,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "企业-网络-集群三层互动": {
+      "theory": "企业-网络-集群三层互动",
+      "stability": 0.6226,
+      "confidence": 0.5303,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "企业主导阶段": {
+      "theory": "企业主导阶段",
+      "stability": 0.6382,
+      "confidence": 0.5612,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.125,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "低价竞加剧": {
+      "theory": "低价竞加剧",
+      "stability": 0.6398,
+      "confidence": 0.5874,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "作业长制为核心": {
+      "theory": "作业长制为核心",
+      "stability": 0.6204,
+      "confidence": 0.5179,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1,
+      "temporal_stability": 0.9503,
+      "staleness": "fresh"
+    },
+    "供应商/顾客/员工共赢": {
+      "theory": "供应商/顾客/员工共赢",
+      "stability": 0.6456,
+      "confidence": 0.5601,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1562,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "保证金/质押导致现金不可用": {
+      "theory": "保证金/质押导致现金不可用",
+      "stability": 0.6766,
+      "confidence": 0.6721,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1457,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "信任基础": {
+      "theory": "信任基础",
+      "stability": 0.6455,
+      "confidence": 0.6145,
+      "neighborhood_consistency": 0.9549,
+      "provenance_density": 0.1357,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "修辞方式": {
+      "theory": "修辞方式",
+      "stability": 0.6354,
+      "confidence": 0.6563,
+      "neighborhood_consistency": 0.8373,
+      "provenance_density": 0.1625,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "修辞策略": {
+      "theory": "修辞策略",
+      "stability": 0.667,
+      "confidence": 0.6393,
+      "neighborhood_consistency": 0.9816,
+      "provenance_density": 0.1651,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "先借鉴后经验": {
+      "theory": "先借鉴后经验",
+      "stability": 0.6789,
+      "confidence": 0.572,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.275,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "先抑后扬粉饰业绩": {
+      "theory": "先抑后扬粉饰业绩",
+      "stability": 0.6213,
+      "confidence": 0.5254,
+      "neighborhood_consistency": 0.9908,
+      "provenance_density": 0.11,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "关系资本弥补资源不足": {
+      "theory": "关系资本弥补资源不足",
+      "stability": 0.6218,
+      "confidence": 0.5277,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "关联交易、资金挪用": {
+      "theory": "关联交易、资金挪用",
+      "stability": 0.6253,
+      "confidence": 0.5141,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.13,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "具体路径": {
+      "theory": "具体路径",
+      "stability": 0.5901,
+      "confidence": 0.4558,
+      "neighborhood_consistency": 0.9595,
+      "provenance_density": 0.1,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "内主外辅转型动力": {
+      "theory": "内主外辅转型动力",
+      "stability": 0.6149,
+      "confidence": 0.5196,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.0818,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "内幕信息获利": {
+      "theory": "内幕信息获利",
+      "stability": 0.6428,
+      "confidence": 0.5599,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.145,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "农户+本地大户": {
+      "theory": "农户+本地大户",
+      "stability": 0.6091,
+      "confidence": 0.4922,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.0875,
+      "temporal_stability": 0.9478,
+      "staleness": "fresh"
+    },
+    "创业集聚驱动": {
+      "theory": "创业集聚驱动",
+      "stability": 0.6626,
+      "confidence": 0.6296,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1406,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "创新基础": {
+      "theory": "创新基础",
+      "stability": 0.6746,
+      "confidence": 0.6453,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.17,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "创新性认知": {
+      "theory": "创新性认知",
+      "stability": 0.6445,
+      "confidence": 0.6101,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.0917,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "创造力来源": {
+      "theory": "创造力来源",
+      "stability": 0.6615,
+      "confidence": 0.6327,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1326,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "制度重塑": {
+      "theory": "制度重塑",
+      "stability": 0.6603,
+      "confidence": 0.5935,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.175,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "制造环节优势": {
+      "theory": "制造环节优势",
+      "stability": 0.6756,
+      "confidence": 0.6728,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1411,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "前期": {
+      "theory": "前期",
+      "stability": 0.6264,
+      "confidence": 0.5152,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1333,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "功能使命定位": {
+      "theory": "功能使命定位",
+      "stability": 0.6429,
+      "confidence": 0.6589,
+      "neighborhood_consistency": 0.9044,
+      "provenance_density": 0.1226,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "升级前提": {
+      "theory": "升级前提",
+      "stability": 0.6534,
+      "confidence": 0.6395,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.0921,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "发展期": {
+      "theory": "发展期",
+      "stability": 0.6507,
+      "confidence": 0.6192,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1056,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "变化阶段": {
+      "theory": "变化阶段",
+      "stability": 0.649,
+      "confidence": 0.5926,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1308,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "合：治理建构": {
+      "theory": "合：治理建构",
+      "stability": 0.6593,
+      "confidence": 0.5832,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1833,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "同源性技术初始积累": {
+      "theory": "同源性技术初始积累",
+      "stability": 0.661,
+      "confidence": 0.6167,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.15,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "同质竞加剧": {
+      "theory": "同质竞加剧",
+      "stability": 0.6075,
+      "confidence": 0.5161,
+      "neighborhood_consistency": 0.9564,
+      "provenance_density": 0.1,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "否决项与月度考核": {
+      "theory": "否决项与月度考核",
+      "stability": 0.6111,
+      "confidence": 0.5644,
+      "neighborhood_consistency": 0.8379,
+      "provenance_density": 0.175,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "品牌形象提升": {
+      "theory": "品牌形象提升",
+      "stability": 0.6393,
+      "confidence": 0.6272,
+      "neighborhood_consistency": 0.9223,
+      "provenance_density": 0.1281,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "国资放任掏空": {
+      "theory": "国资放任掏空",
+      "stability": 0.6462,
+      "confidence": 0.5858,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1278,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "在位者劣势": {
+      "theory": "在位者劣势",
+      "stability": 0.6553,
+      "confidence": 0.5768,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.175,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "均等控制权": {
+      "theory": "均等控制权",
+      "stability": 0.6762,
+      "confidence": 0.6914,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1208,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "外生式学习": {
+      "theory": "外生式学习",
+      "stability": 0.6499,
+      "confidence": 0.6096,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1139,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "外部环境因素": {
+      "theory": "外部环境因素",
+      "stability": 0.6358,
+      "confidence": 0.5653,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1107,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "外部监管不足": {
+      "theory": "外部监管不足",
+      "stability": 0.6839,
+      "confidence": 0.6992,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1423,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "多技能提升": {
+      "theory": "多技能提升",
+      "stability": 0.6278,
+      "confidence": 0.5057,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.15,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "大库存优势": {
+      "theory": "大库存优势",
+      "stability": 0.6254,
+      "confidence": 0.4977,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.15,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "大股东困境": {
+      "theory": "大股东困境",
+      "stability": 0.6495,
+      "confidence": 0.5841,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1429,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "学习机制": {
+      "theory": "学习机制",
+      "stability": 0.6861,
+      "confidence": 0.7053,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1437,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "实施原则": {
+      "theory": "实施原则",
+      "stability": 0.5894,
+      "confidence": 0.4869,
+      "neighborhood_consistency": 0.9023,
+      "provenance_density": 0.1167,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "家族创业培育要素": {
+      "theory": "家族创业培育要素",
+      "stability": 0.6698,
+      "confidence": 0.6042,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.2,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "对价争议": {
+      "theory": "对价争议",
+      "stability": 0.6232,
+      "confidence": 0.5083,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1286,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "封建层级文化诱因": {
+      "theory": "封建层级文化诱因",
+      "stability": 0.6709,
+      "confidence": 0.6652,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.125,
+      "temporal_stability": 0.9503,
+      "staleness": "fresh"
+    },
+    "工资与市场业绩挂钩": {
+      "theory": "工资与市场业绩挂钩",
+      "stability": 0.6114,
+      "confidence": 0.5526,
+      "neighborhood_consistency": 0.8785,
+      "provenance_density": 0.15,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "差异起源": {
+      "theory": "差异起源",
+      "stability": 0.5844,
+      "confidence": 0.5331,
+      "neighborhood_consistency": 0.7939,
+      "provenance_density": 0.15,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "市场导向模式": {
+      "theory": "市场导向模式",
+      "stability": 0.6347,
+      "confidence": 0.5704,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "市场约束无效": {
+      "theory": "市场约束无效",
+      "stability": 0.6113,
+      "confidence": 0.5169,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.0667,
+      "temporal_stability": 0.9478,
+      "staleness": "fresh"
+    },
+    "市场能力积累": {
+      "theory": "市场能力积累",
+      "stability": 0.6091,
+      "confidence": 0.5269,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.05,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "市属国企整合": {
+      "theory": "市属国企整合",
+      "stability": 0.6345,
+      "confidence": 0.558,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1143,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "延展高价值业务": {
+      "theory": "延展高价值业务",
+      "stability": 0.6438,
+      "confidence": 0.5593,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.15,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "建构型学习": {
+      "theory": "建构型学习",
+      "stability": 0.6747,
+      "confidence": 0.6772,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1318,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "循环动力": {
+      "theory": "循环动力",
+      "stability": 0.654,
+      "confidence": 0.5849,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.16,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "心化内控归宿": {
+      "theory": "心化内控归宿",
+      "stability": 0.6111,
+      "confidence": 0.4781,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1167,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "志愿者能动阶段": {
+      "theory": "志愿者能动阶段",
+      "stability": 0.6184,
+      "confidence": 0.5145,
+      "neighborhood_consistency": 0.9219,
+      "provenance_density": 0.18,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "忽视长期技术积累": {
+      "theory": "忽视长期技术积累",
+      "stability": 0.6395,
+      "confidence": 0.545,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.15,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "思维基础": {
+      "theory": "思维基础",
+      "stability": 0.6797,
+      "confidence": 0.6859,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1414,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "成长增速放缓": {
+      "theory": "成长增速放缓",
+      "stability": 0.639,
+      "confidence": 0.5598,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.13,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "成长空被挤压": {
+      "theory": "成长空被挤压",
+      "stability": 0.6344,
+      "confidence": 0.5278,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.15,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "技术准入合法性缺乏": {
+      "theory": "技术准入合法性缺乏",
+      "stability": 0.6323,
+      "confidence": 0.5347,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1333,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "技术杠杆": {
+      "theory": "技术杠杆",
+      "stability": 0.6845,
+      "confidence": 0.7364,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "抚育成长经历": {
+      "theory": "抚育成长经历",
+      "stability": 0.6259,
+      "confidence": 0.5611,
+      "neighborhood_consistency": 0.9761,
+      "provenance_density": 0.1,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "拓展前沿技术": {
+      "theory": "拓展前沿技术",
+      "stability": 0.6675,
+      "confidence": 0.6204,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1714,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "挤水分": {
+      "theory": "挤水分",
+      "stability": 0.6026,
+      "confidence": 0.5867,
+      "neighborhood_consistency": 0.8384,
+      "provenance_density": 0.1139,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "探索式即兴": {
+      "theory": "探索式即兴",
+      "stability": 0.6593,
+      "confidence": 0.6279,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1295,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "数字化": {
+      "theory": "数字化",
+      "stability": 0.6808,
+      "confidence": 0.7202,
+      "neighborhood_consistency": 0.9003,
+      "provenance_density": 0.2045,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "整合阶段主导": {
+      "theory": "整合阶段主导",
+      "stability": 0.6514,
+      "confidence": 0.6036,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1273,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "文化创新核心载体": {
+      "theory": "文化创新核心载体",
+      "stability": 0.6426,
+      "confidence": 0.5691,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1333,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "文化情境特征": {
+      "theory": "文化情境特征",
+      "stability": 0.6008,
+      "confidence": 0.4785,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.075,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "文化框架激活": {
+      "theory": "文化框架激活",
+      "stability": 0.5647,
+      "confidence": 0.4771,
+      "neighborhood_consistency": 0.8572,
+      "provenance_density": 0.075,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "新旧更替": {
+      "theory": "新旧更替",
+      "stability": 0.6196,
+      "confidence": 0.4786,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.15,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "替代放大因素": {
+      "theory": "替代放大因素",
+      "stability": 0.6487,
+      "confidence": 0.5755,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.15,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "未审议、董事会独断": {
+      "theory": "未审议、董事会独断",
+      "stability": 0.6183,
+      "confidence": 0.4972,
+      "neighborhood_consistency": 0.9598,
+      "provenance_density": 0.1625,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "本土适配": {
+      "theory": "本土适配",
+      "stability": 0.6353,
+      "confidence": 0.5643,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.11,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "机会识别能力": {
+      "theory": "机会识别能力",
+      "stability": 0.6423,
+      "confidence": 0.566,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1357,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "松散关联功能特征": {
+      "theory": "松散关联功能特征",
+      "stability": 0.5944,
+      "confidence": 0.478,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.05,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "核心冲突": {
+      "theory": "核心冲突",
+      "stability": 0.6116,
+      "confidence": 0.479,
+      "neighborhood_consistency": 0.9674,
+      "provenance_density": 0.15,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "核心影响因素": {
+      "theory": "核心影响因素",
+      "stability": 0.6421,
+      "confidence": 0.5535,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.15,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "核心目标": {
+      "theory": "核心目标",
+      "stability": 0.641,
+      "confidence": 0.5289,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.175,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "核心问题": {
+      "theory": "核心问题",
+      "stability": 0.6162,
+      "confidence": 0.5244,
+      "neighborhood_consistency": 0.9565,
+      "provenance_density": 0.125,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "模块化组织核心": {
+      "theory": "模块化组织核心",
+      "stability": 0.6484,
+      "confidence": 0.5467,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1833,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "模式二": {
+      "theory": "模式二",
+      "stability": 0.6233,
+      "confidence": 0.5432,
+      "neighborhood_consistency": 0.9037,
+      "provenance_density": 0.1833,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "治理机制": {
+      "theory": "治理机制",
+      "stability": 0.6295,
+      "confidence": 0.5532,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "治理缺陷": {
+      "theory": "治理缺陷",
+      "stability": 0.6486,
+      "confidence": 0.5336,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.2,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "海外获取": {
+      "theory": "海外获取",
+      "stability": 0.6233,
+      "confidence": 0.52,
+      "neighborhood_consistency": 0.965,
+      "provenance_density": 0.15,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "满足感与地位": {
+      "theory": "满足感与地位",
+      "stability": 0.6058,
+      "confidence": 0.5978,
+      "neighborhood_consistency": 0.7515,
+      "provenance_density": 0.2,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "演化机制": {
+      "theory": "演化机制",
+      "stability": 0.6804,
+      "confidence": 0.7211,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1022,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "激励型政策认知": {
+      "theory": "激励型政策认知",
+      "stability": 0.6184,
+      "confidence": 0.6352,
+      "neighborhood_consistency": 0.8387,
+      "provenance_density": 0.1184,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "特新优丧失": {
+      "theory": "特新优丧失",
+      "stability": 0.674,
+      "confidence": 0.6537,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1575,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "特新优势难以拓展": {
+      "theory": "特新优势难以拓展",
+      "stability": 0.6317,
+      "confidence": 0.5155,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.15,
+      "temporal_stability": 0.9478,
+      "staleness": "fresh"
+    },
+    "现有知识深化": {
+      "theory": "现有知识深化",
+      "stability": 0.616,
+      "confidence": 0.5248,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.08,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "生产制造+技术引进": {
+      "theory": "生产制造+技术引进",
+      "stability": 0.6205,
+      "confidence": 0.5199,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1,
+      "temporal_stability": 0.9478,
+      "staleness": "fresh"
+    },
+    "生产效率提升": {
+      "theory": "生产效率提升",
+      "stability": 0.6322,
+      "confidence": 0.5443,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1214,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "生命周期+政商关系": {
+      "theory": "生命周期+政商关系",
+      "stability": 0.6325,
+      "confidence": 0.5334,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1357,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "盲目轻信媒体": {
+      "theory": "盲目轻信媒体",
+      "stability": 0.5627,
+      "confidence": 0.5234,
+      "neighborhood_consistency": 0.7287,
+      "provenance_density": 0.14,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "直觉创业学习": {
+      "theory": "直觉创业学习",
+      "stability": 0.6451,
+      "confidence": 0.5741,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1375,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "研发网络结构": {
+      "theory": "研发网络结构",
+      "stability": 0.6595,
+      "confidence": 0.6218,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1375,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "研发设计能力": {
+      "theory": "研发设计能力",
+      "stability": 0.6312,
+      "confidence": 0.5626,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.0955,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "社会共治机制": {
+      "theory": "社会共治机制",
+      "stability": 0.6205,
+      "confidence": 0.4955,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1333,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "社群构建": {
+      "theory": "社群构建",
+      "stability": 0.641,
+      "confidence": 0.55,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.15,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "组织印记": {
+      "theory": "组织印记",
+      "stability": 0.586,
+      "confidence": 0.6186,
+      "neighborhood_consistency": 0.7378,
+      "provenance_density": 0.1098,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "组装制造能力": {
+      "theory": "组装制造能力",
+      "stability": 0.6632,
+      "confidence": 0.6343,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1375,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "绿色转型阶段": {
+      "theory": "绿色转型阶段",
+      "stability": 0.6008,
+      "confidence": 0.4852,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.0667,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "自主创新": {
+      "theory": "自主创新",
+      "stability": 0.6807,
+      "confidence": 0.7016,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1268,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "自利动机驱动": {
+      "theory": "自利动机驱动",
+      "stability": 0.6714,
+      "confidence": 0.6273,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1786,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "表外融资": {
+      "theory": "表外融资",
+      "stability": 0.6128,
+      "confidence": 0.4977,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "规模扩张、制度建设": {
+      "theory": "规模扩张、制度建设",
+      "stability": 0.5945,
+      "confidence": 0.4781,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.05,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "规避监管": {
+      "theory": "规避监管",
+      "stability": 0.6045,
+      "confidence": 0.4699,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "解错试验组合": {
+      "theory": "解错试验组合",
+      "stability": 0.637,
+      "confidence": 0.5386,
+      "neighborhood_consistency": 0.9977,
+      "provenance_density": 0.15,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "话语时间策略": {
+      "theory": "话语时间策略",
+      "stability": 0.6447,
+      "confidence": 0.6581,
+      "neighborhood_consistency": 0.8598,
+      "provenance_density": 0.175,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "话语经验建构": {
+      "theory": "话语经验建构",
+      "stability": 0.6844,
+      "confidence": 0.6736,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.175,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "负面超额收益": {
+      "theory": "负面超额收益",
+      "stability": 0.6312,
+      "confidence": 0.5089,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.16,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "财务战略传递路径": {
+      "theory": "财务战略传递路径",
+      "stability": 0.6276,
+      "confidence": 0.5301,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.12,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "资本市场层面": {
+      "theory": "资本市场层面",
+      "stability": 0.6349,
+      "confidence": 0.5505,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.125,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "资源能力化": {
+      "theory": "资源能力化",
+      "stability": 0.6541,
+      "confidence": 0.5934,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.15,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "资源蓄能": {
+      "theory": "资源蓄能",
+      "stability": 0.6196,
+      "confidence": 0.541,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.075,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "资金筹集关键手段": {
+      "theory": "资金筹集关键手段",
+      "stability": 0.6608,
+      "confidence": 0.6242,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.14,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "赔偿机制改善": {
+      "theory": "赔偿机制改善",
+      "stability": 0.6571,
+      "confidence": 0.5977,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1571,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "超越追赶阶段": {
+      "theory": "超越追赶阶段",
+      "stability": 0.6215,
+      "confidence": 0.5369,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.0875,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "跨国并购前提": {
+      "theory": "跨国并购前提",
+      "stability": 0.6678,
+      "confidence": 0.6377,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1519,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "转型驱动因素": {
+      "theory": "转型驱动因素",
+      "stability": 0.6518,
+      "confidence": 0.586,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.15,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "远景+经营重心": {
+      "theory": "远景+经营重心",
+      "stability": 0.6507,
+      "confidence": 0.5859,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1455,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "部分结局": {
+      "theory": "部分结局",
+      "stability": 0.5777,
+      "confidence": 0.54,
+      "neighborhood_consistency": 0.7648,
+      "provenance_density": 0.1437,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "配置与投资机会背离": {
+      "theory": "配置与投资机会背离",
+      "stability": 0.6406,
+      "confidence": 0.5486,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.15,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "长期效果": {
+      "theory": "长期效果",
+      "stability": 0.6498,
+      "confidence": 0.5791,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.15,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "间断平衡支撑": {
+      "theory": "间断平衡支撑",
+      "stability": 0.6181,
+      "confidence": 0.4945,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.125,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "隐蔽性操作": {
+      "theory": "隐蔽性操作",
+      "stability": 0.6642,
+      "confidence": 0.6501,
+      "neighborhood_consistency": 0.9786,
+      "provenance_density": 0.1437,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "集权式领导": {
+      "theory": "集权式领导",
+      "stability": 0.6793,
+      "confidence": 0.6823,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1441,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "雇佣关系主体": {
+      "theory": "雇佣关系主体",
+      "stability": 0.7035,
+      "confidence": 0.6583,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.27,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "青春期": {
+      "theory": "青春期",
+      "stability": 0.5859,
+      "confidence": 0.5918,
+      "neighborhood_consistency": 0.7209,
+      "provenance_density": 0.1583,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "风险情境": {
+      "theory": "风险情境",
+      "stability": 0.6518,
+      "confidence": 0.6036,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1286,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "驱动因素": {
+      "theory": "驱动因素",
+      "stability": 0.6822,
+      "confidence": 0.7172,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1139,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    },
+    "高端增值": {
+      "theory": "高端增值",
+      "stability": 0.6826,
+      "confidence": 0.6712,
+      "neighborhood_consistency": 1.0,
+      "provenance_density": 0.1708,
+      "temporal_stability": 0.9427,
+      "staleness": "fresh"
+    }
+  }
+}

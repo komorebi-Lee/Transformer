@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import logging
@@ -249,28 +250,50 @@ def _load_first_level_prototypes(test_csv: str) -> List[Dict[str, str]]:
         else:
             path = os.path.join(base_dir, name)
             if not os.path.exists(path):
-                project_csv_path = os.path.join(Config.BASE_DIR, "csv", name)
-                if os.path.exists(project_csv_path):
-                    path = project_csv_path
+                for sub in ("csv", "data", ""):
+                    alt = os.path.join(Config.BASE_DIR, sub, name) if sub else os.path.join(Config.BASE_DIR, name)
+                    if os.path.exists(alt):
+                        path = alt
+                        break
         if not os.path.exists(path):
             continue
-        try:
-            df, _ = _read_csv_auto(path)
-        except Exception:
-            continue
-        if df.shape[1] < 2:
-            continue
-        c1, c2 = df.columns[:2]
-        for _, row in df[[c1, c2]].iterrows():
-            label = str(row[c1] or "").strip()
-            source = str(row[c2] or "").strip()
-            if not label or not source:
+        if path.endswith(".json"):
+            try:
+                with open(path, "r", encoding="utf-8") as fh:
+                    items = json.load(fh)
+                if isinstance(items, list):
+                    for item in items:
+                        if not isinstance(item, dict):
+                            continue
+                        label = str(item.get("manual_first_code", "")).strip()
+                        source = str(item.get("source", "")).strip()
+                        if not label or not source:
+                            continue
+                        key = (label, source)
+                        if key in seen:
+                            continue
+                        seen.add(key)
+                        prototypes.append({"manual_first_code": label, "source": source})
+            except Exception:
                 continue
-            key = (label, source)
-            if key in seen:
+        else:
+            try:
+                df, _ = _read_csv_auto(path)
+            except Exception:
                 continue
-            seen.add(key)
-            prototypes.append({"manual_first_code": label, "source": source})
+            if df.shape[1] < 2:
+                continue
+            c1, c2 = df.columns[:2]
+            for _, row in df[[c1, c2]].iterrows():
+                label = str(row[c1] or "").strip()
+                source = str(row[c2] or "").strip()
+                if not label or not source:
+                    continue
+                key = (label, source)
+                if key in seen:
+                    continue
+                seen.add(key)
+                prototypes.append({"manual_first_code": label, "source": source})
     return prototypes
 
 
