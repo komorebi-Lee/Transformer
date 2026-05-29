@@ -1,207 +1,187 @@
+"""增强的扎根理论编码生成器 - 支持训练模型预测和概念锚点检索。
+
+一阶编码管线（改进7 - 概念锚点门控）:
+1. 句子标准化
+2. 概念锚点FAISS检索 → 高分锚点直接入选，门控抽取式n-gram
+3. 抽取式n-gram生成（仅锚点门控未触发时）
+4. 候选评分 + 排序 + 精选
+5. 重排序 + 最终选择
+
+二阶/三阶编码使用语义相似度匹配编码库。
+"""
+
+import json
 import logging
-import numpy as np
-from typing import Dict, List, Any, Optional, Callable, Set, Tuple
+import math
+import os
 import re
-import jieba
-import jieba.posseg as pseg
+import sys
 from collections import Counter, defaultdict
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+
+import jieba
+import numpy as np
+import jieba.posseg as pseg
 
 logger = logging.getLogger(__name__)
 
+# Optional imports
 try:
     from config import Config
-except Exception:  # pragma: no cover
+except Exception:
     Config = None
 
 try:
     from coding_library_manager import CodingLibraryManager
 except Exception as e:
-    logger.warning(f"导入CodingLibraryManager失败: {e}")
+    logger.warning("导入CodingLibraryManager失败: " + str(e))
     CodingLibraryManager = None
 
 try:
     from semantic_matcher import SemanticMatcher
 except Exception as e:
-    logger.warning(f"导入SemanticMatcher失败: {e}")
+    logger.warning("导入SemanticMatcher失败: " + str(e))
     SemanticMatcher = None
-
-try:
-    from runtime_strategy import RuntimeStrategyDetector
-    from rag_index import RagIndexManager
-    from rag_semantic_matcher import RAGSemanticMatcher
-    from first_level_clusterer import FirstLevelClusterer
-    from coding_decision_policy import CodingDecisionPolicy, CodingDecision
-except Exception as e:
-    logger.warning(f"导入RAG组件失败: {e}")
-    RuntimeStrategyDetector = None
-    RagIndexManager = None
-    RAGSemanticMatcher = None
-    FirstLevelClusterer = None
-    CodingDecisionPolicy = None
-    CodingDecision = None
 
 try:
     from high_quality_sample_learner import HighQualitySampleLearner
 except Exception as e:
-    logger.warning(f"导入高质量样本学习器失败: {e}")
+    logger.warning("导入HighQualitySampleLearner失败: " + str(e))
     HighQualitySampleLearner = None
 
 
 class EnhancedCodingGenerator:
     """增强的扎根理论编码生成器 - 支持训练模型预测"""
 
-    @staticmethod
-    def _clean_code_prefix(code: str) -> str:
-        """
-        清理一阶编码开头的标点符号
-        
-        规则：
-        - 移除开头的所有标点符号（除了引号）
-        - 保留引号，因为它与后文有联系
-        
-        Args:
-            code: 原始编码文本
-            
-        Returns:
-            清理后的编码文本
-        """
-        if not code:
-            return code
-        
-        # 定义要移除的开头标点（不包括引号）
-        # 包括：。！？，、；：…—·●○◆◇■□▲△▼▽★☆※
-        punctuation_to_remove = r'^[。！？，、；：…—·●○◆◇■□▲△▼▽★☆※\s]+'
-        
-        # 移除开头的标点（但保留引号）
-        cleaned = re.sub(punctuation_to_remove, '', code)
-        
-        return cleaned.strip()
-
     def __init__(self):
         self.min_sentence_length = 5
         self.similarity_threshold = 0.6
         self.max_codes_per_paragraph = 5
 
+        # Config-driven defaults
         self.max_first_level_length = getattr(Config, 'FIRST_LEVEL_CODE_MAX_LENGTH', 30) if Config else 30
-        self.abstract_cache: Dict[str, str] = {}
-        # 相似度计算缓存，避免重复计算
-        self.similarity_cache: Dict[str, List[Tuple[Dict[str, Any], float]]] = {}
-        # 明显不通顺/口语残留短语，后处理时尽量清理
+
+        # Caches
+        self.abstract_cache = {}
+        self.similarity_cache = {}
         self.bad_phrase_patterns = [
-            r'比如说', r'这?种我', r'我这种', r'然后', r'就是说',
-            r'还可以$', r'^不是', r'^就是', r'^所以',
-            r'^这跳出来了', r'^我刚刚说的是', r'^我说的是', r'^其实',
-            r'^那么', r'^然后', r'^对[，,]?', r'^我自己来说的话[，,]?',
-            r'^如果说是', r'\[[0-9]+\]$', r'对对$'
+            r'[（(]?\d{1,2}:\d{2}[)）]?',
         ]
-        # 口语→书面规范化映射（一阶编码最终清洗）
-        self.colloquial_to_formal = {
-            '搞': '开展', '弄': '处理', '做': '执行', '干': '实施',
-            '很难': '困难', '太难': '困难', '太多': '过多', '不够': '不足',
-            '老是': '频繁', '总是': '持续', '总是要': '需持续',
-            '特别': '显著', '非常': '明显',
-            '慢慢': '逐步', '很快': '迅速', '一下子': '骤然',
-            '好多': '大量', '一些': '部分', '一点点': '微量',
-            '经常': '频繁', '有时候': '偶尔', '每次都': '每次均',
-            '没有办法': '受限', '没法': '受限',
-            '差不多': '相近', '基本上': '大体',
-            '大部分': '多数', '少部分': '少数',
-            '主要是': '核心是', '关键是': '关键在于',
-            '带来了': '引发', '造成了': '导致', '使得': '促使',
-            '没有了': '丧失', '失去了': '丧失',
-            '会变得': '将转为', '变成了': '转化为',
-            # 扩展：常见访谈口语 → 书面概念
-            '主要是要': '需',
-            '就需要': '需',
-            '更好的': '优化',
-            '越来越': '日益',
-            '更加': '更趋',
-            '想办法': '寻求方案',
-            '看一下': '评估',
-            '看一看': '审视',
-            '找一下': '排查',
-            '做出来': '产出',
-            '弄出来': '产出',
-            '搞出来': '产出',
-            '可能是': '可能源于',
-            '会不会': '是否',
-            '是不是': '是否',
-            '能不能': '能否',
-            '要不要': '是否需',
-            '有没有': '是否存在',
-            '没办法': '受限',
-            '没什么': '缺乏',
-            '不算': '未达',
-            '不太': '不足',
-            '不怎么': '较少',
-            '不大': '有限',
-            '好多时候': '多数情形下',
-            '有的时候': '部分情形下',
-            '有些时候': '偶发情形下',
-            '把人': '将人员',
-            '给到': '提供',
-            '问到': '询问',
-            '提到': '提及',
-            '说到': '提及',
-            '讲到': '阐述',
-            '觉得': '认为',
-            '想知道': '关注',
-            '想着': '意图',
-            '想要': '期望',
-        }
-        # 编码价值门控：低显著性+短句跳过阈值
-        self.coding_worthy_min_salience = 1.5
-        self.coding_worthy_min_length = 10
 
-        # 初始化编码库管理器
+        # Colloquial-to-formal mapping
+        self.colloquial_to_formal = {}
+
+        # Coding quality thresholds
+        self.coding_worthy_min_salience = 0.15
+        self.coding_worthy_min_length = 6
+
+        # Coding library
         self.coding_library = None
-        if CodingLibraryManager:
-            try:
+        try:
+            if CodingLibraryManager:
                 self.coding_library = CodingLibraryManager()
-                logger.info("编码库管理器初始化成功")
-            except Exception as e:
-                logger.error(f"初始化编码库管理器失败: {e}")
-        
-        # 初始化语义匹配器
-        self.semantic_matcher = None
-        
-        # 初始化高质量样本学习器
-        self.quality_learner = None
-        if HighQualitySampleLearner:
-            try:
-                self.quality_learner = HighQualitySampleLearner()
-                import os
-                sample_path = os.path.join(os.path.dirname(__file__), 'csv', 'standard_train_optimized.csv')
-                if os.path.exists(sample_path):
-                    self.quality_learner.load_samples(sample_path)
-                    logger.info("高质量样本学习器初始化成功")
-                else:
-                    logger.warning(f"高质量样本文件不存在: {sample_path}")
-            except Exception as e:
-                logger.error(f"初始化高质量样本学习器失败: {e}")
-        if SemanticMatcher:
-            try:
-                self.semantic_matcher = SemanticMatcher()
-                logger.info("语义匹配器初始化成功")
-            except Exception as e:
-                logger.error(f"初始化语义匹配器失败: {e}")
+                logger.info("编码库加载成功")
+        except Exception as e:
+            logger.error("编码库加载失败: " + str(e))
 
-        # RAG 组件（默认关闭，初始化成功后开启）
+        # Semantic matcher
+        self.semantic_matcher = None
+        try:
+            if SemanticMatcher:
+                self.semantic_matcher = SemanticMatcher()
+        except Exception as e:
+            logger.warning("语义匹配器加载失败: " + str(e))
+
+        # Quality learner
+        self.quality_learner = None
+        try:
+            if HighQualitySampleLearner:
+                sample_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                          'data', 'quality_samples.json')
+                if os.path.exists(sample_path):
+                    self.quality_learner = HighQualitySampleLearner()
+                    self.quality_learner.load_samples(sample_path)
+        except Exception as e:
+            logger.warning("质量学习器加载失败: " + str(e))
+
+        # RAG components (lazy init)
         self.rag_enabled = False
-        self.runtime_strategy = None
+        self.runtime_strategy = 'legacy'
         self.rag_matcher = None
         self.decision_policy = None
         self.first_level_clusterer = None
         self.rag_index_manager = None
-        self._first_level_trace_meta: Dict[str, Dict[str, Any]] = {}
-        self._second_level_decision_meta: Dict[str, Dict[str, Any]] = {}
-        self.first_level_prototypes: List[Dict[str, Any]] = []
+        self.rag_doc_retriever = None
+        self.knn_abstract_generator = None
+        self.t5_generative_coder = None
+
+        # Trace/decision metadata
+        self._first_level_trace_meta = {}
+        self._second_level_decision_meta = {}
+
+        # First-level prototypes and recall bank
+        self.first_level_prototypes = []
+        self.first_level_recall_bank = {}
+
+        # RAG thresholds
         self.rag_second_level_threshold = self._default_second_threshold()
         self.rag_third_level_threshold = self._default_third_threshold()
         self.rag_cluster_similarity_threshold = self._default_cluster_threshold()
+
+        # Concept anchor index (改进7 - lazy load)
+        self.concept_anchor_index = None
+
+        # Anchor frequency tracker for dynamic anti-collapse penalty (Phase 3)
+        # Reset per coding session; penalizes over-used anchors via IDF weighting
+        self._anchor_frequency = defaultdict(int)
+        self._anchor_sentence_count = 0  # total sentences coded in this session
+
+        # Training-data KNN index for concept-aware recall
+        # Replaces extractive n-gram generation with embedding-based concept retrieval
+        self.knn_train_index = None  # FAISS index over training sentence embeddings
+        self.knn_train_anchors = []  # anchor_code for each indexed sentence
+
+        # Alias → canonical anchor mapping (Phase 2 governance)
+        self._alias_map = {}  # Loaded from cache/anchor_index/alias_map.json
+
+        # Grounding checker (Phase 4 — anchor quality assurance)
+        self.grounding_checker = None  # Lazy-loaded from grounding_checker module
+
+        # Semantic compressor & abstraction controller (Phase 4)
+        self._semantic_compressor = None
+        self._abstraction_controller = None
+
+        # Contrastive validator (Phase 4 — post-coding quality audit)
+        self._contrastive_validator = None
+
+        # Anchor → 二阶 → 三阶 hierarchy mapping (Phase 2 semantic compression)
+        self._anchor_hierarchy = {}  # Loaded from data/anchor_hierarchy.json
+        self._hierarchy_anchor_names = []  # Keys for semantic fallback lookup
+        self._hierarchy_faiss = None  # Lazy-built FAISS index over hierarchy anchors
+        self._hierarchy_model = None  # Lazy-loaded bge-small-zh-v1.5 for fallback encoding
+
+        # Load standalone JSON files early — no model dependencies
+        self._load_alias_map()
+        self._load_anchor_hierarchy()
+
+        # Try to init RAG components
         self._init_rag_components()
 
-    def _ensure_first_level_defaults(self) -> None:
+    # ── Static utility ──────────────────────────────────────────────────
+
+    @staticmethod
+    def _clean_code_prefix(code: str) -> str:
+        """Remove leading punctuation from a code string."""
+        punctuation_to_remove = "，。！？；：""''（）【】《》　 "
+        cleaned = code
+        while cleaned and cleaned[0] in punctuation_to_remove:
+            cleaned = cleaned[1:]
+        return cleaned.strip()
+
+    # ── Default value helpers ───────────────────────────────────────────
+
+    def _ensure_first_level_defaults(self):
+        """Ensure first-level coding defaults are set."""
         if not hasattr(self, 'abstract_cache'):
             self.abstract_cache = {}
         if not hasattr(self, 'max_first_level_length'):
@@ -210,2060 +190,1792 @@ class EnhancedCodingGenerator:
             self._first_level_trace_meta = {}
         if not hasattr(self, 'first_level_prototypes'):
             self.first_level_prototypes = []
-        clean_patterns = [
-            r'^其实',
-            r'^我觉得',
-            r'^我认为',
-            r'^我感觉',
-            r'^如果说',
-            r'^然后',
-            r'^那么',
-            r'^就是说',
-            r'\[[0-9]+\]$',
+        if not hasattr(self, 'bad_phrase_patterns'):
+            self.bad_phrase_patterns = [
+                r'[（(]?\d{1,2}:\d{2}[)）]?',
+            ]
+        # Ensure bad_phrase_patterns is a list
+        if isinstance(self.bad_phrase_patterns, str):
+            self.bad_phrase_patterns = [self.bad_phrase_patterns]
+        # Convert items that are sets to lists
+        self.bad_phrase_patterns = [
+            list(p) if isinstance(p, set) else p
+            for p in self.bad_phrase_patterns
         ]
-        if (
-            not hasattr(self, 'bad_phrase_patterns')
-            or not isinstance(self.bad_phrase_patterns, list)
-            or any('?' in pattern for pattern in self.bad_phrase_patterns)
-        ):
-            self.bad_phrase_patterns = list(clean_patterns)
 
     def _default_second_threshold(self) -> float:
-        return float(getattr(Config, "RAG_SECOND_LEVEL_THRESHOLD", 0.62)) if Config else 0.62
+        return float(getattr(Config, 'RAG_SECOND_LEVEL_THRESHOLD', 0.55)) if Config else 0.55
 
     def _default_third_threshold(self) -> float:
-        return float(getattr(Config, "RAG_THIRD_LEVEL_THRESHOLD", 0.58)) if Config else 0.58
+        return float(getattr(Config, 'RAG_THIRD_LEVEL_THRESHOLD', 0.45)) if Config else 0.45
 
     def _default_cluster_threshold(self) -> float:
-        return float(getattr(Config, "RAG_CLUSTER_SIMILARITY_THRESHOLD", 0.82)) if Config else 0.82
+        return float(getattr(Config, 'RAG_CLUSTER_SIMILARITY_THRESHOLD', 0.70)) if Config else 0.70
 
-    def _clamp_threshold(self, value: Optional[float], default: float) -> float:
-        if value is None:
-            return default
-        try:
-            threshold = float(value)
-        except (TypeError, ValueError):
-            return default
-        if threshold < 0.0:
-            return 0.0
-        if threshold > 1.0:
-            return 1.0
+    def _clamp_threshold(self, value, default: float) -> float:
+        threshold = float(value) if value is not None else default
         return threshold
 
-    def _ensure_rag_threshold_defaults(self) -> None:
-        if not hasattr(self, "rag_second_level_threshold"):
+    def _ensure_rag_threshold_defaults(self):
+        if not hasattr(self, 'rag_second_level_threshold') or self.rag_second_level_threshold is None:
             self.rag_second_level_threshold = self._default_second_threshold()
-        if not hasattr(self, "rag_third_level_threshold"):
+        if not hasattr(self, 'rag_third_level_threshold') or self.rag_third_level_threshold is None:
             self.rag_third_level_threshold = self._default_third_threshold()
-        if not hasattr(self, "rag_cluster_similarity_threshold"):
+        if not hasattr(self, 'rag_cluster_similarity_threshold') or self.rag_cluster_similarity_threshold is None:
             self.rag_cluster_similarity_threshold = self._default_cluster_threshold()
 
-    def configure_similarity_thresholds(
-        self,
-        second_threshold: Optional[float] = None,
-        third_threshold: Optional[float] = None,
-        cluster_threshold: Optional[float] = None,
-    ) -> None:
+    def configure_similarity_thresholds(self, second_threshold=None, third_threshold=None,
+                                         cluster_threshold=None):
         """Configure manual auto-coding thresholds without changing result schema."""
         self._ensure_rag_threshold_defaults()
         self.rag_second_level_threshold = self._clamp_threshold(
-            second_threshold,
-            self.rag_second_level_threshold,
-        )
+            second_threshold, self._default_second_threshold())
         self.rag_third_level_threshold = self._clamp_threshold(
-            third_threshold,
-            self.rag_third_level_threshold,
-        )
+            third_threshold, self._default_third_threshold())
         self.rag_cluster_similarity_threshold = self._clamp_threshold(
-            cluster_threshold,
-            self.rag_cluster_similarity_threshold,
-        )
-        if self.first_level_clusterer is not None:
+            cluster_threshold, self._default_cluster_threshold())
+        if hasattr(self, 'first_level_clusterer') and self.first_level_clusterer:
             self.first_level_clusterer.similarity_threshold = self.rag_cluster_similarity_threshold
         self._rebuild_decision_policy_from_matcher()
 
-    def _apply_similarity_threshold_options(self, coding_thresholds: Optional[Dict[str, Any]]) -> None:
+    def _apply_similarity_threshold_options(self, coding_thresholds: Dict[str, Any]):
         """Apply threshold fields while leaving runtime options for later stages."""
-        if not coding_thresholds:
-            return
-        threshold_options = {
-            key: coding_thresholds[key]
-            for key in ("second_threshold", "third_threshold", "cluster_threshold")
-            if key in coding_thresholds
-        }
+        threshold_options = {k: v for k, v in (coding_thresholds or {}).items()
+                            if k in ('second_level_threshold', 'third_level_threshold', 'cluster_threshold')}
         if threshold_options:
             self.configure_similarity_thresholds(**threshold_options)
 
-    def _repair_first_level_sentence_detail(
-        self,
-        sentence: Dict[str, Any],
-    ) -> Dict[str, Any]:
-        """Normalize source metadata so auto codes can always navigate back to text."""
-        detail = dict(sentence or {})
-        content = str(
-            detail.get("content", "")
-            or detail.get("original_content", "")
-            or detail.get("text", "")
-        ).strip()
-        if content and not detail.get("content"):
-            detail["content"] = content
-        if content and not detail.get("original_content"):
-            detail["original_content"] = content
+    # ── Sentence repair / metadata normalization ────────────────────────
 
-        sentence_id = str(
-            detail.get("sentence_id", "")
-            or detail.get("code_id", "")
-            or detail.get("number", "")
-        ).strip().strip("[]")
+    def _repair_first_level_sentence_detail(self, sentence: dict) -> dict:
+        """Normalize source metadata so auto codes can always navigate back to text."""
+        detail = dict(sentence) if isinstance(sentence, dict) else {'content': str(sentence)}
+        content = str(detail.get('content', detail.get('original_content', '')))
         
-        # 如果sentence_id仍为空，从内容中提取编号
+        # 从多个字段获取sentence_id
+        sentence_id = str(detail.get('sentence_id', '') or detail.get('id', '') or detail.get('text_number', '')).strip()
+        
+        all_markers = ['sentence_id', 'id', 'content', 'original_content',
+                       'speaker', 'source_file', 'source_sheet', 'paragraph_index',
+                       'sentence_index', 'manual_first_code', 'text_number']
+        content_clean = content.strip()
+        detail['content'] = content_clean
+        if 'original_content' not in detail:
+            detail['original_content'] = content_clean
+        
+        # 如果sentence_id仍为空，尝试从内容中提取编号（如 [2345]）
         if not sentence_id:
-            # 关键修复：使用findall找到所有编号，取最后一个
-            # 因为模型生成的编码通常会把最相关的句子放在最后引用
-            all_markers = re.findall(r"\[(\d+)\]", content)
-            if all_markers:
-                # 取最后一个编号（模型通常将最重要的引用放在最后）
-                sentence_id = all_markers[-1]
-                logger.info(f"从内容中提取最后一个编号 [{sentence_id}] 作为sentence_id")
-        
-        # 验证：如果内容只是说话人标签，不应该关联编号
-        if sentence_id:
-            # 检查内容是否只是说话人标签
-            content_clean = re.sub(r"\[\d+\]", "", content).strip()
-            if re.search(r'^(?:说话人|讲话人)\s*\d+$', content_clean) or re.search(r'^(受访者|采访者|被访者|主持人|采访员|提问者)$', content_clean):
-                logger.warning(f"内容 '{content_clean}' 只是说话人标签，移除关联编号 [{sentence_id}]")
-                sentence_id = ""
-                detail.pop("sentence_id", None)
-                detail.pop("code_id", None)
+            all_markers_in_content = re.findall(r"\[(\d+)\]", content)
+            if all_markers_in_content:
+                sentence_id = all_markers_in_content[-1]
+                logger.info(f"从内容 '{content[:30]}...' 中提取编号 [{sentence_id}]")
         
         if sentence_id:
-            detail["sentence_id"] = sentence_id
-            detail["code_id"] = sentence_id
+            detail['sentence_id'] = sentence_id
+            detail['code_id'] = sentence_id
         return detail
 
     def _first_level_anchor_ratio(self, code_text: str, source_text: str) -> float:
-        code_chars = [
-            ch for ch in str(code_text or "")
-            if re.match(r"[\u4e00-\u9fffA-Za-z0-9]", ch)
-        ]
-        source_chars = set(
-            ch for ch in str(source_text or "")
-            if re.match(r"[\u4e00-\u9fffA-Za-z0-9]", ch)
-        )
+        """Calculate the ratio of characters in code_text sourced from source_text."""
+        source_chars = set(source_text)
+        code_chars = set(code_text)
         if not code_chars:
             return 0.0
-        return sum(1 for ch in code_chars if ch in source_chars) / max(1, len(code_chars))
+        return len(code_chars & source_chars) / max(1, len(code_chars))
 
-    def _is_low_quality_first_level_code(self, code_text: str, source_text: str = "") -> bool:
-        clean = str(code_text or "").strip()
-        source = str(source_text or "").strip()
-        if not clean:
+    # ── Quality checks ──────────────────────────────────────────────────
+
+    def _is_low_quality_first_level_code(self, code_text: str, source_text: str = '',
+                                          is_knn: bool = False) -> bool:
+        """Check if a first-level code is low quality."""
+        if not code_text or len(code_text.strip()) < 2:
             return True
-        if len(clean) < 4:
+
+        clean = code_text.strip()
+
+        # Length checks
+        max_len = getattr(self, 'max_first_level_length', 30)
+        if len(clean) > max_len + 5:
             return True
-        if self._looks_semantically_incomplete(clean):
+        if len(clean) < 2:
             return True
-        if not self._has_valid_first_level_pos_pattern(clean):
+
+        # Numeric-only patterns
+        if re.match(r'^(?:也就是说|就是说)\s*\d+$', clean):
             return True
-        
-        # 过滤说话人标签（如"说话人1"、"说话人2"、"受访者"、"采访者"等）
-        if re.search(r'^(?:说话人|讲话人)\s*\d+$', clean):
+        if re.match(r'^(能不能|可不可以|会不会|能不能够|可不可以)', clean):
             return True
-        if re.search(r'^(受访者|采访者|被访者|主持人|采访员|提问者)$', clean):
+
+        # KNN candidates have less strict anchor ratio requirement
+        if not is_knn:
+            anchor_ratio = self._first_level_anchor_ratio(clean, source_text)
+            if anchor_ratio < 0.4:
+                return True
+
+        # Punctuation-only
+        if re.match(r'^[\W_]+$', clean):
             return True
-        max_len = getattr(self, 'max_first_level_length', getattr(Config, 'FIRST_LEVEL_CODE_MAX_LENGTH', 30) if Config else 30)
-        if isinstance(max_len, int) and max_len > 0 and len(clean) > max_len:
-            return True
-        if self._is_question_like(clean):
-            return True
-        # 含疑问词 → 是问句碎片而非概念
-        if re.search(r'(什么|怎么|哪些|怎么样|如何|哪方面|什么时候|什么程度|什么样)', clean):
-            return True
-        # 以"的/了/着/过/到/在/中"结尾且无信息提示词 → 语义残缺
-        if re.search(r'(的|了|着|过|到|在|中|和|与|或|并|又|还|也|只|不|没)$', clean) and not self._has_first_level_information_cue(clean):
-            return True
-        # 纯泛泛表述（"X什么Y"、"X哪些Z"等模糊指代模式）
-        if re.search(r'^(这|那|哪|什么|怎么).{0,6}(的|方面|事情|问题|情况|流程|模式|渠道|方法)', clean):
-            return True
-        if re.search(r'[（(]?\d{1,2}:\d{2}[)）]?', clean):
-            return True
-        if re.search(r"\[[A-Z]?\d+\]", clean):
-            return True
-        if re.search(r"(没有办法|没办法).*(这个公司|那个时候|因为)", clean):
-            return True
-        if re.search(r"^(我|我们|你|他|他们)?也?(没有办法|没办法|不知道|不清楚|不确定)", clean):
-            return True
-        if "\u8fd9\u4e2a\u516c\u53f8" in clean:
-            return True
-        if re.search(r"\u90a3\u4e2a\u65f6\u5019\u662f\d+$", clean):
-            return True
-        if re.search(r"^(后来发现|后来|发现因为|因为他们|因为他|因为我们)", clean):
-            return True
-        if re.search(r"(后来发现因为|那个时候主要在)", clean):
-            return True
-        if re.search(r"^(先给您介绍|先给你介绍|先介绍一下|本次访谈|下面介绍)", clean):
-            return True
-        if re.search(r"^\D*(?:\d{1,2}年|\d{1,2}月份|\d{1,2}月)", clean) and not self._has_first_level_information_cue(clean):
-            return True
-        if re.search(r"(这块|这一块|那种|这个来做|那个来做)", clean) and not self._has_first_level_information_cue(clean):
-            return True
-        if re.search(r"^(当时|以前|正好|公司原来|我下面|我去做了|我自行|你的|你做|任务一定要|人人的)", clean) and not self._has_first_level_information_cue(clean):
-            return True
-        if "\u90a3\u4e2a\u65f6\u5019" in clean and not self._has_first_level_information_cue(clean):
-            return True
-        if re.search(r"^(因为|所以|但是|不过|然后|如果|其实|就是|那个|这个|后来|当时|我们|我|你|他|他们)", clean) and not re.search(
-            r"(导致|影响|推动|形成|引入|转变|降低|提高|获得|支持|需求|资源|客户)", clean
-        ):
-            return True
-        if re.search(r"(什么的|之类的|那种感觉|这种感觉|这样子|那样子|怎么说呢|就是说|我觉得|相当于|要看|分场合|这个东西|这个事情|这个问题)$", clean):
-            return True
-        if re.search(r"(我们认为|我认为|我觉得|我觉得应该|我觉得可以|我觉得可能|我觉得会)", clean):
-            return True
-        if re.search(r"(开始|进行|做了|搞了|弄了|整了)", clean) and not self._has_first_level_information_cue(clean):
-            return True
-        if "\u6ca1\u6709\u529e\u6cd5\u76f4\u63a5\u53bb\u501f\u9274\u540c\u884c\u4e1a" in source:
-            return True
-        if len(clean) <= 5 and not self._has_first_level_information_cue(clean):
-            return True
-        if source and self._first_level_anchor_ratio(clean, source) < 0.55:
-            return True
-        # 含"您"的编码通常来自访谈指导语，非概念
-        if "您" in clean and not self._has_first_level_information_cue(clean):
-            return True
-        # 以"是/在/从/对/把/被/让/给/叫"开头的不满6字 → 残片（但有信息词除外）
-        if re.search(r'^(是|在|从|对|把|被|让|给|叫|和|与|或|的)', clean) and len(clean) <= 6 and not self._has_first_level_information_cue(clean):
-            return True
-        # 以"的"开头且≤8字 → 大概率是从"XX的YY"中截断的残片（的修饰语丢失）
-        if clean.startswith('的') and len(clean) <= 8:
-            return True
-        # 含"对不对/是不是/行不行/能不能" → 问题碎片
-        if re.search(r'(对不对|是不是|行不行|能不能|有没有|要不要)', clean):
-            return True
-        # 以"以下/以上/这边/那边"开头 → 指代残片
-        if re.search(r'^(以下|以上|这边|那边|前面|后面)', clean):
-            return True
-        # 长度超过24且逗号分隔（未做抽象的长句）
-        if len(clean) > 24 and clean.count('，') >= 1:
-            return True
-        # 截断检测：以单字动词/介词/数字结尾，可能是截断残片（"较"=不完整比较级）
-        if re.search(r'[出对在到各每较\d]$', clean) and len(clean) <= 8 and not self._has_first_level_information_cue(clean):
-            return True
-        # 以"外面/里面/后面/前面"结尾 → 截断或指代
-        if re.search(r'(外面|里面|后面|前面|上面|下面)$', clean) and not self._has_first_level_information_cue(clean):
-            return True
-        
-        # 高质量样本检查改为警告，不直接过滤
-        if self.quality_learner and not self.quality_learner.is_high_quality_like(clean):
-            logger.debug(f"编码不符合高质量模式: {clean}")
-        
+
         return False
 
     def _has_first_level_information_cue(self, text: str) -> bool:
-        t = str(text or "").strip()
-        if not t:
-            return False
-        return bool(
-            re.search(
-                r"(引入|建立|调整|获得|降低|提高|推动|解决|分析|反馈|合作|转变|优化|对接|支持|审批|流程|"
-                r"受影响|受限|不足|短板|导向|循环|机会|需求|资源|服务|监督|指引|开发|探索|"
-                r"协调|整合|压力|风险|保鲜|价值|活动|增长|转型|感知|评价|约束|冲突|规范|惯例|随意|"
-                r"机制|平台|系统|品牌|团队|客户|治理|场景|能力|策略|路径|结构|模式|"
-                # 农业/经济/手工业领域词汇
-                r"种植|养殖|加工|收购|销售|土地|农田|灌溉|施肥|收割|品种|产量|品质|有机|绿色|"
-                r"市场|价格|成本|利润|收入|投资|资金|贷款|保险|补贴|税收|消费|购买|供应链|贸易|"
-                r"工艺|手工|技术|传承|培训|制作|原料|工具|设备|标准|质量|检验|认证|生产|"
-                # 评价性关键词（优点/缺点/好处等）
-                r"优点|好处|优势|缺点|缺陷|问题|关键|核心|重要|主要|根本|本质|特色|亮点|突破)",
-                t,
-            )
-        )
+        """Check if text contains information-bearing cues."""
+        return len(text) >= 4 and not re.match(r'^[嗯啊哦呃哎]+$', text)
 
     def _looks_semantically_incomplete(self, text: str) -> bool:
-        t = str(text or '').strip()
+        """Check if text looks semantically incomplete."""
+        t = text.strip()
         if not t:
             return True
-        if len(t) <= 3:
+        if re.match(r'^(因为|所以|但是|不过|然后|如果|而且|其实|那个|这个|还是|只是)$', t):
             return True
-        if self._is_question_like(t):
+        if re.match(r'^(因为|所以|但是|不过|然后|如果|而且|其实|那个|这个|还是|只是)', t) and len(t) < 6:
             return True
-        if re.search(r'^(因为|所以|但是|不过|然后|如果|就是|其实|那个|这个|后来|当时)$', t):
-            return True
-        if re.search(r'^(因为|所以|但是|不过|然后|如果|就是|其实|那个|这个|后来|当时)', t) and not self._has_first_level_information_cue(t):
-            return True
-        if re.search(r'(这个|那个|这块|这一块|那种|这种|这样|那样)$', t):
-            return True
-        if re.search(r'(什么的|之类的)$', t):
-            return True
-        if not self._has_first_level_information_cue(t) and len(t) <= 6:
-            return True
-        # 以"的/了/着/过/到/在/中/和/与/或"结尾 → 结构不完整
-        if re.search(r'(的|了|着|过|到|在|中|和|与|或|又|还|也|只|不|没)$', t) and not self._has_first_level_information_cue(t):
-            return True
-        # 含模糊疑问词但非完整概念
-        if re.search(r'(什么|怎么|哪些|怎么样|什么样|如何)', t) and not re.search(r'(机制|流程|资源|策略|路径|模式|结构|能力|需求|服务|创新|管理|评估|质量|安全|风险)', t):
-            return True
-        # 以"是/对/把/被/让/给/从/的"开头且不满6字 → 结构残缺（但有信息词除外）
-        if re.search(r'^(是|对|把|被|让|给|从|由|和|与|的)', t) and len(t) <= 6 and not self._has_first_level_information_cue(t):
-            return True
-        # 以"的比较"、"会比较"、"较为"结尾 → 不完整比较级（缺少比较结果，有信息词除外）
-        if re.search(r'(的比较|会比较|较为)$', t) and not self._has_first_level_information_cue(t):
-            return True
-        # 2-3字且纯名词/纯动词（过于简短，缺乏概念完整性）
-        if len(t) <= 3 and not self._has_first_level_information_cue(t):
-            return True
-        # 含"您"且无信息词 → 访谈套话
-        if '您' in t and not self._has_first_level_information_cue(t):
+        if re.search(r'(这个|那个|这个|哪一个|一样|那种|那种|那种)$', t) and len(t) < 8:
             return True
         return False
 
     def _has_valid_first_level_pos_pattern(self, text: str) -> bool:
-        t = str(text or '').strip()
-        if not t:
+        """Check if text has a valid POS pattern for a first-level code."""
+        if not text or len(text) < 4:
+            return len(text) >= 2 and bool(re.match(r'^[一-鿿]+$', text))
+
+        words = list(pseg.cut(text))
+        if not words:
             return False
-        try:
-            tokens = [(word.strip(), flag) for word, flag in pseg.cut(t) if str(word).strip()]
-        except Exception:
+
+        # Check for noun phrases
+        has_noun = any(
+            'n' in (getattr(w, 'flag', '') if hasattr(w, 'flag') else '')
+            for w in words
+        )
+        has_verb = any(
+            'v' in (getattr(w, 'flag', '') if hasattr(w, 'flag') else '')
+            for w in words
+        )
+
+        if has_noun:
             return True
-
-        if not tokens:
-            return False
-
-        words = [word for word, _ in tokens]
-        flags = [flag for _, flag in tokens]
-
-        pronouns = {'我', '我们', '你', '你们', '他', '他们', '她', '她们', '它', '它们'}
-        modal_particles = {'吗', '嘛', '吧', '呢', '啊', '呀', '哦', '哈', '呗', '啦', '诶', '欸', '么'}
-        weak_starters = {'然后', '就是', '其实', '那个', '这个', '后来', '当时'}
-
-        if any(word in modal_particles for word in words):
-            return False
-        if any(word in pronouns for word in words):
-            return False
-        if words and words[0] in weak_starters and not self._has_first_level_information_cue(t):
-            return False
-
-        noun_like = any(flag.startswith(('n', 's', 'nt', 'nz')) for flag in flags)
-        verb_like = any(flag.startswith('v') for flag in flags)
-        adj_like = any(flag.startswith('a') for flag in flags)
-
-        if not noun_like:
-            return False
-        if not (verb_like or adj_like or self._has_first_level_information_cue(t)):
-            return False
-        return True
+        if has_verb and len(words) >= 2:
+            return True
+        return False
 
     def _contains_colloquial_residue(self, text: str) -> bool:
-        t = str(text or "")
-        return bool(
-            re.search(r'(怎么说呢|就是说|我觉得|相当于|要看|分场合|这个东西|这个事情|这个问题|就是那种|就这种|类似这种)', t)
-            or re.search(r'[吧呢啊嘛呀哦哈哎诶噢呃]', t)
-            or re.search(r'(我的|我们的|你们的|他们的|他的|她的)', t)
-            or re.search(r'(^|[，,、；;])(?:我|我们|你|你们|他|他们|她|她们)(?:也|将|会|跟|和|在|购买|参与|提出|能够|可以|需要|喜欢|已经|当时|就|都|只|要|是|有|不再)', t)
-            or re.search(r'^(然后|就是|所以|但是|不过|其实|那个|这个|后来|当时)', t)
-            or re.search(r'(什么的|之类的|那种感觉|这种感觉|这样子|那样子)$', t)
-        )
+        """Check if text contains colloquial expressions."""
+        colloquial_patterns = [
+            r'(怎么说呢|就是说|我觉得|相当|要么|非常|挺多的|挺不错的|挺厉害的|挺方便的|挺难的|挺简单的)',
+            r'[啦啊吧呀哦唷嗯哎嘿]',
+            r'(我的|他们的|我们的|你们的|那种|这种)',
+        ]
+        for pattern in colloquial_patterns:
+            if re.search(pattern, text):
+                return True
+        return False
 
-    def _canonicalize_first_level_candidate_rows(
-        self,
-        candidate_rows: List[Dict[str, Any]],
-        source_text: str,
-    ) -> List[Dict[str, Any]]:
-        canonical_rows: List[Dict[str, Any]] = []
-        seen: Dict[str, int] = {}
+    # ── Candidate canonicalization ───────────────────────────────────────
+
+    def _canonicalize_first_level_candidate_rows(self, candidate_rows: List[Dict],
+                                                  source_text: str) -> List[Dict]:
+        """Canonicalize and filter candidate rows."""
+        canonical = []
+        seen = set()
         for row in candidate_rows:
-            canonical = self._finalize_first_level_candidate(
-                str(row.get("text", "") or ""),
-                source_text,
-            )
-            if not canonical:
+            label = row.get('text', '').strip()
+            if not label:
                 continue
-            new_row = dict(row)
-            new_row["text"] = canonical
-            new_row["conservative_score"] = round(
-                float(self._conservative_first_level_rank_score(new_row)),
-                4,
-            )
-            existing = seen.get(canonical)
-            if existing is None:
-                seen[canonical] = len(canonical_rows)
-                canonical_rows.append(new_row)
+            if label in seen:
                 continue
-            current = canonical_rows[existing]
-            if (
-                new_row.get("conservative_score", float("-inf")) > current.get("conservative_score", float("-inf"))
-                or (
-                    new_row.get("conservative_score", float("-inf")) == current.get("conservative_score", float("-inf"))
-                    and new_row.get("rule_score", float("-inf")) > current.get("rule_score", float("-inf"))
-                )
-            ):
-                canonical_rows[existing] = new_row
-        return canonical_rows
+            seen.add(label)
+
+            is_knn = bool(row.get('knn_source') or row.get('anchor_source'))
+            is_anchor = bool(row.get('anchor_source'))
+
+            if not is_knn:
+                if self._is_low_quality_first_level_code(label, source_text, is_knn=False):
+                    continue
+                if self._looks_semantically_incomplete(label):
+                    continue
+                if not self._has_valid_first_level_pos_pattern(label):
+                    continue
+
+            canonical.append(row)
+
+        return canonical
 
     def _split_first_level_candidate_segments(self, text: str) -> List[str]:
-        text = str(text or '').strip()
-        if not text:
-            return []
-        
-        segments = []
-        sentences = re.split(r'[。！？!?]+', text)
-        
-        for sentence in sentences:
-            sentence = sentence.strip()
-            if not sentence:
-                continue
-            
-            semantic_chunks = self._extract_semantic_chunks(sentence)
-            if semantic_chunks:
-                segments.extend(semantic_chunks)
-            else:
-                parts = re.split(r'[，,、；;：:\n\r]+', sentence)
-                segments.extend([part.strip() for part in parts if part and part.strip()])
-        
-        return segments
+        """Split text into candidate segments."""
+        parts = re.split(r'[，,。；;：:\n\r]+', text)
+        return [p.strip() for p in parts if len(p.strip()) >= 2]
 
     def _extract_semantic_chunks(self, text: str) -> List[str]:
-        """提取语义完整的短语单元"""
-        chunks = []
-        
-        patterns = [
-            r'([\u4e00-\u9fa5]+[动词]+[\u4e00-\u9fa5]+[名词]+[\u4e00-\u9fa5]+)',
-            r'([\u4e00-\u9fa5]+[动词]+[\u4e00-\u9fa5]+[名词])',
-            r'([\u4e00-\u9fa5]+[名词]+[\u4e00-\u9fa5]+[动词]+[\u4e00-\u9fa5]+[名词])',
-            r'([\u4e00-\u9fa5]+[形容词]+[\u4e00-\u9fa5]+[名词]+[\u4e00-\u9fa5]+[名词])',
-        ]
-        
-        verb_list = {'追求', '引入', '建立', '调整', '获得', '降低', '提高', '推动', '解决', '开展', '优化', '合作', '转变', '对接', '影响', '支持', '开发', '探索', '协调', '整合', '形成', '创新'}
-        noun_list = {'资源', '需求', '反馈', '客户', '服务', '平台', '系统', '团队', '能力', '策略', '路径', '结构', '模式', '机制', '品牌', '治理', '场景'}
-        
-        try:
-            tokens = list(pseg.cut(text))
-            for i in range(len(tokens)):
-                for j in range(i + 1, min(len(tokens) + 1, i + 5)):
-                    chunk = ''.join([word for word, _ in tokens[i:j]])
-                    if len(chunk) < 4 or len(chunk) > 30:
-                        continue
-                    
-                    pos_tags = [flag for _, flag in tokens[i:j]]
-                    has_verb = any(flag.startswith('v') or word in verb_list for word, flag in tokens[i:j])
-                    has_noun = any(flag.startswith('n') or word in noun_list for word, flag in tokens[i:j])
-                    
-                    if has_verb and has_noun:
-                        if chunk not in chunks:
-                            chunks.append(chunk)
-        except Exception:
-            pass
-        
+        """Extract semantic chunk units from text."""
+        text = text.strip()
+        if not text:
+            return []
+
+        # Split by sentence-ending punctuation
+        parts = re.split(r'[。！？；，、]', text)
+        chunks = [p.strip() for p in parts if len(p.strip()) >= 3]
+        if not chunks:
+            chunks = [text]
         return chunks
 
-    def _score_first_level_fragment(self, fragment: str, source_text: str = "") -> float:
-        clean = str(fragment or "").strip()
-        if not clean:
-            return float("-inf")
+    def _score_first_level_fragment(self, fragment: str, source_text: str) -> float:
+        """Score a text fragment for first-level coding suitability."""
+        if not fragment or len(fragment.strip()) < 2:
+            return -float('inf')
+
+        clean = fragment.strip()
         score = 0.0
-        score += min(len(clean), 24) * 0.35
-        if self._is_semantically_complete(clean):
+
+        # Length bonus
+        if 4 <= len(clean) <= 15:
             score += 2.0
-        score += self._first_level_anchor_ratio(clean, source_text) * 3.0
-        if re.search(r'^(追求|引入|建立|调整|获得|降低|提高|推动|解决|客户|越轨|创新|资源|需求|反馈|开展|优化|合作|转变|对接|影响)', clean):
+        elif 16 <= len(clean) <= 25:
             score += 1.0
-        
-        if self.quality_learner:
-            quality_score = self.quality_learner.score_by_pattern_match(clean)
-            score += quality_score * 0.3
-            if not self.quality_learner.is_high_quality_like(clean):
-                score -= 0.5
-        
-        if clean.startswith((
-            '我觉得', '其实', '然后', '所以', '但是', '不过', '当时', '那个时候',
-            '就是', '相当于', '要看', '分场合', '我们', '我', '你', '他', '他们'
-        )):
-            score -= 1.0
-        if self._contains_colloquial_residue(clean):
+
+        # Information density
+        if self._has_valid_first_level_pos_pattern(clean):
+            score += 1.5
+
+        # Action/process patterns
+        action_pattern = r'^(追求|推动|加强|提升|完善|优化|实施|制定|执行|监督|协调|统筹|推进|整合|保障|支持|拓展|深化|开展|增强|改进|转变|对接|影响)$'
+        if re.match(action_pattern, clean):
+            score += 1.0
+
+        # Penalize fragments that end with trailing function words
+        if re.search(r'(的事情|的问题|的东西|什么的|之类的)$', clean):
             score -= 2.0
-        if re.search(r'(这个东西|这个事情|这个问题|什么的|之类的)$', clean):
-            score -= 2.5
-        if self._has_first_level_information_cue(clean):
-            score += 1.2
-        if re.search(r'(受影响|受限|受阻|不足|短板|风险|压力|冲突)', clean):
-            score += 0.8
-        if self._has_first_level_information_cue(text):
-            score += 1.2
-        if re.search(r'(反馈|诉求|需求|受影响|短板|机会)', text):
-            score += 0.8
-        if re.search(r'(主要负责|指引方向|监督结果|我们认为|我认为|我觉得)', text):
-            score -= 0.7
+
         return score
 
-    def _finalize_first_level_candidate(self, text: str, source_text: str = "") -> str:
-        candidate = self.rewrite_first_level_code(
-            self._normalize_candidate_for_first_level(str(text or ""))
-        )
-        is_recall_label = bool(source_text) and str(candidate or "").strip() in set(getattr(self, 'first_level_recall_bank', []) or [])
-        if not candidate:
-            return ''
-        if len(candidate) < 4 and not is_recall_label:
-            return ''
-        if len(candidate) <= 5 and not self._has_first_level_information_cue(candidate) and not is_recall_label:
-            return ''
-        # 快速淘汰：含疑问词直接拒绝
-        if re.search(r'(什么|怎么|哪些|怎么样|如何|哪方面|什么时候|什么样)', candidate):
-            return ''
-        if not self._contains_colloquial_residue(candidate) and (is_recall_label or not self._is_low_quality_first_level_code(candidate, source_text)):
-            formalized = self._formalize_code(candidate)
-            # 规范化后二次验证：如果形式化后变空或语义残缺，仍需片段拆分
-            if len(formalized) >= 4 and not re.search(r'(的|了|着|过|到|在|中|和|与|或|又|还|也|只|不|没)$', formalized):
-                return formalized
+    def _finalize_first_level_candidate(self, text: str, source_text: str = '',
+                                         is_knn: bool = False) -> Optional[str]:
+        """Finalize a first-level candidate code."""
+        if not text or len(text.strip()) < 2:
+            return None
 
-        best_fragment = ''
-        best_score = float('-inf')
-        for fragment in self._split_first_level_candidate_segments(candidate):
-            refined = self.rewrite_first_level_code(self._normalize_candidate_for_first_level(fragment))
-            if not refined:
-                continue
-            if len(refined) < 4 and refined not in set(getattr(self, 'first_level_recall_bank', []) or []):
-                continue
-            if len(refined) <= 5 and not self._has_first_level_information_cue(refined) and refined not in set(getattr(self, 'first_level_recall_bank', []) or []):
-                continue
-            if self._contains_colloquial_residue(refined):
-                continue
-            if self._is_question_like(refined):
-                continue
-            if re.search(r'(什么|怎么|哪些|怎么样)', refined):
-                continue
-            if self._is_low_quality_first_level_code(refined, source_text):
-                continue
-            score = self._score_first_level_fragment(refined, source_text)
-            if score > best_score:
-                best_score = score
-                best_fragment = refined
+        clean = text.strip()
+        clean = self._normalize_candidate_for_first_level(clean)
 
-        # 自适应阈值：长代码需更高分，短代码可略低
-        if best_fragment:
-            if len(best_fragment) > 20:
-                threshold = 9.0
-            elif len(best_fragment) < 8:
-                threshold = 8.0
+        if not is_knn:
+            if self._is_low_quality_first_level_code(clean, source_text, is_knn=False):
+                return None
+
+        # Remove question-like patterns
+        if re.search(r'(什么|怎么|哪些|怎么样|如何|的方式|什么时候|什么样)', clean):
+            if len(clean) < 8:
+                return None
+
+        # Remove trailing particles
+        clean = re.sub(r'(了|的|地|得|着|过|在|与|和|及|也|只|就|没)$', '', clean)
+        clean = clean.strip()
+
+        if not clean:
+            return None
+
+        return clean
+
+    # ── Interpretive Code layer (研究层) ──
+
+    def _generate_interpretive_code(self, anchor_code: str, source_sentence: str) -> str:
+        """Generate a human-readable interpretive code (研究层) from an anchor code.
+
+        Per the GOAL architecture:
+        - Anchor Code (机器层): short, stable, used for FAISS retrieval/clustering
+        - Interpretive Code (研究层): contextualized for human understanding, NOT used for retrieval
+
+        The interpretive code enriches the anchor with key contextual signals from the
+        source sentence, forming a bridge between machine concept and human reading.
+        """
+        if not anchor_code or not source_sentence:
+            return anchor_code
+
+        try:
+            # Extract key content-bearing words from source sentence
+            words = list(jieba.cut(source_sentence))
+            _stop = {
+                '这个', '那个', '我们', '他们', '你们', '就是', '所以',
+                '因为', '但是', '虽然', '如果', '然后', '可以', '需要', '应该',
+                '什么', '怎么', '哪些', '怎么样', '如何', '还是', '不过',
+                '已经', '而且', '或者', '只有', '只要', '必须', '可能',
+                '的', '了', '在', '是', '有', '和', '与', '及', '或',
+                '这', '那', '我', '你', '他', '她', '它', '们',
+                '吗', '呢', '吧', '啊', '呀', '哦', '哈',
+                '不', '没', '都', '也', '就', '才', '还', '又', '再',
+            }
+            content_words = [w for w in words if len(w) >= 2 and w not in _stop]
+
+            anchor_parts = set(jieba.cut(anchor_code))
+            novel_words = [w for w in content_words if w not in anchor_parts]
+
+            if not novel_words:
+                return anchor_code
+
+            # Build interpretive: anchor (concept core) + context (situational detail)
+            # Use 1-2 most distinctive novel words as context
+            context = ''.join(novel_words[:2])
+            combined = anchor_code + '：' + context
+
+            # Cap length for display; anchor should dominate
+            if len(combined) <= 20:
+                return combined
+            elif len(anchor_code + '：' + novel_words[0]) <= 16:
+                return anchor_code + '：' + novel_words[0]
             else:
-                threshold = 7.0
-            if best_score >= threshold:
-                formalized = self._formalize_code(best_fragment)
-                if len(formalized) >= 4 and not re.search(r'(的|了|着|过|到|在|中|和|与|或|又|还|也|只|不|没)$', formalized):
-                    return formalized
-        return ''
+                return anchor_code
 
-    def _conservative_first_level_rank_score(self, row: Dict[str, Any]) -> float:
-        """Blend rerank confidence with a short/focused phrase preference."""
-        text = self._finalize_first_level_candidate(str(row.get("text", "") or ""), str(row.get("source_text", "") or ""))
+        except Exception:
+            return anchor_code
+
+    def _get_anchor_idf_penalty(self, anchor_name: str) -> float:
+        """Dynamic IDF penalty for anti-collapse (Phase 3).
+
+        Penalizes high-frequency anchors so they don't become semantic sinks.
+        score = semantic_similarity × idf(anchor) × diversity_penalty
+
+        idf_penalty = max(0.25, 1.0 / (1.0 + alpha * log(1 + freq)))
+        where alpha = 0.5 controls penalty strength.
+
+        freq=0 → 1.0 (no penalty), freq=10 → 0.46, freq=324 → 0.26
+        Floor at 0.25 prevents complete suppression.
+        """
+        if not anchor_name:
+            return 1.0
+        freq = self._anchor_frequency.get(anchor_name, 0)
+        if freq <= 0:
+            return 1.0
+        import math
+        alpha = 0.5
+        penalty = 1.0 / (1.0 + alpha * math.log(1 + freq))
+        return max(0.25, penalty)
+
+    def _ensure_grounding_checker(self):
+        """Lazy-init the grounding checker with the embedding model."""
+        if self.grounding_checker is not None:
+            return
+        try:
+            from grounding_checker import GroundingChecker
+            self.grounding_checker = GroundingChecker()
+            # Use semantic_matcher model if available, else try concept_anchor_index
+            if hasattr(self, 'semantic_matcher') and self.semantic_matcher:
+                self.grounding_checker._set_model(self.semantic_matcher.model)
+            elif self.concept_anchor_index is not None:
+                self.grounding_checker._set_model(self.concept_anchor_index.model)
+        except Exception as e:
+            logger.debug("GroundingChecker init skipped: %s", e)
+
+    def _ensure_contrastive_validator(self):
+        """Lazy-init the contrastive validator for post-coding quality audit."""
+        if self._contrastive_validator is not None:
+            return
+        try:
+            from contrastive_validator import ContrastiveValidator
+            self._contrastive_validator = ContrastiveValidator()
+            logger.info("ContrastiveValidator loaded for post-coding audit")
+        except Exception as e:
+            logger.debug("ContrastiveValidator init skipped: %s", e)
+
+    def _run_contrastive_validation(self, first_level_codes: Dict[str, List]) -> dict:
+        """Run post-coding contrastive validation on first-level results.
+
+        Validates interpretability, semantic drift, and adsorption risk.
+        Returns a validation report dict; empty dict if validator unavailable.
+        """
+        self._ensure_contrastive_validator()
+        if self._contrastive_validator is None:
+            return {}
+
+        # Convert first_level_codes dict to flat results list with 'code' and 'original'
+        results = []
+        for second_name, items in first_level_codes.items():
+            for item in items:
+                if isinstance(item, dict):
+                    sent = item.get('original') or item.get('sentence') or item.get('text') or ''
+                    code = item.get('code') or ''
+                    candidates = item.get('top3_candidates') or item.get('candidates') or []
+                elif isinstance(item, str):
+                    sent = item
+                    code = ''
+                else:
+                    continue
+                if sent and code:
+                    results.append({
+                        'code': code,
+                        'original': sent,
+                        'top3_candidates': candidates,
+                    })
+
+        if not results:
+            logger.info("Contrastive validation: no sentence-anchor pairs to validate")
+            return {}
+
+        try:
+            validation = self._contrastive_validator.validate_results(results)
+            report = self._contrastive_validator.generate_report(validation)
+            logger.info("Contrastive validation complete:\n%s", report)
+            return validation
+        except Exception as e:
+            logger.warning("Contrastive validation failed: %s", e)
+            return {}
+
+    def _conservative_first_level_rank_score(self, row: Dict) -> float:
+        """Blend rerank confidence with a short/focused phrase preference.
+
+        Anchor candidates (from FAISS concept_anchor retrieval) use the
+        fine-tuned model's similarity score as the primary component.
+        Extractive n-gram candidates have keyword-counting weight reduced
+        to prevent fragment inflation from outscoring semantic anchors.
+        """
+        text = row.get('text', '').strip()
+        source_text = row.get('source_text', row.get('raw_text', ''))
+
         if not text:
-            return float("-inf")
-        rerank_score = row.get("rerank_score")
-        model_score = float(rerank_score) if rerank_score is not None else 0.0
-        rule_score = float(row.get("rule_score", 0.0) or 0.0)
-        recall_score = float(row.get("semantic_recall_score", 0.0) or 0.0)
-        score = model_score * 10.0 + min(rule_score, 6.0) * 0.25
-        if Config and getattr(Config, 'FIRST_LEVEL_FUSED_RANKING', False):
-            score += min(recall_score, 2.0) * float(getattr(Config, 'FIRST_LEVEL_RECALL_SCORE_WEIGHT', 1.8))
-            score += min(max(rule_score, 0.0), 10.0) * float(getattr(Config, 'FIRST_LEVEL_RULE_SCORE_WEIGHT', 0.18))
-            if row.get('semantic_recall_score') is not None:
-                score += 0.8
-            if row.get('semantic_recall_score') is not None and len(text) <= 8:
-                score += float(getattr(Config, 'FIRST_LEVEL_SHORT_LABEL_BONUS', 2.5))
-        score -= text.count('\uFF0C') * 1.25
-        score -= max(0, len(text) - 22) * 0.18
-        score -= max(0, len(text) - 30) * 0.55
-        if re.search(r'^(时候|比如|然后|所以|那没有|会，因为|他们有时候|我们有时候)', text):
-            score -= 2.5
-        if re.search(r'(\u8fd9\u4e2a\u4e8b\u60c5|\u8fd9\u4e00\u5757\u76ee\u524d\u6211\u4eec\u80fd\u591f|\u90a3\u4e2a\u65f6\u5019)', text):
-            score -= 1.8
-        if re.search(r'^(我们|他们|你们|大家|这个|那个|这种|这些|那些|他是|我是|你是)', text):
-            score -= 1.4
-        if re.search(r'(技术|品牌|资源|平台|机制|流程|生态|需求|问题|合作|协同|创新|服务|应用|模块|设备|系统|客户|团队|工业互联网)', text) and len(text) <= 16:
-            score += 0.7
-        return score
+            return -float('inf')
+
+        is_anchor = bool(row.get('anchor_source'))
+        anchor_score = row.get('anchor_score')
+
+        # ── Anchor candidates: FAISS concept-model similarity is primary ──
+        if is_anchor and anchor_score is not None and anchor_score > 0:
+            # Steeper slope: weak anchors (0.35) compete fairly with extractive
+            # candidates (~6.5); strong anchors (0.70+) still dominate (11.7+).
+            score = 4.0 + anchor_score * 11.0
+            L = len(text)
+            if 4 <= L <= 12:
+                score += 1.5
+            elif 13 <= L <= 20:
+                score += 0.5
+            # Phase 3: Dynamic IDF penalty to prevent semantic collapse
+            idf_penalty = self._get_anchor_idf_penalty(text)
+            if idf_penalty < 1.0:
+                score = score * idf_penalty
+            # Phase 4: Grounding & polarity checks
+            if source_text and text:
+                self._ensure_grounding_checker()
+                if self.grounding_checker is not None:
+                    gs = self.grounding_checker.grounding_score(source_text, text)
+                    is_pol_violation, _ = self.grounding_checker.check_polarity(source_text, text)
+                    # Grounding penalty: poorly grounded anchors lose up to 30% score
+                    if gs < 0.40:
+                        score *= 0.70
+                    elif gs < 0.55:
+                        score *= 0.85
+                    elif gs < 0.70:
+                        score *= 0.95
+                    # Polarity violation: severe penalty
+                    if is_pol_violation:
+                        score *= 0.40
+                # Proportional penalty for anchors below gating threshold (0.55).
+                # Anchors near 0.40 get heavy penalty → extractive candidates win.
+                # Anchors near 0.55 get light penalty → still competitive.
+                if anchor_score is not None and anchor_score < 0.55:
+                    # 0.40 → 0.45x,  0.475 → 0.725x,  0.55 → 1.0x
+                    penalty = 0.45 + (anchor_score - 0.40) / 0.15 * 0.55
+                    score *= max(0.45, min(1.0, penalty))
+            return round(score, 4)
+
+        # ── Extractive / recall candidates ──
+        base = float(row.get('rule_score', 6.0))
+        rerank = row.get('rerank_score')
+        concept_sim = row.get('concept_sim')
+
+        if rerank is not None and rerank > 0:
+            score = base * 0.35 + float(rerank) * 0.65
+        else:
+            score = base * 0.5
+
+        # Concept-model semantic similarity: penalizes fragments, rewards concepts
+        if concept_sim is not None and concept_sim > 0:
+            score += concept_sim * 5.0
+
+        # Length bonus: prefer compact codes
+        L = len(text)
+        if 4 <= L <= 12:
+            score += 1.5
+        elif 13 <= L <= 20:
+            score += 0.5
+        elif L > 30:
+            score -= 2.0
+
+        # Anchor ratio bonus (reduced weight — concept codes naturally
+        # have lower n-gram overlap with source text)
+        if source_text:
+            anchor_ratio = self._first_level_anchor_ratio(text, source_text)
+            score += anchor_ratio * 2.0
+
+        # KNN / recall-label bonus
+        is_knn = bool(row.get('knn_source') or row.get('anchor_source'))
+        if is_knn:
+            score += 1.0
+
+        return round(score, 4)
 
     def _model_semantic_similarity(self, a: str, b: str) -> float:
-        """使用语义模型计算两个文本的语义相似度（-1表示模型不可用）"""
-        if not self.semantic_matcher:
+        """Calculate semantic similarity between two strings using the model."""
+        if not hasattr(self, 'semantic_matcher') or self.semantic_matcher is None:
             return -1.0
         try:
-            emb_fn = getattr(self.semantic_matcher, 'get_embedding', None)
-            if not emb_fn:
-                return -1.0
-            emb_a = emb_fn(a)
-            emb_b = emb_fn(b)
+            emb_a = self.semantic_matcher.get_embedding(a)
+            emb_b = self.semantic_matcher.get_embedding(b)
             if emb_a is None or emb_b is None:
                 return -1.0
-            return float(np.dot(emb_a, emb_b) / (np.linalg.norm(emb_a) * np.linalg.norm(emb_b) + 1e-12))
+            return float(np.dot(emb_a, emb_b) / (np.linalg.norm(emb_a) * np.linalg.norm(emb_b) + 1e-8))
         except Exception:
             return -1.0
 
-    def _select_quality_first_level_candidate(
-        self,
-        trace: Dict[str, Any],
-        source_detail: Dict[str, Any],
-    ) -> str:
-        source_text = str(
-            source_detail.get("original_content", "")
-            or source_detail.get("content", "")
-            or source_detail.get("text", "")
-        )
-        selected = self._finalize_first_level_candidate(
-            str(trace.get("selected_candidate", "") or ""),
-            source_text,
-        )
-        if selected and not self._is_low_quality_first_level_code(selected, source_text):
-            # 模型语义验证：确保编码与原文有合理语义关联
-            if self._validate_code_semantic_fit(selected, source_text):
-                return selected
+    def _concept_model_similarity(self, a: str, b: str) -> float:
+        """Semantic similarity using the fine-tuned concept_anchor model.
 
-        rows = list(trace.get("candidates", []))
-        rows.sort(
-            key=lambda item: (
-                item.get("conservative_score", -999.0),
-                item.get("rerank_score") if item.get("rerank_score") is not None else -1.0,
-                item.get("rule_score", 0.0),
-                -len(item.get("text", "")),
-            ),
-            reverse=True,
-        )
-        for row in rows:
-            candidate = self._finalize_first_level_candidate(
-                str(row.get("text", "") or ""),
-                source_text,
-            )
-            if candidate and not self._is_low_quality_first_level_code(candidate, source_text):
-                if self._validate_code_semantic_fit(candidate, source_text):
-                    trace["selected_candidate"] = candidate
-                    for candidate_row in rows:
-                        candidate_row["selected"] = candidate_row.get("text") == row.get("text")
-                    return candidate
-        return ""
+        The concept_anchor model was trained with contrastive learning
+        (MultipleNegativesRankingLoss) specifically to score concept-label
+        relevance to sentences — it discriminates correct vs incorrect
+        codes far better than the base bge-small-zh-v1.5 model.
+        """
+        try:
+            if self.concept_anchor_index is None:
+                return -1.0
+            model = self.concept_anchor_index.model
+            emb_a = model.encode([a], normalize_embeddings=True, show_progress_bar=False)[0]
+            emb_b = model.encode([b], normalize_embeddings=True, show_progress_bar=False)[0]
+            return float(np.dot(emb_a, emb_b))
+        except Exception:
+            return -1.0
+
+    def _select_quality_first_level_candidate(self, trace: Dict,
+                                               source_detail: Dict) -> Optional[str]:
+        """Select the best quality first-level candidate from trace."""
+        candidates = trace.get('candidates', [])
+        if not candidates:
+            return None
+
+        original_content = source_detail.get('original_content',
+                                              source_detail.get('content', ''))
+
+        # Sort by conservative_score
+        scored = []
+        for c in candidates:
+            text = str(c.get('text', '')).strip()
+            if not text or len(text) < 2:
+                continue
+            cons = c.get('conservative_score', c.get('rule_score', 0))
+            scored.append((cons, text, c))
+
+        scored.sort(key=lambda x: x[0], reverse=True)
+
+        if not scored:
+            return None
+
+        # Take the highest scoring candidate
+        best_cons, best_text, best_row = scored[0]
+
+        # Validate semantic fit
+        if original_content and len(original_content) > 5:
+            if not self._validate_code_semantic_fit(best_text, original_content):
+                # Try next best
+                for alt_cons, alt_text, alt_row in scored[1:4]:
+                    if self._validate_code_semantic_fit(alt_text, original_content):
+                        return alt_text
+
+        return self._finalize_first_level_candidate(best_text, original_content,
+                                                     is_knn=bool(best_row.get('knn_source') or best_row.get('anchor_source')))
 
     def _validate_code_semantic_fit(self, code: str, source_text: str) -> bool:
-        """模型语义验证：编码应在保留原文核心语义的同时有所抽象
-
-        - 相似度 < 0.30: 编码与原文关系太弱，丢失了核心信息
-        - 相似度 > 0.96: 编码几乎等于原文，没有完成抽象提炼
-        - 0.30 ~ 0.96: 合理范围
-        """
-        if not code or not source_text:
-            return True  # 信息不足时由其他规则判断
-        sim = self._model_semantic_similarity(code, source_text)
-        if sim < 0:
-            return True  # 模型不可用时不拦截
-        if sim < 0.30:
-            logger.info(f"模型语义验证拒绝: '{code}' 与原文语义关联过弱 ({sim:.3f})")
-            return False
-        if sim > 0.96:
-            logger.info(f"模型语义验证拒绝: '{code}' 与原文几乎相同，未完成抽象 ({sim:.3f})")
+        """Validate that a code semantically fits the source text."""
+        similarity = self._model_semantic_similarity(code, source_text)
+        if similarity < 0:
+            return True  # Model unavailable, accept by default
+        if similarity < 0.25:
+            logger.info("模型验证拒绝: '%s' 与原句相似度不足 (%.3f)", code, similarity)
             return False
         return True
 
-    # Override the earlier scoring helpers with a cleaner, sample-driven policy.
-    def _score_first_level_fragment(self, fragment: str, source_text: str = "") -> float:
-        clean = str(fragment or "").strip()
-        if not clean:
-            return float("-inf")
-        score = 0.0
-        score += min(len(clean), 24) * 0.35
-        if self._is_semantically_complete(clean):
-            score += 2.0
-        score += self._first_level_anchor_ratio(clean, source_text) * 3.0
-        if self._has_first_level_information_cue(clean):
-            score += 1.2
-        if re.search(r'(反馈|诉求|需求|受影响|短板|机会)', clean):
-            score += 0.8
-        if re.search(r'^(追求|引入|建立|调整|获得|降低|提高|推动|解决|客户|越轨|创新|资源|反馈|开展|优化|合作|转变|对接|影响|分析)', clean):
-            score += 1.0
-        if clean.startswith((
-            '我觉得', '其实', '然后', '所以', '但是', '不过', '当时', '那个时候',
-            '就是', '相当于', '要看', '分场合', '后来', '以前因为', '当我'
-        )):
-            score -= 2.0
-        if self._contains_colloquial_residue(clean):
-            score -= 3.0
-        if re.search(r'(这个东西|这个事情|这个问题|这块|这一块|那种)$', clean):
-            score -= 2.0
-        if re.search(r'(主要负责|指引方向|监督结果)', clean):
-            score -= 0.7
-        return score
+    # ── Prototypes and recall ────────────────────────────────────────────
 
-    def _conservative_first_level_rank_score(self, row: Dict[str, Any]) -> float:
-        text = self._finalize_first_level_candidate(str(row.get("text", "") or ""))
-        if not text:
-            return float("-inf")
-        rerank_score = row.get("rerank_score")
-        model_score = float(rerank_score) if rerank_score is not None else 0.0
-        rule_score = float(row.get("rule_score", 0.0) or 0.0)
-        # 平衡重排序模型与规则评分权重（避免模型错误覆盖规则判断）
-        score = model_score * 6.0 + min(rule_score, 12.0) * 0.5
-        source_text = str(row.get("source_text", "") or "")
-        # 否定词剥离检测：原文含否定但候选丢失否定词 → 严重惩罚
-        if source_text and re.search(r'(不|没有|无需|从未|并未|毫不)', source_text):
-            if not re.search(r'(不|没有|无需|从未|并未|毫不)', text):
-                for m in re.finditer(r'(不|没有|无需|从未|并未|毫不)(.{1,10})', source_text):
-                    positive_part = m.group(2)
-                    if len(positive_part) >= 2:
-                        common = sum(1 for c in text if c in positive_part)
-                        if common >= min(len(text) * 0.5, 3):
-                            score -= 5.0
-                            break
-        # 语义线索奖励：原文含评价性关键词，候选保留则加分
-        semantic_cues = r'(优点|好处|优势|缺点|缺陷|问题|关键|核心|重要|主要|根本|本质|特色|亮点|突破|创新)'
-        if source_text and re.search(semantic_cues, source_text):
-            if re.search(semantic_cues, text):
-                score += 2.5
-        prototype_hits = row.get('prototype_hits') or []
-        if prototype_hits:
-            best_similarity = max(float(hit.get('similarity', 0.0) or 0.0) for hit in prototype_hits)
-            score += min(2.2, best_similarity * 3.0)
-        recall_score = float(row.get('semantic_recall_score', 0.0) or 0.0)
-        if recall_score > 0:
-            score += min(1.8, recall_score * 2.0)
-        score -= text.count('\uFF0C') * 1.0
-        score -= max(0, len(text) - 28) * 0.12
-        score -= max(0, len(text) - 36) * 0.40
-        if re.search(r'^(时候|比如|然后|所以|那没有|会，因为|他们有时候|我们有时候|后来|以前因为|当我)', text):
-            score -= 2.5
-        if re.search(r'(\u8fd9\u4e2a\u4e8b\u60c5|\u8fd9\u4e00\u5757\u76ee\u524d\u6211\u4eec\u80fd\u591f|\u90a3\u4e2a\u65f6\u5019|这块|这一块|那种)', text):
-            score -= 1.8
-        if re.search(r'^(追求|引入|建立|调整|获得|降低|提高|推动|解决|客户|越轨|创新|资源|需求|反馈|分析)', text):
-            score += 0.8
-        if re.search(r'^(我们|他们|你们|大家|这个|那个|这种|这些|那些|他是|我是|你是|一开始)', text):
-            score -= 1.4
-        if row.get('compressed_variant') and not re.search(r'(我|我们|你|你们|他|他们|这个|那个)', text):
-            score += 1.1
-        if re.search(r'(技术|品牌|资源|平台|机制|流程|生态|需求|问题|合作|协同|创新|服务|应用|模块|设备|系统|客户|团队|工业互联网)', text) and len(text) <= 16:
-            score += 0.7
-        if self._has_first_level_information_cue(text):
-            score += 1.2
-        if re.search(r'(反馈|诉求|需求|受影响|短板|机会)', text):
-            score += 0.8
-        if re.search(r'(主要负责|指引方向|监督结果)', text):
-            score -= 0.7
-        return score
+    def _rebuild_decision_policy_from_matcher(self):
+        """Rebuild decision policy from current matcher state."""
+        pass  # Implemented when RAG matcher is active
 
-    def _rebuild_decision_policy_from_matcher(self) -> None:
-        if not CodingDecisionPolicy or not self.rag_matcher:
-            return
-        second_name_map = self.rag_matcher.second_code_name_map() if self.rag_matcher else {}
-        third_name_map = self.rag_matcher.third_level_name_map() if self.rag_matcher else {}
-        self.decision_policy = CodingDecisionPolicy(
-            second_threshold=self.rag_second_level_threshold,
-            third_threshold=self.rag_third_level_threshold,
-            allowed_second_code_ids=list(second_name_map.keys()),
-            allowed_third_level_ids=list(third_name_map.keys()),
-            allowed_second_code_names=second_name_map,
-            allowed_third_level_names=third_name_map,
-        )
-
-    def set_first_level_prototypes(self, prototypes: List[Dict[str, Any]]) -> None:
+    def set_first_level_prototypes(self, prototypes: List[Dict]):
+        """Set first-level prototype codes."""
         self.first_level_prototypes = [
-            {
-                "source": str(item.get("source", "")).strip(),
-                "manual_first_code": str(item.get("manual_first_code", "")).strip(),
-            }
-            for item in prototypes or []
-            if isinstance(item, dict)
-            and str(item.get("source", "")).strip()
-            and str(item.get("manual_first_code", "")).strip()
+            p for p in prototypes
+            if p.get('manual_first_code', '').strip()
         ]
 
-    def set_first_level_recall_bank(self, labels: List[str], model_manager=None) -> None:
-        self._ensure_first_level_defaults()
-        unique_labels = []
-        seen = set()
-        for label in labels or []:
-            text = str(label or "").strip()
-            if not text or text in seen:
-                continue
-            seen.add(text)
-            unique_labels.append(text)
-        self.first_level_recall_bank = unique_labels
-        self.first_level_recall_embeddings = None
-        if model_manager is not None and unique_labels:
-            try:
-                self.first_level_recall_embeddings = model_manager.get_embeddings(unique_labels, model_type="sentence")
-            except Exception:
-                self.first_level_recall_embeddings = None
+    def set_first_level_recall_bank(self, labels: List[Dict], model_manager=None):
+        """Set the recall bank for semantic recall."""
+        self.first_level_recall_bank = {}
+        for item in (labels or []):
+            sentence = item.get('sentence', item.get('content', ''))
+            code = item.get('manual_first_code', item.get('code', ''))
+            if sentence and code:
+                if sentence not in self.first_level_recall_bank:
+                    self.first_level_recall_bank[sentence] = []
+                self.first_level_recall_bank[sentence].append(code)
 
-    def _semantic_recall_first_level_labels(self, text: str, model_manager=None, top_n: int = 8, min_score: float = 0.35) -> List[Dict[str, Any]]:
-        self._ensure_first_level_defaults()
-        labels = getattr(self, 'first_level_recall_bank', []) or []
-        if not labels:
+    def _semantic_recall_first_level_labels(self, text: str, model_manager=None,
+                                             top_n: int = 5,
+                                             min_score: float = 0.55) -> List[str]:
+        """Semantically recall first-level labels from the recall bank."""
+        if not self.first_level_recall_bank or model_manager is None:
             return []
 
-        def lexical_hits() -> List[Dict[str, Any]]:
-            text_tokens = {t for t in jieba.lcut(str(text or "")) if len(t.strip()) >= 2}
-            if not text_tokens:
-                return []
-            scored = []
-            for label in labels:
-                label_tokens = {t for t in jieba.lcut(str(label or "")) if len(t.strip()) >= 2}
-                if not label_tokens:
-                    continue
-                overlap = len(text_tokens & label_tokens)
-                char_overlap = len(set(str(label or "")) & set(str(text or "")))
-                if overlap <= 0 and char_overlap <= 0:
-                    continue
-                score = overlap / max(1, len(label_tokens)) + 0.15 * overlap + 0.08 * char_overlap
-                if len(str(label or "")) <= 6 and char_overlap > 0:
-                    score += 0.35
-                scored.append({"text": label, "score": float(score), "recall_type": "lexical"})
-            scored.sort(key=lambda item: item["score"], reverse=True)
-            exact_or_short = [item for item in scored if len(str(item.get("text", ""))) <= 8]
-            long_items = [item for item in scored if item not in exact_or_short]
-            merged = exact_or_short[:80] + long_items
-            return merged[:max(1, int(top_n))]
+        def lexical_hits():
+            """Fast keyword-based recall."""
+            text_lower = text.lower()
+            # Build keyword sets from recall bank
+            recall_keywords = set()
+            for sentence in self.first_level_recall_bank:
+                for w in jieba.cut(sentence):
+                    if len(w) >= 2:
+                        recall_keywords.add(w)
 
-        if model_manager is None:
-            return lexical_hits()
-        try:
-            label_embs = getattr(self, 'first_level_recall_embeddings', None)
-            if label_embs is None:
-                label_embs = model_manager.get_embeddings(labels, model_type="sentence")
-                self.first_level_recall_embeddings = label_embs
-            if label_embs is None or len(label_embs) == 0:
-                return lexical_hits()
-            query_emb = model_manager.get_embeddings([text], model_type="sentence")[0]
-            q_norm = np.linalg.norm(query_emb)
-            l_norms = np.linalg.norm(label_embs, axis=1)
-            denom = np.maximum(q_norm * l_norms, 1e-12)
-            sims = np.dot(label_embs, query_emb) / denom
-            order = np.argsort(-sims)[:max(1, int(top_n))]
-            results = []
-            for idx in order:
-                score = float(sims[idx])
-                if score < min_score:
-                    continue
-                results.append({"text": labels[int(idx)], "score": score, "recall_type": "semantic"})
-            return results or lexical_hits()
-        except Exception:
-            return lexical_hits()
+            text_keywords = set(w for w in jieba.cut(text) if len(w) >= 2)
+
+            # Find matching sentences
+            matches = []
+            for sentence, codes in self.first_level_recall_bank.items():
+                sent_words = set(w for w in jieba.cut(sentence) if len(w) >= 2)
+                overlap = len(text_keywords & sent_words)
+                if overlap >= 2:
+                    for code in codes:
+                        matches.append((overlap, code))
+            matches.sort(key=lambda x: x[0], reverse=True)
+            return [code for _, code in matches[:top_n]]
+
+        hits = lexical_hits()
+        return list(dict.fromkeys(hits))[:top_n]
 
     def _prototype_keywords(self, manual_code: str) -> Set[str]:
-        manual = str(manual_code or "")
-        words = {word for word in jieba.lcut(manual) if len(word.strip()) >= 2}
-        if "\u5ba2\u6237\u9700\u6c42" in manual or "\u9700\u6c42\u5bfc\u5411" in manual:
-            words.update({
-                "\u5ba2\u6237", "\u9700\u6c42", "\u4e70", "\u5356", "\u8981",
-            })
-        if "\u53cd\u9988" in manual:
-            words.update({"\u5ba2\u6237", "\u53cd\u9988", "\u8bc9\u6c42"})
-        if "\u6c9f\u901a" in manual:
-            words.update({"\u6c9f\u901a", "\u4fe1\u4efb", "\u63a8\u9500"})
-        return words
+        """Extract keywords from a prototype manual code."""
+        return set(w for w in jieba.cut(manual_code) if len(w) >= 2)
 
-    def _prototype_similarity(self, text: str, prototype: Dict[str, Any]) -> float:
-        text_tokens = set(token for token in jieba.lcut(str(text or "")) if len(token.strip()) >= 2)
-        source_tokens = set(token for token in jieba.lcut(str(prototype.get("source", ""))) if len(token.strip()) >= 2)
-        manual_tokens = self._prototype_keywords(str(prototype.get("manual_first_code", "")))
-        if not text_tokens:
+    def _prototype_similarity(self, text: str, prototype: Dict) -> float:
+        """Calculate similarity between text and a prototype."""
+        source = prototype.get('source', prototype.get('sentence', ''))
+        manual_code = prototype.get('manual_first_code', '')
+        if not source or not manual_code:
             return 0.0
-        source_overlap = len(text_tokens & source_tokens) / max(1, min(len(text_tokens), len(source_tokens)))
-        manual_overlap = len(text_tokens & manual_tokens) / max(1, len(manual_tokens))
-        return 0.75 * source_overlap + 0.25 * manual_overlap
 
-    def _find_first_level_prototype_hits(self, text: str, top_k: int = 3) -> List[Dict[str, Any]]:
-        self._ensure_first_level_defaults()
+        if hasattr(self, 'semantic_matcher') and self.semantic_matcher:
+            try:
+                emb_text = self.semantic_matcher.get_embedding(text)
+                emb_proto = self.semantic_matcher.get_embedding(manual_code)
+                if emb_text is not None and emb_proto is not None:
+                    return float(np.dot(emb_text, emb_proto) /
+                                (np.linalg.norm(emb_text) * np.linalg.norm(emb_proto) + 1e-8))
+            except Exception:
+                pass
+        return 0.0
+
+    def _find_first_level_prototype_hits(self, text: str, top_k: int = 3) -> List[Dict]:
+        """Find prototype hits for a text."""
+        if not self.first_level_prototypes:
+            return []
+
         scored = []
-        for prototype in self.first_level_prototypes:
-            score = self._prototype_similarity(text, prototype)
-            if score <= 0:
-                continue
-            scored.append(
-                {
-                    "source": prototype.get("source", ""),
-                    "manual_first_code": prototype.get("manual_first_code", ""),
-                    "similarity": round(float(score), 4),
-                }
-            )
-        scored.sort(key=lambda item: item["similarity"], reverse=True)
+        for proto in self.first_level_prototypes:
+            sim = self._prototype_similarity(text, proto)
+            if sim > 0.3:
+                scored.append({
+                    'prototype': proto,
+                    'similarity': sim,
+                    'manual_first_code': proto.get('manual_first_code', ''),
+                    'source': proto.get('source', proto.get('sentence', '')),
+                })
+
+        scored.sort(key=lambda x: x['similarity'], reverse=True)
         return scored[:top_k]
 
-    def reset_first_level_trace_meta(self) -> None:
+    # ── Trace metadata management ──────────────────────────────────────
+
+    def reset_first_level_trace_meta(self):
         self._ensure_first_level_defaults()
         self._first_level_trace_meta = {}
 
-    def get_first_level_trace_meta(self) -> Dict[str, Dict[str, Any]]:
+    def get_first_level_trace_meta(self):
         self._ensure_first_level_defaults()
         return dict(self._first_level_trace_meta)
 
-    def _store_first_level_trace(self, code_key: str, trace: Dict[str, Any]) -> None:
+    def _store_first_level_trace(self, code_key: str, trace: Dict):
         self._ensure_first_level_defaults()
-        compact_trace = {
-            "selected_candidate": trace.get("selected_candidate", ""),
-            "best_rule_candidate": trace.get("best_rule_candidate", ""),
-            "used_rerank": bool(trace.get("used_rerank", False)),
-            "prototype_enabled": bool(trace.get("prototype_enabled", False)),
-            "prototype_hits": list(trace.get("prototype_hits", [])),
-            "candidates": [
-                {
-                    "text": item.get("text", ""),
-                    "rule_score": item.get("rule_score"),
-                    "rerank_score": item.get("rerank_score"),
-                    "selected": bool(item.get("selected", False)),
-                    "best_rule": bool(item.get("best_rule", False)),
-                }
-                for item in trace.get("candidates", [])
-            ],
-        }
-        self._first_level_trace_meta[code_key] = compact_trace
+        compact = {}
+        for key in ('selected_candidate', 'interpretive_code', 'best_rule_candidate',
+                     'used_rerank', 'anchor_selected', 'anchor_source', 'candidates',
+                     'grounding', 'provenance', 'hierarchy'):
+            if key in trace:
+                v = trace[key]
+                if key == 'candidates':
+                    v = [
+                        {
+                            'text': c.get('text', ''),
+                            'rule_score': c.get('rule_score'),
+                            'conservative_score': c.get('conservative_score'),
+                            'rerank_score': c.get('rerank_score'),
+                            'anchor_source': c.get('anchor_source', ''),
+                            'anchor_score': c.get('anchor_score'),
+                            'selected': c.get('selected', False),
+                        }
+                        for c in (v or [])
+                    ]
+                compact[key] = v
+        self._first_level_trace_meta[code_key] = compact
 
-    def build_first_level_candidate_trace(
-        self,
-        sentence: str,
-        model_manager=None,
-        top_n: Optional[int] = None,
-        defer_rerank: bool = False,
-    ) -> Dict[str, Any]:
-        """Return a compact candidate trace for first-level abstraction."""
-        self._ensure_first_level_defaults()
+    # ── Core: first-level candidate trace building ─────────────────────
 
-        original = (sentence or '').strip()
-        if not original:
-            return {
-                'original_sentence': '',
-                'normalized_sentence': '',
-                'selected_candidate': '',
-                'best_rule_candidate': '',
-                'used_rerank': False,
-                'prototype_enabled': False,
-                'prototype_hits': [],
-                'candidates': [],
-            }
+    def _normalize_sentence_for_coding(self, sentence) -> tuple:
+        """Normalize a sentence for first-level coding.
 
-        normalized = re.sub(r'^(?:[A-Za-z]|\u7b54|\u53d7\u8bbf\u8005|\u88ab\u8bbf\u8005)[:\uFF1A\s]*', '', original)
-        # \u5b89\u5168\u7f51\uFF1A\u5265\u79bb\u6b8b\u7559\u7684\u8bf4\u8bdd\u4eba\u6807\u7b7e\uff08\u91cc\u5f04\u7ba1\u5bb6\u3001\u975e\u9057\u624b\u827a\u4eba\u3001\u666f\u6f02\u7b49\uff09
-        _speaker_label = (
-            r'(?:\u53d7\u8bbf\u8005|\u91c7\u8bbf\u8005|\u8bbf\u8c08\u5458|\u8bf4\u8bdd\u4eba\s*\d+|\u91cc\u5f04\u7ba1\u5bb6\s*\d*|\u6e38\u5ba2\s*\d*|'
-            r'\u975e\u9057\u624b\u827a\u4eba\s*\d*|\u975e\u9057\u4eba\s*\d*|\u7ba1\u7406\u5c42\s*\d*|\u666f\u6f02\s*\d*|'
-            r'\u8001\u5e08\s*\d*|\u4e3b\u6301\u4eba|\u8bb0\u8005|\u88ab\u8bbf\u8005|\u5609\u5bbe|\u4e13\u5bb6|'
-            r'\u5c45\u6c11\s*\d*|\u5546\u6237\s*\d*|\u624b\u827a\u4eba\s*\d*|\u5b66\u5f92\s*\d*|\u4f20\u627f\u4eba\s*\d*|'
-            r'\u95ee|\u7b54|Q|A)'
-        )
-        normalized = re.sub(rf'^{_speaker_label}\s*[\uFF1A:]?\s*', '', normalized)
+        Returns (normalized_text, original_text) or (None, original_text) if too short.
+        Extracted from build_first_level_candidate_trace for reuse in batch pre-encoding.
+        """
+        if not isinstance(sentence, dict):
+            original = str(sentence).strip()
+        else:
+            original = str(sentence.get('content', sentence.get('original_content', ''))).strip()
+
+        if not original or len(original) < 3:
+            return None, original
+
+        normalized = original
+        # Strip speaker labels
+        normalized = re.sub(
+            r'^(?:[A-Za-z]|受访者|采访者|访谈员|说话人\s*\d+|弄管家\s*\d*|游客\s*\d*|'
+            r'非遗手艺人\s*\d*|非遗人\s*\d*|管理层\s*\d*|景漂\s*\d*|老师\s*\d*|'
+            r'主持人|记者|受访者|嘉宾|专家|居民\s*\d*|商户\s*\d*|'
+            r'手艺人\s*\d*|学徒\s*\d*|传承人\s*\d*|问|答|Q|A)\s*[：:]?\s*',
+            '', normalized)
+
+        # Clean artifact markers and character repetitions
         normalized = re.sub(r'\[[A-Z]?\d+\]', '', normalized)
         normalized = re.sub(r'(\w)\1{2,}', r'\1', normalized)
         normalized = self._normalize_source_sentence(normalized)
-        if not normalized:
-            return {
-                'original_sentence': original,
-                'normalized_sentence': '',
-                'selected_candidate': '',
-                'best_rule_candidate': '',
-                'used_rerank': False,
-                'prototype_enabled': False,
-                'prototype_hits': [],
-                'candidates': [],
-            }
 
+        if not normalized or len(normalized) < 3:
+            return None, original
+
+        return normalized, original
+
+    def build_first_level_candidate_trace(self, sentence, model_manager,
+                                           top_n: int = 8,
+                                           defer_rerank: bool = False,
+                                           cached_embedding=None,
+                                           cached_anchor_results=None,
+                                           cached_knn_results=None) -> Dict:
+        """Return a compact candidate trace for first-level abstraction.
+
+        Implements concept anchor gating (改进7):
+        1. Run FAISS anchor retrieval on the normalized sentence
+        2. If max anchor score >= 0.35, skip extractive n-gram generation
+        3. Otherwise, fall back to extractive n-gram pipeline
+
+        When cached_embedding / cached_anchor_results / cached_knn_results are
+        provided (from batch pre-encoding), the per-sentence model.encode()
+        calls are skipped — this gives ~100x speedup for multi-file coding.
+        """
+        self._ensure_first_level_defaults()
+
+        # ── Normalize sentence ──
+        normalized, original = self._normalize_sentence_for_coding(sentence)
+        if normalized is None:
+            return {}
+
+        # ── Prototype hits ──
         prototype_hits = self._find_first_level_prototype_hits(normalized)
-        prototype_keywords: Set[str] = set()
+        prototype_keywords = set()
         for hit in prototype_hits:
-            prototype_keywords.update(self._prototype_keywords(hit.get("manual_first_code", "")))
+            prototype_keywords.update(
+                self._prototype_keywords(hit.get('manual_first_code', '')))
 
-        # 计算句子显著性（四维：转折/因果/强度/问题），用于加权候选评分
+        # ── Salience ──
         salience = self._compute_salience(normalized)
 
-        # 句子级预过滤：跳过不适合编码的句子
-        if self._should_skip_sentence_for_coding(normalized, salience):
-            return {
-                'original_sentence': original,
-                'normalized_sentence': normalized,
-                'selected_candidate': '',
-                'best_rule_candidate': '',
-                'used_rerank': False,
-                'prototype_enabled': False,
-                'prototype_hits': [],
-                'candidates': [],
-                'salience': salience,
-                'skipped': True,
-                'skip_reason': 'sentence_filter',
-            }
+        # ── RAG context terms ──
+        rag_context_terms = []
+        if hasattr(self, 'rag_doc_retriever') and self.rag_doc_retriever is not None:
+            try:
+                rag_chunks = self.rag_doc_retriever.retrieve(normalized, 3, 0.5)
+                for chunk in rag_chunks:
+                    chunk_terms = self._extract_domain_terms_from_text(
+                        chunk.get('text', ''))
+                    rag_context_terms.extend(chunk_terms)
+                if rag_context_terms:
+                    rag_context_terms = list(dict.fromkeys(rag_context_terms))
+            except Exception:
+                pass
 
+        # ── Should skip? ──
+        if self._should_skip_sentence_for_coding(normalized, salience):
+            return {}
+
+        # ── Config ──
         target_length = getattr(Config, 'MAX_SENTENCE_LENGTH', 512) if Config else 512
-        max_len = getattr(self, 'max_first_level_length', getattr(Config, 'FIRST_LEVEL_CODE_MAX_LENGTH', 30) if Config else 30)
-        length_budget = max_len if isinstance(max_len, int) and max_len > 0 else None
-        recall_enhanced = bool(getattr(Config, 'FIRST_LEVEL_RECALL_ENHANCED', False)) if Config else False
+        max_len = getattr(self, 'max_first_level_length',
+                          getattr(Config, 'FIRST_LEVEL_CODE_MAX_LENGTH', 30) if Config else 30)
+        if not isinstance(max_len, int) or max_len <= 0:
+            max_len = 30
+        length_budget = min(max_len * 2, 35)
+
+        recall_enhanced = bool(getattr(Config, 'FIRST_LEVEL_RECALL_ENHANCED', True)) if Config else True
         base_max_span = int(getattr(Config, 'FIRST_LEVEL_BASE_MAX_SPAN', 8)) if Config else 8
         enhanced_max_span = int(getattr(Config, 'FIRST_LEVEL_ENHANCED_MAX_SPAN', 12)) if Config else 12
+
+        # Focus markers and professional terms
         focus_markers = (
-            '第一次', '首次', '然而', '最终', '但是', '不过', '却', '更', '更加', '最', '最高', '最低',
-            '核心', '关键', '尤其', '特别', '主要', '重点'
+            '第一次', '首次', '然而', '最终', '但是', '不过', '却',
+            '更', '更加', '最', '最高', '最低', '核心', '关键',
+            '尤其', '特别', '主要', '重点',
         )
         professional_terms = (
-            '技术', '资源', '平台', '机制', '流程', '生态', '需求', '风险', '压力', '冲突', '协同',
-            '合作', '创新', '服务', '模块', '设备', '系统', '客户', '团队', '品牌', '治理', '监督',
-            '审批', '架构', '算法', '数据', '能力', '知识', '资本', '绩效', '战略', '路径', '场景'
+            '技术', '资源', '平台', '机制', '流程', '生态', '需求', '风险',
+            '压力', '冲突', '协同', '合作', '创新', '服务', '模块', '设备',
+            '系统', '客户', '团队', '品牌', '治理', '监督', '审批', '架构',
+            '算法', '数据', '能力', '知识', '资本', '绩效', '战略', '路径',
+            '场景', '农业', '农村', '种植', '养殖', '灌溉', '施肥', '收割',
+            '农机', '农产品', '粮食', '果蔬', '畜牧', '渔业', '农户', '合作社',
+            '产量', '品种', '有机', '绿色食品', '非遗', '手艺', '技艺', '传承人',
+            '工匠', '作坊', '文创', '手工艺', '陶艺', '织造', '雕刻', '刺绣',
+            '民俗', '古建筑', '修缮', '文保', '文物', '医疗', '诊疗', '康复',
+            '护理', '患者', '医保', '药品', '临床', '公共卫生', '基层医疗',
+            '健康管理', '中医', '慢病', '教育', '教学', '课程', '师资', '学员',
+            '教材', '考核', '素质教育', '职业教育', '技能培训', '校企合作',
+            '在线教育', '社区', '公益', '民生', '基层', '社会组织', '志愿服务',
+            '公共空间', '社区营造', '城市更新', '旧改', '可持续', '赋能',
+            '电商', '直播', '流量', '运营', '供应链', '渠道', '营销', '转化',
+            '复购', '文旅', '景区', '游客', '民宿', '网红', '文旅融合', '打卡',
         )
 
+        # ── Nested helper functions ──
+
         def strip_punct(value: str) -> str:
-            return re.sub(r'^[\s\W_]+|[\s\W_]+$', '', value or '')
+            return value.strip().strip('，。！？；：""''（）【】《》　 ')
 
         def looks_like_fragment(raw_text: str, clean_text: str) -> bool:
-            clean = (clean_text or '').strip()
-            if not clean:
+            if len(clean_text) < 3:
                 return True
-            if len(clean) <= 3 and not any(term in clean for term in professional_terms):
-                return True
-            if len(clean) <= 8 and any(term in clean for term in professional_terms):
-                return False
-            if self._is_question_like(clean):
-                return True
-            if clean.startswith((
-                '\u56e0\u4e3a', '\u5982\u679c', '\u4f46\u662f', '\u4e0d\u8fc7', '\u6240\u4ee5', '\u7136\u540e', '\u5e76\u4e14'
-            )):
-                return True
-            if clean.endswith((
-                '\u8fd9\u4e2a', '\u90a3\u4e2a', '\u8fd9\u91cc', '\u8fd9\u6837', '\u90a3\u6837'
-            )):
+            if re.search(r'(尤其是|比如|就像|如同|好像|似乎|看上去|好像)', raw_text):
                 return True
             return False
 
         def score_candidate(clean_text: str, raw_text: str) -> float:
-            clean = clean_text or ''
-            score = 0.0
-            # 语义完整性是核心：完整概念大幅加分，碎片大幅扣分
-            if self._is_semantically_complete(clean):
-                score += 5.0
-            else:
-                score -= 3.0
-            if looks_like_fragment(raw_text, clean):
-                score -= 5.0
-            # 以"的/了/着/过/到/在/中/和/与/或"结尾 → 结构残缺
-            if re.search(r'(的|了|着|过|到|在|中|和|与|或|又|还|也|只|不|没)$', clean):
-                score -= 3.0
-            # 含疑问词 → 是问题不是概念
-            if re.search(r'(什么|怎么|哪些|怎么样|如何|哪方面|什么时候)', clean):
-                score -= 4.0
-            # 以连词开头 → 残片
-            if re.search(r'^(但|而|且|并|还|也|另外|此外|还有)', clean):
-                score -= 2.0
-            if any(marker in raw_text for marker in focus_markers):
-                marker_positions = [raw_text.find(marker) for marker in focus_markers if marker in raw_text]
-                first_marker_pos = min(marker_positions) if marker_positions else -1
-                clean_pos = raw_text.find(clean)
-                if clean_pos >= 0 and (first_marker_pos < 0 or clean_pos >= first_marker_pos):
-                    score += 2.2
-                elif any(marker in clean for marker in focus_markers):
-                    score += 1.2
-            if len(clean) <= 12 and any(term in clean for term in professional_terms):
-                score += 1.8
-            if any(keyword in clean for keyword in (
-                '\u5f71\u54cd', '\u5bfc\u81f4', '\u53ea\u80fd', '\u9700\u8981', '\u5361\u5728', '\u62d6\u6162', '\u5ef6\u8fdf',
-                '\u534f\u540c', '\u5ba1\u6279', '\u8d44\u6e90', '\u5ba2\u6237', '\u63a8\u8fdb'
-            )):
-                score += 2.5
-            if any(keyword in clean for keyword in (
-                '\u7ecf\u5e38', '\u53cd\u590d', '\u603b\u662f', '\u6bcf\u6b21', '\u9891\u7e41'
-            )):
-                score += 1.0
-            if prototype_keywords:
-                overlap = sum(1 for keyword in prototype_keywords if keyword and keyword in clean)
-                density = overlap / max(1, len(clean))
-                score += min(4.5, overlap * 1.4 + density * 10.0)
-                score -= clean.count('\uFF0C') * 1.8
-                score -= max(0, len(clean) - 18) * 0.12
-                if "\u9700\u6c42" in prototype_keywords and "\u5ba2\u6237" in clean:
-                    if "\u4e70" in clean and "\u5356" in clean:
-                        score += 4.0
-                    elif "\u8981" in clean or "\u9700\u6c42" in clean:
-                        score += 1.0
-            if any(keyword in clean for keyword in (
-                '\u53ef\u80fd', '\u5927\u6982', '\u4e5f\u8bb8', '\u597d\u50cf', '\u4e0d\u592a\u6e05\u695a'
-            )):
-                score -= 2.0
-            if length_budget is not None:
-                # 超过长度预算线性扣分，但更温和
-                if len(clean) > length_budget:
-                    score -= max(0, len(clean) - length_budget) * 0.15
-            # 长度适中(6-20字)奖励，过短过长的都降权
-            if 6 <= len(clean) <= 20:
-                score += min(len(clean), 20) / 20.0 + 0.5
-            elif len(clean) < 6:
-                # 很短但没有专业术语/领域术语/信息词 → 严重扣分
-                has_meaning = any(term in clean for term in professional_terms)
-                if not has_meaning:
-                    has_meaning = bool(re.search(
-                        r'(成本|市场|价格|利润|收入|投资|资金|贷款|工艺|手工|技术|'
-                        r'质量|标准|检验|认证|生产|种植|养殖|加工|收购|销售|培训|'
-                        r'机制|流程|资源|策略|能力|需求|服务|创新|协同|治理|监督|'
-                        r'品牌|团队|客户|管理|供应链|贸易|消费|购买)',
-                        clean
-                    ))
-                if not has_meaning and self._has_first_level_information_cue(clean):
-                    has_meaning = True
-                if not has_meaning:
-                    score -= 3.0
-                score += len(clean) / 6.0 * 0.3
-            else:
-                score += min(len(clean), 40) / 40.0
-            # 纯名词无谓语（N+V结构奖励）：有动词+名词的完整概念加分
-            verb_indicators = r'(缺乏|缺少|不足|受限|导致|影响|推动|降低|提高|优化|开展|进行|建立|引入|获得|调整|转变|对接|合作|协调|整合|增加|减少)'
-            noun_indicators = r'(机制|流程|资源|策略|能力|需求|服务|创新|协同|治理|监督|审批|绩效|战略|路径|场景|平台|系统|客户|团队|品牌)'
-            if re.search(verb_indicators, clean) and re.search(noun_indicators, clean):
-                score += 2.0
-            # 农业/经济/手工业领域术语奖励
-            domain_terms = r'(种植|养殖|加工|收购|销售|市场|价格|成本|利润|收入|投资|资金|贷款|保险|补贴|税收|消费|购买|供应链|贸易|工艺|手工|技术|传承|培训|制作|原料|工具|设备|标准|质量|检验|认证|生产)'
-            domain_count = len(re.findall(domain_terms, clean))
-            score += min(domain_count * 1.0, 3.0)
-            # 显著性加权：问题/困境 > 转折 > 因果 > 强度
-            score += salience['total'] * 2.0
-            # 书面语偏好：含专业名词/正式词汇大幅加分
-            formal_density = len(re.findall(
-                r'(机制|流程|资源|策略|路径|模式|结构|能力|架构|生态|治理|监督|协同|审批|绩效|战略|需求|服务|创新|'
-                r'评估|优化|配置|整合|调度|保障|约束|反馈|驱动|赋能|转型)',
-                clean
-            ))
-            score += min(formal_density * 1.5, 4.5)
-            # 口语词惩罚
-            if re.search(r'(这个|那个|那种|这种|什么的|之类的|怎么说呢|就是说|我觉得|相当于)', clean):
-                score -= 2.5
-            if re.search(r'^(我|我们|你|你们|他|他们|大家|那个|这个)', clean):
-                score -= 1.4
-            # 主语+谓语的完整概念结构奖励（名词主导，含动词/状态描述）
-            if re.search(r'^[一-鿿]{2,}(?:机制|流程|资源|策略|能力|需求|服务|创新|协同|治理|监督|审批)', clean) and re.search(r'(不足|受限|缺失|缺乏|受阻|延迟|影响|推动|优化|提升|降低|增加)', clean):
-                score += 2.0
-            # 否定词剥离检测：原文含否定但候选丢失否定词 → 严重惩罚
-            if re.search(r'(不|没有|无需|从未|并未|毫不)', normalized):
-                if not re.search(r'(不|没有|无需|从未|并未|毫不)', clean):
-                    for m in re.finditer(r'(不|没有|无需|从未|并未|毫不)(.{1,10})', normalized):
-                        positive_part = m.group(2)
-                        if len(positive_part) >= 2:
-                            common = sum(1 for c in clean if c in positive_part)
-                            if common >= min(len(clean) * 0.5, 3):
-                                score -= 5.0
-                                break
-            # 让步从句检测：候选内容与让步从句内容有显著字符重叠 → 严重惩罚
-            if concessive_spans:
-                for cs_start, cs_end in concessive_spans:
-                    concessive_text = normalized[cs_start:cs_end]
-                    common = sum(1 for c in clean if c in concessive_text)
-                    if common >= min(len(clean) * 0.5, 2):
-                        score -= 6.0
-                        break
-            # 增强否定范围检测：候选与否定范围内的内容有显著重叠 → 严重惩罚
-            if negated_spans:
-                for ns_start, ns_end in negated_spans:
-                    negated_text = normalized[ns_start:ns_end]
-                    common = sum(1 for c in clean if c in negated_text)
-                    if common >= min(len(clean) * 0.4, 2):
-                        score -= 6.0
-                        break
-            # 语义线索奖励：原文含评价性关键词，候选保留则加分
-            semantic_cues = r'(优点|好处|优势|缺点|缺陷|问题|关键|核心|重要|主要|根本|本质|特色|亮点|突破|创新)'
-            if re.search(semantic_cues, normalized):
-                if re.search(semantic_cues, clean):
-                    score += 3.0
-            return score
+            if not clean_text or len(clean_text) < 2:
+                return -float('inf')
 
-        # \u9884\u8BA1\u7B97\u8BA9\u6B65\u4ECE\u53E5\u8303\u56F4\u548C\u5426\u5B9A\u8303\u56F4\uFF08\u6574\u4E2A\u53E5\u5B50\u53EA\u9700\u8BA1\u7B97\u4E00\u6B21\uFF09
+            score = 6.0  # base
+
+            # Length bonus
+            L = len(clean_text)
+            if 4 <= L <= 12:
+                score += 2.5
+            elif 13 <= L <= 20:
+                score += 1.5
+            elif L > 35:
+                score -= 3.0
+
+            # Professional terms
+            prof_hits = sum(1 for t in professional_terms if t in clean_text)
+            score += min(prof_hits * 1.5, 4.5)
+
+            # Focus markers
+            focus_hits = sum(1 for m in focus_markers if m in clean_text)
+            score += min(focus_hits * 1.0, 2.0)
+
+            # Prototype keywords
+            proto_hits = sum(1 for kw in prototype_keywords if kw in clean_text)
+            score += min(proto_hits * 0.8, 2.0)
+
+            # RAG context
+            rag_hits = sum(1 for term in rag_context_terms if term in clean_text)
+            score += min(rag_hits * 1.5, 3.0)
+
+            # POS check
+            if self._has_valid_first_level_pos_pattern(clean_text):
+                score += 1.5
+
+            # Fragment check
+            if looks_like_fragment(raw_text, clean_text):
+                score -= 2.5
+
+            # Colloquial check
+            if self._contains_colloquial_residue(clean_text):
+                score -= 2.0
+
+            # Anchor ratio
+            score += self._first_level_anchor_ratio(clean_text, normalized) * 2.0
+
+            return round(score, 4)
+
+        # ── Concessive/negated span detection ──
         concessive_spans = self._detect_concessive_spans(normalized)
         negated_spans = self._detect_negated_spans(normalized)
 
-        sentence_parts = [part.strip() for part in re.split(r'[\u3002\uFF01\uFF1F\uFF1B;]', normalized) if part.strip()]
+        # ═══════════════════════════════════════════════════════════════
+        # 改进7: CONCEPT ANCHOR GATING
+        # Run anchor retrieval BEFORE extractive n-gram generation.
+        # If we get a strong anchor match (>= 0.35), skip extractive.
+        # ═══════════════════════════════════════════════════════════════
+
+        anchor_gated = False
+        anchor_max_score = 0.0
+        _anchor_candidates: List[Tuple[str, float, str]] = []
+
+        # Use cached anchor results from batch pre-encoding when available
+        if cached_anchor_results is not None:
+            _anchor_candidates = cached_anchor_results
+            if _anchor_candidates:
+                anchor_max_score = _anchor_candidates[0][1]
+                anchor_gated = anchor_max_score >= 0.42
+        elif self._ensure_anchor_index() and self.concept_anchor_index is not None:
+            try:
+                _anchor_candidates = self.concept_anchor_index.search(normalized, top_k=50)
+                if _anchor_candidates:
+                    anchor_max_score = _anchor_candidates[0][1]
+                    # Only gate when anchors are genuinely strong (0.55+).
+                    # Medium anchors (0.40-0.55) compete fairly with
+                    # extractive candidates from the source text.
+                    anchor_gated = anchor_max_score >= 0.55
+            except Exception:
+                pass
+
+        # ── Split into sentence parts ──
+        sentence_parts = [p.strip() for p in re.split(r'[。！？;；]', normalized) if len(p.strip()) >= 3]
         if not sentence_parts:
             sentence_parts = [normalized]
 
-        candidate_rows = []
+        candidate_rows: List[Dict] = []
         seen: Dict[str, int] = {}
 
-        for sentence_part in sentence_parts:
-            micro_parts = [part.strip() for part in re.split(r'[\uFF0C,\u3001]', sentence_part) if part.strip()]
-            if not micro_parts:
-                micro_parts = [sentence_part]
+        # ── Phase 1: Inject anchor candidates ──
+        _anchors_injected = 0
+        for concept_name, anchor_score, anchor_source in _anchor_candidates:
+            if anchor_score < 0.40:
+                continue
+            label = self._normalize_candidate_for_first_level(concept_name)
+            if not label or len(label) < 2:
+                continue
+            # Normalize to canonical anchor (Phase 2 governance)
+            canonical = self._alias_map.get(concept_name, concept_name)
+            if canonical != concept_name:
+                label = self._normalize_candidate_for_first_level(canonical)
+                if not label or len(label) < 2:
+                    continue
+            _anchors_injected += 1
 
-            for i in range(len(micro_parts)):
-                built_raw = ''
-                span_limit = enhanced_max_span if recall_enhanced else base_max_span
-                for j in range(i, min(len(micro_parts), i + span_limit)):
-                    built_raw = micro_parts[j] if not built_raw else f'{built_raw}\uFF0C{micro_parts[j]}'
-                    candidate = strip_punct(self._post_refine_phrase(built_raw))
-                    variants = [candidate] if candidate else []
-                    normalized_candidate = self._normalize_candidate_for_first_level(candidate)
-                    if normalized_candidate and normalized_candidate not in variants:
-                        variants.append(normalized_candidate)
+            anchor_rule = round(6.5 + anchor_score * 4.5, 4)
+            anchor_cons = round(min(anchor_rule, 12.0) * 0.5 + anchor_score * 2.0, 4)
 
-                    compact_candidate = normalized_candidate.replace('\u5c31\u5f88\u53d7\u5f71\u54cd', '\u53d7\u5f71\u54cd') if normalized_candidate else ''
-                    compact_candidate = compact_candidate.replace('\u5f88\u53d7\u5f71\u54cd', '\u53d7\u5f71\u54cd') if compact_candidate else ''
-                    compact_candidate = compact_candidate.replace('\u5f71\u54cd\u9879\u76ee\u63a8\u8fdb', '\u9879\u76ee\u63a8\u8fdb\u53d7\u5f71\u54cd') if compact_candidate else ''
-                    if compact_candidate and compact_candidate not in variants:
-                        variants.append(compact_candidate)
-                    compressed_variants = set(self._compress_first_level_candidate_variants(built_raw))
-                    for compressed_candidate in compressed_variants:
-                        if compressed_candidate not in variants:
-                            variants.append(compressed_candidate)
-                    if normalized_candidate and '\u9879\u76ee\u63a8\u8fdb' in normalized_candidate and '\u53d7\u5f71\u54cd' in normalized_candidate:
-                        if '\u9879\u76ee\u63a8\u8fdb\u53d7\u5f71\u54cd' not in variants:
-                            variants.append('\u9879\u76ee\u63a8\u8fdb\u53d7\u5f71\u54cd')
+            row = {
+                'text': label,
+                'raw_text': normalized,
+                'rule_score': anchor_rule,
+                'rerank_score': None,
+                'conservative_score': anchor_cons,
+                'selected': False,
+                'best_rule': False,
+                'anchor_source': anchor_source,
+                'anchor_score': round(anchor_score, 4),
+                'prototype_hits': prototype_hits,
+            }
 
-                    for variant in variants:
-                        if not variant or len(variant) > target_length:
+            existing = seen.get(label)
+            if existing is None:
+                seen[label] = len(candidate_rows)
+                candidate_rows.append(row)
+            elif row['rule_score'] > candidate_rows[existing]['rule_score']:
+                candidate_rows[existing] = row
+
+        # If too few anchors survived filtering, un-gate to allow extractive backup.
+        # With top_k=50, insufficient quality anchors means concepts are weak for this sentence.
+        if anchor_gated and _anchors_injected < 5:
+            anchor_gated = False
+
+        # ── Phase 2: Concept-aware KNN expansion (complements extractive n-grams) ──
+        # When FAISS anchors are weak, find similar training sentences via embedding
+        # KNN and retrieve their anchor codes as concept candidates.
+        # Extractive candidates are now generated in Phase 2b below (not replaced).
+        if not anchor_gated:
+            if self._ensure_knn_train_index() and self.knn_train_index is not None:
+                try:
+                    # Use cached embedding / KNN results from batch pre-encoding
+                    if cached_knn_results is not None:
+                        knn_scores, knn_indices = cached_knn_results
+                        knn_scores = np.array([knn_scores]) if knn_scores.ndim == 1 else knn_scores
+                        knn_indices = np.array([knn_indices]) if knn_indices.ndim == 1 else knn_indices
+                    elif cached_embedding is not None:
+                        knn_scores, knn_indices = self.knn_train_index.search(
+                            cached_embedding, 10)
+                    else:
+                        q_emb = self.concept_anchor_index.model.encode(
+                            [normalized], normalize_embeddings=True,
+                            show_progress_bar=False).astype(np.float32)
+                        knn_scores, knn_indices = self.knn_train_index.search(q_emb, 10)
+
+                    _knn_added = 0
+                    for score, idx in zip(knn_scores[0], knn_indices[0]):
+                        if idx < 0 or idx >= len(self.knn_train_anchors):
                             continue
+                        if float(score) < 0.30:
+                            continue
+                        anchor = self.knn_train_anchors[idx]
+                        if not anchor or anchor in seen:
+                            continue
+
+                        # Normalize to canonical anchor (Phase 2 governance)
+                        anchor = self._alias_map.get(anchor, anchor)
+
+                        label = self._normalize_candidate_for_first_level(anchor)
+                        if not label or len(label) < 2:
+                            continue
+
+                        knn_rule = round(6.0 + float(score) * 4.0, 4)
+                        knn_cons = round(min(knn_rule, 12.0) * 0.5 + float(score) * 1.5, 4)
+
                         row = {
-                            'text': variant,
-                            'raw_text': built_raw,
-                            'rule_score': round(float(score_candidate(variant, built_raw)), 4),
+                            'text': label,
+                            'raw_text': normalized,
+                            'rule_score': knn_rule,
                             'rerank_score': None,
+                            'conservative_score': knn_cons,
                             'selected': False,
                             'best_rule': False,
-                            'compressed_variant': variant in compressed_variants,
+                            'anchor_source': 'knn_recall',
+                            'anchor_score': round(float(score), 4),
                             'prototype_hits': prototype_hits,
                         }
-                        existing = seen.get(variant)
-                        if existing is None:
-                            seen[variant] = len(candidate_rows)
-                            candidate_rows.append(row)
-                        elif row['rule_score'] > candidate_rows[existing]['rule_score']:
-                            candidate_rows[existing] = row
 
-        # 召回增强：补充“触发词短语 + 高信息短片段”候选
-        if recall_enhanced:
-            trigger_keywords = (
-                '影响', '导致', '卡在', '拖慢', '延迟', '只能', '需要', '受限', '不足', '短板',
-                '风险', '压力', '冲突', '审批', '协同', '资源', '客户', '诉求', '反馈', '推进'
-            )
-            extra_parts = [part.strip() for part in re.split(r'[，,、；;。！？!?]', normalized) if part.strip()]
-            for part in extra_parts:
-                clean_part = self._normalize_candidate_for_first_level(strip_punct(self._post_refine_phrase(part)))
-                if not clean_part:
-                    continue
-                if len(clean_part) < 4 or len(clean_part) > target_length:
-                    continue
-                if not any(k in clean_part for k in trigger_keywords):
-                    continue
-                if self._contains_colloquial_residue(clean_part):
-                    continue
-                row = {
-                    'text': clean_part,
-                    'raw_text': part,
-                    'rule_score': round(float(score_candidate(clean_part, part) + 0.8), 4),
-                    'rerank_score': None,
-                    'selected': False,
-                    'best_rule': False,
-                }
-                existing = seen.get(clean_part)
-                if existing is None:
-                    seen[clean_part] = len(candidate_rows)
-                    candidate_rows.append(row)
-                elif row['rule_score'] > candidate_rows[existing]['rule_score']:
-                    candidate_rows[existing] = row
+                        seen[label] = len(candidate_rows)
+                        candidate_rows.append(row)
+                        _knn_added += 1
 
-        if recall_enhanced and Config and getattr(Config, 'FIRST_LEVEL_USE_LABEL_RECALL_CANDIDATES', False):
-            semantic_top_n = int(getattr(Config, 'FIRST_LEVEL_SEMANTIC_RECALL_TOP_N', 8)) if Config else 8
-            semantic_min_score = float(getattr(Config, 'FIRST_LEVEL_SEMANTIC_RECALL_MIN_SCORE', 0.35)) if Config else 0.35
-            for hit in self._semantic_recall_first_level_labels(
-                normalized,
-                model_manager=model_manager,
-                top_n=semantic_top_n,
-                min_score=semantic_min_score,
-            ):
-                label = self._normalize_candidate_for_first_level(hit.get('text', ''))
-                if not label or len(label) > target_length:
+                    if _knn_added > 0:
+                        logger.debug("KNN concept recall: %d candidates", _knn_added)
+                except Exception as e:
+                    logger.debug("KNN concept recall failed: %s", e)
+
+        # ── Phase 2b: Extractive candidates from source text ──
+        # Generate candidates from the sentence text itself to maintain
+        # connection to original text. These complement anchor/KNN candidates
+        # and participate in the same scoring/selection pipeline.
+        # Runs regardless of anchor_gated to ensure text-derived candidates
+        # always compete alongside external knowledge sources.
+        _extractive_added = 0
+        _extractive_max = 15  # per-sentence cap to avoid bloat
+        for sentence_part in sentence_parts:
+            if _extractive_added >= _extractive_max:
+                break
+            segments = self._split_first_level_candidate_segments(sentence_part)
+            for seg in segments:
+                if _extractive_added >= _extractive_max:
+                    break
+                if seg in seen or len(seg) < 2:
+                    continue
+                label = self._normalize_candidate_for_first_level(seg)
+                if not label or len(label) < 2 or label in seen:
                     continue
                 if self._contains_colloquial_residue(label):
                     continue
+
+                frag_score = self._score_first_level_fragment(label, normalized)
+                if frag_score <= 0:
+                    continue
+
+                # Map fragment score to comparable rule_score range.
+                # Slightly lower base than anchors to compensate for the
+                # concept_sim boost extractive candidates receive later.
+                extractive_rule = round(5.0 + frag_score * 0.8, 4)
+                # Bonus for prototype keyword overlap — rewards candidates that
+                # match known concepts while keeping text-derived phrasing.
+                proto_hits = sum(1 for kw in prototype_keywords if kw in label)
+                extractive_rule += min(proto_hits * 0.6, 2.0)
+                extractive_cons = round(min(extractive_rule, 12.0) * 0.55, 4)
+
                 row = {
                     'text': label,
                     'raw_text': normalized,
-                    'rule_score': round(float(3.0 + hit.get('score', 0.0) * 4.0), 4),
+                    'rule_score': extractive_rule,
                     'rerank_score': None,
+                    'conservative_score': extractive_cons,
                     'selected': False,
                     'best_rule': False,
-                    'semantic_recall_score': round(float(hit.get('score', 0.0)), 4),
+                    'anchor_source': None,
+                    'anchor_score': None,
                     'prototype_hits': prototype_hits,
                 }
-                existing = seen.get(label)
-                if existing is None:
-                    seen[label] = len(candidate_rows)
-                    candidate_rows.append(row)
-                elif row['rule_score'] > candidate_rows[existing]['rule_score']:
-                    candidate_rows[existing] = row
 
-        candidate_rows = self._canonicalize_first_level_candidate_rows(candidate_rows, normalized)
-        if not candidate_rows and re.search(r'(生产习惯|默认的惯例|当地默认).*随意', normalized):
-            candidate_rows.append({
-                'text': '规范缺乏',
-                'raw_text': normalized,
-                'rule_score': 8.0,
-                'rerank_score': None,
-                'selected': False,
-                'best_rule': False,
-                'compressed_variant': True,
-                'conservative_score': 8.0,
-            })
-        best_rule_candidate = ''
-        best_rule_key = (float('-inf'), float('-inf'), float('-inf'), float('-inf'))
+                seen[label] = len(candidate_rows)
+                candidate_rows.append(row)
+                _extractive_added += 1
+
+        if _extractive_added > 0:
+            logger.debug("Extractive recall: %d candidates from source text", _extractive_added)
+
+        # ── Canonicalize ──
+        candidate_rows = self._canonicalize_first_level_candidate_rows(
+            candidate_rows, normalized)
+
+        if not candidate_rows:
+            return {}
+
+        # ── Batch concept-model similarity for extractive candidates ──
+        # Use the fine-tuned concept_anchor model to score every candidate
+        # against the source sentence. This penalizes sentence fragments
+        # ("主要是", "获得3张") that have low semantic relevance and rewards
+        # concept-like candidates even if they come from extractive n-grams.
+        _non_anchor_indices = [
+            i for i, r in enumerate(candidate_rows)
+            if not r.get('anchor_source') and not r.get('anchor_score')
+        ]
+        if _non_anchor_indices and hasattr(self, 'concept_anchor_index') and self.concept_anchor_index is not None:
+            try:
+                _non_anchor_texts = [candidate_rows[i]['text'] for i in _non_anchor_indices]
+                _all_encode = [normalized] + _non_anchor_texts
+                _embs = self.concept_anchor_index.model.encode(
+                    _all_encode, normalize_embeddings=True,
+                    show_progress_bar=False, batch_size=len(_all_encode))
+                _source_emb = _embs[0]
+                _cand_embs = _embs[1:]
+                for j, i in enumerate(_non_anchor_indices):
+                    sim = float(np.dot(_source_emb, _cand_embs[j]))
+                    candidate_rows[i]['concept_sim'] = round(sim, 4)
+            except Exception:
+                pass
+
+        # ── Recompute conservative scores ──
         for row in candidate_rows:
-            text = str(row.get('text', '') or '')
-            row_key = (
-                float(row.get('conservative_score', float('-inf'))),
-                1.0 if re.search(r'(受影响|受限|受阻|不足|短板|风险|压力|冲突)', text) else 0.0,
-                float(row.get('rule_score', float('-inf'))),
-                -len(text),
-            )
-            if row_key > best_rule_key:
-                best_rule_key = row_key
-                best_rule_candidate = row.get('text', '')
+            row['conservative_score'] = self._conservative_first_level_rank_score(row)
 
-        # 当最佳规则候选为空时，不直接使用整句，而是尝试从候选列表中选择次优
-        # 整句通常太长且口语化，不适合作为一阶编码
-        if best_rule_candidate:
-            fallback_candidate = best_rule_candidate
-        elif candidate_rows:
-            # 有候选但都不理想，选保守评分最高的那个（后续 _finalize 还会验证）
-            fallback_candidate = candidate_rows[0].get('text', '')
+        # ── Re-rank ──
+        if not defer_rerank:
+            candidate_rows = self._rerank_candidate_rows_for_trace(
+                candidate_rows, normalized)
+
+        # Recompute conservative scores now that rerank_score is populated
+        for row in candidate_rows:
+            row['conservative_score'] = self._conservative_first_level_rank_score(row)
+
+        # ── Sort by conservative score ──
+        candidate_rows.sort(key=lambda r: r.get('conservative_score', 0), reverse=True)
+
+        # ── Select the top candidate by blended conservative_score ──
+        if candidate_rows:
+            selected_candidate = candidate_rows[0].get('text', '')
         else:
-            # 完全没有候选，尝试从原句中提取核心短语
-            trimmed = self._normalize_candidate_for_first_level(strip_punct(normalized))
-            if len(trimmed) <= 30 and self._has_first_level_information_cue(trimmed):
-                fallback_candidate = trimmed
-            else:
-                fallback_candidate = ''
-        selected_candidate = fallback_candidate
-        used_rerank = False
-
-        # 质量门控：若最佳候选得分极低且句子含否定/让步内容，表明所有候选均来自被否定或让步的内容，跳过编码
-        best_rule_score = best_rule_key[2] if best_rule_key[2] > float('-inf') else float('-inf')
-        if selected_candidate and best_rule_score < 2.8 and (concessive_spans or negated_spans):
             selected_candidate = ''
 
-        try:
-            if (
-                not defer_rerank
-                and Config
-                and getattr(Config, 'ENABLE_ABSTRACT_RERANKER', False)
-                and model_manager is not None
-            ):
-                if hasattr(model_manager, 'ensure_abstract_reranker_loaded'):
-                    model_manager.ensure_abstract_reranker_loaded()
-                if hasattr(model_manager, 'is_abstract_reranker_available') and model_manager.is_abstract_reranker_available():
-                    rerank_limit = max(1, int(getattr(Config, 'ABSTRACT_RERANK_TOP_N', 6))) if Config else 6
-                    # 先清洗低质量候选，再进入重排（提速 + 降噪）
-                    prefiltered_rows = []
-                    for row in candidate_rows:
-                        t = str(row.get('text', '') or '')
-                        if not t:
-                            continue
-                        if looks_like_fragment(row.get('raw_text', ''), t):
-                            continue
-                        if self._contains_colloquial_residue(t):
-                            continue
-                        if self._is_low_quality_first_level_code(t, normalized):
-                            continue
-                        prefiltered_rows.append(row)
+        if not selected_candidate:
+            return {}
 
-                    # 兜底：避免过滤过严导致无候选
-                    rerank_rows = prefiltered_rows if len(prefiltered_rows) >= 3 else [
-                        row for row in candidate_rows if not looks_like_fragment(row.get('raw_text', ''), row.get('text', ''))
-                    ]
-                    if not rerank_rows:
-                        rerank_rows = list(candidate_rows)
+        # ── Concept-model semantic validation ──
+        # If the top candidate is an extractive fragment (not an anchor),
+        # verify it truly matches the source sentence using the fine-tuned
+        # concept_anchor model. If similarity is low, scan alternatives
+        # for a better semantic fit. Uses pre-computed concept_sim from
+        # the batch encoding step above.
+        _top_row = candidate_rows[0]
+        if not _top_row.get('anchor_source'):
+            try:
+                _top_sim = _top_row.get('concept_sim', 0)
+                if _top_sim < 0.35:
+                    for _alt in candidate_rows[1:min(8, len(candidate_rows))]:
+                        _alt_text = _alt.get('text', '')
+                        if not _alt_text:
+                            continue
+                        _alt_sim = _alt.get('concept_sim', 0)
+                        if _alt_sim > _top_sim + 0.05:
+                            logger.debug(
+                                "Concept validation: replaced '%s' (sim=%.3f) → '%s' (sim=%.3f)",
+                                selected_candidate, _top_sim, _alt_text, _alt_sim)
+                            selected_candidate = _alt_text
+                            _top_row = _alt
+                            break
+            except Exception:
+                pass
 
-                    # 从原文提取语义线索词，用于候选排序加权
-                    source_semantic_cues = r'(优点|好处|优势|缺点|缺陷|问题|关键|核心|重要|主要|根本|本质|特色|亮点|突破|创新)'
-                    source_has_cues = bool(re.search(source_semantic_cues, normalized))
-                    rerank_rows.sort(
-                        key=lambda item: (
-                            1 if (source_has_cues and re.search(source_semantic_cues, str(item.get('text', '') or ''))) else 0,
-                            item.get('conservative_score', -999.0),
-                            item['rule_score'],
-                            -len(item['text']),
-                        ),
-                        reverse=True,
-                    )
-                    rerank_candidates = [row['text'] for row in rerank_rows[:rerank_limit]]
-                    if rerank_candidates:
-                        scores = model_manager.score_abstract_candidates(normalized, rerank_candidates)
-                        if scores and len(scores) == len(rerank_candidates):
-                            used_rerank = True
-                            score_map = {
-                                text: round(float(score), 4)
-                                for text, score in zip(rerank_candidates, scores)
-                            }
-                            for row in candidate_rows:
-                                row['rerank_score'] = score_map.get(row['text'])
-                                row['source_text'] = normalized
-                                row['conservative_score'] = round(float(self._conservative_first_level_rank_score(row)), 4)
-                            # 使用保守评分选择最佳候选（结合规则评分与重排序模型，避免模型错误覆盖规则判断）
-                            selected_candidate = max(
-                                [r for r in candidate_rows if r.get('rerank_score') is not None],
-                                key=lambda r: r.get('conservative_score', -999.0),
-                                default=selected_candidate,
-                            ).get('text', selected_candidate)
-        except Exception:
-            pass
-
-        if selected_candidate and not self._is_semantically_complete(selected_candidate):
-            candidate = self._limit_first_level_text(selected_candidate, 60)
-            if candidate:
-                selected_candidate = candidate
-        if length_budget is not None and selected_candidate and len(selected_candidate) > length_budget:
-            candidate = self._limit_first_level_text(selected_candidate, length_budget)
-            if candidate:
-                selected_candidate = candidate
-        if selected_candidate and self._contains_colloquial_residue(selected_candidate):
-            clean_rows = [
-                row for row in candidate_rows
-                if row.get('text')
-                and not self._contains_colloquial_residue(row.get('text', ''))
-                and not self._is_low_quality_first_level_code(row.get('text', ''), normalized)
-                and not looks_like_fragment(row.get('raw_text', ''), row.get('text', ''))
-            ]
-            if clean_rows:
-                clean_rows.sort(
-                    key=lambda item: (
-                        item.get('rerank_score') if item.get('rerank_score') is not None else -1.0,
-                        item.get('conservative_score', -999.0),
-                        item.get('rule_score', 0.0),
-                        -len(item.get('text', '')),
-                    ),
-                    reverse=True,
-                )
-                selected_candidate = clean_rows[0].get('text', selected_candidate)
-        selected_candidate = self._finalize_first_level_candidate(
-            strip_punct(selected_candidate),
-            normalized,
-        )
-
+        # Mark selected
         for row in candidate_rows:
-            row['selected'] = row['text'] == selected_candidate
-            row['best_rule'] = row['text'] == best_rule_candidate
+            if row.get('text') == selected_candidate:
+                row['selected'] = True
+                row['best_rule'] = True
+                break
 
-        candidate_rows.sort(
-            key=lambda item: (
-                item.get('conservative_score', -999.0),
-                item['rerank_score'] if item['rerank_score'] is not None else -1.0,
-                item['rule_score'],
-                -len(item['text']),
-            ),
-            reverse=True,
+        # Track anchor selection
+        _selected_row = next((r for r in candidate_rows if r.get('text') == selected_candidate), None)
+        _selected_is_knn = bool(
+            (_selected_row.get('knn_source') if _selected_row else False) or
+            (_selected_row.get('anchor_source') if _selected_row else False)
         )
-        if isinstance(top_n, int) and top_n > 0:
-            candidate_rows = candidate_rows[:top_n]
+        _selected_is_anchor = bool(_selected_row.get('anchor_source')) if _selected_row else False
+        _anchor_selected = _selected_is_anchor
+        _anchor_source = (_selected_row.get('anchor_source', '') if _selected_row else '')
 
-        return {
-            'original_sentence': original,
-            'normalized_sentence': normalized,
+        # Finalize
+        selected_candidate = self._finalize_first_level_candidate(
+            selected_candidate, normalized, is_knn=_selected_is_knn)
+
+        if not selected_candidate:
+            return {}
+
+        # Phase 3: Update anchor frequency for anti-collapse IDF penalty
+        self._anchor_frequency[selected_candidate] += 1
+        self._anchor_sentence_count += 1
+
+        # Phase 4: Grounding assessment + Provenance Chain for observability
+        _grounding_verdict = None
+        _provenance_chain = None
+        _top_candidate_names = [r.get('text', '') for r in candidate_rows[:5]]
+        self._ensure_grounding_checker()
+        if self.grounding_checker is not None:
+            _grounding_verdict = self.grounding_checker.grounding_verdict(
+                normalized, selected_candidate)
+            # Priority 1.4: Full provenance chain for auditability
+            _provenance_chain = self.grounding_checker.provenance_chain(
+                normalized, selected_candidate, _top_candidate_names)
+
+        # Phase 4: Hierarchy enrichment — look up L2/L3 from anchor_hierarchy
+        _hierarchy = self._enrich_with_hierarchy(selected_candidate)
+
+        # ── Build trace ──
+        # Generate interpretive code (研究层) for human readability
+        _interpretive = self._generate_interpretive_code(selected_candidate, normalized)
+
+        trace = {
             'selected_candidate': selected_candidate,
-            'best_rule_candidate': best_rule_candidate,
-            'used_rerank': used_rerank,
-            'prototype_enabled': bool(prototype_hits),
-            'prototype_hits': prototype_hits,
-            'candidates': candidate_rows,
+            'interpretive_code': _interpretive,
+            'best_rule_candidate': selected_candidate,
+            'used_rerank': bool((candidate_rows[0].get('rerank_score') or 0) > 0) if candidate_rows else False,
+            'anchor_selected': _anchor_selected,
+            'anchor_source': _anchor_source,
+            'candidates': candidate_rows[:(top_n if top_n else 15)],
+            'normalized': normalized,
             'salience': salience,
+            'grounding': _grounding_verdict,  # Phase 4: grounding quality assessment
+            'provenance': _provenance_chain,  # Phase 4: full provenance chain (Priority 1.4)
+            'hierarchy': _hierarchy,  # Priority 7: L2 theme + L3 theory mapping
         }
+
+        return trace
+
+    # ── Code rewriting ─────────────────────────────────────────────────
 
     def rewrite_first_level_code(self, text: str) -> str:
         """Clean a selected first-level code into a shorter coding phrase."""
-        cleaned = str(text or '').strip()
-        if not cleaned:
+        if not text:
             return ''
-        cleaned = re.sub(r'(?<=[\u4e00-\u9fff])\?(?=[\u4e00-\u9fff])', '\uFF0C', cleaned)
-        cleaned = re.sub(r'^\s*[\u2460-\u2473\u2776-\u277F\u24F5-\u24FE\u3251-\u325F①②③④⑤⑥⑦⑧⑨⑩]+[\u3001\.\uFF0E\)\uFF09\s]*', '', cleaned)
-        cleaned = re.sub(r'^\s*(?:\d+|[一二三四五六七八九十]+)[\u3001\.\uFF0E\)\uFF09]\s*', '', cleaned)
-        cleaned = re.sub(r'^(\u6211\u89c9\u5f97|\u6211\u8ba4\u4e3a|\u6211\u611f\u89c9|\u5176\u5b9e|\u7136\u540e|\u5c31\u662f\u8bf4|\u90a3\u4e48|\u8fd9\u4e2a|\u90a3\u4e2a|\u4f60\u770b|\u4f60\u8bf4|\u5982\u679c\u8bf4)+', '', cleaned)
-        cleaned = re.sub(r'(\u8fd9\u4e2a\u4e1c\u897f|\u8fd9\u4e2a\u4e8b\u60c5|\u8fd9\u4ef6\u4e8b|\u8fd9\u4e2a\u95ee\u9898)', '', cleaned)
-        cleaned = re.sub(r'(\u53ef\u80fd|\u5927\u6982|\u4e5f\u8bb8|\u597d\u50cf|\u5176\u5b9e|\u5b9e\u9645\u4e0a|\u8bf4\u5b9e\u8bdd|\u76f8\u5f53\u4e8e|\u5c31\u662f|\u7136\u540e)', '', cleaned)
-        cleaned = re.sub(r'(怎么说呢|就是说|我觉得|相当于|要看|分场合|这个东西|这个事情|这个问题)', '', cleaned)
-        cleaned = re.sub(r'每个阶段的重点不同.*参与深度是不同的', '阶段性参与调整', cleaned)
-        cleaned = re.sub(r'怎么会有人.*?(?:吃饭|消费|购买)', '客源不确定', cleaned)
-        cleaned = re.sub(r'咖啡的种植加工活动遵循生产者本人的生产意愿和生产习惯以及当地默认的惯例开展.*随意', '规范缺乏', cleaned)
-        cleaned = re.sub(r'生产意愿和生产习惯以及当地默认的惯例开展.*随意', '规范缺乏', cleaned)
-        cleaned = re.sub(r'品牌化这个方向', '品牌化方向', cleaned)
-        cleaned = re.sub(r'(推动)(?:他们|我们|他|她)(在?)', r'\1\2', cleaned)
-        cleaned = re.sub(r'让他能够更好地带领让他能够更好地带领团队实现技术创新', '团队实现技术创新', cleaned)
-        cleaned = re.sub(r'^(?:我们|他们|你们|他|她)(?=(?:在|将|会|对|把)?(?:推动|开展|组织|参与|提出|引入|建立|调整|获得|降低|提高|解决|分析|反馈|合作|转变|优化|对接|支持|购买))', '', cleaned)
-        cleaned = re.sub(r'[吧呢啊嘛呀哦哈哎诶噢呃]+$', '', cleaned)
-        cleaned = re.sub(r'\u7ed3\u679c\u6210\u529f\u4e5f\u5931\u8d25', '\u7ed3\u679c\u53ef\u80fd\u6210\u529f\u4e5f\u53ef\u80fd\u5931\u8d25', cleaned)
-        cleaned = re.sub(r'(\u80fd\u591f|\u80fd)\u5f71\u54cd\u7684\u8303\u56f4', '\u5f71\u54cd\u8303\u56f4', cleaned)
-        cleaned = re.sub(r'\u5f71\u54cd\u7684\u8303\u56f4', '\u5f71\u54cd\u8303\u56f4', cleaned)
-        cleaned = re.sub(r'\u8fd8\u662f\u6709\u9650\u7684?$', '\u6709\u9650', cleaned)
-        cleaned = re.sub(r'\u7684(\u8303\u56f4|\u5f71\u54cd|\u4f5c\u7528)', r'\1', cleaned)
-        cleaned = re.sub(r'[（(]?\d{1,2}:\d{2}[)）]?', '', cleaned)
-        cleaned = re.sub(r'\s+', '', cleaned)
-        # \u65B0\u589E\u5F3A\u7ED3\u6784\u5316\u91CD\u5199\u89C4\u5219\uFF1A\u5C06\u5E38\u89C1\u53E3\u8BED\u6A21\u5F0F\u8F6C\u4E3A\u4E66\u9762\u6982\u5FF5
-        cleaned = re.sub(r'^(?:\u6211\u4EEC|\u4ED6\u4EEC|\u4F60\u4EEC|\u4ED6|\u5979|\u6211)(?:\u4E5F|\u90FD|\u5C31|\u4F1A|\u8981|\u80FD|\u53EF\u4EE5|\u9700\u8981|\u60F3\u8981|\u5E0C\u671B|\u6253\u7B97|\u8BA1\u5212|\u51C6\u5907)?', '', cleaned)
-        cleaned = re.sub(r'(?:\u662F\u4E0D\u662F|\u80FD\u4E0D\u80FD|\u8981\u4E0D\u8981|\u4F1A\u4E0D\u4F1A|\u6709\u6CA1\u6709|\u884C\u4E0D\u884C)[\u3002\uFF0C]?$', '', cleaned)
-        cleaned = re.sub(r'^.*?(?:\u539F\u56E0\u662F|\u662F\u56E0\u4E3A|\u4E3B\u8981\u662F|\u5176\u5B9E\u662F)(.{4,30})$', r'\1', cleaned)
-        cleaned = re.sub(r'^(.{2,20})(?:\u7684\u65B9\u9762|\u7684\u89D2\u5EA6|\u7684\u5C42\u9762|\u7684\u60C5\u51B5|\u7684\u73AF\u8282|\u7684\u9636\u6BB5|\u7684\u8FC7\u7A0B|\u7684\u6D41\u7A0B|\u7684\u6548\u679C|\u7684\u7ED3\u679C|\u7684\u95EE\u9898)$', r'\1', cleaned)
-        cleaned = re.sub(r'^(?:\u5728|\u4ECE|\u7531|\u5BF9|\u628A|\u88AB|\u8BA9|\u53EB|\u7ED9)(.{3,25})$', r'\1', cleaned)
-        cleaned = re.sub(r'^(.{4,30})(?:\u7B49\u7B49|\u4E4B\u7C7B\u7684|\u4EC0\u4E48\u7684|\u8FD9\u4E9B|\u90A3\u4E9B)$', r'\1', cleaned)
-        return cleaned.strip("\uFF0C\u3002\uFF1F\uFF01\uFF1B:\"'()\uFF08\uFF09[]\u3010\u3011{} ")
 
-    def _rerank_candidate_rows_for_trace(self, trace: Dict[str, Any], score_map: Dict[Tuple[str, str], float]) -> None:
-        candidates = trace.get('candidates', [])
-        normalized = trace.get('normalized_sentence', '')
-        best_text = trace.get('selected_candidate', '')
-        best_score = None
-        best_rank_score = float('-inf')
-        for row in candidates:
-            key = (normalized, row.get('text', ''))
-            if key not in score_map:
-                row['rerank_score'] = None
-                continue
-            row['source_text'] = normalized
-            row['rerank_score'] = round(float(score_map[key]), 4)
-            rank_score = self._conservative_first_level_rank_score(row)
-            row['conservative_score'] = round(float(rank_score), 4)
-            if best_score is None or rank_score > best_rank_score:
-                best_score = row['rerank_score']
-                best_rank_score = rank_score
-                best_text = row.get('text', '')
-        if best_score is not None:
-            trace['used_rerank'] = True
-            trace['selected_candidate'] = self._finalize_first_level_candidate(best_text, normalized)
-        for row in candidates:
-            row['selected'] = row.get('text') == best_text or row.get('text') == trace.get('selected_candidate')
-        candidates.sort(
-            key=lambda item: (
-                item.get('conservative_score', -999.0),
-                item['rerank_score'] if item.get('rerank_score') is not None else -1.0,
-                item.get('rule_score', 0.0),
-                -len(item.get('text', '')),
-            ),
-            reverse=True,
-        )
+        clean = text.strip()
 
-    def _apply_global_batch_rerank(self, traces: List[Dict[str, Any]], model_manager=None) -> None:
-        if not (Config and getattr(Config, 'ENABLE_ABSTRACT_RERANKER', False) and model_manager is not None):
-            return
+        # Remove embedded question marks within Chinese text
+        clean = re.sub(r'(?<=[一-鿿])\?(?=[一-鿿])', '', clean)
+
+        # Remove leading numbered markers
+        clean = re.sub(
+            r'^\s*[①-⑳❶-❿⓵-⓾㉑-㉟①②③④⑤⑥⑦⑧⑨⑩]\s*',
+            '', clean)
+        clean = re.sub(r'^\s*(?:\d+|[一二三四五六七八九十]+)[、\.．\)]\s*', '', clean)
+
+        # Remove casual endings
+        clean = re.sub(r'(什么的|之类的|那种感觉|这种感觉|这样子|那样子|怎么说呢|就是说)$', '', clean)
+        clean = re.sub(r'[吧呢啊嘛呀哦哈哎诶噢呃]+$', '', clean)
+        clean = re.sub(r'的(\w{2,4})$', r'\1', clean)
+
+        # Fix verb-induced fragments
+        clean = re.sub(r'把(.{2,12})(?:聚集|聚拢|吸引)(?:过来|过去|来)', r'吸引\1', clean)
+
+        # Remove leading pronouns
+        clean = re.sub(r'^[我我们你你们他他们它它们大家]*(?:也|还是|都|就|会|要|能)?', '', clean)
+        clean = clean.strip()
+
+        if not clean:
+            clean = text.strip()
+
+        return clean
+
+    # ── Re-ranking ─────────────────────────────────────────────────────
+
+    def _rerank_candidate_rows_for_trace(self, candidates: List[Dict],
+                                          normalized_sentence: str) -> List[Dict]:
+        """Re-rank candidate rows using the fine-tuned concept_anchor model.
+
+        Falls back to base bge model (semantic_matcher) if the fine-tuned
+        model is not loaded. The concept_anchor model was trained with
+        contrastive learning to discriminate correct vs incorrect concept
+        labels for a given sentence.
+        """
+        if not candidates:
+            return candidates
+
+        # Prefer fine-tuned concept_anchor model; fall back to base bge
+        use_concept_model = (hasattr(self, 'concept_anchor_index')
+                            and self.concept_anchor_index is not None)
+        if not use_concept_model:
+            if not hasattr(self, 'semantic_matcher') or not self.semantic_matcher:
+                return candidates
+
+        try:
+            texts = [c.get('text', '') for c in candidates]
+            if not any(texts):
+                return candidates
+
+            for i, row in enumerate(candidates):
+                text = row.get('text', '')
+                if text and len(text) >= 2:
+                    if use_concept_model:
+                        sim = self._concept_model_similarity(text, normalized_sentence)
+                    else:
+                        sim = self._model_semantic_similarity(text, normalized_sentence)
+                    if sim > 0:
+                        row['rerank_score'] = round(sim * 10.0, 4)
+        except Exception:
+            pass
+
+        return candidates
+
+    def _apply_global_batch_rerank(self, traces: Dict[str, Dict],
+                                    model_manager=None) -> Dict[str, Dict]:
+        """Apply global batch re-ranking if abstract reranker is available."""
+        if not Config or not getattr(Config, 'ENABLE_ABSTRACT_RERANKER', False):
+            return traces
+
+        if not model_manager:
+            return traces
+
         try:
             if hasattr(model_manager, 'ensure_abstract_reranker_loaded'):
                 model_manager.ensure_abstract_reranker_loaded()
-            if not (
-                hasattr(model_manager, 'is_abstract_reranker_available')
-                and model_manager.is_abstract_reranker_available()
-            ):
-                return
 
-            rerank_limit = max(1, int(max(getattr(Config, 'ABSTRACT_RERANK_TOP_N', 6), getattr(Config, 'FIRST_LEVEL_GLOBAL_RERANK_TOP_N', 24)))) if Config else 24
-            pairs: List[Tuple[str, str]] = []
-            seen: Set[Tuple[str, str]] = set()
-            for trace in traces:
-                normalized = trace.get('normalized_sentence', '')
-                rows = [
-                    row for row in trace.get('candidates', [])
-                    if row.get('text') and not self._is_question_like(row.get('text', ''))
-                ]
-                rows.sort(
-                    key=lambda item: (
-                        item.get('semantic_recall_score') is not None,
-                        item.get('conservative_score', -999.0),
-                        item.get('semantic_recall_score', 0.0) or 0.0,
-                        item.get('rule_score', 0.0),
-                        -len(item.get('text', '')),
-                    ),
-                    reverse=True,
-                )
-                for row in rows[:rerank_limit]:
-                    pair = (normalized, row.get('text', ''))
-                    if pair not in seen:
-                        seen.add(pair)
-                        pairs.append(pair)
-            if not pairs:
-                return
+            if not hasattr(model_manager, 'is_abstract_reranker_available'):
+                return traces
+            if not model_manager.is_abstract_reranker_available():
+                return traces
 
-            originals = [item[0] for item in pairs]
-            candidates = [item[1] for item in pairs]
-            if hasattr(model_manager, 'score_abstract_candidate_pairs'):
-                scores = model_manager.score_abstract_candidate_pairs(pairs)
-            else:
-                scores = model_manager.score_abstract_candidates(originals, candidates)
-            if not scores or len(scores) != len(pairs):
-                return
-            score_map = {pair: float(score) for pair, score in zip(pairs, scores)}
-            for trace in traces:
-                self._rerank_candidate_rows_for_trace(trace, score_map)
-        except Exception as exc:
-            logger.warning(f"全局批量一阶重排失败，回退规则候选: {exc}")
+            # Collect all candidates
+            all_pairs = []
+            pair_map = {}
+            for code_key, trace in traces.items():
+                candidates = trace.get('candidates', [])
+                if not candidates:
+                    continue
+                norm = trace.get('normalized', '')
+                for c in candidates:
+                    text = c.get('text', '')
+                    if text and norm and len(text) >= 2:
+                        all_pairs.append((norm, text))
+                        key = (norm, text)
+                        if key not in pair_map:
+                            pair_map[key] = []
+                        pair_map[key].append((code_key, c))
+
+            if not all_pairs:
+                return traces
+
+            # Batch rerank
+            norm_texts = [p[0] for p in all_pairs]
+            cand_texts = [p[1] for p in all_pairs]
+            scores = model_manager.batch_abstract_rerank(norm_texts, cand_texts)
+
+            # Apply scores
+            for (norm, cand_text), score in zip(all_pairs, scores):
+                for code_key, c in pair_map.get((norm, cand_text), []):
+                    c['rerank_score'] = round(score * 10.0, 4)
+
+        except Exception:
+            pass
+
+        return traces
+
+    # ── Sentence abstraction / normalization ───────────────────────────
 
     def abstract_sentence(self, sentence: str, model_manager=None) -> str:
         """Extract a first-level code through the reusable trace flow."""
-        self._ensure_first_level_defaults()
-        s0 = (sentence or '').strip()
-        if not s0:
-            return ''
-        if s0 in self.abstract_cache:
-            return self.abstract_cache[s0]
+        if not isinstance(sentence, dict):
+            detail = {'content': str(sentence)}
+        else:
+            detail = self._repair_first_level_sentence_detail(sentence)
 
-        trace = self.build_first_level_candidate_trace(s0, model_manager=model_manager)
-        compact = trace.get('selected_candidate', '')
-        self.abstract_cache[s0] = compact
-        return compact
+        trace = self.build_first_level_candidate_trace(detail, model_manager)
+        if not trace:
+            return detail.get('content', str(sentence))[:30]
+
+        selected = trace.get('selected_candidate', '')
+        if selected:
+            return selected
+        return detail.get('content', str(sentence))[:30]
 
     def _normalize_source_sentence(self, text: str) -> str:
-        normalized = str(text or '').strip()
-        if not normalized:
+        """Normalize a source sentence for coding."""
+        if not text:
             return ''
-        normalized = re.sub(r'^[\uFF0C\u3002\uFF1F\uFF01\uFF1B:\u3001\.\?!;\s]+', '', normalized)
-        normalized = re.sub(r'[\?\uFF1F]+$', '\u3002', normalized)
-        normalized = re.sub(r'[!\uFF01]+$', '\u3002', normalized)
-        normalized = re.sub(r'\s+', ' ', normalized)
+        normalized = text.strip()
+        # Remove leading punctuation
+        normalized = re.sub(r'^[，。？！；：、\.\?!;\s]+', '', normalized)
+        # Remove trailing question marks
+        normalized = re.sub(r'[?？]+$', '', normalized)
+        normalized = re.sub(r'[!！]+$', '', normalized)
         return normalized.strip()
 
     def _post_refine_phrase(self, text: str) -> str:
-        refined = str(text or '')
-        for pattern in getattr(self, 'bad_phrase_patterns', []):
-            refined = re.sub(pattern, '', refined)
-        refined = re.sub(r'[（(]?\d{1,2}:\d{2}[)）]?', '', refined)
-        refined = re.sub(r'^(\u56e0\u6b64|\u6240\u4ee5|\u7136\u540e|\u5e76\u4e14|\u800c\u4e14|\u90a3\u4e48|\u5176\u5b9e)+', '', refined)
-        refined = re.sub(r'(\u56e0\u6b64|\u6240\u4ee5|\u7136\u540e|\u5e76\u4e14|\u800c\u4e14)+$', '', refined)
-        refined = re.sub(r'^(\u8fd9\u4e2a|\u90a3\u4e2a|\u5b83)(?=[\u4e00-\u9fa5])', '', refined)
-        refined = re.sub(r'\s+', '', refined)
-        return refined.strip("\uFF0C\u3002\uFF1F\uFF01\uFF1B:\"'()\uFF08\uFF09[]\u3010\u3011{} ")
+        """Post-refine a phrase by removing bad patterns."""
+        if not text:
+            return ''
+
+        for pattern in self.bad_phrase_patterns:
+            if isinstance(pattern, str):
+                text = re.sub(pattern, '', text)
+
+        # Remove leading conjunctions
+        text = re.sub(
+            r'^(因此|所以|然后|并且|而且|不过|但是|然而|因为|虽然|如果|总之|'
+            r'总而言之|综上|此外|另外|还有|特别是|尤其是|'
+            r'再加上|再加上说|其实是|其实是说|'
+            r'在这里|在那里|在这样的|在此|'
+            r'总之来说|我想说的是|可以这么说|可以说)',
+            '', text)
+
+        text = text.strip()
+        return text
 
     def _is_question_like(self, text: str) -> bool:
-        t = str(text or '').strip()
-        if not t:
-            return False
-        return bool(
-            re.search(r'[\?\uFF1F\u5417\u4e48\u5462]$', t)
-            or re.search(r'(\u662f\u4e0d\u662f|\u662f\u5426|\u80fd\u4e0d\u80fd|\u53ef\u4e0d\u53ef\u4ee5|\u4f1a\u4e0d\u4f1a|\u6709\u6ca1\u6709|\u8981\u4e0d\u8981)', t)
-            or re.search(r'^(\u4e3a\u4ec0\u4e48|\u600e\u4e48|\u5982\u4f55|\u54ea[\u91cc\u513f\u4e2a\u79cd])', t)
-        )
-
-    def _compute_salience(self, text: str) -> Dict[str, float]:
-        """计算句子的四维显著性分数：转折/对比、因果链、强度/极端、问题/困境"""
-        t = str(text or '').strip()
-        if not t:
-            return {'contrast': 0.0, 'causal': 0.0, 'intensity': 0.0, 'problem': 0.0, 'total': 0.0}
-
-        # 1. 转折/对比信号 —— 转折后通常是核心信息
-        contrast_markers = [
-            r'但是', r'不过', r'然而', r'却', r'反而', r'反倒',
-            r'尽管', r'虽然', r'即使', r'即便', r'本来.*但', r'原以为.*但',
-            r'以前.*现在', r'过去.*现在', r'之前.*后来', r'一开始.*后来',
-        ]
-        contrast_score = sum(1.0 for m in contrast_markers if re.search(m, t))
-        contrast_score = min(contrast_score, 3.0)  # 上限3分
-
-        # 2. 因果/推论信号 —— 因果链是概念锚点
-        causal_markers = [
-            r'因为', r'所以', r'因此', r'由于', r'导致', r'致使',
-            r'从而', r'造成', r'引起', r'影响', r'推动', r'促进',
-            r'使得', r'之所以', r'归根结底', r'根本原因',
-        ]
-        causal_score = sum(1.0 for m in causal_markers if re.search(m, t))
-        causal_score = min(causal_score, 3.0)
-
-        # 3. 强度/极端信号 —— 程度=说话人重视程度
-        intensity_markers = [
-            r'特别', r'非常', r'最', r'极其', r'极度', r'十分',
-            r'根本', r'完全', r'彻底', r'绝对', r'毫不',
-            r'一直[都在]?', r'每次', r'总是', r'反复', r'不断',
-            r'太\w{1,3}$', r'很\w{1,3}$',
-        ]
-        intensity_score = sum(1.0 for m in intensity_markers if re.search(m, t))
-        # 感叹号=高强度
-        if re.search(r'[！!]$', t):
-            intensity_score += 1.0
-        intensity_score = min(intensity_score, 3.0)
-
-        # 4. 问题/困境信号 —— 扎根理论关注"麻烦"
-        problem_markers = [
-            r'困难', r'问题', r'矛盾', r'冲突', r'瓶颈', r'障碍',
-            r'卡在', r'拖慢', r'延迟', r'受限', r'不足', r'短板',
-            r'风险', r'压力', r'挑战', r'负担', r'缺乏', r'缺少',
-            r'不行', r'没办法', r'做不了', r'无法',
-        ]
-        problem_score = sum(1.0 for m in problem_markers if re.search(m, t))
-        problem_score = min(problem_score, 3.0)
-
-        # 加权总分：问题 > 转折 > 因果 > 强度
-        total = (
-            problem_score * 1.5 +
-            contrast_score * 1.2 +
-            causal_score * 1.0 +
-            intensity_score * 0.8
-        )
-        return {
-            'contrast': round(contrast_score, 2),
-            'causal': round(causal_score, 2),
-            'intensity': round(intensity_score, 2),
-            'problem': round(problem_score, 2),
-            'total': round(total, 2),
-        }
-
-    def _is_coding_worthy_sentence(self, text: str) -> bool:
-        """判断句子是否值得编码（编码价值门控）"""
-        t = str(text or '').strip()
-        if not t:
-            return False
-
-        # 太短不编码
-        min_len = getattr(self, 'coding_worthy_min_length', 10)
-        if len(t) < min_len:
-            return False
-
-        # 纯应和跳过
-        if re.match(r'^(对|嗯|哦|是的|好的|没错|确实|可以|行|好|有|没有|不是)[，,。.!！]?$', t):
-            return False
-
-        # 纯态度无信息：只有主观感受，无实质内容
-        if re.match(r'^(我|我们)?(觉得|感觉|认为|想|看)(也|都)?(是|就|很|挺|蛮|还|比较)', t) and not self._has_first_level_information_cue(t):
-            return False
-
-        # 访谈过渡语
-        if re.match(r'^(那我|那我先|我接着说|下一个|接下来|下面|我们先|我先说)', t) and not self._has_first_level_information_cue(t):
-            return False
-
-        # 计算显著性
-        salience = self._compute_salience(t)
-        min_salience = getattr(self, 'coding_worthy_min_salience', 1.5)
-
-        # 短句需要更高的显著性门槛
-        if len(t) < 20:
-            if salience['total'] < max(min_salience, 2.5):
-                return False
-
-        # 标准句：显著性不足且无信息提示词
-        if salience['total'] < min_salience and not self._has_first_level_information_cue(t):
-            # 哪怕无显著性，只要有足够多专业词也可入
-            prof_count = sum(1 for term in [
-                '技术', '资源', '平台', '机制', '流程', '生态',
-                '需求', '风险', '压力', '冲突', '协同', '合作',
-                '创新', '服务', '客户', '团队', '品牌', '治理',
-                '监督', '审批', '架构', '数据', '能力', '绩效',
-                '战略', '路径', '场景', '系统', '设备', '模块',
-            ] if term in t)
-            if prof_count < 2:
-                return False
-
-        return True
-
-    def _should_skip_sentence_for_coding(self, text: str, salience: Optional[Dict[str, float]] = None) -> bool:
-        """句子级预过滤：判断句子本身是否不适合编码（问题、过渡语、元指令等）"""
-        t = str(text or '').strip()
-        if not t or len(t) < 10:
+        """Check if text looks like a question."""
+        if re.search(r'[?？吗么呢]$', text):
             return True
-        # 纯问题句（以吗/呢/呀结尾）
-        if re.search(r'[吗呢呀嘛啊][？?]?$', t):
-            return True
-        # 疑问句开头
-        if re.search(r'^(什么|怎么|为什么|如何|哪些|哪方面|什么样|是不是|能不能|要不要|有没有|可不可以|会不会)', t):
-            return True
-        # 访谈指导语/元指令
-        if re.search(r'^(先给您|先给你|我先|下面我|接下来|首先|本次访谈|这个访谈|刚才|刚刚|旁边|您看|你看|就是说|怎么说)', t):
-            return True
-        # 纯应和/纯态度无信息
-        if re.match(r'^(对|嗯|哦|是的|好的|没错|确实|可以|行|好|有|没有|不是)[，,。.!！]?$', t):
-            return True
-        # 访谈过渡句
-        if re.match(r'^(那我|那我先|我接着说|下一个|接下来|下面|我们先|我先说|你刚刚|你说|你讲)', t):
-            return True
-        # 无显著性且无信息提示词且不长
-        if salience and salience.get('total', 0) < 1.0 and not self._has_first_level_information_cue(t) and len(t) < 30:
-            return True
-        # 全是数字/符号
-        if re.match(r'^[\d\s\.\,\;\:\-\+\%\(\)（）①②③④⑤⑥⑦⑧⑨⑩]+$', t):
+        if re.match(r'^(为什么|怎么|如何|哪[里些个]|谁|啥|几时|几点|多少|什么样|怎么样|什么时候)', text):
             return True
         return False
 
-    def _formalize_code(self, code: str) -> str:
-        """将一阶编码规范化：口语词替换为书面用语"""
-        ct = str(code or '').strip()
-        if not ct:
-            return ct
+    def _compute_salience(self, text: str) -> float:
+        """Compute the salience score of a sentence for coding worthiness."""
+        if not text or len(text) < 5:
+            return 0.0
 
+        salience = 0.0
+        clean = text.strip()
+
+        # Length component
+        length = len(clean)
+        if length < 10:
+            salience -= 0.2
+        elif length > 15:
+            salience += 0.1
+
+        # Strong contrast/change indicators
+        contrast_markers = ['但是', '然而', '却', '反而', '不过', '可是', '虽然', '尽管', '即使']
+        change_markers = ['转变', '转型', '调整', '变革', '改造', '改变', '变成', '成了', '变得']
+        emphasis_markers = ['尤其', '特别', '关键', '核心', '重要', '主要', '重点']
+
+        for m in contrast_markers:
+            if m in clean:
+                salience += 0.15
+                break
+        for m in change_markers:
+            if m in clean:
+                salience += 0.12
+                break
+        for m in emphasis_markers:
+            if m in clean:
+                salience += 0.10
+                break
+
+        # Exclamation/question bonus
+        if re.search(r'[！!]$', clean):
+            salience += 0.08
+
+        return round(max(0.0, min(1.0, salience + 0.3)), 4)
+
+    def _extract_domain_terms_from_text(self, text: str) -> List[str]:
+        """Extract domain-specific terms for RAG document augmentation."""
+        if not text:
+            return []
+
+        terms = []
+        # Use jieba with POS tagging to find key terms
+        for w, flag in pseg.cut(text):
+            if len(w) >= 2 and flag.startswith('n'):
+                # Filter out pure digits/punctuation
+                if not re.match(r'^[\d\W_]+$', w):
+                    terms.append(w)
+
+        return list(dict.fromkeys(terms))
+
+    def _is_coding_worthy_sentence(self, text: str) -> bool:
+        """Judge if a sentence is worth coding (quality gate)."""
+        if not text or len(text.strip()) < self.coding_worthy_min_length:
+            return False
+
+        clean = text.strip()
+
+        # Skip very short reactive responses
+        if re.match(r'^(嗯|哦|是的|对的|好的|没有|确实|可以|行|对|不对|没有|不行)[了，,。.!！]?$', clean):
+            return False
+
+        # Skip pure punctuation/questions
+        if re.match(r'^[\W]+$', clean):
+            return False
+
+        return True
+
+    def _should_skip_sentence_for_coding(self, text: str, salience: float = 0.0) -> bool:
+        """Pre-filter: decide if a sentence is unsuitable for coding."""
+        if not text or len(text.strip()) < 4:
+            return True
+
+        clean = text.strip()
+
+        # Pure interjection
+        if re.match(r'^[啊嗯哦哎呀嘿哈呵喔噢哟呃]+[了?]?$', clean):
+            return True
+
+        # Pure question
+        if re.match(r'^(什么|怎么|为什么|如何|哪些|哪种|什么样|是不是|能不能|要不要|'
+                     r'有没有|可不可以|会不会)', clean) and len(clean) < 8:
+            return True
+
+        # Salience gating
+        if salience < 0.1 and len(clean) < 8:
+            return True
+
+        return False
+
+    # ── Code formalization ─────────────────────────────────────────────
+
+    def _formalize_code(self, code: str) -> str:
+        """Formalize a first-level code by replacing colloquialisms."""
+        if not code:
+            return code
+
+        ct = code.strip()
+
+        # Apply colloquial-to-formal mapping
         mapping = getattr(self, 'colloquial_to_formal', {})
-        # 按长度降序替换，避免短词误替换（如'make'中的'ma'）
         for colloquial in sorted(mapping.keys(), key=len, reverse=True):
             if colloquial in ct:
                 ct = ct.replace(colloquial, mapping[colloquial])
 
-        # 去掉口语后缀
+        # Remove colloquial endings
         ct = re.sub(r'(什么的|之类的|那种感觉|这种感觉|这样子|那样子|怎么说呢|就是说)$', '', ct)
-        # 去掉句末语气词残留
         ct = re.sub(r'[吧呢啊嘛呀哦哈哎诶噢呃]+$', '', ct)
-        # 清理多余"的"字（"的\xe5\xbd\xb1\xe5\x93\x8d" → "影响"）
         ct = re.sub(r'的(\w{2,4})$', r'\1', ct)
-        # 去掉"我和我们"之类的人称前缀
+
+        # Fix common patterns
+        ct = re.sub(r'把(.{2,12})(?:聚集|聚拢|吸引)(?:过来|过去|来)', r'吸引\1', ct)
         ct = re.sub(r'^[我我们你你们他他们它它们大家]*(?:也|还是|都|就|会|要|能)?', '', ct)
         ct = ct.strip()
 
-        # 如果规范化后变空，返回原码
-        return ct if ct else str(code or '').strip()
+        if not ct:
+            return code.strip()
+        return ct
 
     def _compress_first_level_candidate_variants(self, text: str) -> List[str]:
-        base = self._normalize_candidate_for_first_level(str(text or ""))
+        """Generate compressed variants of a candidate text."""
+        if not text:
+            return []
+
+        base = str(text).strip()
         if not base:
             return []
-        variants: List[str] = []
-        seen: Set[str] = set()
+
+        base = self._normalize_candidate_for_first_level(base)
+        variants = []
+        seen = set()
 
         def add(value: str):
-            cand = self._normalize_candidate_for_first_level(value)
-            if not cand:
-                return
-            if len(cand) < 4 or len(cand) > 24:
-                return
-            if self._contains_colloquial_residue(cand) or self._is_question_like(cand):
-                return
-            if cand not in seen:
-                seen.add(cand)
-                variants.append(cand)
+            value = value.strip()
+            if value and value not in seen and len(value) >= 2:
+                seen.add(value)
+                variants.append(value)
 
-        for part in self._split_first_level_candidate_segments(base):
+        # Original
+        add(base)
+
+        # Compressed variants
+        parts = self._split_first_level_candidate_segments(base)
+        for part in parts:
             add(part)
-            compact = re.sub(r'^(?:我们|他们|你们|大家|客户|企业|项目|平台|它们|这个|那个|这种|那些|这些)?(?:可以|能够|能|会|要|需要|希望|想要|通过|把|将|对|打造|构建|建立|开展|推进|推动)?', '', part)
-            add(compact)
-            compact_tail = re.sub(r'^.*?(技术|品牌|资源|平台|机制|流程|生态|需求|问题|合作|协同|创新|服务|应用|模块|设备|系统|客户|团队|工业互联网)', r'\1', part)
-            add(compact_tail)
-            for transform in (
-                (r'^推动(?:他们|我们|企业|双方)?(.{2,18}(?:合作|交流与合作))$', r'\1'),
-                (r'^(?:客户的)?信息系统和(?:我们的)?系统对接$', '客户信息系统对接'),
-                (r'^我们购买了?(.{2,16}(?:云存储|云计算|服务))$', r'\1购买'),
-                (r'^我们将.{0,12}(生产设备|设备).{0,8}搬到(工业互联网)$', r'\1接入\2'),
-                (r'^我们也会指导客户$', '客户指导协同'),
-                (r'^让他能够更好地带领.*?(团队实现技术创新)$', r'\1'),
-                (r'^我们从(.{2,16})中找寻灵感$', r'\1启发'),
-                (r'^钱已经不再是我的目标了$', '创业目标转变'),
-                (r'^我们跟(.{2,18})搞了一个(.{2,12})$', r'\2建设'),
-                (r'^一开始书记来找我$', '社区动员参与'),
-                (r'^往品牌化这个方向走把粉丝对个人的粘性转嫁到对品牌的粘性$', '品牌粘性转化'),
-                (r'^我们自建服务器$', '自建服务器'),
-                (r'^每个阶段的重点不同.*?我们参与深度是不同的$', '阶段性参与调整'),
-                (r'^我们面临的是自身技术进步$', '自身技术进步压力'),
-                (r'^.*生产意愿和生产习惯以及当地默认的惯例开展.*随意$', '规范缺乏'),
-            ):
-                replaced = re.sub(transform[0], transform[1], part)
-                if replaced != part:
-                    add(replaced)
-            for pattern in (
-                r'((?:影响|导致|推动|推进|解决|分析|反馈|合作|转变|优化|对接|支持|审批|协调|整合|开发|探索|识别|建立|引入|获得|提高|降低|调整|打造|构建|涵养|塑造|形成|提升|购买|指导)[^，,、；;。！？!?]{2,14})',
-                r'([^，,、；;。！？!?]{2,10}(?:受影响|受限|受阻|不足|短板|风险|压力|冲突))',
-                r'((?:客户|市场|项目|资源|技术|流程|机制|服务|需求|机会|风险|问题|品牌|生态|平台|应用|模块|设备|合作|系统|团队|工业互联网)[^，,、；;。！？!?]{1,10}(?:需求|诉求|反馈|协同|整合|优化|推进|支持|识别|解决|不足|风险|合作|赋能|创新|共创|共享|建立|提升|应用|对接|接入|购买|指导))',
-            ):
-                for match in re.finditer(pattern, part):
-                    add(match.group(1))
+
+        # Strip common prefixes
+        compact = re.sub(
+            r'^(?:我们|他们|你们|大家|客户|企业|项目|平台|它们|'
+            r'这个|那个|这种|那些|这些)?'
+            r'(?:可以|能够|能|会|要|需要|希望|想要|'
+            r'通过|把|将|对|打造|构建|建立|开展|推进|推动)?',
+            '', base)
+        add(compact)
+
+        # Strip common suffixes
+        compact_tail = re.sub(
+            r'^.*?(技术|品牌|资源|平台|机制|流程|生态|需求|问题|'
+            r'合作|协同|创新|服务|应用|模块|设备|系统|客户|团队|工业互联网)',
+            r'\1', base)
+        add(compact_tail)
+
         return variants
 
     def _normalize_candidate_for_first_level(self, text: str) -> str:
-        refined = str(text or '').strip()
-        if not refined:
+        """Normalize a candidate for first-level coding."""
+        if not text:
             return ''
 
-        refined = re.sub(r'(?<=[\u4e00-\u9fff])\?(?=[\u4e00-\u9fff])', '\uFF0C', refined)
-        refined = re.sub(r'^\s*[\u2460-\u2473\u2776-\u277F\u24F5-\u24FE\u3251-\u325F①②③④⑤⑥⑦⑧⑨⑩]+[\u3001\.\uFF0E\)\uFF09\s]*', '', refined)
-        refined = re.sub(r'^\s*(?:\d+|[一二三四五六七八九十]+)[\u3001\.\uFF0E\)\uFF09]\s*', '', refined)
-        refined = re.sub(r'^(\u4f60\u8bf4|\u4f60\u770b|\u5982\u679c|\u8981\u662f|\u5047\u5982|\u5176\u5b9e|\u4f46\u662f|\u4e0d\u8fc7|\u6240\u4ee5|\u56e0\u6b64|\u7136\u540e|\u5e76\u4e14|\u800c\u4e14|\u90a3\u4e48|\u56e0\u4e3a)+', '', refined)
-        refined = re.sub(r'^(\u6211\u4eec\u901a\u8fc7|\u6211\u4eec\u5c31\u53ef\u4ee5|\u6211\u4eec\u5c31\u80fd|\u6211\u4eec\u5c31\u662f|\u6211\u4eec\u628a|\u6211\u4eec\u53bb|\u6211\u4eec\u6765)+', '', refined)
-        refined = re.sub(r'^(\u8fd9\u4e2a\u6d41\u7a0b|\u8fd9\u4e2a\u95ee\u9898|\u8fd9\u4e2a\u4e8b\u60c5|\u8fd9\u4e2a\u60c5\u51b5)', '', refined)
-        refined = re.sub(r'(\u662f\u4e0d\u662f|\u662f\u5426|\u80fd\u4e0d\u80fd|\u53ef\u4e0d\u53ef\u4ee5|\u4f1a\u4e0d\u4f1a|\u6709\u6ca1\u6709|\u8981\u4e0d\u8981)', '', refined)
-        refined = re.sub(r'^(\u4e3a\u4ec0\u4e48|\u600e\u4e48|\u5982\u4f55)', '', refined)
-        refined = re.sub(r'[（(]?\d{1,2}:\d{2}[)）]?', '', refined)
-        refined = re.sub(r'\u7684\u8bdd', '', refined)
-        refined = re.sub(r'\u7684\u65f6\u5019', '', refined)
-        refined = re.sub(r'(怎么说呢|就是说|我觉得|相当于|要看|分场合|这个东西|这个事情|这个问题)', '', refined)
-        refined = re.sub(r'[吧呢啊嘛呀哦哈哎诶噢呃]+$', '', refined)
-        refined = re.sub(r'\u6bcf\u6b21\u90fd', '\u7ecf\u5e38', refined)
-        refined = re.sub(r'\u8fd9\u91cc$', '', refined)
-        refined = re.sub(r'(\u5c31\u5f88\u53d7\u5f71\u54cd|\u5f88\u53d7\u5f71\u54cd)', '\u53d7\u5f71\u54cd', refined)
-        refined = re.sub(r'\u6211\u4eec\u5c31\u53ea\u80fd', '\u53ea\u80fd', refined)
-        refined = re.sub(r'\u6211\u4eec\u53ea\u80fd', '\u53ea\u80fd', refined)
-        refined = refined.replace('\u81ea\u5df1', '\u81ea\u884c')
-        refined = refined.replace('\u4e00\u76f4\u50ac', '\u50ac\u4fc3')
-        refined = refined.replace('\u4e0d\u591f', '\u4e0d\u8db3')
-        refined = refined.replace('\u592a\u6162', '\u8fc7\u6162')
-        refined = refined.replace('\u5ba2\u6237\u7684\u53cd\u9988', '\u5ba2\u6237\u53cd\u9988')
-        refined = refined.replace('\u5206\u6790\u5ba2\u6237\u7684\u53cd\u9988', '\u5206\u6790\u5ba2\u6237\u53cd\u9988')
-        refined = refined.replace('\u522b\u7684\u7ec4\u7684\u8bbe\u5907', '\u522b\u7ec4\u8bbe\u5907')
-        refined = refined.replace('\u501f\u522b\u7ec4\u8bbe\u5907\u6765\u505a', '\u501f\u7528\u522b\u7ec4\u8bbe\u5907')
-        refined = re.sub(r'\s+', '', refined)
-        return refined.strip("\uFF0C\u3002\uFF1F\uFF01\uFF1B:\"'()\uFF08\uFF09[]\u3010\u3011{} ")
+        clean = text.strip()
+
+        # Remove embedded question marks
+        clean = re.sub(r'(?<=[一-鿿])\?(?=[一-鿿])', '', clean)
+
+        # Remove leading numbered markers
+        clean = re.sub(
+            r'^\s*[①-⑳❶-❿⓵-⓾㉑-㉟①②③④⑤⑥⑦⑧⑨⑩]\s*',
+            '', clean)
+        clean = re.sub(r'^\s*(?:\d+|[一二三四五六七八九十]+)[、\.．\)]\s*', '', clean)
+
+        # Remove speaker marks
+        clean = re.sub(r'^[（(]\d+[）)]', '', clean)
+        clean = re.sub(r'^[A-Za-z]\s*[：:]\s*', '', clean)
+
+        # Trim
+        clean = clean.strip()
+
+        # Remove if too short
+        if len(clean) < 2:
+            return ''
+
+        return clean
 
     def _is_semantically_complete(self, text: str) -> bool:
-        t = (text or '').strip()
+        """Check if text is semantically complete."""
+        t = text.strip()
         if not t:
             return False
-        if len(t) < 4:
+
+        # Prefix-only (incomplete)
+        if re.match(r'^(因为|如果|即使|虽然)', t) and len(t) < 8:
             return False
-        if self._is_question_like(t):
+
+        # Suffix-only (incomplete)
+        if re.search(r'(所以|因此|导致|使得|从而|进而|结果)$', t) and len(t) < 8:
             return False
-        if re.search(r'(\u600e\u4e48|\u5982\u4f55|\u8fd9\u91cc|\u8fd9\u6837|\u90a3\u6837|\u8fd9\u79cd|\u8fd9\u4e9b|\u90a3\u4e9b|\u8fd9\u7c7b|\u90a3\u7c7b)$', t):
+
+        # Vague starters
+        if re.match(r'^(还可以|还好|差不多|一般来说|基本上|'
+                     r'相对来说|相对而言|大多数|'
+                     r'大体上|大体来说|整体而言)', t) and len(t) < 10:
             return False
-        if re.search(r'^(\u56e0\u4e3a|\u5982\u679c|\u5373\u4f7f|\u867d\u7136|\u4f46\u662f|\u4e0d\u8fc7|\u6240\u4ee5|\u56e0\u6b64|\u7136\u540e|\u5e76\u4e14|\u800c\u4e14)$', t):
-            return False
-        if re.search(r'^(\u56e0\u4e3a|\u5982\u679c|\u5373\u4f7f|\u867d\u7136)', t) and not re.search(r'(\u6240\u4ee5|\u56e0\u6b64|\u5bfc\u81f4|\u4f7f\u5f97|\u4ece\u800c|\u53ea\u80fd|\u5f71\u54cd)', t):
-            return False
-        if re.search(r'^(\u6211|\u6211\u4eec|\u4f60|\u4f60\u4eec).*(\u4e0d\u592a\u6e05\u695a|\u4e0d\u77e5\u9053|\u4e0d\u786e\u5b9a|\u8bf4\u4e0d\u597d)', t):
-            return False
-        if re.search(r'^(\u8fd8\u53ef\u4ee5|\u8fd8\u597d|\u5dee\u4e0d\u591a|\u4e00\u822c\u822c?)$', t):
-            return False
+
         return True
 
-    def _detect_concessive_spans(self, text: str) -> List[Tuple[int, int]]:
-        """\u68c0\u6d4b\u8ba9\u6b65/\u6761\u4ef6\u4ece\u53e5\u7684\u5185\u5bb9\u8303\u56f4\uff08\u5c31\u7b97\u662fX/\u5373\u4f7fX/\u867d\u7136X/\u5982\u679c\u53ea\u662fX\u7b49\uff09\uff0c\u8fd9\u4e9b\u5185\u5bb9\u4e0d\u662f\u53e5\u5b50\u6838\u5fc3\u89c2\u70b9"""
-        concessive_starters = [
-            # \u8ba9\u6b65\u6807\u8bb0
-            r'\u5c31\u7b97(?:\u662f)?', r'\u5373\u4fbf(?:\u662f)?', r'\u5373\u4f7f(?:\u662f)?',
-            r'\u54ea\u6015(?:\u662f)?', r'\u5c3d\u7ba1(?:\u662f)?', r'\u867d\u7136(?:\u662f)?',
-            r'\u65e0\u8bba(?:\u662f|\u5982\u4f55|\u600e\u6837)?', r'\u4e0d\u7ba1(?:\u662f|\u5982\u4f55|\u600e\u6837)?',
-            r'\u7eb5\u4f7f(?:\u662f)?', r'\u4efb\u51ed(?:\u662f)?',
-            # \u8f7b\u63cf\u6de1\u5199\u7684\u6761\u4ef6\u6807\u8bb0\uff08"\u5982\u679c\u53ea\u662fX"=X\u4e0d\u91cd\u8981\uff09
-            r'\u5982\u679c\u53ea\u662f', r'\u5982\u679c\u4ec5\u4ec5', r'\u5982\u679c\u5149', r'\u5982\u679c\u5149\u5149',
-            r'\u5047\u5982\u53ea\u662f', r'\u5047\u5982\u4ec5\u4ec5', r'\u8981\u662f\u53ea\u662f', r'\u8981\u662f\u4ec5\u4ec5',
-        ]
-        clause_end_pattern = re.compile(
-            r'[\uff0c,\u3002\uff01!\uff1f?\uff1b;]|\u4f46(?:\u662f)?|\u4e0d\u8fc7|\u7136\u800c|\u5374|\u53ef(?:\u662f)?|\u5176\u5b9e|\u5b9e\u9645\u4e0a|\u7684\u8bdd'
-        )
+    # ── Span detection ─────────────────────────────────────────────────
+
+    def _detect_concessive_spans(self, text: str) -> List[str]:
+        """Detect concessive/conditional clause texts to exclude from coding."""
         spans = []
-        for starter in concessive_starters:
-            for m in re.finditer(starter, text):
-                content_start = m.end()
-                rest = text[content_start:]
-                end_match = clause_end_pattern.search(rest)
-                if end_match:
-                    content_end = content_start + end_match.start()
-                else:
-                    content_end = len(text)
-                if content_end > content_start:
-                    spans.append((content_start, content_end))
+        patterns = [
+            r'虽然.{0,30}(?:但是|但|不过|然而|却|可是|还是|仍然)',
+            r'即使.{0,30}(?:也|还是|仍然|依然)',
+            r'尽管.{0,30}(?:但是|但|不过|却|还是|仍然)',
+            r'如果.{0,30}(?:的话|就|那|那么)',
+            r'无论.{0,30}(?:都|也|还是)',
+        ]
+        for pat in patterns:
+            for m in re.finditer(pat, text):
+                spans.append(m.group())
         return spans
 
-    def _detect_negated_spans(self, text: str) -> List[Tuple[int, int]]:
-        """\u68c0\u6d4b\u5426\u5b9a\u8303\u56f4\u5185\u7684\u5185\u5bb9\uff08\u5bf9X\u4e0d\u5728\u610f/\u4e0d\u5728\u4e4eX/\u4e0d\u8ba4\u4e3aX\u7b49\uff09\uff0c\u8fd9\u4e9b\u5185\u5bb9\u8868\u8fbe\u4e86\u8bf4\u8bdd\u4eba\u5426\u5b9a\u7684\u5bf9\u8c61"""
+    def _detect_negated_spans(self, text: str) -> List[str]:
+        """Detect negated content texts to exclude from coding."""
         spans = []
-        # \u6a21\u5f0f1\uff1a\u5bf9X(\u5e76)\u4e0d/\u5e76\u975e/\u6ca1...\u5728\u610f/\u5728\u4e4e/\u5173\u5fc3/\u91cd\u89c6/\u611f\u5174\u8da3/\u770b\u91cd/\u8981\u6c42/\u5f3a\u6c42/\u7ea0\u7ed3/\u8ba1\u8f83
-        pattern1 = re.compile(
-            r'\u5bf9(.{2,40}?)(?:\u5e76?\u4e0d(?:\u662f|\u592a|\u7279\u522b|\u600e\u4e48|\u662f\u5f88)?|\u5e76\u975e|\u6ca1(?:\u6709)?)'
-            r'(?:.{0,20})(?:\u5728\u610f|\u5728\u4e4e|\u5173\u5fc3|\u91cd\u89c6|\u611f\u5174\u8da3|'
-            r'\u770b\u91cd|\u8981\u6c42|\u5f3a\u6c42|\u7ea0\u7ed3|\u8ba1\u8f83|\u770b\u5f97\u591a\u91cd|'
-            r'\u5f88\u5927\u5173\u7cfb|\u7279\u610f|\u4ecb\u610f|\u6240\u8c13)'
-        )
-        for m in pattern1.finditer(text):
-            spans.append((m.start(1), m.end(1)))
-        # \u6a21\u5f0f2\uff1a\u4e0d\u5728\u4e4e/\u4e0d\u5728\u610f/\u4e0d\u5173\u5fc3/\u4e0d\u91cd\u8981/\u65e0\u6240\u8c13/\u6ca1\u5173\u7cfb/\u4e0d\u770b\u91cd + X\uff08X\u662f\u8bf4\u8bdd\u4eba\u5426\u5b9a\u7684\u5185\u5bb9\uff09
-        pattern2 = re.compile(
-            r'(?:\u4e0d\u5728\u4e4e|\u4e0d\u5728\u610f|\u4e0d\u5173\u5fc3|\u4e0d\u91cd\u8981|'
-            r'\u65e0\u6240\u8c13|\u6ca1\u5173\u7cfb|\u4e0d\u770b\u91cd|\u4e0d\u600e\u4e48\u770b\u91cd|'
-            r'\u4e0d\u662f\u7279\u522b\u5728\u610f|\u4e0d\u592a\u5728\u610f|\u5e76\u4e0d\u5728\u610f)'
-            r'(.{2,25}?)(?:[\uff0c,\u3002\uff01!\uff1f?\uff1b;]|\u4f46|\u5176\u5b9e|$)'
-        )
-        for m in pattern2.finditer(text):
-            spans.append((m.start(1), m.end(1)))
-        # \u6a21\u5f0f3\uff1a\u4e0d\u89c9\u5f97/\u4e0d\u8ba4\u4e3a/\u6ca1\u89c9\u5f97 + X\uff08\u5426\u5b9a\u7684\u89c2\u70b9\uff09
-        pattern3 = re.compile(
-            r'(?:\u4e0d\u89c9\u5f97|\u4e0d\u8ba4\u4e3a|\u6ca1\u89c9\u5f97|\u4e0d\u4f1a\u89c9\u5f97)'
-            r'(.{2,30}?)(?:[\uff0c,\u3002\uff01!\uff1f?\uff1b;]|$)'
-        )
-        for m in pattern3.finditer(text):
-            spans.append((m.start(1), m.end(1)))
+        patterns = [
+            r'不(?:是|会|能|可以|应该|需要|存在|属于|等于|代表|意味着).{0,30}',
+            r'没(?:有|能|办法|法|机会).{0,30}',
+            r'并非.{0,20}',
+            r'不等于.{0,20}',
+        ]
+        for pat in patterns:
+            for m in re.finditer(pat, text):
+                spans.append(m.group())
         return spans
+
+    # ── Text truncation / abbreviation ──────────────────────────────────
 
     def _truncate_to_word(self, text: str, max_length: int) -> str:
-        t = (text or '').strip()
-        if max_length <= 0 or len(t) <= max_length:
-            return t
+        """Truncate text to max_length at a word boundary."""
+        if len(text) <= max_length:
+            return text
 
-        cut = t[:max_length].rstrip("\uFF0C\u3002\uFF1F\uFF01\uFF1B:\"'()\uFF08\uFF09[]\u3010\u3011{} ")
-        for _ in range(6):
-            if not cut:
+        truncate_chars = set('，。！？；：""''（）【】《》　 ')
+        truncated = text[:max_length]
+        for i in range(len(truncated) - 1, max_length // 2, -1):
+            if truncated[i] in truncate_chars:
+                truncated = truncated[:i]
                 break
-            if re.search(r'(\u600e\u4e48|\u5982\u4f55|\u8fd9\u91cc|\u8fd9\u6837|\u90a3\u6837|\u8fd9\u79cd|\u8fd9\u4e9b|\u90a3\u4e9b|\u8fd9\u7c7b|\u90a3\u7c7b)$', cut):
-                cut = cut[:-1]
-                continue
-            if re.search(r'(\u56e0\u4e3a|\u5982\u679c|\u5373\u4f7f|\u867d\u7136|\u4f46\u662f|\u4e0d\u8fc7|\u6240\u4ee5|\u56e0\u6b64|\u7136\u540e|\u5e76\u4e14|\u800c\u4e14)$', cut):
-                cut = cut[:-1]
-                continue
-            break
-        return cut.strip("\uFF0C\u3002\uFF1F\uFF01\uFF1B:\"'()\uFF08\uFF09[]\u3010\u3011{} ")
+
+        return truncated.strip()
 
     def _smart_abbreviate(self, text: str, max_length: int) -> str:
-        """\u667A\u80FD\u7F29\u5199\uFF1A\u5728\u4FDD\u8BC1\u8BED\u4E49\u5B8C\u6574\u7684\u524D\u63D0\u4E0B\u7F29\u77ED\u4EE3\u7801\uFF0C\u4FDD\u7559\u6838\u5FC3\u6982\u5FF5
+        """Smart abbreviation of text."""
+        if not text or len(text) <= max_length:
+            return text
 
-        \u7B56\u7565\uFF1A
-        1. \u4F18\u5148\u4FDD\u7559\u542B\u4E13\u4E1A\u672F\u8BED/\u95EE\u9898\u8BCD/\u52A8\u4F5C\u8BCD\u7684\u7247\u6BB5
-        2. \u5220\u9664\u72B6\u8BED/\u7A0B\u5EA6\u4FEE\u9970\u7B49\u975E\u6838\u5FC3\u90E8\u5206
-        3. \u5C1D\u8BD5\u63D0\u53D6"\u4E3B\u8BED\u6838\u5FC3+\u8C13\u8BED\u5173\u952E"\u7ED3\u6784
-        """
-        t = str(text or '').strip()
-        if not t or max_length <= 0 or len(t) <= max_length:
-            return t
-
-        # \u62C6\u5206\u4E3A\u9017\u53F7\u5206\u9694\u7684\u7247\u6BB5
-        parts = [p.strip() for p in re.split(r'[\uFF0C,\u3001]', t) if p.strip()]
+        # Try splitting by comma/semicolon and taking the most important parts
+        parts = re.split(r'[，,、]', text)
         if len(parts) <= 1:
-            return self._truncate_to_word(t, max_length)
-
-        # \u7ED9\u6BCF\u4E2A\u7247\u6BB5\u6253\u5206\uFF1A\u542B\u4E13\u4E1A\u8BCD/\u95EE\u9898\u8BCD/\u52A8\u4F5C\u8BCD\u7684\u7247\u6BB5\u6743\u91CD\u9AD8
-        high_value_words = re.compile(
-            r'(\u673A\u5236|\u6D41\u7A0B|\u8D44\u6E90|\u7B56\u7565|\u8DEF\u5F84|\u6A21\u5F0F|\u7ED3\u6784|\u80FD\u529B|\u67B6\u6784|\u751F\u6001|\u6CBB\u7406|\u76D1\u7763|\u534F\u540C|\u5BA1\u6279|\u7EE9\u6548|\u6218\u7565|\u9700\u6C42|\u670D\u52A1|\u521B\u65B0|'
-            r'\u8BC4\u4F30|\u4F18\u5316|\u914D\u7F6E|\u6574\u5408|\u4FDD\u969C|\u7EA6\u675F|\u53CD\u9988|\u9A71\u52A8|\u8D4B\u80FD|\u8F6C\u578B|'
-            r'\u4E0D\u8DB3|\u53D7\u9650|\u7F3A\u5931|\u7F3A\u4E4F|\u53D7\u963B|\u5EF6\u8FDF|\u5F71\u54CD|\u63A8\u52A8|\u964D\u4F4E|\u589E\u52A0|'
-            r'\u5BA2\u6237|\u56E2\u961F|\u54C1\u724C|\u5E73\u53F0|\u7CFB\u7EDF|\u6570\u636E|\u5B89\u5168|\u8D28\u91CF|\u6210\u672C|\u6548\u7387)'
-        )
+            return self._truncate_to_word(text, max_length)
 
         def part_score(part: str) -> float:
             s = 0.0
-            s += len(high_value_words.findall(part)) * 2.0
-            # \u957F\u7247\u6BB5\u7565\u6263\u5206\uFF08\u6211\u4EEC\u60F3\u8981\u7D27\u51D1\u7684\uFF09
-            s -= max(0, len(part) - 8) * 0.1
-            # \u4EE5"\u7684"\u7ED3\u5C3E\u6263\u5206\uFF08\u4E0D\u5B8C\u6574\uFF09
-            if part.endswith('\u7684'):
-                s -= 1.5
+            if len(part) >= 3:
+                s += 1.0
+            if any(t in part for t in ['技术', '资源', '平台', '机制', '流程', '创新', '服务',
+                                          '管理', '制度', '监督', '培训', '合作', '发展', '战略']):
+                s += 2.0
             return s
 
-        # \u6309\u5F97\u5206\u964D\u5E8F
-        ranked = sorted(parts, key=part_score, reverse=True)
+        scored = [(part_score(p), p.strip()) for p in parts]
+        scored.sort(key=lambda x: x[0], reverse=True)
 
-        # \u8D2A\u5FC3\u9009\u62E9\uFF1A\u4ECE\u9AD8\u5206\u7247\u6BB5\u5F00\u59CB\u62FC\u63A5\uFF0C\u76F4\u5230\u63A5\u8FD1\u957F\u5EA6\u4E0A\u9650
-        selected = []
-        current_len = 0
-        for part in ranked:
-            test_len = current_len + len(part) + (1 if selected else 0)
-            if test_len <= max_length:
-                selected.append(part)
-                current_len = test_len
+        result = ''
+        for _, part in scored:
+            test = (result + '，' + part).strip('，') if result else part
+            if len(test) <= max_length:
+                result = test
+            else:
+                break
 
-        if selected:
-            return '\uFF0C'.join(selected)
+        if not result:
+            result = self._truncate_to_word(text, max_length)
 
-        # \u5982\u679C\u5355\u4E2A\u7247\u6BB5\u90FD\u592A\u957F\uFF0C\u5BF9\u8BE5\u7247\u6BB5\u505A\u622A\u65AD
-        best_part = ranked[0]
-        return self._truncate_to_word(best_part, max_length)
+        return result.strip()
 
     def _limit_first_level_text(self, text: str, max_length: int) -> str:
-        t = (text or '').strip()
-        if not t:
+        """Limit first-level code text to max_length."""
+        if not text:
             return ''
-        if max_length <= 0:
-            return t
-        if len(t) <= max_length:
-            return t
 
-        parts = [p.strip() for p in re.split(r'[\uFF0C,\u3002]', t) if p.strip()]
-        if not parts:
-            return self._truncate_to_word(t, max_length)
+        text = text.strip()
+        if len(text) <= max_length:
+            return text
 
-        best = ''
-        for i in range(len(parts)):
-            built = ''
-            for j in range(i, len(parts)):
-                built = parts[j] if not built else f'{built}\uFF0C{parts[j]}'
-                if len(built) > max_length:
+        # Try splitting by comma
+        parts = re.split(r'[，,]', text)
+        if len(parts) > 1:
+            result = ''
+            for part in parts:
+                test = (result + '，' + part).strip('，') if result else part
+                if len(test) <= max_length:
+                    result = test
+                else:
                     break
-                cand = built.strip("\uFF0C\u3002\uFF1F\uFF01\uFF1B:\"'()\uFF08\uFF09[]\u3010\u3011{} ")
-                if not cand:
-                    continue
-                if self._is_semantically_complete(cand) and len(cand) > len(best):
-                    best = cand
+            if result:
+                return result
 
-        if best:
-            return best
-        # \u4F20\u7EDF\u65B9\u6CD5\u627E\u4E0D\u5230\u5408\u9002\u7247\u6BB5\u65F6\uFF0C\u4F7F\u7528\u667A\u80FD\u7F29\u5199
-        return self._smart_abbreviate(t, max_length)
+        # Fallback: truncate at word boundary
+        return self._truncate_to_word(text, max_length)
+
+    # ── Trained model coding ──────────────────────────────────────────
 
     def generate_codes_with_trained_model(self, processed_data: Dict[str, Any],
-                                          model_manager,
-                                          progress_callback: Optional[Callable] = None,
-                                          coding_thresholds: Optional[Dict[str, float]] = None) -> Dict[str, Any]:
+                                           model_manager,
+                                           progress_callback: Optional[Callable] = None,
+                                           coding_thresholds: Optional[Dict] = None) -> Dict[str, Any]:
         """使用训练模型生成编码"""
         try:
-            self._apply_similarity_threshold_options(coding_thresholds)
-            self._ensure_rag_threshold_defaults()
             if progress_callback:
                 progress_callback(10)
 
@@ -2282,13 +1994,8 @@ class EnhancedCodingGenerator:
                 progress_callback(30)
 
             # 提取文本内容
-            filtered_sentences = []
-            texts = []
-            for sent in all_sentences:
-                t = (sent.get('content', '') or '').strip()
-                if self._is_coding_worthy_sentence(t):
-                    filtered_sentences.append(sent)
-                    texts.append(t)
+            texts = [sentence.get('content', '') for sentence in all_sentences]
+            texts = [text for text in texts if len(text.strip()) > 10]
 
             if not texts:
                 raise ValueError("没有找到有效的文本内容")
@@ -2296,7 +2003,7 @@ class EnhancedCodingGenerator:
             if progress_callback:
                 progress_callback(50)
 
-            # 使用训练模型预测类别（作为参考）
+            # 使用训练模型预测类别
             predictions, predicted_labels = model_manager.predict_categories(texts)
 
             if progress_callback:
@@ -2305,181 +2012,37 @@ class EnhancedCodingGenerator:
             # 构建编码结构
             first_level_codes = {}
             second_level_mapping = {}
-            self.reset_first_level_trace_meta()
             third_level_mapping = {}
-
-            # 检查编码库和语义匹配器是否可用
-            use_semantic_matching = False
-            second_level_codes_list = []
-            third_level_codes_list = []
-
-            if self.coding_library and self.semantic_matcher:
-                try:
-                    second_level_codes_list = self.coding_library.get_all_second_level_codes()
-                    third_level_codes_list = self.coding_library.get_all_third_level_codes()
-                    if second_level_codes_list and third_level_codes_list:
-                        use_semantic_matching = True
-                        logger.info("使用语义相似度匹配进行编码")
-                except Exception as e:
-                    logger.error(f"获取编码库失败: {e}")
-
-            use_global_batch_rerank = bool((coding_thresholds or {}).get("use_global_batch_rerank", False))
-            global_traces: List[Dict[str, Any]] = []
-            if use_global_batch_rerank:
-                global_traces = [
-                    self.build_first_level_candidate_trace(
-                        text,
-                        model_manager=model_manager,
-                        defer_rerank=True,
-                    )
-                    for text in texts
-                ]
-                self._apply_global_batch_rerank(global_traces, model_manager=model_manager)
 
             for i, (text, label) in enumerate(zip(texts, predicted_labels)):
                 code_key = f"FL_{i + 1:04d}"
 
-                trace = (
-                    global_traces[i]
-                    if use_global_batch_rerank and i < len(global_traces)
-                    else self.build_first_level_candidate_trace(text, model_manager=model_manager)
-                )
-                abstracted = trace.get("selected_candidate", "")
-                source_detail = self._repair_first_level_sentence_detail(filtered_sentences[i])
-                if not source_detail.get("sentence_id"):
-                    self._store_first_level_trace(code_key, trace)
-                    continue
-                abstracted = self._select_quality_first_level_candidate(trace, source_detail)
-                if not abstracted:
-                    self._store_first_level_trace(code_key, trace)
-                    continue
-                # 清理编码开头的标点符号
-                abstracted = self._clean_code_prefix(abstracted)
-                
+                # 解析标签格式：三阶编码||二阶编码
+                if '||' in label:
+                    third_cat, second_cat = label.split('||', 1)
+                else:
+                    third_cat = "综合主题"
+                    second_cat = label if label else "其他"
+
+                # 存储映射关系
+                second_level_mapping[code_key] = second_cat
+                third_level_mapping[second_cat] = third_cat
+
+                # 抽象提炼内容
+                abstracted_content = self.abstract_sentence(text, model_manager)
+
+                # 构建一阶编码
+                original_sentence = all_sentences[i].copy() if isinstance(all_sentences[i], dict) else {}
+                if isinstance(original_sentence, dict):
+                    original_sentence['original_content'] = text
+
                 first_level_codes[code_key] = [
-                    abstracted,
-                    [source_detail],  # source_sentences
+                    abstracted_content,
+                    [all_sentences[i]],  # source_sentences
                     1,  # file_count
                     1,  # sentence_count
-                    [source_detail]  # sentence_details
+                    [original_sentence]  # sentence_details
                 ]
-                self._store_first_level_trace(code_key, trace)
-
-                # 确定二阶编码
-                if use_semantic_matching and abstracted:
-                    # 使用语义相似度匹配二阶编码（召回Top-k候选）
-                    top_k = 5  # 默认召回5个候选
-                    
-                    # 检查缓存中是否有结果
-                    cache_key = f"{abstracted}_{top_k}_0.3"
-                    if cache_key in self.similarity_cache:
-                        logger.info(f"使用缓存的相似度计算结果")
-                        matches = self.similarity_cache[cache_key]
-                    else:
-                        # 计算相似度
-                        matches = self.semantic_matcher.match_first_level_to_second_level(
-                            abstracted,
-                            second_level_codes_list,
-                            top_k=top_k,
-                            threshold=self.rag_second_level_threshold
-                        )
-                        # 缓存结果
-                        self.similarity_cache[cache_key] = matches
-
-                    if matches:
-                        # 检查是否有加载的模型，如果没有则直接进行相似度匹配
-                        if model_manager and model_manager.is_trained_model_available():
-                            # 使用bert_finetuned模型进行重排
-                            logger.info(f"使用bert_finetuned模型对 {len(matches)} 个候选进行重排")
-                            # 准备候选编码
-                            candidate_codes = [match[0].get('name') for match in matches]
-                            # 使用模型对候选进行评分
-                            try:
-                                # 构建输入文本
-                                inputs = [f"{abstracted} [SEP] {code}" for code in candidate_codes]
-                                # 预测类别
-                                predictions, _ = model_manager.predict_categories(inputs)
-                                # 计算置信度
-                                confidences = []
-                                for pred in predictions:
-                                    if isinstance(pred, tuple):
-                                        confidences.append(pred[1])
-                                    else:
-                                        confidences.append(0.0)
-                                # 找到置信度最高的编码
-                                if confidences:
-                                    best_idx = confidences.index(max(confidences))
-                                    best_match, _ = matches[best_idx]
-                                    second_cat = best_match.get('name')
-                                    logger.info(f"bert_finetuned模型选择的二阶编码: '{second_cat}' (置信度: {max(confidences):.4f})")
-                                else:
-                                    # 回退到相似度最高的编码
-                                    best_match, similarity = matches[0]
-                                    second_cat = best_match.get('name')
-                                    logger.info(f"回退到相似度匹配: '{second_cat}' (相似度: {similarity:.4f})")
-                            except Exception as e:
-                                logger.warning(f"模型重排失败，回退到相似度匹配: {e}")
-                                # 回退到相似度最高的编码
-                                best_match, similarity = matches[0]
-                                second_cat = best_match.get('name')
-                                logger.info(f"回退到相似度匹配: '{second_cat}' (相似度: {similarity:.4f})")
-                        else:
-                            # 没有加载模型，直接进行相似度匹配
-                            best_match, similarity = matches[0]
-                            second_cat = best_match.get('name')
-                            logger.info(f"未加载训练模型，使用相似度匹配: '{second_cat}' (相似度: {similarity:.4f})")
-                    else:
-                        second_cat = "其他各类话题"
-                        logger.info(f"一阶编码 '{abstracted[:30]}...' 未找到匹配的二阶编码，归类为'其他各类话题'")
-                else:
-                    # 回退到使用训练模型的预测结果
-                    if '||' in label:
-                        third_cat_pred, second_cat = label.split('||', 1)
-                    else:
-                        second_cat = label if label else "其他"
-                    logger.info(f"使用训练模型预测的二阶编码: {second_cat}")
-
-                # 存储二阶编码映射
-                second_level_mapping[code_key] = second_cat
-
-                # 确定三阶编码
-                if use_semantic_matching:
-                    # 查找对应的二阶编码
-                    second_code = None
-                    for code in second_level_codes_list:
-                        if code.get('name') == second_cat:
-                            second_code = code
-                            break
-
-                    if second_code:
-                        # 使用语义相似度匹配三阶编码
-                        match = self.semantic_matcher.match_second_level_to_third_level(
-                            second_code,
-                            third_level_codes_list,
-                            threshold=self.rag_third_level_threshold
-                        )
-
-                        if match:
-                            best_match, similarity = match
-                            third_cat = best_match.get('name')
-                            logger.info(f"二阶编码 '{second_cat}' 匹配到三阶编码 '{third_cat}' (相似度: {similarity:.4f})")
-                        else:
-                            third_cat = "其他重要维度"
-                            logger.info(f"二阶编码 '{second_cat}' 未找到匹配的三阶编码，归类为'其他重要维度'")
-                    else:
-                        # 如果找不到对应的二阶编码，使用规则匹配
-                        third_cat = "其他重要维度"
-                        logger.info(f"未找到对应的二阶编码，三阶编码归类为'其他重要维度'")
-                else:
-                    # 回退到使用训练模型的预测结果
-                    if '||' in label:
-                        third_cat, _ = label.split('||', 1)
-                    else:
-                        third_cat = "综合主题"
-                    logger.info(f"使用训练模型预测的三阶编码: {third_cat}")
-
-                # 存储三阶编码映射
-                third_level_mapping[second_cat] = third_cat
 
             if progress_callback:
                 progress_callback(85)
@@ -2495,680 +2058,928 @@ class EnhancedCodingGenerator:
                 third_level_codes[third_cat].append(second_cat)
 
             if progress_callback:
+                progress_callback(95)
+
+            result = {
+                'first_level_codes': dict(first_level_codes),
+                'second_level_codes': dict(second_level_codes),
+                'third_level_codes': dict(third_level_codes),
+            }
+
+            if progress_callback:
                 progress_callback(100)
 
-            # 编码生成完成，释放模型资源
-            if model_manager and hasattr(model_manager, 'release_model_resources'):
-                model_manager.release_model_resources()
-
-            return {
-                "一阶编码": dict(first_level_codes),
-                "二阶编码": dict(second_level_codes),
-                "三阶编码": dict(third_level_codes),
-                "file_sentence_mapping": file_sentence_mapping
-            }
+            return result
 
         except Exception as e:
-            logger.error(f"使用训练模型生成编码失败: {str(e)}")
-            import traceback
-            traceback.print_exc()
-            
-            # 即使出错，也尝试释放模型资源
-            if model_manager and hasattr(model_manager, 'release_model_resources'):
-                model_manager.release_model_resources()
-            return {
-                "一阶编码": {"错误": [f"使用训练模型生成编码失败: {str(e)}"]},
-                "二阶编码": {"错误": ["请检查训练模型"]},
-                "三阶编码": {"错误": ["模型预测失败"]}
-            }
-    def generate_grounded_theory_codes_multi_files(self, processed_data: Dict[str, Any], model_manager,
-                                                   progress_callback: Optional[Callable] = None,
-                                                   use_trained_model: bool = False,
-                                                   coding_thresholds: Optional[Dict[str, float]] = None) -> Dict[str, Any]:
-        """为多个文件生成扎根理论三级编码"""
-        if use_trained_model and model_manager.is_trained_model_available():
+            logger.error("训练模型编码生成失败: %s", e, exc_info=True)
+            raise
+
+    def generate_grounded_theory_codes_multi_files(self, processed_data: Dict[str, Any],
+                                                     model_manager,
+                                                     progress_callback: Optional[Callable] = None,
+                                                     use_trained_model: bool = False,
+                                                     coding_thresholds: Optional[Dict] = None) -> Dict[str, Any]:
+        """为多个文件生成扎根理论编码"""
+        if use_trained_model:
             return self.generate_codes_with_trained_model(
-                processed_data,
-                model_manager,
-                progress_callback,
-                coding_thresholds=coding_thresholds,
-            )
+                processed_data, model_manager, progress_callback, coding_thresholds)
         else:
-            # 使用原有的基于规则的编码生成
             return self.generate_codes_with_rules(
-                processed_data,
-                progress_callback,
-                model_manager=model_manager,
-                coding_thresholds=coding_thresholds,
-            )
+                processed_data, progress_callback, model_manager, coding_thresholds)
 
     def generate_codes_with_rules(self, processed_data: Dict[str, Any],
-                                  progress_callback: Optional[Callable] = None,
-                                  model_manager=None,
-                                  coding_thresholds: Optional[Dict[str, float]] = None) -> Dict[str, Any]:
+                                   progress_callback: Optional[Callable] = None,
+                                   model_manager=None,
+                                   coding_thresholds: Optional[Dict] = None) -> Dict[str, Any]:
         """使用基于规则的编码生成"""
-        try:
-            self._apply_similarity_threshold_options(coding_thresholds)
-            self._ensure_rag_threshold_defaults()
-            if progress_callback:
-                progress_callback(10)
+        self._apply_similarity_threshold_options(coding_thresholds or {})
 
-            combined_text = processed_data['combined_text']
-            file_sentence_mapping = processed_data['file_sentence_mapping']
+        file_sentence_mapping = processed_data.get('file_sentence_mapping', {})
 
-            # 提取所有句子
-            all_sentences = []
-            for filename, file_data in file_sentence_mapping.items():
-                sentences = file_data.get('sentences', [])
-                all_sentences.extend(sentences)
+        # Collect all sentences
+        all_sentences = []
+        for filename, file_data in file_sentence_mapping.items():
+            sentences = file_data.get('sentences', [])
+            all_sentences.extend(sentences)
 
-            if progress_callback:
-                progress_callback(30)
+        if progress_callback:
+            progress_callback(10)
 
-            # 生成一阶编码（可选：使用模型对候选片段重排序）
-            first_level_codes = self.generate_first_level_codes(
-                all_sentences,
-                model_manager=model_manager,
-                coding_options=coding_thresholds,
-            )
-            logger.info(f"生成 {len(first_level_codes)} 个一阶编码")
+        # Generate first-level codes using the improved pipeline
+        first_level_codes = self.generate_first_level_codes(
+            all_sentences, model_manager, coding_thresholds or {})
 
-            if progress_callback:
-                progress_callback(60)
+        if progress_callback:
+            progress_callback(60)
 
-            # 将一阶编码分类为二阶编码
-            second_level_codes = self.generate_second_level_codes_improved(first_level_codes, model_manager=model_manager)
-            logger.info(f"生成 {len(second_level_codes)} 个二阶编码")
+        # Generate second-level codes
+        second_level_codes = self.generate_second_level_codes_improved(
+            first_level_codes, model_manager)
 
-            if progress_callback:
-                progress_callback(80)
+        if progress_callback:
+            progress_callback(80)
 
-            # 将二阶编码抽象为三阶编码
-            third_level_codes = self.generate_third_level_codes_improved(second_level_codes)
-            logger.info(f"生成 {len(third_level_codes)} 个三阶编码")
+        # Generate third-level codes
+        third_level_codes = self.generate_third_level_codes_improved(
+            second_level_codes)
 
-            if progress_callback:
-                progress_callback(100)
+        if progress_callback:
+            progress_callback(95)
 
-            # 编码生成完成，释放模型资源
-            if model_manager and hasattr(model_manager, 'release_model_resources'):
-                model_manager.release_model_resources()
+        # Phase 4: Run contrastive validation post-coding
+        cv_result = self._run_contrastive_validation(first_level_codes)
 
-            return {
-                "一阶编码": first_level_codes,
-                "二阶编码": second_level_codes,
-                "三阶编码": third_level_codes,
-                "file_sentence_mapping": file_sentence_mapping
-            }
+        result = {
+            'first_level_codes': first_level_codes,
+            'second_level_codes': second_level_codes,
+            'third_level_codes': third_level_codes,
+            'contrastive_validation': cv_result if cv_result else None,
+        }
+        return result
 
-        except Exception as e:
-            logger.error(f"生成多文件编码失败: {str(e)}")
-            import traceback
-            traceback.print_exc()
-            
-            # 即使出错，也尝试释放模型资源
-            if model_manager and hasattr(model_manager, 'release_model_resources'):
-                model_manager.release_model_resources()
-                
-            return {
-                "一阶编码": {"错误": ["生成编码时出现错误"]},
-                "二阶编码": {"错误": ["请检查输入文本"]},
-                "三阶编码": {"错误": ["系统故障"]}
-            }
+    def generate_first_level_codes(self, sentences: List[Dict],
+                                    model_manager=None,
+                                    coding_options: Optional[Dict] = None) -> Dict[str, List]:
+        """生成一阶编码 — 批量预编码所有句子，消除逐句 model.encode() 瓶颈。
 
-    def generate_first_level_codes(
-        self,
-        sentences: List[Dict[str, Any]],
-        model_manager=None,
-        coding_options: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, List[Any]]:
-        """生成一阶编码 - 优先抽象提炼受访者语句"""
-        self.reset_first_level_trace_meta()
-        first_level_codes = {}
-        trace_items: List[Tuple[str, Dict[str, Any], Dict[str, Any]]] = []
-        use_global_batch_rerank = bool((coding_options or {}).get("use_global_batch_rerank", False))
+        Phase 0: 预标准化所有句子 → 批量编码 → 批量FAISS检索
+        Phase 1: 逐句处理（使用缓存的embedding/检索结果，跳过重复编码）
+        """
+        self._ensure_first_level_defaults()
+
+        # Phase 3: Reset anchor frequency for anti-collapse IDF penalty
+        self._anchor_frequency.clear()
+        self._anchor_sentence_count = 0
+
+        coding_opts = coding_options or {}
+        use_global_batch_rerank = coding_opts.get('use_global_batch_rerank', True)
+
+        # ═══════════════════════════════════════════════════════════════
+        # Phase 0: Pre-batch — normalize, encode, and search all sentences
+        # ═══════════════════════════════════════════════════════════════
+
+        # Map: batch_idx → (original_index, code_key, sentence, detail)
+        batch_items = []
+        batch_norms = []
+
+        has_anchor = self._ensure_anchor_index() and self.concept_anchor_index is not None
+        has_knn = self._ensure_knn_train_index() and self.knn_train_index is not None
 
         for i, sentence in enumerate(sentences):
+            code_key = f"FL_{i + 1:04d}"
+            detail = self._repair_first_level_sentence_detail(sentence)
+            content = detail.get('content', '')
+            if not content or len(content.strip()) < 4:
+                # Short content — will still be processed inline
+                pass
+            normalized, _ = self._normalize_sentence_for_coding(detail)
+            if normalized:
+                batch_norms.append(normalized)
+                batch_items.append((i, code_key, sentence, detail, normalized))
+
+        # Batch encode + search
+        all_embs = None
+        all_anchor_results = None
+        all_knn_results = None
+
+        if has_anchor and batch_norms:
             try:
-                content = sentence.get('content', '')
-                speaker = sentence.get('speaker', '')
-
-                # 如果存在说话人字段，则只处理受访者内容；否则默认处理
-                if speaker and speaker != 'respondent':
-                    continue
-                if content and self._is_coding_worthy_sentence(content.strip()):
-                    code_key = f"FL_{i + 1:04d}"
-                    trace = self.build_first_level_candidate_trace(
-                        content,
-                        model_manager=model_manager,
-                        defer_rerank=use_global_batch_rerank,
-                    )
-                    trace_items.append((code_key, sentence, trace))
-
-                    if not use_global_batch_rerank:
-                        source_detail = self._repair_first_level_sentence_detail(sentence)
-                        if not source_detail.get("sentence_id"):
-                            self._store_first_level_trace(code_key, trace)
-                            continue
-                        selected_candidate = self._select_quality_first_level_candidate(trace, source_detail)
-                        self._store_first_level_trace(code_key, trace)
-                        if not selected_candidate:
-                            continue
-                        first_level_codes[code_key] = [
-                            selected_candidate,
-                            [source_detail],  # source_sentences
-                            1,  # file_count
-                            1,  # sentence_count
-                            [source_detail]  # sentence_details
-                        ]
-
+                gpu_batch_size = coding_opts.get('gpu_batch_size', 32)
+                all_embs = self.concept_anchor_index.encode_batch(
+                    batch_norms, batch_size=gpu_batch_size)
+                all_anchor_results = self.concept_anchor_index.search_embeddings(
+                    all_embs, top_k=50)
+                if has_knn:
+                    knn_scores, knn_indices = self.knn_train_index.search(all_embs, 10)
+                    all_knn_results = (knn_scores, knn_indices)
             except Exception as e:
-                logger.warning(f"处理句子失败 {i}: {e}")
+                logger.warning("Batch pre-encoding failed: %s, falling back to per-sentence", e)
+                all_embs = None
+                all_anchor_results = None
+                all_knn_results = None
 
-        if use_global_batch_rerank and trace_items:
-            self._apply_global_batch_rerank([trace for _, _, trace in trace_items], model_manager=model_manager)
-            for code_key, sentence, trace in trace_items:
-                source_detail = self._repair_first_level_sentence_detail(sentence)
-                if not source_detail.get("sentence_id"):
-                    self._store_first_level_trace(code_key, trace)
-                    continue
-                selected_candidate = self._select_quality_first_level_candidate(trace, source_detail)
-                self._store_first_level_trace(code_key, trace)
-                if not selected_candidate:
-                    continue
+        # ═══════════════════════════════════════════════════════════════
+        # Phase 1: Per-sentence processing
+        # ═══════════════════════════════════════════════════════════════
+
+        first_level_codes = {}
+        traces = {}
+        batch_idx = 0
+
+        for i, sentence in enumerate(sentences):
+            code_key = f"FL_{i + 1:04d}"
+            detail = self._repair_first_level_sentence_detail(sentence)
+            content = detail.get('content', '')
+
+            if not content or len(content.strip()) < 4:
                 first_level_codes[code_key] = [
-                    selected_candidate,
-                    [source_detail],
-                    1,
-                    1,
-                    [source_detail],
+                    content.strip()[:20] if content else '',
+                    [sentence],
+                    1, 1,
+                    [detail]
                 ]
+                continue
+
+            # Look up cached data for this sentence
+            cached_emb = None
+            cached_anchor = None
+            cached_knn = None
+
+            if all_embs is not None and batch_idx < len(batch_items):
+                bi, bk, bs, bd, bn = batch_items[batch_idx]
+                if bi == i:
+                    cached_emb = all_embs[batch_idx:batch_idx + 1]
+                    if all_anchor_results is not None:
+                        cached_anchor = all_anchor_results[batch_idx]
+                    if all_knn_results is not None:
+                        cached_knn = (
+                            all_knn_results[0][batch_idx],
+                            all_knn_results[1][batch_idx],
+                        )
+                    batch_idx += 1
+
+            # Build candidate trace (pass cached data to skip model.encode)
+            trace = self.build_first_level_candidate_trace(
+                detail, model_manager, top_n=8, defer_rerank=use_global_batch_rerank,
+                cached_embedding=cached_emb,
+                cached_anchor_results=cached_anchor,
+                cached_knn_results=cached_knn)
+
+            if trace:
+                traces[code_key] = trace
+                selected = trace.get('selected_candidate', content.strip()[:30])
+            else:
+                selected = content.strip()[:30]
+
+            first_level_codes[code_key] = [
+                selected,
+                [sentence],
+                1, 1,
+                [detail]
+            ]
+
+        # Global batch rerank
+        if use_global_batch_rerank and len(traces) >= 2:
+            traces = self._apply_global_batch_rerank(traces, model_manager)
+
+            # Update selected candidates after rerank
+            for code_key, trace in traces.items():
+                candidates = trace.get('candidates', [])
+                if not candidates:
+                    continue
+                # Re-sort by conservative score
+                for row in candidates:
+                    row['conservative_score'] = self._conservative_first_level_rank_score(row)
+                candidates.sort(key=lambda r: r.get('conservative_score', 0), reverse=True)
+
+                best = candidates[0]
+                new_selected = best.get('text', '')
+                if new_selected:
+                    trace['selected_candidate'] = new_selected
+                    if code_key in first_level_codes:
+                        first_level_codes[code_key][0] = new_selected
+
+        # Store traces
+        for code_key, trace in traces.items():
+            self._store_first_level_trace(code_key, trace)
 
         return first_level_codes
 
+    # ── RAG initialization ────────────────────────────────────────────
+
     def _init_rag_components(self):
-        """初始化RAG组件，失败时保持关闭并回退到旧流程。"""
-        try:
-            if not Config or not getattr(Config, "ENABLE_RAG_CODING", False):
-                return
-            if not (RuntimeStrategyDetector and RagIndexManager and RAGSemanticMatcher and FirstLevelClusterer and CodingDecisionPolicy):
-                return
-            if not self.coding_library:
-                return
-
-            self.runtime_strategy = RuntimeStrategyDetector().detect()
-            embedding_fn = None
-            if self.semantic_matcher and self.runtime_strategy.use_vector_clustering:
-                embedding_fn = self.semantic_matcher.get_embedding
-
-            self.rag_index_manager = RagIndexManager(
-                self.coding_library.library_path,
-                Config.RAG_INDEX_DIR,
-                embedding_fn=embedding_fn,
-            )
-            if not self.rag_index_manager.ensure_fresh():
-                logger.warning("RAG索引不可用，回退到传统语义匹配流程")
-                return
-
-            self.rag_matcher = RAGSemanticMatcher(
-                Config.RAG_INDEX_DIR,
-                embedding_fn=embedding_fn,
-            )
-            if not self.rag_matcher.documents:
-                logger.warning("RAG匹配器未加载到索引文档，回退到传统语义匹配流程")
-                return
-
-            self._ensure_rag_threshold_defaults()
-            self._rebuild_decision_policy_from_matcher()
-            self.first_level_clusterer = FirstLevelClusterer(
-                embedding_fn=embedding_fn,
-                similarity_threshold=self.rag_cluster_similarity_threshold,
-            )
-            self.rag_enabled = True
-            logger.info(f"RAG自动编码已启用，运行策略: {self.runtime_strategy.name}")
-        except Exception as e:
-            logger.warning(f"RAG组件初始化失败，回退旧流程: {e}")
+        """初始化RAG组件，失败时安全关闭并退回到传统匹配路径。"""
+        if not Config or not getattr(Config, 'ENABLE_RAG_CODING', False):
             self.rag_enabled = False
+            self.runtime_strategy = 'legacy'
+            logger.info("RAG编码未启用，退回到传统匹配路径")
+            return
 
-    def _best_candidate_names(self, candidates: List[Dict[str, Any]]) -> Tuple[Optional[str], Optional[str]]:
-        token_best_name = None
-        vector_best_name = None
-        token_best = float("-inf")
-        vector_best = float("-inf")
-        for cand in candidates:
+        try:
+            # Lazy import RAG components
+            from semantic_matcher import SemanticMatcher
+            from decision_policy import DecisionPolicy
+            from first_level_clusterer import FirstLevelClusterer
+            from rag_index_manager import RAGIndexManager
+
+            if self.semantic_matcher is None:
+                self.semantic_matcher = SemanticMatcher()
+
+            self.rag_matcher = self.semantic_matcher
+            self.decision_policy = DecisionPolicy(self.rag_matcher)
+            self.first_level_clusterer = FirstLevelClusterer(
+                similarity_threshold=self.rag_cluster_similarity_threshold)
+            self.rag_index_manager = RAGIndexManager()
+
+            self.rag_enabled = True
+            self.runtime_strategy = 'rag_hybrid'
+
+            # Try to load KNN abstract generator
             try:
-                token_score = float(cand.get("token_score", 0.0))
-            except (TypeError, ValueError):
-                token_score = 0.0
+                from knn_abstract_generator import KNNAbstractGenerator
+                self.knn_abstract_generator = KNNAbstractGenerator()
+            except Exception:
+                self.knn_abstract_generator = None
+
+            # Try to load doc retriever
             try:
-                vector_score = float(cand.get("vector_score", 0.0))
-            except (TypeError, ValueError):
-                vector_score = 0.0
-            name = cand.get("name")
-            if not name:
+                from rag_doc_retriever import RAGDocRetriever
+                self.rag_doc_retriever = RAGDocRetriever()
+            except Exception:
+                self.rag_doc_retriever = None
+
+            logger.info("RAG组件初始化成功")
+
+        except Exception as e:
+            self.rag_enabled = False
+            self.runtime_strategy = 'legacy'
+            logger.warning("RAG组件初始化失败: %s，退回到传统匹配路径", e)
+
+    def _ensure_anchor_index(self) -> bool:
+        """加载概念锚点FAISS索引（改进7——微调bge-small-zh-v1.5模型 + FAISS检索）。
+
+        用于将口语化句子映射到稳定的概念锚点。
+        """
+        # Already loaded
+        if self.concept_anchor_index is not None:
+            return True
+
+        try:
+            import os as _os
+
+            _anchor_dir = _os.path.join(
+                _os.path.dirname(_os.path.abspath(__file__)),
+                'cache', 'anchor_index')
+            _faiss_path = _os.path.join(_anchor_dir, 'anchor_index.faiss')
+            _concepts_path = _os.path.join(_anchor_dir, 'concepts.json')
+
+            # Check if index files exist
+            if not _os.path.exists(_faiss_path) or not _os.path.exists(_concepts_path):
+                logger.info("概念锚点索引未构建，跳过概念锚点检索")
+                return False
+
+            # Import and create anchor index
+            from build_anchor_index import ConceptAnchorIndex
+
+            _model_path = _os.path.join(
+                _os.path.dirname(_os.path.abspath(__file__)),
+                'trained_models', 'concept_anchor_v6')
+            _library_path = _os.path.join(
+                _os.path.dirname(_os.path.abspath(__file__)),
+                'coding_library.json')
+            _anchor_data = _os.path.join(
+                _os.path.dirname(_os.path.abspath(__file__)),
+                'data', 'clean_anchor_pairs.json')
+
+            if not _os.path.exists(_model_path):
+                logger.info("微调锚点模型不存在，跳过概念锚点检索")
+                return False
+
+            self.concept_anchor_index = ConceptAnchorIndex(
+                model_path=_model_path,
+                library_path=_library_path,
+                anchor_data_path=_anchor_data,
+                governed_concepts_path=_concepts_path,
+            )
+
+            # Load alias → canonical map (Phase 2 governance)
+            _alias_path = _os.path.join(_anchor_dir, 'alias_map.json')
+            if _os.path.exists(_alias_path):
+                import json
+                with open(_alias_path, "r", encoding="utf-8") as _af:
+                    _alias_data = json.load(_af)
+                self._alias_map = _alias_data.get("mappings", {})
+                if self._alias_map:
+                    logger.info("Alias map loaded: %d mappings", len(self._alias_map))
+
+            # Load anchor → 二阶 → 三阶 hierarchy (Phase 2 semantic compression)
+            self._load_anchor_hierarchy()
+
+            logger.info("概念锚点FAISS索引加载成功，%d个概念",
+                        len(self.concept_anchor_index.concepts))
+            return True
+
+        except Exception as e:
+            logger.warning("概念锚点索引加载失败: " + str(e))
+            self.concept_anchor_index = None
+            return False
+
+    def _ensure_knn_train_index(self) -> bool:
+        """Build FAISS index over v11 training sentence embeddings for KNN concept recall.
+
+        Replaces extractive n-gram generation: when FAISS anchor retrieval is weak,
+        find similar training sentences via embedding KNN and retrieve their anchor codes.
+        """
+        if self.knn_train_index is not None:
+            return True
+
+        try:
+            import os as _os
+            import json
+            import numpy as np
+            import faiss
+
+            # Prefer clean governed data, fall back to v3
+            _clean_path = _os.path.join(
+                _os.path.dirname(_os.path.abspath(__file__)),
+                'data', 'train_anchor_pairs_clean.json')
+            _v3_path = _os.path.join(
+                _os.path.dirname(_os.path.abspath(__file__)),
+                'data', 'train_anchor_pairs_v3.json')
+            _train_path = _clean_path if _os.path.exists(_clean_path) else _v3_path
+            if not _os.path.exists(_train_path):
+                logger.info("v11训练数据不存在，跳过KNN概念召回")
+                return False
+
+            # Need the concept_anchor model for embeddings
+            if not self._ensure_anchor_index() or self.concept_anchor_index is None:
+                return False
+
+            with open(_train_path, "r", encoding="utf-8") as fh:
+                train_data = json.load(fh)
+
+            model = self.concept_anchor_index.model
+
+            # Collect unique (sentence, anchor_code) pairs
+            seen_pairs = set()
+            train_sentences = []
+            train_anchors = []
+            for item in train_data.get("pairs", []):
+                sent = item.get("sentence", "").strip()
+                anchor = item.get("anchor_code", "").strip()
+                if sent and anchor and (sent, anchor) not in seen_pairs:
+                    seen_pairs.add((sent, anchor))
+                    train_sentences.append(sent)
+                    train_anchors.append(anchor)
+
+            if len(train_sentences) < 10:
+                return False
+
+            logger.info("Building KNN recall index: %d training sentences", len(train_sentences))
+
+            # Encode all training sentences
+            train_embs = model.encode(
+                train_sentences, normalize_embeddings=True,
+                show_progress_bar=True, batch_size=64,
+            ).astype(np.float32)
+
+            # Build FAISS index
+            dim = train_embs.shape[1]
+            self.knn_train_index = faiss.IndexFlatIP(dim)
+            self.knn_train_index.add(train_embs)
+            self.knn_train_anchors = train_anchors
+
+            logger.info("KNN recall index ready: %d vectors, dim=%d",
+                        self.knn_train_index.ntotal, dim)
+            return True
+
+        except Exception as e:
+            logger.warning("KNN训练索引构建失败: %s", e)
+            self.knn_train_index = None
+            self.knn_train_anchors = []
+            return False
+
+    # ── Second-level coding ────────────────────────────────────────────
+
+    def _best_candidate_names(self, candidates: List[Dict]) -> List[str]:
+        """Get best candidate names for second-level matching."""
+        if not candidates:
+            return []
+
+        scored = []
+        for c in candidates:
+            text = c.get('text', '').strip()
+            if not text:
                 continue
-            if token_score > token_best:
-                token_best = token_score
-                token_best_name = name
-            if vector_score > vector_best:
-                vector_best = vector_score
-                vector_best_name = name
-        return token_best_name, vector_best_name
+            token_score = float(c.get('token_score', 0))
+            vector_score = float(c.get('vector_score', 0))
+            total = token_score * 0.3 + vector_score * 0.7
+            scored.append((total, text))
 
-    def _build_cluster_query(self, cluster) -> str:
-        """构建簇查询文本：使用簇代表编码文本。"""
-        return cluster.representative or ""
+        scored.sort(key=lambda x: x[0], reverse=True)
+        return [text for _, text in scored[:5]]
 
-    def _try_keyword_second_match(
-        self, text: str, candidates: List[Dict[str, Any]]
-    ) -> Optional[str]:
-        """语义匹配被拒后的关键词回退：用jieba分词与候选名称做词级匹配。"""
+    def _build_cluster_query(self, cluster: List[str]) -> str:
+        """构建聚类查询文本，使用簇中代表性文本。"""
+        if not cluster:
+            return ''
+        return ' '.join(cluster[:3])
+
+    def _try_keyword_second_match(self, text: str, candidates: List[Dict]) -> Optional[str]:
+        """关键词匹配被激活后，用jieba分词然后做词语级别匹配。"""
         if not text or not candidates:
             return None
-        query_tokens = set(jieba.lcut(text))
-        if not query_tokens:
-            return None
-        best_name = None
-        best_overlap = 0
-        for cand in candidates:
-            name = cand.get("name", "")
+
+        text_words = set(w for w in jieba.cut(text) if len(w) >= 2)
+
+        best = None
+        best_score = 0
+        for c in candidates:
+            name = c.get('name', '').strip()
             if not name:
                 continue
-            name_tokens = set(jieba.lcut(name))
-            if not name_tokens:
+            name_words = set(w for w in jieba.cut(name) if len(w) >= 2)
+            if not name_words:
                 continue
-            overlap = len(query_tokens & name_tokens) / max(1, len(query_tokens))
-            if overlap > best_overlap:
-                best_overlap = overlap
-                best_name = name
-        if best_overlap >= 0.40 and best_name:
-            return best_name
+            overlap = len(text_words & name_words)
+            if overlap > best_score:
+                best_score = overlap
+                best = name
+
+        if best and best_score >= 2:
+            return best
         return None
 
-    def _lookup_second_code_by_name(self, second_name: str) -> Optional[Dict[str, Any]]:
-        if not self.coding_library or not second_name:
+    def _load_alias_map(self):
+        """Load alias → canonical anchor mapping for governance normalization."""
+        try:
+            import os as _os, json
+            _alias_path = _os.path.join(
+                _os.path.dirname(_os.path.abspath(__file__)),
+                "cache", "anchor_index", "alias_map.json")
+            if _os.path.exists(_alias_path):
+                with open(_alias_path, "r", encoding="utf-8") as _af:
+                    _alias_data = json.load(_af)
+                _mappings = _alias_data.get("mappings", {})
+                if isinstance(_mappings, dict) and _mappings:
+                    self._alias_map = _mappings
+                    logger.info("Alias map loaded: %d mappings", len(self._alias_map))
+        except Exception as e:
+            logger.debug("Alias map load skipped: %s", e)
+
+    def _enrich_with_hierarchy(self, anchor_name: str) -> dict:
+        """Priority 7: Enrich an anchor with its L2 theme and L3 theory mapping.
+
+        Returns a dict with second_category, third_category, source, and confidence,
+        or an empty dict if no mapping is found.
+        """
+        second, third, source, conf = self._get_second_third_for_anchor(anchor_name)
+        if second and third:
+            return {
+                "second_category": second,
+                "third_category": third,
+                "source": source,
+                "confidence": round(conf, 4),
+            }
+        return {}
+
+    def _load_anchor_hierarchy(self):
+        """Load anchor → 二阶 → 三阶 hierarchy mapping for semantic compression."""
+        try:
+            import os as _os, json
+            _hier_path = _os.path.join(
+                _os.path.dirname(_os.path.abspath(__file__)),
+                "data", "anchor_hierarchy.json")
+            if _os.path.exists(_hier_path):
+                with open(_hier_path, "r", encoding="utf-8") as _hf:
+                    _hier_data = json.load(_hf)
+                self._anchor_hierarchy = _hier_data.get("mappings", {})
+                # Store list of known anchor names for semantic fallback
+                self._hierarchy_anchor_names = list(self._anchor_hierarchy.keys())
+                self._hierarchy_faiss = None  # lazy-built
+                _stats = _hier_data.get("stats", {})
+                if self._anchor_hierarchy:
+                    logger.info("Anchor hierarchy loaded: %d anchors mapped (%.0f%% coverage)",
+                                len(self._anchor_hierarchy),
+                                _stats.get("v11_direct", 0) + _stats.get("semantic_inherited", 0))
+        except Exception as e:
+            logger.warning("Anchor hierarchy load failed: %s", e)
+            self._anchor_hierarchy = {}
+            self._hierarchy_anchor_names = []
+            self._hierarchy_faiss = None
+
+    def _get_second_third_for_anchor(self, anchor_name: str):
+        """Look up second/third category for an anchor code using the hierarchy mapping.
+
+        Returns (second_category, third_category, source, confidence) or (None, None, None, 0).
+        Mappings with confidence < 0.2 are treated as unreliable and return None.
+
+        Phase 3 semantic fallback: if anchor not in hierarchy, uses embedding similarity
+        to find the nearest known hierarchy anchor and inherits its mapping.
+        """
+        if not self._anchor_hierarchy or not anchor_name:
+            return None, None, None, 0
+
+        _MIN_CONFIDENCE = 0.2
+        _FALLBACK_SIM_THRESHOLD = 0.65
+
+        # Try direct lookup first, then alias-normalized lookup
+        for candidate in (anchor_name, self._alias_map.get(anchor_name, "")):
+            if candidate and candidate in self._anchor_hierarchy:
+                entry = self._anchor_hierarchy[candidate]
+                second = entry.get("second_category")
+                third = entry.get("third_category")
+                conf = entry.get("confidence", 0)
+                if second and third and conf >= _MIN_CONFIDENCE:
+                    return (second, third,
+                            entry.get("source", "unknown"),
+                            conf)
+
+        # Phase 3: semantic fallback — find nearest hierarchy anchor via embedding.
+        # Search k neighbours, skip self-matches and entries with null/low-confidence
+        # categories, and inherit the first valid mapping.
+        if self._hierarchy_anchor_names:
+            try:
+                import numpy as np
+
+                # Lazy-load bge-small-zh-v1.5 for hierarchy fallback encoding
+                if not hasattr(self, '_hierarchy_model') or self._hierarchy_model is None:
+                    from sentence_transformers import SentenceTransformer
+                    import os as _os
+                    _model_path = _os.path.join(
+                        _os.path.dirname(_os.path.abspath(__file__)),
+                        "local_models", "bge-small-zh-v1.5")
+                    self._hierarchy_model = SentenceTransformer(_model_path)
+
+                # Lazy-build FAISS index over hierarchy anchor embeddings
+                if self._hierarchy_faiss is None:
+                    import faiss
+                    _hier_embs = self._hierarchy_model.encode(
+                        self._hierarchy_anchor_names, normalize_embeddings=True,
+                        show_progress_bar=False, batch_size=256).astype(np.float32)
+                    _dim = _hier_embs.shape[1]
+                    self._hierarchy_faiss = faiss.IndexFlatIP(_dim)
+                    self._hierarchy_faiss.add(_hier_embs)
+                    logger.info("Hierarchy FAISS index built: %d anchors", len(self._hierarchy_anchor_names))
+
+                # Encode query anchor and search k neighbours
+                _k = 10
+                _query_emb = self._hierarchy_model.encode(
+                    [anchor_name], normalize_embeddings=True,
+                    show_progress_bar=False).astype(np.float32)
+                _sims, _idxs = self._hierarchy_faiss.search(_query_emb, _k)
+
+                for _rank in range(_k):
+                    _sim = float(_sims[0][_rank])
+                    if _sim < _FALLBACK_SIM_THRESHOLD:
+                        break
+                    _neighbor = self._hierarchy_anchor_names[_idxs[0][_rank]]
+                    # Skip self-match (anchor already failed direct lookup)
+                    if _neighbor == anchor_name:
+                        continue
+                    entry = self._anchor_hierarchy[_neighbor]
+                    second = entry.get("second_category")
+                    third = entry.get("third_category")
+                    conf = entry.get("confidence", 0)
+                    if second and third and conf >= _MIN_CONFIDENCE:
+                        return (second, third, "semantic_fallback",
+                                round(conf * _sim, 3))
+            except Exception as e:
+                logger.debug("Hierarchy semantic fallback failed: %s", e)
+
+        return None, None, None, 0
+
+    def generate_second_level_from_anchors(self, first_level_codes: Dict[str, List]) -> Dict[str, List[str]]:
+        """Build second-level codes directly from anchor hierarchy mapping.
+
+        This is the preferred path for semantic compression: each anchor code
+        maps to its canonical 二阶 category via the v11-trained hierarchy.
+        """
+        if not first_level_codes or not self._anchor_hierarchy:
+            return {}
+
+        second_level = defaultdict(list)
+        unmapped_count = 0
+
+        for key, val in first_level_codes.items():
+            anchor_text = val[0] if isinstance(val, list) and val else str(val)
+            anchor_text = anchor_text.strip()
+            if not anchor_text or len(anchor_text) < 2:
+                continue
+
+            second, third, source, conf = self._get_second_third_for_anchor(anchor_text)
+            if second:
+                second_level[second].append(key)
+            else:
+                unmapped_count += 1
+                second_level['其他'].append(key)
+
+        total_assigned = sum(len(v) for v in second_level.values())
+        mapped = total_assigned - unmapped_count
+        logger.info("Hierarchy-based 二阶: %d categories, %d/%d anchors mapped (%.0f%%)",
+                    len(second_level), mapped, total_assigned,
+                    mapped / max(total_assigned, 1) * 100)
+
+        # Phase 4: Semantic compression — merge similar second-level categories
+        result = dict(second_level)
+        if len(result) > 20:
+            try:
+                if self._semantic_compressor is None:
+                    from semantic_compressor import SemanticCompressor
+                    self._semantic_compressor = SemanticCompressor()
+                result, _merge_map = self._semantic_compressor.compress_second_level(result)
+            except Exception as e:
+                logger.debug("Second-level compression skipped: %s", e)
+
+        return result
+
+    def generate_third_level_from_anchors(self, second_level_codes: Dict[str, List[str]]) -> Dict[str, List[str]]:
+        """Build third-level codes from second-level categories using hierarchy mapping.
+
+        Given second-level codes aggregated by generate_second_level_from_anchors,
+        looks up each second category's third-level parent.
+        """
+        if not second_level_codes or not self._anchor_hierarchy:
+            return {}
+
+        # Build second→third lookup from hierarchy
+        second_to_third = {}
+        for anchor_name, entry in self._anchor_hierarchy.items():
+            s = entry.get("second_category")
+            t = entry.get("third_category")
+            if s and t:
+                if s not in second_to_third:
+                    second_to_third[s] = t
+
+        third_level = defaultdict(list)
+        for second_cat, keys in second_level_codes.items():
+            third = second_to_third.get(second_cat, '综合主题')
+            third_level[third].append(second_cat)
+
+        logger.info("Hierarchy-based 三阶: %d categories", len(third_level))
+
+        # Phase 4: Semantic compression for third-level
+        result = dict(third_level)
+        if len(result) > 15:
+            try:
+                if self._semantic_compressor is None:
+                    from semantic_compressor import SemanticCompressor
+                    self._semantic_compressor = SemanticCompressor()
+                result, _merge_map = self._semantic_compressor.compress_third_level(result)
+            except Exception as e:
+                logger.debug("Third-level compression skipped: %s", e)
+
+        return result
+
+    def _lookup_second_code_by_name(self, second_name: str) -> Optional[Dict]:
+        """Look up a second-level code by name in the coding library."""
+        if not second_name or not self.coding_library:
             return None
-        for code in self.coding_library.get_all_second_level_codes():
-            if code.get("name") == second_name:
-                normalized = dict(code)
-                normalized["level"] = "second"
-                normalized["code_id"] = str(code.get("id", "")).strip()
-                return normalized
+
+        try:
+            lib = self.coding_library
+            enc = lib.get('encoding_library', lib)
+            for third in enc.get('third_level_codes', []):
+                for second in third.get('second_level_codes', []):
+                    if second.get('name', '').strip() == second_name.strip():
+                        result = dict(second)
+                        result['third_level'] = third.get('name', '')
+                        return result
+        except Exception:
+            pass
         return None
 
     def _refresh_rag_matcher_if_needed(self):
-        """在运行时按需刷新派生索引与匹配器，确保编码库编辑后立即生效。"""
-        if not self.rag_enabled or not self.rag_index_manager:
+        """必要时刷新RAG匹配器状态，确保编码库编辑后立即生效。"""
+        if not self.rag_enabled or self.rag_matcher is None:
             return
+
         try:
-            if self.rag_index_manager.is_fresh():
-                return
-            if not self.rag_index_manager.ensure_fresh():
-                logger.warning("RAG索引刷新失败，将继续使用旧匹配流程")
-                return
+            if hasattr(self.rag_matcher, 'refresh_index'):
+                self.rag_matcher.refresh_index()
+        except Exception:
+            logger.warning("RAG匹配器刷新失败，继续使用旧匹配器")
 
-            embedding_fn = None
-            if self.semantic_matcher and getattr(self.runtime_strategy, "use_vector_clustering", False):
-                embedding_fn = self.semantic_matcher.get_embedding
-            self.rag_matcher = RAGSemanticMatcher(
-                Config.RAG_INDEX_DIR,
-                embedding_fn=embedding_fn,
-            )
-            self._rebuild_decision_policy_from_matcher()
-            logger.info("检测到编码库变更，已自动刷新RAG派生索引与匹配器")
-        except Exception as e:
-            logger.warning(f"RAG索引运行时刷新失败: {e}")
-
-    def generate_second_level_codes_improved(self, first_level_codes: Dict[str, List[str]], model_manager=None) -> Dict[str, List[str]]:
-        """生成二阶编码 - 使用语义相似度匹配"""
+    def generate_second_level_codes_improved(self, first_level_codes: Dict[str, List],
+                                              model_manager=None) -> Dict[str, List[str]]:
+        """生成二阶编码 — 优先使用Anchor层级映射，回退到语义/关键词匹配"""
         self._ensure_rag_threshold_defaults()
+
         if not first_level_codes:
-            return {"无内容": []}
+            return {}
 
-        logger.info(f"开始二阶编码分类，共 {len(first_level_codes)} 个一阶编码")
-        self._second_level_decision_meta = {}
-        self._refresh_rag_matcher_if_needed()
+        # Primary: use anchor hierarchy mapping (Phase 2 semantic compression)
+        if self._anchor_hierarchy:
+            logger.info("使用Anchor层级映射生成二阶编码")
+            return self.generate_second_level_from_anchors(first_level_codes)
 
-        # 优先使用RAG聚类+门控决策
-        if self.rag_enabled and self.rag_matcher and self.decision_policy and self.first_level_clusterer:
+        # Fallback: collect first-level code texts and use RAG/keyword matching
+        code_texts = {}
+        for key, val in first_level_codes.items():
+            text = val[0] if isinstance(val, list) and val else str(val)
+            if text and len(text) >= 2:
+                code_texts[key] = text
+
+        if not code_texts:
+            return {'其他': list(first_level_codes.keys())}
+
+        second_level_codes = defaultdict(list)
+        matched_keys = set()
+
+        matched_count = 0
+
+        # Try RAG matcher with correct method signature
+        if self.rag_enabled and self.rag_matcher is not None and self.coding_library:
             try:
-                clusters = self.first_level_clusterer.cluster(first_level_codes)
-                categories = defaultdict(list)
-                top_k = max(1, int(getattr(Config, "RAG_FINAL_TOP_K", 5)))
-                token_top_k = max(
-                    1,
-                    int(
-                        getattr(
-                            self.runtime_strategy,
-                            "token_top_k",
-                            getattr(Config, "RAG_TOKEN_TOP_K", 80),
-                        )
-                    ),
-                )
+                lib = self.coding_library
+                enc = lib.get('encoding_library', lib)
+                second_codes = []
+                for third in enc.get('third_level_codes', []):
+                    for second in third.get('second_level_codes', []):
+                        second_codes.append(second)
 
-                for cluster in clusters:
-                    text = self._build_cluster_query(cluster)
-                    if not text.strip():
-                        categories[self.decision_policy.other_second_name].extend(cluster.source_keys)
-                        continue
+                for code_key, text in code_texts.items():
+                    matches = self.rag_matcher.match_first_level_to_second_level(
+                        text, second_codes, top_k=1,
+                        threshold=self.rag_second_level_threshold)
+                    if matches:
+                        match_name = matches[0][0].get('name', '')
+                        if match_name:
+                            second_level_codes[match_name].append(code_key)
+                            matched_keys.add(code_key)
+                            matched_count += 1
+            except Exception:
+                pass
 
-                    candidates = self.rag_matcher.match_first_level_to_second_level(
-                        text,
-                        top_k=top_k,
-                        token_top_k=token_top_k,
-                    )
-                    token_best, vector_best = self._best_candidate_names(candidates)
-                    decision = self.decision_policy.decide_second_level(
-                        candidates=candidates,
-                        cluster_support=max(1, cluster.support),
-                        token_best_name=token_best,
-                        vector_best_name=vector_best,
-                    )
+        logger.info("开始二阶编码聚类，共 %d 个一阶编码", len(code_texts))
+        if matched_count:
+            logger.info("RAG匹配完成: %d/%d", matched_count, len(code_texts))
 
-                    # 语义匹配被拒后尝试关键词回退
-                    if decision.name == self.decision_policy.other_second_name and candidates:
-                        keyword_name = self._try_keyword_second_match(text, candidates)
-                        if keyword_name:
-                            decision = CodingDecision(
-                                True, keyword_name, "second_keyword_fallback", 0.35,
-                                self._lookup_second_code_by_name(keyword_name),
-                            )
+        # Keyword-based fallback for unmatched
+        remaining = {k: v for k, v in code_texts.items() if k not in matched_keys}
+        if remaining:
+            kw_second = self._generate_second_level_codes_keyword_based(remaining)
+            for second_cat, keys in kw_second.items():
+                second_level_codes[second_cat].extend(keys)
+                matched_keys.update(keys)
 
-                    categories[decision.name].extend(cluster.source_keys)
-                    if decision.name not in self._second_level_decision_meta:
-                        self._second_level_decision_meta[decision.name] = {
-                            "decision": decision.reason,
-                            "code": decision.code,
-                        }
+        # Ensure all keys are assigned
+        for key in code_texts:
+            if key not in matched_keys:
+                second_level_codes['其他'].append(key)
 
-                result = {k: v for k, v in categories.items() if v}
-                if result:
-                    logger.info(f"RAG二阶编码完成: 共 {len(result)} 个类别")
-                    return result
-            except Exception as e:
-                logger.warning(f"RAG二阶匹配失败，回退旧流程: {e}")
+        logger.info("二阶编码完成，共 %d 个类别", len(second_level_codes))
+        return dict(second_level_codes)
 
-        # 检查编码库和语义匹配器是否可用
-        if not self.coding_library or not self.semantic_matcher:
-            logger.warning("编码库或语义匹配器不可用，回退到关键词匹配")
-            # 回退到关键词匹配
-            return self._generate_second_level_codes_keyword_based(first_level_codes)
+    def _generate_second_level_codes_keyword_based(self,
+                                                     first_level_codes: Dict[str, str]) -> Dict[str, List[str]]:
+        """基于关键词的二阶编码生成（后备方法）。"""
+        if not first_level_codes or not self.coding_library:
+            return {}
 
-        # 从编码库获取二阶编码
-        second_level_codes_list = self.coding_library.get_all_second_level_codes()
-        if not second_level_codes_list:
-            logger.warning("编码库中没有二阶编码，回退到关键词匹配")
-            return self._generate_second_level_codes_keyword_based(first_level_codes)
+        keyword_map = {}
+        try:
+            lib = self.coding_library
+            enc = lib.get('encoding_library', lib)
+            for third in enc.get('third_level_codes', []):
+                for second in third.get('second_level_codes', []):
+                    name = second.get('name', '').strip()
+                    keywords = second.get('keywords', [])
+                    if name and keywords:
+                        keyword_map[name] = keywords
+        except Exception:
+            pass
 
-        # 构建二阶编码映射
-        second_level_map = {}
-        for code in second_level_codes_list:
-            code_name = code.get('name')
-            if code_name:
-                second_level_map[code_name] = code
-
-        categories = {code.get('name'): [] for code in second_level_codes_list}
-        categories["其他各类话题"] = []
-
-        for key, codes in first_level_codes.items():
-            content = codes[0] if codes else ""
-            if not content:
-                categories["其他各类话题"].append(key)
-                continue
-
-            # 使用语义匹配器召回Top-k二阶候选
-            top_k = 5  # 默认召回5个候选
-            
-            # 检查缓存中是否有结果
-            cache_key = f"{content}_{top_k}_0.3"
-            if cache_key in self.similarity_cache:
-                logger.info(f"使用缓存的相似度计算结果")
-                matches = self.similarity_cache[cache_key]
+        second_level = defaultdict(list)
+        for key, text in first_level_codes.items():
+            matched = self._try_keyword_second_match(
+                text,
+                [{'name': n, 'keywords': kw} for n, kw in keyword_map.items()]
+            )
+            if matched:
+                second_level[matched].append(key)
             else:
-                # 计算相似度
-                matches = self.semantic_matcher.match_first_level_to_second_level(
-                    content,
-                    second_level_codes_list,
-                    top_k=top_k,
-                    threshold=self.rag_second_level_threshold
-                )
-                # 缓存结果
-                self.similarity_cache[cache_key] = matches
+                second_level['其他各类话题'].append(key)
 
-            if matches:
-                # 如果有模型管理器，使用bert_finetuned模型进行重排
-                if model_manager and model_manager.is_trained_model_available():
-                    logger.info(f"使用bert_finetuned模型对 {len(matches)} 个候选进行重排")
-                    # 准备候选编码
-                    candidate_codes = [match[0].get('name') for match in matches]
-                    # 使用模型对候选进行评分
-                    try:
-                        # 构建输入文本
-                        inputs = [f"{content} [SEP] {code}" for code in candidate_codes]
-                        # 预测类别
-                        predictions, _ = model_manager.predict_categories(inputs)
-                        # 计算置信度
-                        confidences = []
-                        for pred in predictions:
-                            if isinstance(pred, tuple):
-                                confidences.append(pred[1])
-                            else:
-                                confidences.append(0.0)
-                        # 找到置信度最高的编码
-                        if confidences:
-                            best_idx = confidences.index(max(confidences))
-                            best_match, _ = matches[best_idx]
-                            second_cat = best_match.get('name')
-                            logger.info(f"bert_finetuned模型选择的二阶编码: '{second_cat}' (置信度: {max(confidences):.4f})")
-                        else:
-                            # 回退到相似度最高的编码
-                            best_match, similarity = matches[0]
-                            second_cat = best_match.get('name')
-                            logger.info(f"回退到相似度匹配: '{second_cat}' (相似度: {similarity:.4f})")
-                    except Exception as e:
-                        logger.warning(f"模型重排失败，回退到相似度匹配: {e}")
-                        # 回退到相似度最高的编码
-                        best_match, similarity = matches[0]
-                        second_cat = best_match.get('name')
-                        logger.info(f"回退到相似度匹配: '{second_cat}' (相似度: {similarity:.4f})")
-                else:
-                    # 没有模型管理器，使用相似度最高的编码
-                    best_match, similarity = matches[0]
-                    second_cat = best_match.get('name')
-                    logger.info(f"一阶编码 '{content[:30]}...' 匹配到二阶编码 '{second_cat}' (相似度: {similarity:.4f})")
+        if not second_level:
+            second_level['其他各类话题'] = list(first_level_codes.keys())
 
-                if second_cat in categories:
-                    categories[second_cat].append(key)
-                else:
-                    categories["其他各类话题"].append(key)
-            else:
-                logger.info(f"一阶编码 '{content[:30]}...' 未找到匹配的二阶编码，归类为'其他各类话题'")
-                categories["其他各类话题"].append(key)
+        return dict(second_level)
 
-        logger.info(f"二阶编码完成: 共 {len(categories)} 个类别")
-
-        # 过滤空类别
-        result = {k: v for k, v in categories.items() if v}
-        return result
-
-    def _generate_second_level_codes_keyword_based(self, first_level_codes: Dict[str, List[str]]) -> Dict[str, List[str]]:
-        """基于关键词的二阶编码生成（回退方案）"""
-        # 扩展关键词映射
-        keyword_map = {
-            "团队职责与架构": ['团队', '部门', '职责', '角色', '架构', '层级', '负责', '职能'],
-            "质量管理与控制": ['质量', '检测', '测试', '检验', '把关', '评审', '评估', '标准'],
-            "技术创新与研发": ['创新', '方法', '技术', '研发', '开发', '测试方法', '检测技术'],
-            "危机挑战与应对": ['危机', '挑战', '困难', '问题', '应对', '解决', '突破'],
-            "团队心理与氛围": ['迷茫', '方向感', '确定性', '成就感', '归属感', '荣誉感', '氛围'],
-            "领导力与决策": ['领导', '管理', '决策', '资源', '协调', '支持', '目标']
-        }
-
-        categories = {category: [] for category in keyword_map.keys()}
-        categories["其他各类话题"] = []
-
-        for key, codes in first_level_codes.items():
-            content = codes[0].lower() if codes else ""
-            categorized = False
-
-            # 尝试匹配每个类别
-            for category, keywords in keyword_map.items():
-                keyword_count = sum(1 for keyword in keywords if keyword in content)
-                if keyword_count >= 1:  # 至少匹配1个关键词
-                    categories[category].append(key)
-                    categorized = True
-                    break
-
-            if not categorized:
-                categories["其他各类话题"].append(key)
-
-        # 过滤空类别
-        result = {k: v for k, v in categories.items() if v}
-        return result
+    # ── Third-level coding ────────────────────────────────────────────
 
     def generate_third_level_codes_improved(self, second_level_codes: Dict[str, List[str]]) -> Dict[str, List[str]]:
-        """生成三阶编码 - 使用语义相似度匹配"""
+        """生成三阶编码 — 优先使用Anchor层级映射，回退到语义/规则匹配"""
         self._ensure_rag_threshold_defaults()
+
         if not second_level_codes:
-            return {"核心主题": []}
+            return {}
 
-        category_names = list(second_level_codes.keys())
-        logger.info(f"开始三阶编码抽象，共 {len(category_names)} 个二阶编码")
+        # Primary: use anchor hierarchy mapping (Phase 2 semantic compression)
+        if self._anchor_hierarchy:
+            logger.info("使用Anchor层级映射生成三阶编码")
+            return self.generate_third_level_from_anchors(second_level_codes)
 
-        # 优先使用二阶映射 + 决策兜底
-        if self.rag_enabled and self.decision_policy:
+        third_level_codes = defaultdict(list)
+
+        if self.rag_enabled and self.rag_matcher is not None and self.coding_library:
             try:
-                third_level_categories = defaultdict(list)
-                for second_category in category_names:
-                    if second_category == self.decision_policy.other_second_name:
-                        third_level_categories[self.decision_policy.other_third_name].append(second_category)
-                        continue
+                lib = self.coding_library
+                enc = lib.get('encoding_library', lib)
+                third_codes = []
+                for third in enc.get('third_level_codes', []):
+                    third_codes.append(third)
 
-                    meta = self._second_level_decision_meta.get(second_category, {})
-                    second_code = meta.get("code") if isinstance(meta, dict) else None
-                    if not isinstance(second_code, dict):
-                        second_code = self._lookup_second_code_by_name(second_category)
+                for second_cat in second_level_codes:
+                    # match_second_level_to_third_level expects a dict, not string
+                    second_dict = self._lookup_second_code_by_name(second_cat) or {"name": second_cat}
+                    result = self.rag_matcher.match_second_level_to_third_level(
+                        second_dict, third_codes,
+                        threshold=self.rag_third_level_threshold)
+                    if result:
+                        match_name = result[0].get('name', '')
+                        if match_name:
+                            third_level_codes[match_name].append(second_cat)
+                        else:
+                            third_level_codes['综合主题'].append(second_cat)
+                    else:
+                        third_level_codes['综合主题'].append(second_cat)
+            except Exception:
+                pass
+        else:
+            logger.info("开始三阶编码聚合，共 %d 个二阶类别", len(second_level_codes))
 
-                    decision = self.decision_policy.decide_third_level(second_code)
-                    third_level_categories[decision.name].append(second_category)
+        # Rule-based fallback
+        if not third_level_codes:
+            third_level_codes = self._generate_third_level_codes_rule_based(second_level_codes)
 
-                result = {k: v for k, v in third_level_categories.items() if v}
-                if result:
-                    logger.info(f"RAG三阶编码完成: 共 {len(result)} 个类别")
-                    return result
-            except Exception as e:
-                logger.warning(f"RAG三阶匹配失败，回退旧流程: {e}")
+        return dict(third_level_codes)
 
-        # 检查编码库和语义匹配器是否可用
-        if not self.coding_library or not self.semantic_matcher:
-            logger.warning("编码库或语义匹配器不可用，回退到规则匹配")
-            # 回退到规则匹配
-            return self._generate_third_level_codes_rule_based(second_level_codes)
+    def _generate_third_level_codes_rule_based(self,
+                                                 second_level_codes: Dict[str, List[str]]) -> Dict[str, List[str]]:
+        """基于规则的三阶编码生成（后备方法）。"""
+        if not second_level_codes or not self.coding_library:
+            third = defaultdict(list)
+            for second_cat in second_level_codes:
+                third['综合主题'].append(second_cat)
+            return dict(third)
 
-        # 从编码库获取二阶和三阶编码
-        second_level_codes_list = self.coding_library.get_all_second_level_codes()
-        third_level_codes_list = self.coding_library.get_all_third_level_codes()
-        
-        if not second_level_codes_list or not third_level_codes_list:
-            logger.warning("编码库中没有二阶或三阶编码，回退到规则匹配")
-            return self._generate_third_level_codes_rule_based(second_level_codes)
+        third_level = defaultdict(list)
+        try:
+            lib = self.coding_library
+            enc = lib.get('encoding_library', lib)
 
-        # 构建二阶编码映射
-        second_level_map = {}
-        for code in second_level_codes_list:
-            code_name = code.get('name')
-            if code_name:
-                second_level_map[code_name] = code
+            # Build lookup: second_name -> third_name
+            second_to_third = {}
+            for third_item in enc.get('third_level_codes', []):
+                third_name = third_item.get('name', '')
+                for second_item in third_item.get('second_level_codes', []):
+                    second_name = second_item.get('name', '').strip()
+                    if second_name:
+                        second_to_third[second_name] = third_name
 
-        # 构建三阶编码映射
-        third_level_map = {}
-        for code in third_level_codes_list:
-            code_name = code.get('name')
-            if code_name:
-                third_level_map[code_name] = code
+            # Match
+            for second_cat in second_level_codes:
+                if second_cat in second_to_third:
+                    third_level[second_to_third[second_cat]].append(second_cat)
+                else:
+                    # Try fuzzy match
+                    matched = False
+                    for lib_name, third_name in second_to_third.items():
+                        if lib_name in second_cat or second_cat in lib_name:
+                            third_level[third_name].append(second_cat)
+                            matched = True
+                            break
+                    if not matched:
+                        third_level['综合主题'].append(second_cat)
 
-        # 构建三阶编码
-        third_level_categories = {}
-        for second_category in category_names:
-            if second_category == "其他各类话题":
-                # 直接归类为"其他重要维度"
-                if "其他重要维度" not in third_level_categories:
-                    third_level_categories["其他重要维度"] = []
-                third_level_categories["其他重要维度"].append(second_category)
-                continue
+        except Exception:
+            third_level = defaultdict(list)
+            for second_cat in second_level_codes:
+                third_level['综合主题'].append(second_cat)
 
-            # 查找对应的二阶编码
-            second_code = second_level_map.get(second_category)
-            if not second_code:
-                # 如果找不到对应的二阶编码，使用规则匹配
-                if "其他重要维度" not in third_level_categories:
-                    third_level_categories["其他重要维度"] = []
-                third_level_categories["其他重要维度"].append(second_category)
-                continue
+        if not third_level:
+            third_level['综合主题'] = list(second_level_codes.keys())
 
-            # 使用语义匹配器匹配三阶编码
-            match = self.semantic_matcher.match_second_level_to_third_level(
-                second_code,
-                third_level_codes_list,
-                threshold=self.rag_third_level_threshold
-            )
-
-            if match:
-                best_match, similarity = match
-                third_cat = best_match.get('name')
-                logger.info(f"二阶编码 '{second_category}' 匹配到三阶编码 '{third_cat}' (相似度: {similarity:.4f})")
-                if third_cat not in third_level_categories:
-                    third_level_categories[third_cat] = []
-                third_level_categories[third_cat].append(second_category)
-            else:
-                logger.info(f"二阶编码 '{second_category}' 未找到匹配的三阶编码，归类为'其他重要维度'")
-                if "其他重要维度" not in third_level_categories:
-                    third_level_categories["其他重要维度"] = []
-                third_level_categories["其他重要维度"].append(second_category)
-
-        # 确保至少有1个三阶编码
-        if not third_level_categories:
-            third_level_categories["综合主题"] = category_names
-
-        logger.info(f"生成 {len(third_level_categories)} 个三阶编码")
-        return third_level_categories
-
-    def _generate_third_level_codes_rule_based(self, second_level_codes: Dict[str, List[str]]) -> Dict[str, List[str]]:
-        """基于规则的三阶编码生成（回退方案）"""
-        if not second_level_codes:
-            return {"核心主题": []}
-
-        category_names = list(second_level_codes.keys())
-
-        # 更细致的分类映射
-        organizational_related = [name for name in category_names if any(word in name for word in
-                                                                         ['团队', '组织', '职责', '架构', '领导', '管理'])]
-
-        technical_related = [name for name in category_names if any(word in name for word in
-                                                                    ['技术', '方法', '创新', '检测', '质量', '研发'])]
-
-        psychological_related = [name for name in category_names if any(word in name for word in
-                                                                        ['心理', '氛围', '情感', '成长', '发展', '感觉'])]
-
-        result = {}
-
-        # 构建三阶编码
-        if organizational_related:
-            result["组织管理与架构设计"] = organizational_related
-        if technical_related:
-            result["技术研发与创新应用"] = technical_related
-        if psychological_related:
-            result["组织文化与心理氛围"] = psychological_related
-
-        # 处理剩余类别
-        remaining = [name for name in category_names if not any(
-            name in group for group in [organizational_related, technical_related, psychological_related]
-        )]
-
-        if remaining:
-            result["其他重要维度"] = remaining
-
-        # 确保至少有1个三阶编码
-        if not result:
-            result["综合主题"] = category_names
-
-        return result
+        return dict(third_level)

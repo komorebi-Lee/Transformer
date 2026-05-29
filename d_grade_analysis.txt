@@ -1,0 +1,30 @@
+D-grade codes after governance:
+  [我说情况]: 46
+  [人没有没有]: 19
+  [人是有没有]: 17
+  [技术参]: 7
+  [吧对是情况]: 3
+  [但销量可观]: 2
+  [个小吧相关]: 1
+
+Sample D-grade entries:
+  [16] code="我说情况" src=v11_anchor
+       original="就是我来问您问题，您回答就可以了"
+  [49] code="我说情况" src=v11_anchor
+       original="既然说别人能够相信我，愿意相信我，我觉得后面我肯定就是说有和他交流沟通的那个情况，对不对"
+  [84] code="但销量可观" src=v11_anchor
+       original="不会吧，不会怎么说，你看销售这边可能会觉得我们在外面怎么说，可能装模量不够，没有创造收益对不对"
+  [95] code="我说情况" src=v11_anchor
+       original="你不要急，你听我说你不要急，就算你后面是因为你是单采，就算你把条码号或者说每个人一个个写下来，然后我们拿回来录，只要笔写"
+  [99] code="我说情况" src=v11_anchor
+       original="然后他们就，好先说完"
+  [128] code="人没有没有" src=v11_anchor
+       original="没有人跟我说，这是我事后总结的"
+  [138] code="人是有没有" src=v11_anchor
+       original="7:00，100多个人是吧"
+  [146] code="我说情况" src=v11_anchor
+       original="对对对，可以，没问题，我马上就跟他们说"
+  [177] code="技术参" src=library
+       original="然后一级审批你先说跟市场部去沟通，然后跟我们的主任也在沟通，说以他的一些以往的经验，或者是他对市场需求，对技术的理解，我"
+  [193] code="我说情况" src=v11_anchor
+       original="我跟你说原来在（00：07：13）"

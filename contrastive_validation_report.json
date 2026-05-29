@@ -1,0 +1,93 @@
+{
+  "total_pairs": 4115,
+  "interpretability": {
+    "avg_score": 0.3317,
+    "clear_ratio": 0.0,
+    "moderate_ratio": 0.0216,
+    "opaque_ratio": 0.9784,
+    "opaque_examples": [
+      {
+        "sentence": "您好，我们是华中科技大学管理学院的调研团队，目前正在做关于员工越轨创新行为的研究",
+        "anchor": "科研-工程耦合",
+        "score": 0.3488,
+        "keyword_bridge": []
+      },
+      {
+        "sentence": "本次访谈主要通过问答形式进行，访谈内容将严格保密，只做学术用途",
+        "anchor": "访谈深入交流",
+        "score": 0.3987,
+        "keyword_bridge": []
+      },
+      {
+        "sentence": "本次访谈时间大概持续20-40分钟，为保证访谈的有效性，请根据您的真实经历或想法作答",
+        "anchor": "访谈确认信息",
+        "score": 0.4351,
+        "keyword_bridge": []
+      },
+      {
+        "sentence": "先给您介绍以下越轨创新的定义与特征",
+        "anchor": "创新过程特征",
+        "score": 0.3829,
+        "keyword_bridge": []
+      },
+      {
+        "sentence": "创新通常是在组织或领导的安排下进行，员工根据计划完成创新任务",
+        "anchor": "创新主体",
+        "score": 0.4225,
+        "keyword_bridge": []
+      }
+    ]
+  },
+  "semantic_drift": {
+    "avg_drift": 0.4508,
+    "avg_grounding": 0.5492,
+    "high_drift_examples": [
+      {
+        "sentence": "但在企业中也有一些员工在没有得到组织或领导的正式批准下，私下开展一些创新探索",
+        "anchor": "正式制度与非正式协商",
+        "drift": 0.5172,
+        "grounding": 0.4828
+      },
+      {
+        "sentence": "我们方舱实验室会去到外地，我可能会自己有一些想法会自己继续实施，因为是我项目负责人，相当于在外面可以，将在外军命有所不受，然后回来之后就挨了一通批，但是我就其实真的很难操作的开，也受到了领导的批评，他",
+        "anchor": "员工持股陷阱",
+        "drift": 0.707,
+        "grounding": 0.293
+      },
+      {
+        "sentence": "当然其实我们在外面所做的一切其实都是站在公司的角度来看的，站在企业的角度，为企业谋求发展，谋求一个利润具体的创新，或者其实我觉得方舱实际上已经是一个创新了，因为他就是说比我们现在固定的实验室，它是有许",
+        "anchor": "既有技术利用性创新",
+        "drift": 0.6292,
+        "grounding": 0.3708
+      },
+      {
+        "sentence": "这个方舱是谁提出来要建设的",
+        "anchor": "核心职能",
+        "drift": 0.5799,
+        "grounding": 0.4201
+      },
+      {
+        "sentence": "方舱应该是之前公司集团采购部",
+        "anchor": "运作平台",
+        "drift": 0.5046,
+        "grounding": 0.4954
+      }
+    ]
+  },
+  "adsorption": {
+    "high_risk_anchors": [
+      {
+        "anchor": "网络治理者",
+        "risk": "high",
+        "avg_similarity": 0.4221,
+        "std_similarity": 0.0,
+        "min_similarity": 0.4221,
+        "max_similarity": 0.4221,
+        "unrelated_fraction": 1.0,
+        "total_sentences": 42
+      }
+    ],
+    "total_checked": 15,
+    "high_risk_count": 1
+  }
+}

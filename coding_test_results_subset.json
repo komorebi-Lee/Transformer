@@ -1,0 +1,2980 @@
+{
+  "stats": {},
+  "results": [
+    {
+      "index": 1,
+      "code": "技术参与",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 2,
+      "code": "创新过程特征",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 3,
+      "code": "创新主体",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 4,
+      "code": "领导模式",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 5,
+      "code": "引智方式",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 6,
+      "code": "语篇结构",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 7,
+      "code": "引智方式",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 8,
+      "code": "惩戒证据",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 9,
+      "code": "自我实现主导创业动机",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 10,
+      "code": "构建自我中心网络",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 11,
+      "code": "战略特征",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 12,
+      "code": "兴趣与好奇心驱动",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 13,
+      "code": "可承接业务",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 14,
+      "code": "度以上情况",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 15,
+      "code": "导安排得当",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 16,
+      "code": "精准评价",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 17,
+      "code": "技术环境",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 18,
+      "code": "构建支撑体系",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 19,
+      "code": "技术环境",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 20,
+      "code": "A:为什么不太敢提？",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 21,
+      "code": "时间限制严格",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 22,
+      "code": "人才培养",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 23,
+      "code": "创业隐喻",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 24,
+      "code": "创始厂长印记",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 25,
+      "code": "A:为什么这么说呢？",
+      "grade": "D",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 26,
+      "code": "绩效结果",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 27,
+      "code": "创新能力提升",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 28,
+      "code": "提出经营理念",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 29,
+      "code": "默契与共谋",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 30,
+      "code": "默契与共谋",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 31,
+      "code": "心化内控",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 32,
+      "code": "成长特征",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 33,
+      "code": "控制模式",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 34,
+      "code": "提出经营理念",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 35,
+      "code": "表明对平台价值的拥护",
+      "grade": "B",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 36,
+      "code": "关系逻辑",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 37,
+      "code": "经营模式",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 38,
+      "code": "个体经营模式",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 39,
+      "code": "伙伴设计",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 40,
+      "code": "改进动力",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 41,
+      "code": "引智方式",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 42,
+      "code": "新颖程度",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 43,
+      "code": "调适互动",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 44,
+      "code": "作用路径",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 45,
+      "code": "话语功能",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 46,
+      "code": "核心构念",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 47,
+      "code": "心化内控",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 48,
+      "code": "偷闲触发类型",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 49,
+      "code": "正当性构建机制",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 50,
+      "code": "阶段一关系",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 51,
+      "code": "冲突诱因一",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 52,
+      "code": "时机问题",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 53,
+      "code": "治理缺陷",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 54,
+      "code": "票员客服等",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 55,
+      "code": "组织困境",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 56,
+      "code": "信息偏差",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 57,
+      "code": "行为后果",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 58,
+      "code": "回应外部期望",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 59,
+      "code": "促发因素",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 60,
+      "code": "日营收约万内",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 61,
+      "code": "部门墙与沟通阻滞",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 62,
+      "code": "回应外部期望",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 63,
+      "code": "金融向实体传染",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 64,
+      "code": "回应外部期望",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 65,
+      "code": "疫情沟通",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 66,
+      "code": "考核机制",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 67,
+      "code": "到十分相关",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 68,
+      "code": "职业惩罚恐惧",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 69,
+      "code": "本地培育",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 70,
+      "code": "冲突诱因一",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 71,
+      "code": "人效果不好",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 72,
+      "code": "阶段一关系",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 73,
+      "code": "索取额外控制",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 74,
+      "code": "冲突主体二",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 75,
+      "code": "转变后心理特征",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 76,
+      "code": "股份合作制",
+      "grade": "B",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 77,
+      "code": "权威倡导型试验",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 78,
+      "code": "网络模式三",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 79,
+      "code": "动员前提",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 80,
+      "code": "溢出途径",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 81,
+      "code": "人力市场特征",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 82,
+      "code": "提出经营理念",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 83,
+      "code": "生活美好",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 84,
+      "code": "入主方式",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 85,
+      "code": "票员客服等",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 86,
+      "code": "代理问题",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 87,
+      "code": "环境特征",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 88,
+      "code": "关系形态",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 89,
+      "code": "学习逻辑",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 90,
+      "code": "促发因素",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 91,
+      "code": "创业隐喻",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 92,
+      "code": "项目管理",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 93,
+      "code": "原住民问题",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 94,
+      "code": "类似景德镇模式",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 95,
+      "code": "证据线索",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 96,
+      "code": "以上获得张",
+      "grade": "B",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 97,
+      "code": "偷闲触发类型",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 98,
+      "code": "形成今日格局",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 99,
+      "code": "参照对比心理",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 100,
+      "code": "技术参与",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 101,
+      "code": "自主创新战略性意义建构",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 102,
+      "code": "自组织特征",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 103,
+      "code": "核心职能",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 104,
+      "code": "权威倡导型试验",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 105,
+      "code": "区域差异对比",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 106,
+      "code": "项目集成能力弱化",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 107,
+      "code": "二次创新阶段",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 108,
+      "code": "证据线索",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 109,
+      "code": "组织角色",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 110,
+      "code": "产品核心竞争力",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 111,
+      "code": "创业隐喻",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 112,
+      "code": "明确市场定位",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 113,
+      "code": "业态规划",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 114,
+      "code": "代际互动",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 115,
+      "code": "阶段划分",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 116,
+      "code": "缺乏市场规范",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 117,
+      "code": "市场进入策略",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 118,
+      "code": "先发优势",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 119,
+      "code": "绩效激励导向",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 120,
+      "code": "明确市场定位",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 121,
+      "code": "明确市场定位",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 122,
+      "code": "市场制度逻辑",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 123,
+      "code": "升级结果",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 124,
+      "code": "包容性创新市场化",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 125,
+      "code": "行业共性特征",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 126,
+      "code": "董事会功能",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 127,
+      "code": "高管选聘",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 128,
+      "code": "实施路径",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 129,
+      "code": "面的市里面",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 130,
+      "code": "市场需求预判",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 131,
+      "code": "短期行为",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 132,
+      "code": "考核机制",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 133,
+      "code": "开发模式",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 134,
+      "code": "绩效结果",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 135,
+      "code": "明确市场定位",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 136,
+      "code": "原因解释",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 137,
+      "code": "特色产品难满足新需求",
+      "grade": "B",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 138,
+      "code": "主观满意度",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 139,
+      "code": "操作困难",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 140,
+      "code": "交易联系脆弱",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 141,
+      "code": "周边案例",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 142,
+      "code": "低价竞争加剧",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 143,
+      "code": "手段导向拓展",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 144,
+      "code": "代理问题",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 145,
+      "code": "关系逻辑",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 146,
+      "code": "战略举措",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 147,
+      "code": "目标选择标准",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 148,
+      "code": "索取额外控制",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 149,
+      "code": "明确市场定位",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 150,
+      "code": "阶段划分",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 151,
+      "code": "储备核心技术",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 152,
+      "code": "阶段划分",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 153,
+      "code": "缺乏市场规范",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 154,
+      "code": "回购规则",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 155,
+      "code": "特色产品难满足新需求",
+      "grade": "B",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 156,
+      "code": "短期行为",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 157,
+      "code": "原因解释",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 158,
+      "code": "衰败原因",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 159,
+      "code": "做事严谨",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 160,
+      "code": "优化成本-能力比",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 161,
+      "code": "实施路径",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 162,
+      "code": "个体经营模式",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 163,
+      "code": "信息偏差",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 164,
+      "code": "顶层价值引导",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 165,
+      "code": "掏空手段",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 166,
+      "code": "掏空手段",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 167,
+      "code": "新颖程度",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 168,
+      "code": "信息偏差",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 169,
+      "code": "模式可持续性压力",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 170,
+      "code": "冒险程度",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 171,
+      "code": "产业困境",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 172,
+      "code": "权威倡导型试验",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 173,
+      "code": "哑铃态创新架构",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 174,
+      "code": "跨市场开发客户",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 175,
+      "code": "稳定环境",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 176,
+      "code": "营销环境",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 177,
+      "code": "多重问题并存",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 178,
+      "code": "工艺难度大",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 179,
+      "code": "证据线索",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 180,
+      "code": "目标选择标准",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 181,
+      "code": "多重问题并存",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 182,
+      "code": "主观满意度",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 183,
+      "code": "行为风险抑制",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 184,
+      "code": "中国移动参与动因",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 185,
+      "code": "像的渐变",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 186,
+      "code": "衰败原因",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 187,
+      "code": "其他各类话题",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 188,
+      "code": "核心结论",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 189,
+      "code": "技术参与",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 190,
+      "code": "研发型机制",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 191,
+      "code": "超越性价值观",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 192,
+      "code": "二次创新阶段",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 193,
+      "code": "企业管理",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 194,
+      "code": "偷闲形式",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 195,
+      "code": "专家角色",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 196,
+      "code": "价值创造方式",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 197,
+      "code": "实践指导",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 198,
+      "code": "回应外部期望",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 199,
+      "code": "规模门槛",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 200,
+      "code": "阶段一关系",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 201,
+      "code": "管理原则",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 202,
+      "code": "构建自我中心网络",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 203,
+      "code": "积攒项目经验",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 204,
+      "code": "初创参与",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 205,
+      "code": "优化成本-能力比",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 206,
+      "code": "以上获得张",
+      "grade": "B",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 207,
+      "code": "数据洞察",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 208,
+      "code": "政策建议",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 209,
+      "code": "质统一要求",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 210,
+      "code": "主导设计竞争性",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 211,
+      "code": "证据线索",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 212,
+      "code": "应用需得当",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 213,
+      "code": "器物展示方式",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 214,
+      "code": "优化成本-能力比",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 215,
+      "code": "童年文化经历",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 216,
+      "code": "集体惩罚",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 217,
+      "code": "机会识别者",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 218,
+      "code": "证据线索",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 219,
+      "code": "正反馈循环",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 220,
+      "code": "管理柔性",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 221,
+      "code": "感知机会",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 222,
+      "code": "动力机制",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 223,
+      "code": "优化成本-能力比",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 224,
+      "code": "董事会功能",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 225,
+      "code": "绩效结果",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 226,
+      "code": "改进流程",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 227,
+      "code": "考核机制",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 228,
+      "code": "核心职能",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 229,
+      "code": "分析起点",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 230,
+      "code": "衰败原因",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 231,
+      "code": "董事会功能",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 232,
+      "code": "高管选聘",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 233,
+      "code": "创业隐喻",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 234,
+      "code": "冲突诱因一",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 235,
+      "code": "部门墙与沟通阻滞",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 236,
+      "code": "触及成长天花板",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 237,
+      "code": "关系嵌入多元",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 238,
+      "code": "核心能力跃迁",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 239,
+      "code": "成长特征",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 240,
+      "code": "心化内控",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 241,
+      "code": "市场需求预判",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 242,
+      "code": "心化内控",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 243,
+      "code": "经营效率",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 244,
+      "code": "商业正外部性",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 245,
+      "code": "绩效结果",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 246,
+      "code": "效能提升反馈",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 247,
+      "code": "回应外部期望",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 248,
+      "code": "代际互动效应",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 249,
+      "code": "赔偿范围优化",
+      "grade": "B",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 250,
+      "code": "提升财务价值",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 251,
+      "code": "绩效结果",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 252,
+      "code": "新颖程度",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 253,
+      "code": "人才流失或边缘化",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 254,
+      "code": "代际互动效应",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 255,
+      "code": "交易联系脆弱",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 256,
+      "code": "绩效激励导向",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 257,
+      "code": "回应外部期望",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 258,
+      "code": "高流失倾向",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 259,
+      "code": "法律制度",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 260,
+      "code": "保人制度",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 261,
+      "code": "上查三代",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 262,
+      "code": "活动创新",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 263,
+      "code": "精细化难符合新要求",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 264,
+      "code": "核心构念",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 265,
+      "code": "高管选聘",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 266,
+      "code": "人提高一些",
+      "grade": "B",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 267,
+      "code": "专业知识",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 268,
+      "code": "布招聘信息",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 269,
+      "code": "技术参与",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 270,
+      "code": "研发型机制",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 271,
+      "code": "超越性价值观",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 272,
+      "code": "布招聘信息",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 273,
+      "code": "联合分析",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 274,
+      "code": "力劳动受限",
+      "grade": "B",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 275,
+      "code": "七大转行现",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 276,
+      "code": "数字技术可供性感知",
+      "grade": "B",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 277,
+      "code": "传统与创新并重",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 278,
+      "code": "心化内控",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 279,
+      "code": "双重预见路径",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 280,
+      "code": "实施特征",
+      "grade": "B",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 281,
+      "code": "合作深化",
+      "grade": "B",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 282,
+      "code": "关系形态",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 283,
+      "code": "学习方式",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 284,
+      "code": "改进流程",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 285,
+      "code": "阶段一关系",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 286,
+      "code": "弥补机制",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 287,
+      "code": "多方协调",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 288,
+      "code": "高管选聘",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 289,
+      "code": "能力构建",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 290,
+      "code": "已有解释",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 291,
+      "code": "市场参与意愿不强",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 292,
+      "code": "感知机会",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 293,
+      "code": "意义建构结果",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 294,
+      "code": "日营收约万内",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 295,
+      "code": "索取额外控制",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 296,
+      "code": "核心能力跃迁",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 297,
+      "code": "竞争环境压力",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 298,
+      "code": "自主研发核心模块",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 299,
+      "code": "共演化模式转换",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 300,
+      "code": "促进认知一致",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 301,
+      "code": "核心职能",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 302,
+      "code": "企业价值折损",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 303,
+      "code": "控制结构",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 304,
+      "code": "专家角色",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 305,
+      "code": "资金转移",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 306,
+      "code": "童年文化经历",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 307,
+      "code": "证据线索",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 308,
+      "code": "演化机制",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 309,
+      "code": "盈利模式缺陷",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 310,
+      "code": "红利形成机制",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 311,
+      "code": "扩增高价值营收业务",
+      "grade": "B",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 312,
+      "code": "关系震荡与价值脱嵌",
+      "grade": "B",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 313,
+      "code": "风险缓冲",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 314,
+      "code": "制度劣势凸显",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 315,
+      "code": "企业价值折损",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 316,
+      "code": "共演化模式转换",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 317,
+      "code": "被动型触发",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 318,
+      "code": "改进动力",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 319,
+      "code": "产业链影响",
+      "grade": "B",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 320,
+      "code": "模式可持续性压力",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 321,
+      "code": "企业能力变异方向",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 322,
+      "code": "相对优势",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 323,
+      "code": "人质效应",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 324,
+      "code": "特新优势难以拓展",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 325,
+      "code": "违规行为",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 326,
+      "code": "游说条件",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 327,
+      "code": "技术特征",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 328,
+      "code": "关键技术跨界延伸",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 329,
+      "code": "技术环境",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 330,
+      "code": "拓展生态价值",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 331,
+      "code": "风格类型",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 332,
+      "code": "证据线索",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 333,
+      "code": "缺少专利",
+      "grade": "B",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 334,
+      "code": "代际互动",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 335,
+      "code": "成员产生分歧",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 336,
+      "code": "同质竞争加剧",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 337,
+      "code": "丰富跨行业服务",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 338,
+      "code": "游说条件",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 339,
+      "code": "其他各类话题",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 340,
+      "code": "市场参与意愿不强",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 341,
+      "code": "参照对比心理",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 342,
+      "code": "关系形态",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 343,
+      "code": "模式二",
+      "grade": "D",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 344,
+      "code": "冲突诱因一",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 345,
+      "code": "权变选择",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 346,
+      "code": "核心结论",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 347,
+      "code": "生活美好",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 348,
+      "code": "技术参与",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 349,
+      "code": "研发型机制",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 350,
+      "code": "超越性价值观",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 351,
+      "code": "偷闲形式",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 352,
+      "code": "运营策略",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 353,
+      "code": "金融向实体传染",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 354,
+      "code": "二次创新阶段",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 355,
+      "code": "规模门槛",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 356,
+      "code": "度改动繁琐",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 357,
+      "code": "票员客服等",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 358,
+      "code": "管理原则",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 359,
+      "code": "高流失倾向",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 360,
+      "code": "一代交班行为",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 361,
+      "code": "低价竞争加剧",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 362,
+      "code": "治理痛点",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 363,
+      "code": "演变趋势",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 364,
+      "code": "考核机制",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 365,
+      "code": "提出经营理念",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 366,
+      "code": "掏空手段",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 367,
+      "code": "权变选择",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 368,
+      "code": "运营策略",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 369,
+      "code": "企业能力反馈效应",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 370,
+      "code": "个体经营模式",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 371,
+      "code": "网络控制优势",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 372,
+      "code": "规模效应",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 373,
+      "code": "块钱情况",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 374,
+      "code": "创业隐喻",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 375,
+      "code": "转型阻力",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 376,
+      "code": "政府能力调整方向",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 377,
+      "code": "块钱情况",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 378,
+      "code": "违规行为",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 379,
+      "code": "部门墙与沟通阻滞",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 380,
+      "code": "国企特定功能",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 381,
+      "code": "绩效激励导向",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 382,
+      "code": "关系震荡与价值脱嵌",
+      "grade": "B",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 383,
+      "code": "管理原则",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 384,
+      "code": "绩效激励导向",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 385,
+      "code": "企业能力选择标准",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 386,
+      "code": "推进系统化重组",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 387,
+      "code": "混合机制",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 388,
+      "code": "日营收约万内",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 389,
+      "code": "矛盾平衡者",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 390,
+      "code": "目标选择标准",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 391,
+      "code": "技术传承式突破",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 392,
+      "code": "侵占机制",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 393,
+      "code": "构建持续能力",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 394,
+      "code": "强化组织记忆",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 395,
+      "code": "能力构建",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 396,
+      "code": "资源捆绑化",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 397,
+      "code": "代际互动效应",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 398,
+      "code": "家族创业耐心资本",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 399,
+      "code": "以能人为枢纽嵌入行政",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 400,
+      "code": "研发型机制",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 401,
+      "code": "优化成本-能力比",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 402,
+      "code": "家族创业耐心资本",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 403,
+      "code": "关键发现",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 404,
+      "code": "度改动繁琐",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 405,
+      "code": "高流失倾向",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 406,
+      "code": "人才困境",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 407,
+      "code": "价值网络特性",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 408,
+      "code": "数字竞争者增加",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 409,
+      "code": "控制模式",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 410,
+      "code": "营造跨国社区",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 411,
+      "code": "技术研发能力",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 412,
+      "code": "价值网络特性",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 413,
+      "code": "创业团队冲突",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 414,
+      "code": "网络结构",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 415,
+      "code": "先发优势",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 416,
+      "code": "战略复杂性维度",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 417,
+      "code": "企业能力变异方向",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 418,
+      "code": "职业发展诉求",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 419,
+      "code": "实施困境",
+      "grade": "B",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 420,
+      "code": "互动模式",
+      "grade": "A",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 421,
+      "code": "角色",
+      "grade": "D",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 422,
+      "code": "数据增强驱动",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 423,
+      "code": "部门墙与沟通阻滞",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 424,
+      "code": "角色身份凸显",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    },
+    {
+      "index": 425,
+      "code": "董事会之谜",
+      "grade": "C",
+      "anchor_selected": true,
+      "anchor_source": "library"
+    }
+  ]
+}

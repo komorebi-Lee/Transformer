@@ -99,9 +99,9 @@ class Config:
     FIRST_LEVEL_ENHANCED_MAX_SPAN = 12
     FIRST_LEVEL_SEMANTIC_RECALL_TOP_N = 300
     FIRST_LEVEL_SEMANTIC_RECALL_MIN_SCORE = 0.35
-    FIRST_LEVEL_RECALL_BANK_FILES = ["standard_train_optimized.csv", "standard.csv", "standard2.csv", "standard_train.csv"]
+    FIRST_LEVEL_RECALL_BANK_FILES = ["standard_train_optimized.csv", "standard.csv", "standard2.csv", "standard_train.csv", "first_level_recall_bank_cross_domain.csv"]
     # 一阶原型样本：默认关闭；如需项目域适配，可临时设置为辅助样本文件
-    FIRST_LEVEL_PROTOTYPE_FILES = []
+    FIRST_LEVEL_PROTOTYPE_FILES = ["data/first_level_prototypes.json"]
     FIRST_LEVEL_FUSED_RANKING = False
     FIRST_LEVEL_RECALL_SCORE_WEIGHT = 1.8
     FIRST_LEVEL_RULE_SCORE_WEIGHT = 0.18

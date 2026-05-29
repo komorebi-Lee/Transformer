@@ -506,13 +506,20 @@ class DataProcessor:
                 
                 # 清理角色标记（关键！）
                 # 1. 清理标准标记
-                content = content.replace("受访者：", "").replace("采访者：", "").strip()
+                content = content.replace("受访者：", "").replace("采访者：", "")
+                content = content.replace("受访者:", "").replace("采访者:", "")
                 
-                # 2. 清理数字编号的说话人标记（如：里弄管家4：、受访者1：）
-                content = re.sub(r'^[\w\u4e00-\u9fa5]+\d+[：:]?\s*', '', content)
+                # 2. 清理所有类型的说话人标记（行首，使用MULTILINE匹配多行文本）
+                # 匹配模式：说话人1：、说话人2:、里弄管家3：、受访者4: 等
+                # 先清理带冒号的完整标记
+                content = re.sub(r'^[\u4e00-\u9fa5]+\d+[：:]\s*', '', content, flags=re.MULTILINE)
+                # 再清理不带冒号的情况（容错处理）
+                content = re.sub(r'^[\u4e00-\u9fa5]+\d+\s*', '', content, flags=re.MULTILINE)
                 
-                # 3. 清理其他常见说话人标记
-                content = re.sub(r'^(问|答|Q|A)[：:]\s*', '', content)
+                # 3. 清理简写标记（问：、答：、Q:、A:等）
+                content = re.sub(r'^(问|答|Q|A)[：:]\s*', '', content, flags=re.MULTILINE)
+                
+                content = content.strip()
                 
                 # 4. 清理特殊符号（●○◆◇■□▲△等）
                 content = content.replace('●', '').replace('○', '').replace('◆', '').replace('◇', '')
@@ -945,32 +952,49 @@ class DataProcessor:
         if not text_number_mapping:
             return None
         
+        original_text = text
+        text = str(text).strip()
+        
+        # 0. 先检查文本中是否已经包含编号标记（如 [2345]）
+        marker_match = re.search(r"\[(\d+)\]", text)
+        if marker_match:
+            marker_num = int(marker_match.group(1))
+            if marker_num in text_number_mapping:
+                return marker_num
+        
         # 1. 精确匹配
         for num, mapped_text in text_number_mapping.items():
-            if text == mapped_text or text == mapped_text.strip():
+            mapped_text_str = str(mapped_text).strip()
+            if text == mapped_text_str:
                 return num
         
         # 2. 去除句号后精确匹配
         text_no_punct = text.rstrip('。！？!?')
         for num, mapped_text in text_number_mapping.items():
-            mapped_no_punct = mapped_text.rstrip('。！？!?')
+            mapped_no_punct = str(mapped_text).rstrip('。！？!?')
             if text_no_punct == mapped_no_punct:
                 return num
         
         # 3. 去除空格和标点后精确匹配
         text_clean = text.replace(' ', '').replace('\n', '').replace('\t', '').rstrip('。！？!?')
         for num, mapped_text in text_number_mapping.items():
-            mapped_clean = mapped_text.replace(' ', '').replace('\n', '').replace('\t', '').rstrip('。！？!?')
+            mapped_clean = str(mapped_text).replace(' ', '').replace('\n', '').replace('\t', '').rstrip('。！？!?')
             if text_clean == mapped_clean:
                 return num
         
-        # 4. 智能相似度匹配（平衡准确性和样本量）
-        if len(text_clean) > 10:  # 降低最小长度要求
+        # 4. 检查是否是编号映射中的子串（更宽松的匹配）
+        for num, mapped_text in text_number_mapping.items():
+            mapped_text_str = str(mapped_text).strip()
+            if text in mapped_text_str or mapped_text_str in text:
+                return num
+        
+        # 5. 智能相似度匹配（降低阈值以提高匹配率）
+        if len(text_clean) >= 5:
             best_match = None
             best_similarity = 0.0
             
             for num, mapped_text in text_number_mapping.items():
-                mapped_clean = mapped_text.replace(' ', '').replace('\n', '').replace('\t', '').rstrip('。！？!?')
+                mapped_clean = str(mapped_text).replace(' ', '').replace('\n', '').replace('\t', '').rstrip('。！？!?')
                 
                 if len(mapped_clean) > 0:
                     # 计算字符集合相似度
@@ -981,31 +1005,28 @@ class DataProcessor:
                     # 计算长度相似度
                     length_ratio = min(len(text_clean), len(mapped_clean)) / max(len(text_clean), len(mapped_clean))
                     
-                    # 计算子串匹配度（新增）
+                    # 计算子串匹配度
                     substring_match = 0.0
                     if text_clean in mapped_clean:
                         substring_match = len(text_clean) / len(mapped_clean)
                     elif mapped_clean in text_clean:
                         substring_match = len(mapped_clean) / len(text_clean)
                     
-                    # 综合评分（考虑多个因素）
-                    # 如果有子串匹配，降低其他要求
-                    if substring_match > 0.7:
-                        # 子串匹配度高，说明很可能是正确的
-                        if char_similarity > 0.7 and length_ratio > 0.6:
+                    # 综合评分（降低阈值）
+                    if substring_match > 0.5:
+                        if char_similarity > 0.6 and length_ratio > 0.5:
                             similarity = (char_similarity + length_ratio + substring_match) / 3
                             if similarity > best_similarity:
                                 best_similarity = similarity
                                 best_match = num
                     else:
-                        # 没有明显子串匹配，要求更严格
-                        if char_similarity > 0.85 and length_ratio > 0.75:
+                        if char_similarity > 0.75 and length_ratio > 0.65:
                             similarity = (char_similarity + length_ratio) / 2
                             if similarity > best_similarity:
                                 best_similarity = similarity
                                 best_match = num
             
-            if best_match is not None:
+            if best_match is not None and best_similarity > 0.6:
                 return best_match
         
         return None

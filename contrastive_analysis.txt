@@ -1,0 +1,118 @@
+Total anchors with sentences: 606
+Total sentences: 2815
+
+Sentences per anchor distribution:
+  1 sentences: 267 anchors
+  2 sentences: 101 anchors
+  3 sentences: 60 anchors
+  4 sentences: 33 anchors
+  5 sentences: 23 anchors
+  6 sentences: 20 anchors
+  7 sentences: 16 anchors
+  8 sentences: 15 anchors
+  9 sentences: 4 anchors
+  10 sentences: 7 anchors
+  11 sentences: 8 anchors
+  12 sentences: 3 anchors
+  13 sentences: 3 anchors
+  14 sentences: 4 anchors
+  15 sentences: 4 anchors
+  16 sentences: 4 anchors
+  17 sentences: 1 anchors
+  18 sentences: 2 anchors
+  19 sentences: 2 anchors
+  21 sentences: 2 anchors
+  22 sentences: 1 anchors
+  24 sentences: 2 anchors
+  25 sentences: 1 anchors
+  26 sentences: 1 anchors
+  27 sentences: 4 anchors
+  29 sentences: 1 anchors
+  31 sentences: 1 anchors
+  32 sentences: 2 anchors
+  33 sentences: 2 anchors
+  35 sentences: 1 anchors
+  37 sentences: 2 anchors
+  39 sentences: 1 anchors
+  40 sentences: 1 anchors
+  42 sentences: 1 anchors
+  43 sentences: 1 anchors
+  46 sentences: 1 anchors
+  54 sentences: 1 anchors
+  57 sentences: 1 anchors
+  63 sentences: 1 anchors
+  73 sentences: 1 anchors
+
+Anchors with >=3 expressions: 238
+Total positive pairs possible: 25049
+
+Top anchors by expression count:
+  [组织印记] (73 sentences)
+    - 讲话人 2  14:51  我们来这边呢展示给你们看72道行业里面的其中一道，我们这边是雕刻来于宋代，在宋代的时候就有雕刻了，只是他的技艺不精
+    - 说话人 2：松软的泥坯上，匠人可以雕刻出各式精美纹路，层次感与立体感极强，成品十分震撼
+    - 说话人2：我们主营业务是茶具，都是全手工绘画的非遗作品
+  [思维方式] (63 sentences)
+    - 不会说那边一点，那边一点，这这点还好
+    - 说话人2：会，因为很多人不光是来看一看，还想体验一下，找找陶瓷制作的感觉
+    - 做出来的风格你的想法和我的想法肯定不一样
+  [空间布局] (57 sentences)
+    - 说话人2：应该是遗址，主要有西围墙遗址、南路遗址，后面还新增了几个遗址
+    - 说话人2：这是陶阳里打造得最好的一个环境
+    - 我不太清楚其他区域，因为我没有怎么仔细研究过其他区域
+  [人才困境] (54 sentences)
+    - 说话人 2：如果再不重视手工非遗保护，年轻一代会越来越不愿意学习、从事陶瓷行业
+    - 现在年轻人很多又喜欢看手机，这个对身体也不好
+    - 在古街和景区里做NPC时，感觉景区里学生素质偏低的较多，古街那边老年人素质偏低的多
+  [本土情境] (46 sentences)
+    - 英国人到景德镇来发现了这个土，所以用了“kaolin”这个词
+    - 我们其实很多讲解都是无偿的，就是为了帮景德镇推广这里的文化
+    - 只有亲身体验过，才能更深刻感受这里的文化，也能吸引更多人来
+  [时间导向] (43 sentences)
+    - 这张照片是2023年10月11日，习近平主席来景德镇考察时，在我所在的大门口拍摄的，照片里我牵着母亲的手
+    - ● 14:49
+呢我们这里一个是历史悠久，第二个是刚才就是提出来的非遗传承
+    - 等以后拍腻了，可能我就去别的地方了
+  [文化类型] (42 sentences)
+    - 讲话人 1  12:06  桃李现现在的这个商业业态与整体文化氛围是否相匹配
+    - 说话人3：这里以文化为核心，我们主要卖的也是传统文化相关产品
+    - ● 1:11:09
+这里是以传统传统工艺技艺为标准的，你看到吧，很多东西都
+● 1:11:13
+是标准传统技艺的吧
+  [遮蔽手段] (40 sentences)
+    - 他们的温度达不到我们这个高度，我们一般都是1320度，或者1300度以上，所以我们的瓷器就不容易挂茶垢
+    - 现在这里的领导专门弄了个烧水、泡水的地方
+    - 弄那个锅灰，把它擦一遍，擦一遍那个锅灰呢，它就把那个油渍呢就吸在那个线条上面
+  [学习方式] (39 sentences)
+    - 研学团体最近很多，有大学、初中、小学的学生
+    - TO B TO C的业务都有，就比如说我们会有研学的课程，有针对不同年龄段的课程，都有
+    - 教学生学生怎么怎么画，我们就怎么教他，就这样了
+  [文化底色] (37 sentences)
+    - 说话人 2：2023 年习近平总书记来到陶阳里考察，我舅舅也在这里工作，后来舅舅就安排我来到这里
+    - 不过我们这里定位是有传统技艺的，可能有些人不太喜欢这种风格
+    - 现在很多人根本不懂传统工艺的内涵
+  [正当性构建机制] (37 sentences)
+    - 讲话人 2  13:57  是有没有
+    - • 发言者 2 01:19:45
+对，
+• 发言者 1 01:19:46
+    - 讲话人 4  13:02  是的是的
+  [产品表征应用] (35 sentences)
+    - 其实我老家是湖南那边的，也是一个瓷都，所以我不会特意在这里去做陶瓷、看瓷器
+    - 但景德镇不可能全都是大学生，传统陶瓷技艺还是需要慢慢发展传承下去
+    - 比如我要我需要一个这样的瓷器，你就给我雕刻出来，因为我们不雕刻制作珐琅彩的
+  [角色] (33 sentences)
+    - 讲话人 2  13:50  都会，这不是天天上班嘛，天天上班就会在这边经过
+    - ● 21:58
+你昨天我跟你说，不能说是废话
+    - 00:30 说话人1
+也就是说每次烧制出来的成品都可能不一样
+  [核心理念] (33 sentences)
+    - ● 50:53
+会有游客讲理论文化
+    - 讲话人 2  08:13  商业形态嘛，你像我们这边已经划分的比较好嘛，传统然后非遗区然后对面是每个老师在那边画，然后在那边那边创作，然后也可以顾客喜欢也可以购
+    - 每个人都会问这个，这确实是大家最好奇的，因为他们看到我们画完，以为放着就行
+  [利益输送] (32 sentences)
+    - 如果是直接买卖，就直接装盒子带走；如果不是直接买，就是定制
+    - 然后在景区里就是因为我把它封闭了，并且封闭管理，我卖门票，所以我才养得起这么多人，我的这些设施我才有钱去修缮，因此我才有钱去保护
+    - 讲话人 2  08:51  比如说房租各方面还是价格蛮公道的，不是乱收费，价格特别高那种
