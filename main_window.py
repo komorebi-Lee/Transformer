@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import (QMainWindow, QVBoxLayout, QHBoxLayout, QWidget,
                              QLineEdit, QFormLayout, QComboBox, QCheckBox, QTabWidget,
                              QDoubleSpinBox,
                              QApplication)
-from PyQt5.QtCore import Qt, QSettings, QThread, pyqtSignal, QTimer, QRegularExpression
+from PyQt5.QtCore import Qt, QSettings, QThread, pyqtSignal, QTimer, QRegularExpression, QEvent, QMimeData
 from PyQt5.QtGui import QFont, QColor, QTextCursor, QIcon
 from typing import Dict, List, Any, Optional
 import traceback
@@ -34,6 +34,7 @@ from grounded_theory_coder import GroundedTheoryCoder
 from word_exporter import WordExporter
 from model_downloader import ModelDownloader
 from manual_coding_dialog import ManualCodingDialog
+from governance_dashboard import GovernanceDashboard
 from excel_processor import ExcelProcessorDialog
 from config import Config
 from project_manager import ProjectManager
@@ -43,6 +44,76 @@ from hyperparameter_optimizer import HyperparameterOptimizer
 import re
 
 logger = logging.getLogger(__name__)
+
+
+class DragDropTreeWidget(QTreeWidget):
+    """支持拖放功能的树形控件"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.main_window = None
+        self.setDragEnabled(True)
+        self.setAcceptDrops(True)
+        self.setDropIndicatorShown(True)
+        self.setDragDropMode(QTreeWidget.InternalMove)
+
+    def dragEnterEvent(self, event):
+        """处理拖拽进入事件"""
+        if event.source() == self:
+            event.acceptProposedAction()
+        elif event.mimeData().hasText():
+            event.setDropAction(Qt.CopyAction)
+            event.accept()
+        else:
+            event.ignore()
+
+    def dragMoveEvent(self, event):
+        """处理拖拽移动事件"""
+        if event.source() == self:
+            item = self.itemAt(event.pos())
+            if item:
+                dragged_items = self.selectedItems()
+                for dragged_item in dragged_items:
+                    if self._is_ancestor(item, dragged_item):
+                        event.ignore()
+                        return
+            event.acceptProposedAction()
+        elif event.mimeData().hasText():
+            event.setDropAction(Qt.CopyAction)
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        """处理拖放释放事件"""
+        if event.source() == self:
+            if self.main_window:
+                target_item = self.itemAt(event.pos())
+                selected_items = self.selectedItems()
+                if self.main_window.handle_first_level_drop(target_item, selected_items):
+                    event.acceptProposedAction()
+                    return
+
+            super().dropEvent(event)
+            if self.main_window:
+                self.main_window.update_structured_codes_from_tree()
+        elif event.mimeData().hasText():
+            if self.main_window:
+                event.setDropAction(Qt.CopyAction)
+                self.main_window.handle_drop_on_tree(event)
+                event.accept()
+            else:
+                event.ignore()
+        else:
+            event.ignore()
+
+    def _is_ancestor(self, item, potential_ancestor):
+        """检查item是否是potential_ancestor的祖先节点"""
+        while potential_ancestor:
+            if potential_ancestor == item:
+                return True
+            potential_ancestor = potential_ancestor.parent()
+        return False
 
 
 class ModelInitializationThread(QThread):
@@ -1105,9 +1176,10 @@ class MainWindow(QMainWindow):
 
         self.text_display = QTextEdit()
         self.text_display.setPlaceholderText("选择文件查看文本内容...")
-        # 放大字体以便更好地观看文本内容
         font = QFont("SimSun", 12)
         self.text_display.setFont(font)
+        self.text_display.setAcceptDrops(False)
+        self.text_display.installEventFilter(self)
         text_layout.addWidget(self.text_display)
 
         layout.addWidget(text_group)
@@ -1191,7 +1263,8 @@ class MainWindow(QMainWindow):
         self.search_line_edit.returnPressed.connect(self.perform_search)
         search_button.clicked.connect(self.perform_search)
 
-        self.coding_tree = QTreeWidget()
+        self.coding_tree = DragDropTreeWidget()
+        self.coding_tree.main_window = self
         self.coding_tree.setHeaderLabels(["编码内容", "类型", "数量", "文件来源数", "句子来源数", "关联编号"])
         self.coding_tree.setColumnWidth(0, 300)
         self.coding_tree.setColumnWidth(1, 80)
@@ -1199,16 +1272,17 @@ class MainWindow(QMainWindow):
         self.coding_tree.setColumnWidth(3, 80)
         self.coding_tree.setColumnWidth(4, 80)
         self.coding_tree.setColumnWidth(5, 120)
-        # 支持多选
         self.coding_tree.setSelectionMode(QTreeWidget.ExtendedSelection)
-        # 单击仅执行导航和高亮
         self.coding_tree.itemClicked.connect(self.on_tree_item_clicked)
-        # 双击一阶编码时弹出句子详情对话框
         self.coding_tree.itemDoubleClicked.connect(self.on_tree_item_double_clicked)
 
-        # 设置上下文菜单
         self.coding_tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.coding_tree.customContextMenuRequested.connect(self.show_tree_context_menu)
+
+        self.coding_tree.setAcceptDrops(True)
+        self.coding_tree.setDragEnabled(True)
+        self.coding_tree.setDropIndicatorShown(True)
+        self.coding_tree.viewport().setAcceptDrops(True)
 
         coding_layout.addWidget(self.coding_tree)
 
@@ -1231,6 +1305,30 @@ class MainWindow(QMainWindow):
         coding_layout.addLayout(tree_buttons_layout)
 
         layout.addWidget(coding_structure_group)
+
+        # 语义健康监控组 (Phase 3)
+        semantic_health_group = QGroupBox("语义健康监控")
+        semantic_health_layout = QVBoxLayout(semantic_health_group)
+
+        self.health_score_label = QLabel("健康分: --")
+        self.health_score_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #2e7d32;")
+        semantic_health_layout.addWidget(self.health_score_label)
+
+        self.health_summary_label = QLabel("熵: -- | Gini: -- | Top锚点: --")
+        self.health_summary_label.setStyleSheet("color: #666; font-size: 11px;")
+        semantic_health_layout.addWidget(self.health_summary_label)
+
+        health_btns_layout = QHBoxLayout()
+        self.semantic_health_btn = QPushButton("查看语义健康")
+        self.semantic_health_btn.clicked.connect(self.show_semantic_health_dialog)
+        self.semantic_health_btn.setEnabled(False)
+        self.hierarchy_browse_btn = QPushButton("Anchor层级浏览")
+        self.hierarchy_browse_btn.clicked.connect(self.show_hierarchy_browser)
+        health_btns_layout.addWidget(self.semantic_health_btn)
+        health_btns_layout.addWidget(self.hierarchy_browse_btn)
+        semantic_health_layout.addLayout(health_btns_layout)
+
+        layout.addWidget(semantic_health_group)
 
         # 训练管理组
         training_group = QGroupBox("训练管理")
@@ -1324,6 +1422,13 @@ class MainWindow(QMainWindow):
         train_action = QAction('训练模型', self)
         train_action.triggered.connect(self.start_training)
         training_menu.addAction(train_action)
+
+        # 治理菜单
+        governance_menu = menubar.addMenu('治理')
+
+        dashboard_action = QAction('语义治理仪表盘', self)
+        dashboard_action.triggered.connect(self.open_governance_dashboard)
+        governance_menu.addAction(dashboard_action)
 
         # 帮助菜单
         help_menu = menubar.addMenu('帮助')
@@ -1699,12 +1804,22 @@ class MainWindow(QMainWindow):
             str(self.settings.value("auto_coding/use_global_batch_rerank", "false")).lower() == "true"
         )
 
+        # Performance mode: daily (4GB) vs extreme (8GB)
+        perf_group = QGroupBox("编码性能")
+        perf_layout = QVBoxLayout(perf_group)
+        daily_radio = QRadioButton("日常（4GB显存，batch_size=32）")
+        extreme_radio = QRadioButton("极致（8GB显存，batch_size=128）")
+        daily_radio.setChecked(True)
+        perf_layout.addWidget(daily_radio)
+        perf_layout.addWidget(extreme_radio)
+
         hint = QLabel("二阶阈值用于一阶编码匹配二阶编码；三阶阈值只用于编码库缺少二阶-三阶明确映射时的旧兜底语义匹配。")
         hint.setWordWrap(True)
         layout.addRow(hint)
         layout.addRow("二阶相似度阈值:", second_spin)
         layout.addRow("三阶兜底相似度阈值:", third_spin)
         layout.addRow(gpu_batch_check)
+        layout.addRow(perf_group)
 
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         buttons.accepted.connect(dialog.accept)
@@ -1718,6 +1833,7 @@ class MainWindow(QMainWindow):
             "second_threshold": float(second_spin.value()),
             "third_threshold": float(third_spin.value()),
             "use_global_batch_rerank": bool(gpu_batch_check.isChecked()),
+            "gpu_batch_size": 128 if extreme_radio.isChecked() else 32,
         }
         self.settings.setValue("auto_coding/second_threshold", thresholds["second_threshold"])
         self.settings.setValue("auto_coding/third_threshold", thresholds["third_threshold"])
@@ -2303,6 +2419,9 @@ class MainWindow(QMainWindow):
 
         self.statusBar().showMessage(f"编码结构: {total_third}三阶, {total_second}二阶, {total_first}一阶")
 
+        # 更新语义健康摘要 (Phase 3)
+        self._update_semantic_health_summary()
+
         # 更新文本显示，添加编号标记
         self.update_text_display_with_codes()
 
@@ -2430,6 +2549,256 @@ class MainWindow(QMainWindow):
 
         except Exception as e:
             logger.error(f"更新文本显示失败: {e}")
+
+    # ── Phase 3: Semantic Health Visualization ──────────────────────────
+
+    def _update_semantic_health_summary(self):
+        """Update the semantic health summary label from current coding results."""
+        try:
+            from semantic_density_monitor import compute_metrics
+            import os as _os, json
+
+            # Build results list from current structured codes
+            results = []
+            for third_name, second_cats in (self.structured_codes or {}).items():
+                for second_name, first_items in second_cats.items():
+                    for item in first_items:
+                        if isinstance(item, dict):
+                            code = item.get("name", item.get("content", ""))
+                        elif isinstance(item, list) and len(item) >= 2:
+                            code = item[0]
+                        else:
+                            code = str(item)
+                        results.append({"code": code})
+
+            if not results:
+                return
+
+            metrics = compute_metrics(results, label="当前编码结果")
+            health = metrics.get("health_score", 0)
+            entropy = metrics["anchor_entropy"]["normalized"]
+            gini = metrics["semantic_dispersion"]["gini_coefficient"]
+            top_anchor = metrics["anchor_frequency"]["top_anchor"]
+            top_pct = metrics["anchor_frequency"]["top_pct"]
+
+            # Color code the health score
+            if health >= 85:
+                color = "#2e7d32"
+            elif health >= 60:
+                color = "#ef6c00"
+            else:
+                color = "#c62828"
+
+            self.health_score_label.setText(f"健康分: {health:.0f}/100")
+            self.health_score_label.setStyleSheet(
+                f"font-size: 14px; font-weight: bold; color: {color};")
+            self.health_summary_label.setText(
+                f"熵: {entropy:.3f} | Gini: {gini:.3f} | "
+                f"Top锚点: {top_anchor[:10]} ({top_pct:.1f}%)")
+
+            self.semantic_health_btn.setEnabled(True)
+
+            # Cache for dialog
+            self._cached_health_metrics = metrics
+
+        except Exception as e:
+            logger.debug("语义健康摘要更新跳过: %s", e)
+
+    def show_semantic_health_dialog(self):
+        """Open the detailed semantic health report dialog."""
+        metrics = getattr(self, "_cached_health_metrics", None)
+        if not metrics:
+            try:
+                from semantic_density_monitor import compute_metrics, generate_report
+
+                results = []
+                for third_name, second_cats in (self.structured_codes or {}).items():
+                    for second_name, first_items in second_cats.items():
+                        for item in first_items:
+                            if isinstance(item, dict):
+                                code = item.get("name", item.get("content", ""))
+                            else:
+                                code = str(item[0]) if isinstance(item, list) and item else str(item)
+                            results.append({"code": code})
+
+                metrics = compute_metrics(results, label="当前编码结果")
+            except Exception as e:
+                QMessageBox.warning(self, "错误", f"无法计算语义健康指标: {e}")
+                return
+
+        report = generate_report(metrics)
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle("语义健康报告")
+        dialog.setMinimumSize(700, 600)
+
+        layout = QVBoxLayout(dialog)
+
+        # Report text
+        from PyQt5.QtWidgets import QTextEdit as QTextEdit2
+        text_edit = QTextEdit2()
+        text_edit.setReadOnly(True)
+        text_edit.setFont(QFont("Consolas", 10))
+        text_edit.setPlainText(report)
+        layout.addWidget(text_edit)
+
+        # Matplotlib chart
+        try:
+            import matplotlib
+            matplotlib.use("Qt5Agg")
+            from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+            from matplotlib.figure import Figure
+
+            fig = Figure(figsize=(6, 3))
+            canvas = FigureCanvas(fig)
+
+            # Subplot 1: Top-10 anchor frequency bar chart
+            ax = fig.add_subplot(111)
+            top10 = metrics["anchor_frequency"]["top10"]
+            names = [item["anchor"][:15] for item in top10]
+            pcts = [item["pct"] for item in top10]
+            colors_list = ["#c62828" if p > 3 else "#ef6c00" if p > 2 else "#2e7d32" for p in pcts]
+
+            ax.barh(range(len(names)), pcts, color=colors_list, edgecolor="white")
+            ax.set_yticks(range(len(names)))
+            ax.set_yticklabels(names, fontsize=8)
+            ax.invert_yaxis()
+            ax.set_xlabel("占比 (%)", fontsize=9)
+            ax.set_title(f"Top-10 锚点频率分布 (健康分: {metrics['health_score']:.0f}/100)", fontsize=10)
+            ax.axvline(x=3, color="#c62828", linestyle="--", alpha=0.5, label="3% 警告线")
+            ax.legend(fontsize=7)
+            fig.tight_layout()
+
+            layout.addWidget(canvas)
+        except Exception as e:
+            logger.debug("Matplotlib chart skipped: %s", e)
+
+        close_btn = QPushButton("关闭")
+        close_btn.clicked.connect(dialog.accept)
+        layout.addWidget(close_btn)
+
+        dialog.setLayout(layout)
+        dialog.exec_()
+
+    def show_hierarchy_browser(self):
+        """Open the Anchor hierarchy browser dialog (三阶 → 二阶 → Anchor tree)."""
+        hierarchy_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "data", "anchor_hierarchy.json")
+
+        if not os.path.exists(hierarchy_path):
+            QMessageBox.information(self, "提示", "层级映射文件尚未构建，请先运行 build_anchor_hierarchy.py")
+            return
+
+        try:
+            import json
+            with open(hierarchy_path, "r", encoding="utf-8") as f:
+                hdata = json.load(f)
+        except Exception as e:
+            QMessageBox.warning(self, "错误", f"加载层级映射失败: {e}")
+            return
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Anchor 层级浏览 (三阶 → 二阶 → Anchor)")
+        dialog.setMinimumSize(750, 550)
+
+        layout = QVBoxLayout(dialog)
+
+        search_layout = QHBoxLayout()
+        search_layout.addWidget(QLabel("搜索:"))
+        search_input = QLineEdit()
+        search_input.setPlaceholderText("输入Anchor名称或二阶/三阶类别...")
+        search_layout.addWidget(search_input)
+        layout.addLayout(search_layout)
+
+        tree = QTreeWidget()
+        tree.setHeaderLabels(["名称", "Anchor数", "来源", "置信度"])
+        tree.setColumnWidth(0, 350)
+        tree.setColumnWidth(1, 80)
+        tree.setColumnWidth(2, 120)
+        tree.setColumnWidth(3, 80)
+
+        stats = hdata.get("stats", {})
+        hierarchy = hdata.get("hierarchy", {})
+        mappings = hdata.get("mappings", {})
+
+        # Build the tree: third → second → anchors
+        for third_name in sorted(hierarchy.keys()):
+            third_item = QTreeWidgetItem(tree)
+            second_map = hierarchy[third_name]
+            total_anchors = sum(len(anchors) for anchors in second_map.values())
+            third_item.setText(0, third_name)
+            third_item.setText(1, str(total_anchors))
+            third_item.setText(2, "三阶理论")
+
+            for second_name, anchors in sorted(second_map.items()):
+                second_item = QTreeWidgetItem(third_item)
+                second_item.setText(0, second_name)
+                second_item.setText(1, str(len(anchors)))
+                second_item.setText(2, "二阶主题")
+
+                for anchor in sorted(anchors):
+                    anchor_item = QTreeWidgetItem(second_item)
+                    anchor_item.setText(0, anchor)
+                    entry = mappings.get(anchor, {})
+                    anchor_item.setText(2, entry.get("source", "?"))
+                    anchor_item.setText(3, str(entry.get("confidence", "?")))
+
+            third_item.setExpanded(False)
+
+        tree.expandAll()
+
+        # Search filter
+        def filter_tree():
+            query = search_input.text().strip().lower()
+            if not query:
+                for i in range(tree.topLevelItemCount()):
+                    item = tree.topLevelItem(i)
+                    item.setHidden(False)
+                    for j in range(item.childCount()):
+                        child = item.child(j)
+                        child.setHidden(False)
+                        for k in range(child.childCount()):
+                            child.child(k).setHidden(False)
+                return
+
+            for i in range(tree.topLevelItemCount()):
+                third = tree.topLevelItem(i)
+                third_match = query in third.text(0).lower()
+                any_second_visible = False
+                for j in range(third.childCount()):
+                    second = third.child(j)
+                    second_match = query in second.text(0).lower()
+                    any_anchor_visible = False
+                    for k in range(second.childCount()):
+                        anchor = second.child(k)
+                        anchor_match = query in anchor.text(0).lower()
+                        anchor.setHidden(not (second_match or anchor_match or third_match))
+                        if not anchor.isHidden():
+                            any_anchor_visible = True
+                    second.setHidden(not (any_anchor_visible or second_match or third_match))
+                    if not second.isHidden():
+                        any_second_visible = True
+                third.setHidden(not any_second_visible)
+
+        search_input.textChanged.connect(filter_tree)
+
+        layout.addWidget(tree)
+
+        info_layout = QHBoxLayout()
+        info_layout.addWidget(QLabel(
+            f"共 {stats.get('total_anchors', '?')} 个Anchor, "
+            f"直匹配 {stats.get('v11_direct', '?')}, "
+            f"语义继承 {stats.get('semantic_inherited', '?')}, "
+            f"未映射 {stats.get('unmapped', '?')}"))
+        layout.addLayout(info_layout)
+
+        close_btn = QPushButton("关闭")
+        close_btn.clicked.connect(dialog.accept)
+        layout.addWidget(close_btn)
+
+        dialog.setLayout(layout)
+        dialog.exec_()
 
     def on_tree_item_clicked(self, item, column):
         """树形项目点击事件 - 使用精确高亮功能，仅高亮当前点击的一阶编码内容"""
@@ -3157,6 +3526,23 @@ class MainWindow(QMainWindow):
 
         menu = QMenu()
 
+        clicked_item = self.coding_tree.itemAt(position)
+        selected_items = self.coding_tree.selectedItems()
+        if clicked_item and len(selected_items) > 1:
+            clicked_data = clicked_item.data(0, Qt.UserRole)
+            if clicked_data and clicked_data.get("level") == 1:
+                selected_levels = []
+                for item in selected_items:
+                    item_data = item.data(0, Qt.UserRole)
+                    if item_data:
+                        selected_levels.append(item_data.get("level"))
+
+                if selected_levels and all(level == 1 for level in selected_levels):
+                    merge_first_action = QAction("合并", self)
+                    merge_first_action.triggered.connect(self.merge_selected_first_level_codes)
+                    menu.addAction(merge_first_action)
+                    menu.addSeparator()
+
         edit_action = QAction("编辑", self)
         edit_action.triggered.connect(self.edit_selected_code)
         menu.addAction(edit_action)
@@ -3176,7 +3562,6 @@ class MainWindow(QMainWindow):
         menu.addAction(add_third_action)
 
         # 根据当前选中节点动态添加"修改父节点"选项
-        clicked_item = self.coding_tree.itemAt(position)
         if clicked_item:
             clicked_data = clicked_item.data(0, Qt.UserRole)
             if clicked_data:
@@ -3348,7 +3733,443 @@ class MainWindow(QMainWindow):
 
         QMessageBox.information(self, "成功", "一阶编码已合并，关联文本已保留")
 
-    def edit_selected_code(self):
+    def eventFilter(self, source, event):
+        if source == self.text_display and event.type() == QEvent.Type.MouseButtonRelease:
+            if event.button() == Qt.MouseButton.LeftButton:
+                cursor = self.text_display.textCursor()
+                if not cursor.hasSelection():
+                    mouse_pos = event.pos()
+                    cursor_at_pos = self.text_display.cursorForPosition(mouse_pos)
+                    self.text_display.setTextCursor(cursor_at_pos)
+                    self.auto_select_sentence_at_cursor()
+                    return True
+        return super().eventFilter(source, event)
+
+    def auto_select_sentence_at_cursor(self):
+        try:
+            cursor = self.text_display.textCursor()
+            document = self.text_display.document()
+            text_content = document.toPlainText()
+            position = cursor.position()
+
+            start_pos = position
+            while start_pos > 0:
+                char = text_content[start_pos - 1]
+                if char in ['。', '！', '？', '\n', '\u2029']:
+                    break
+                start_pos -= 1
+
+            end_pos = position
+            total_len = len(text_content)
+            while end_pos < total_len:
+                char = text_content[end_pos]
+                if char in ['。', '！', '？', '\n', '\u2029']:
+                    end_pos += 1
+                    break
+                end_pos += 1
+
+            temp_pos = end_pos
+            while temp_pos < total_len and text_content[temp_pos].isspace():
+                if text_content[temp_pos] in ['\n', '\u2029']:
+                    break
+                temp_pos += 1
+
+            if temp_pos < total_len and text_content[temp_pos] == '[':
+                bracket_start = temp_pos
+                while temp_pos < total_len:
+                    if text_content[temp_pos] == ']':
+                        potential_number_end = temp_pos + 1
+                        inner_content = text_content[bracket_start + 1:temp_pos]
+                        if inner_content.isdigit():
+                            end_pos = potential_number_end
+                        break
+                    if text_content[temp_pos] in ['\n', '\u2029']:
+                        break
+                    temp_pos += 1
+
+            while start_pos < end_pos and text_content[start_pos].isspace():
+                start_pos += 1
+
+            if start_pos < end_pos:
+                cursor.setPosition(start_pos)
+                cursor.setPosition(end_pos, QTextCursor.MoveMode.KeepAnchor)
+                self.text_display.setTextCursor(cursor)
+
+        except Exception as e:
+            logger.error(f"自动选中句子失败: {e}")
+
+    def find_sentence_number_from_text(self, sentence_text, full_text_content):
+        import re
+        sentence_clean = sentence_text.strip()
+        sentence_clean = re.sub(r'\s*\[[A-Z]\d+\]', '', sentence_clean)
+        sentence_clean = re.sub(r'\s*\[\d+\]', '', sentence_clean)
+        sentence_clean = sentence_clean.strip()
+
+        if len(sentence_clean) < 5:
+            return ""
+
+        pos = full_text_content.find(sentence_clean)
+        if pos < 0 and len(sentence_clean) > 50:
+            pos = full_text_content.find(sentence_clean[:50])
+
+        if pos >= 0:
+            search_start = pos
+            bracket_start = -1
+            for i in range(search_start - 1, max(0, search_start - 20), -1):
+                if full_text_content[i] == '[':
+                    bracket_start = i
+                    break
+                if full_text_content[i] in ['\n', '\u2029']:
+                    break
+
+            if bracket_start >= 0:
+                bracket_end = -1
+                for i in range(bracket_start + 1, min(len(full_text_content), bracket_start + 10)):
+                    if full_text_content[i] == ']':
+                        bracket_end = i
+                        break
+                    if not full_text_content[i].isdigit():
+                        break
+
+                if bracket_end >= 0:
+                    return full_text_content[bracket_start + 1:bracket_end]
+
+        for file_path, file_data in self.loaded_files.items():
+            numbered_content = file_data.get('numbered_content', '')
+            if not numbered_content:
+                continue
+
+            pos = numbered_content.find(sentence_clean)
+            if pos < 0 and len(sentence_clean) > 50:
+                pos = numbered_content.find(sentence_clean[:50])
+
+            if pos >= 0:
+                search_start = pos
+                for i in range(search_start - 1, max(0, search_start - 20), -1):
+                    if numbered_content[i] == '[':
+                        bracket_start = i
+                        break
+                    if numbered_content[i] in ['\n', '\u2029']:
+                        break
+
+                if bracket_start >= 0:
+                    for i in range(bracket_start + 1, min(len(numbered_content), bracket_start + 10)):
+                        if numbered_content[i] == ']':
+                            bracket_end = i
+                            break
+                        if not numbered_content[i].isdigit():
+                            break
+
+                    if bracket_end >= 0:
+                        return numbered_content[bracket_start + 1:bracket_end]
+
+        return ""
+
+    def handle_first_level_drop(self, target_item, selected_items):
+        if not target_item or not selected_items:
+            return False
+
+        def get_level(item):
+            item_data = item.data(0, Qt.UserRole)
+            return item_data.get("level") if item_data else None
+
+        if not all(get_level(item) == 1 for item in selected_items):
+            return False
+
+        target_level = get_level(target_item)
+        if target_level == 2:
+            target_second = target_item
+        elif target_level == 1 and target_item.parent() and get_level(target_item.parent()) == 2:
+            target_second = target_item.parent()
+        else:
+            return False
+
+        return self.move_first_items_to_second(selected_items, target_second, show_message=False)
+
+    def move_first_items_to_second(self, first_level_items, new_parent, show_message=True):
+        if not first_level_items or not new_parent:
+            return False
+
+        new_parent_data = new_parent.data(0, Qt.UserRole) or {}
+        new_parent_name = new_parent_data.get("name")
+        if not new_parent_name:
+            parts = new_parent.text(0).split(" ", 1)
+            new_parent_name = parts[1] if len(parts) > 1 else new_parent.text(0)
+
+        moved_count = 0
+        for first_item in first_level_items:
+            if first_item.parent() is new_parent:
+                continue
+
+            current_old_parent = first_item.parent()
+            if current_old_parent:
+                current_old_parent.removeChild(first_item)
+            else:
+                index = self.coding_tree.indexOfTopLevelItem(first_item)
+                if index >= 0:
+                    self.coding_tree.takeTopLevelItem(index)
+
+            new_parent.addChild(first_item)
+            moved_count += 1
+
+            fd = first_item.data(0, Qt.UserRole) or {}
+            fd["classified"] = True
+            fd["category"] = new_parent_name
+
+            grandparent = new_parent.parent()
+            if grandparent:
+                gp_data = grandparent.data(0, Qt.UserRole)
+                if gp_data and gp_data.get("level") == 3:
+                    parts = grandparent.text(0).split(" ", 1)
+                    fd["core_category"] = parts[1] if len(parts) > 1 else grandparent.text(0)
+                else:
+                    fd.pop("core_category", None)
+            else:
+                fd.pop("core_category", None)
+
+            first_item.setData(0, Qt.UserRole, fd)
+
+            if current_old_parent:
+                self.update_statistics_for_item(current_old_parent)
+
+        if moved_count == 0:
+            return False
+
+        self.update_statistics_for_item(new_parent)
+        self.renumber_all_codes()
+
+        if show_message:
+            QMessageBox.information(
+                self,
+                "成功",
+                f"已将 {moved_count} 个一阶编码移动到：{new_parent.text(0)}"
+            )
+
+        logger.info(f"已将 {moved_count} 个一阶编码移动到：{new_parent.text(0)}")
+        return True
+
+    def handle_drop_on_tree(self, event):
+        try:
+            mime_data = event.mimeData()
+            if not mime_data.hasText():
+                event.ignore()
+                return
+
+            dropped_text = mime_data.text()
+
+            item = self.coding_tree.itemAt(event.pos())
+            if not item:
+                event.ignore()
+                return
+
+            item_data = item.data(0, Qt.UserRole)
+            if not item_data:
+                event.ignore()
+                return
+
+            level = item_data.get("level")
+
+            if level == 1:
+                sentences = [s.strip() for s in dropped_text.split('\n') if s.strip()]
+                if not sentences:
+                    sentences = [dropped_text.strip()]
+
+                associated_code_ids = []
+                import re
+                current_text_content = self.text_display.toPlainText()
+
+                for sentence in sentences:
+                    sentence_stripped = sentence.strip()
+                    number_match = re.search(r'\[(\d+)\]', sentence_stripped)
+                    if number_match:
+                        sentence_number = number_match.group(1)
+                        associated_code_ids.append(sentence_number)
+                    else:
+                        sentence_number = self.find_sentence_number_from_text(sentence_stripped, current_text_content)
+                        associated_code_ids.append(sentence_number)
+
+                target_item_data = item.data(0, Qt.UserRole)
+                if target_item_data is None:
+                    target_item_data = {}
+
+                target_text = item.text(0)
+                code_id = target_item_data.get('code_id', '')
+
+                pure_content = target_text
+                if code_id and pure_content.startswith(code_id):
+                    if pure_content.startswith(code_id + ': '):
+                        pure_content = pure_content[len(code_id + ': '):]
+                    elif pure_content.startswith(code_id + ' '):
+                        pure_content = pure_content[len(code_id + ' '):]
+
+                content_without_number = re.sub(r'\s*\[[A-Z]\d+\]', '', pure_content)
+                content_without_number = re.sub(r'\s*\[\d+\]', '', content_without_number)
+                content_without_number = content_without_number.strip()
+
+                first_code_number = ""
+                existing_sentence_details = target_item_data.get("sentence_details", [])
+
+                current_code_ids = item.text(5)
+                logger.info(f"拖拽前的关联编号: '{current_code_ids}'")
+                if current_code_ids:
+                    ids = [id.strip() for id in current_code_ids.split(',') if id.strip() and id.strip().isdigit()]
+                    if ids:
+                        first_code_number = ids[0]
+                        logger.info(f"从当前关联编号获取一阶编码自身句子编号: {first_code_number} (全部编号: {ids})")
+
+                if not first_code_number and existing_sentence_details and len(existing_sentence_details) > 0:
+                    first_detail = existing_sentence_details[0]
+                    first_code_number = first_detail.get("code_id", "") or first_detail.get("sentence_id", "")
+                    if first_code_number and first_code_number.isdigit():
+                        logger.info(f"从sentence_details获取一阶编码自身句子编号: {first_code_number}")
+                    else:
+                        first_code_number = ""
+
+                logger.info(f"最终确定的一阶编码自身句子编号: {first_code_number}")
+
+                existing_numbers = set()
+                if existing_sentence_details:
+                    for detail in existing_sentence_details:
+                        existing_num = detail.get('code_id', '')
+                        if existing_num and existing_num.isdigit():
+                            existing_numbers.add(existing_num)
+
+                current_file_path = ""
+                file_item = self.file_list.currentItem()
+                if file_item:
+                    current_file_path = file_item.data(Qt.UserRole)
+                current_filename = os.path.basename(current_file_path) if current_file_path else ""
+
+                new_sentences = []
+                for i, sentence in enumerate(sentences):
+                    code_id = associated_code_ids[i] if i < len(associated_code_ids) else ""
+                    if code_id and code_id.isdigit() and code_id not in existing_numbers:
+                        clean_sentence = re.sub(r'\s*\[[A-Z]\d+\]', '', sentence)
+                        clean_sentence = re.sub(r'\s*\[\d+\]', '', clean_sentence)
+                        clean_sentence = clean_sentence.strip()
+
+                        new_sentence_data = {
+                            "text": clean_sentence,
+                            "code_id": code_id,
+                            "sentence_id": code_id,
+                            "file_path": current_file_path,
+                            "filename": current_filename
+                        }
+
+                        new_sentences.append(new_sentence_data)
+                        existing_numbers.add(code_id)
+                        logger.info(f"添加新拖拽句子: code_id={code_id}, text={clean_sentence[:30]}..., file={current_filename}")
+
+                new_sentence_details = []
+
+                if existing_sentence_details and len(existing_sentence_details) > 0:
+                    first_item = existing_sentence_details[0].copy()
+                    if not first_item.get("code_id", "") or not first_item.get("code_id", "").isdigit():
+                        if first_code_number and first_code_number.isdigit():
+                            first_item["code_id"] = first_code_number
+                            first_item["sentence_id"] = first_code_number
+                    new_sentence_details.append(first_item)
+                    logger.info(f"保留现有第一项，句子编号: {first_item.get('code_id', 'N/A')}")
+                else:
+                    new_sentence_details.append({
+                        "text": content_without_number,
+                        "code_id": first_code_number if first_code_number and first_code_number.isdigit() else "",
+                        "sentence_id": first_code_number if first_code_number and first_code_number.isdigit() else ""
+                    })
+                    logger.info(f"创建新的第一项，句子编号: {first_code_number}")
+
+                if existing_sentence_details and len(existing_sentence_details) > 1:
+                    for detail in existing_sentence_details[1:]:
+                        new_sentence_details.append(detail)
+
+                new_sentence_details.extend(new_sentences)
+
+                if len(new_sentence_details) > 1:
+                    first_item = new_sentence_details[0]
+                    other_items = new_sentence_details[1:]
+                    other_items.sort(key=lambda x: int(x.get('code_id', '0')) if x.get('code_id', '').isdigit() else 0)
+                    new_sentence_details = [first_item] + other_items
+
+                target_item_data["sentence_details"] = new_sentence_details
+                if "original_sentence" not in target_item_data and existing_sentence_details and len(existing_sentence_details) > 0:
+                    first_detail = existing_sentence_details[0]
+                    original_content = first_detail.get("text", "") or first_detail.get("content", "")
+                    if original_content:
+                        target_item_data["original_sentence"] = [{"original_content": original_content}]
+
+                logger.info(f"完整更新后的sentence_details (共{len(new_sentence_details)}个):")
+                for idx, s in enumerate(new_sentence_details):
+                    logger.info(f"  句子{idx + 1}: code_id={s.get('code_id', 'N/A')}, text={s.get('text', '')[:30]}...")
+
+                total_sentences = len(new_sentence_details)
+                item.setText(4, str(total_sentences))
+                target_item_data["sentence_count"] = total_sentences
+
+                if new_sentence_details and len(new_sentence_details) > 0:
+                    first_level_code_id = new_sentence_details[0].get('code_id', '')
+
+                    other_ids = []
+                    for detail in new_sentence_details[1:]:
+                        code_id = detail.get('code_id', '')
+                        if code_id and code_id.isdigit() and code_id not in other_ids:
+                            other_ids.append(code_id)
+
+                    other_ids.sort(key=lambda x: int(x))
+
+                    all_ids = []
+                    if first_level_code_id and first_level_code_id.isdigit():
+                        all_ids.append(first_level_code_id)
+                    all_ids.extend(other_ids)
+
+                    updated_code_ids = ", ".join(all_ids) if all_ids else ""
+                else:
+                    updated_code_ids = ""
+
+                item.setText(5, updated_code_ids)
+
+                logger.info(f"修复关联编号显示 - 一阶编码自身编号: {first_level_code_id if 'first_level_code_id' in locals() else 'N/A'}")
+                logger.info(f"修复关联编号显示 - 其他编号: {other_ids if 'other_ids' in locals() else []}")
+                logger.info(f"修复关联编号显示 - 最终关联编号: {updated_code_ids}")
+
+                logger.info(f"更新关联编号: {updated_code_ids}")
+
+                item.setData(0, Qt.UserRole, target_item_data)
+
+                self.update_parent_sentence_counts(item)
+
+                self.update_structured_codes_from_tree()
+
+                logger.info(f"文本拖拽关联完成: {len(sentences)} 个句子")
+
+        except Exception as e:
+            logger.error(f"处理拖拽关联文本失败: {e}")
+            QMessageBox.critical(self, "错误", f"处理拖拽关联文本失败: {str(e)}")
+            event.ignore()
+
+    def update_parent_sentence_counts(self, item):
+        parent = item.parent()
+        while parent:
+            parent_data = parent.data(0, Qt.UserRole) or {}
+            parent_level = parent_data.get("level", 0)
+
+            if parent_level in [2, 3]:
+                total_count = 0
+                for i in range(parent.childCount()):
+                    child = parent.child(i)
+                    try:
+                        count = int(child.text(4))
+                    except:
+                        count = 0
+                    total_count += count
+
+                parent.setText(4, str(total_count))
+                if parent_data:
+                    parent_data["sentence_count"] = total_count
+                    parent.setData(0, Qt.UserRole, parent_data)
+
+            parent = parent.parent()
+
+    def merge_selected_first_level_codes(self):
         """编辑选中的编码 - 增大弹窗"""
         current_items = self.coding_tree.selectedItems()
         if not current_items:
@@ -3691,6 +4512,61 @@ class MainWindow(QMainWindow):
         cancel_button.clicked.connect(dialog.reject)
 
         dialog.exec_()
+
+    def edit_selected_code(self):
+        """编辑选中的编码文本"""
+        selected_items = self.coding_tree.selectedItems()
+        if not selected_items:
+            QMessageBox.information(self, "提示", "请先选择一个编码节点")
+            return
+        if len(selected_items) > 1:
+            QMessageBox.information(self, "提示", "请只选择一个编码节点进行编辑")
+            return
+
+        item = selected_items[0]
+        item_data = item.data(0, Qt.UserRole)
+        if not item_data:
+            QMessageBox.information(self, "提示", "无法获取该节点的编码信息")
+            return
+
+        level = item_data.get("level")
+        old_text = item.text(0)
+
+        new_text, ok = QInputDialog.getText(
+            self, f"编辑{['', '一阶', '二阶', '三阶'][level] if level else ''}编码",
+            "编码名称:", text=old_text)
+        if not ok or not new_text.strip() or new_text.strip() == old_text:
+            return
+
+        new_text = new_text.strip()
+        item.setText(0, new_text)
+
+        # Update the underlying structured_codes data
+        self._update_code_in_data(old_text, new_text, level, item_data)
+        self.statusBar().showMessage(f"编码已更新: {old_text} → {new_text}")
+
+    def _update_code_in_data(self, old_name: str, new_name: str, level: int, item_data: dict):
+        """更新 structured_codes 中的编码名称。"""
+        if not self.structured_codes:
+            return
+        if level == 3:
+            if old_name in self.structured_codes:
+                self.structured_codes[new_name] = self.structured_codes.pop(old_name)
+        elif level == 2:
+            for third_cat, second_cats in self.structured_codes.items():
+                if old_name in second_cats:
+                    second_cats[new_name] = second_cats.pop(old_name)
+                    return
+        elif level == 1:
+            for third_cat, second_cats in self.structured_codes.items():
+                for second_cat, first_list in second_cats.items():
+                    for item in first_list:
+                        if isinstance(item, dict) and item.get('code_id') == item_data.get('code_id'):
+                            if 'content' in item:
+                                item['content'] = new_name
+                            if 'code' in item:
+                                item['code'] = new_name
+                            return
 
     def delete_selected_code(self):
         """删除选中的编码 - 支持批量删除"""
@@ -5680,6 +6556,15 @@ class MainWindow(QMainWindow):
         <p>© 2025 质性研究实验室</p>
         """
         QMessageBox.about(self, "关于", about_text)
+
+    def open_governance_dashboard(self):
+        """打开语义治理仪表盘"""
+        try:
+            dashboard = GovernanceDashboard(parent=self)
+            dashboard.exec_()
+        except Exception as e:
+            logger.error(f"打开治理仪表盘失败: {e}")
+            QMessageBox.warning(self, "错误", f"无法打开治理仪表盘:\n{str(e)}")
 
     def load_settings(self):
         """加载设置"""

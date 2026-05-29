@@ -1,4 +1,4 @@
-﻿import os
+import os
 import json
 import re
 from datetime import datetime
@@ -3567,42 +3567,45 @@ class ManualCodingDialog(QDialog):
                 for sentence_info in sentences_to_highlight:
                     sentence_id = sentence_info.get('sentence_id', '').strip()
                     if sentence_id and sentence_id.isdigit():
+                        # 关键修复：使用Python的re模块搜索整个文本，因为QRegularExpression.match只从开头匹配
                         id_pattern = r'\[' + re.escape(str(sentence_id)) + r'\]'
-                        id_regex = QRegularExpression(id_pattern)
-                        id_match = id_regex.match(current_text)
+                        
+                        # 使用re.search在整个文本中查找编号
+                        py_match = re.search(id_pattern, current_text)
+                        if py_match:
+                            match_start = py_match.start()
+                            match_end = py_match.end()
+                        else:
+                            continue
 
-                        if id_match.hasMatch():
-                            match_start = id_match.capturedStart()
-                            match_end = id_match.capturedEnd()
+                        cursor = self.text_display.textCursor()
+                        cursor.setPosition(match_end)
 
-                            cursor = self.text_display.textCursor()
+                        next_id_pattern = r'\[\w+\d+\]|\[\d+\]'
+                        next_regex = QRegularExpression(next_id_pattern)
+                        next_match = next_regex.match(current_text, match_end)
+
+                        end_pos = -1
+                        if next_match.hasMatch():
+                            end_pos = next_match.capturedStart()
+                        else:
+                            block = cursor.block()
+                            end_pos = block.position() + block.length() - 1
+
+                        if end_pos > match_end:
+                            selection = QTextEdit.ExtraSelection()
                             cursor.setPosition(match_end)
+                            cursor.setPosition(end_pos, QTextCursor.KeepAnchor)
+                            selection.cursor = cursor
+                            selection.format.setBackground(QColor(173, 216, 230))
+                            selection.format.setForeground(QColor(0, 0, 139))
+                            extra_selections.append(selection)
 
-                            next_id_pattern = r'\[\w+\d+\]|\[\d+\]'
-                            next_regex = QRegularExpression(next_id_pattern)
-                            next_match = next_regex.match(current_text, match_end)
-
-                            end_pos = -1
-                            if next_match.hasMatch():
-                                end_pos = next_match.capturedStart()
-                            else:
-                                block = cursor.block()
-                                end_pos = block.position() + block.length() - 1
-
-                            if end_pos > match_end:
-                                selection = QTextEdit.ExtraSelection()
-                                cursor.setPosition(match_end)
-                                cursor.setPosition(end_pos, QTextCursor.KeepAnchor)
-                                selection.cursor = cursor
-                                selection.format.setBackground(QColor(173, 216, 230))
-                                selection.format.setForeground(QColor(0, 0, 139))
-                                extra_selections.append(selection)
-
-                                found_count += 1
-                                if first_match_position is None:
-                                    first_match_position = match_start
-                                    logger.info(f"通过句子ID [{sentence_id}] 定位成功")
-                            break
+                            found_count += 1
+                            if first_match_position is None:
+                                first_match_position = match_start
+                                logger.info(f"通过句子ID [{sentence_id}] 定位成功")
+                        break
                     elif sentence_id:
                         # 非数字的sentence_id，可能是编码ID如A01，不用于定位
                         continue

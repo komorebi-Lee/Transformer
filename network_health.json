@@ -1,0 +1,30 @@
+{
+  "timestamp": "2026-05-28T17:57:09.884582",
+  "health_score": 71.6,
+  "topology": {
+    "total_nodes": 152,
+    "total_edges": 759,
+    "density": 0.06614,
+    "isolated_nodes": 0,
+    "orphan_ratio": 0.0,
+    "avg_degree": 10.0,
+    "max_degree": 10
+  },
+  "edge_quality": {
+    "avg_weight": 0.2297,
+    "max_weight": 0.4603,
+    "type_distribution": {
+      "structural": 6,
+      "semantic": 225,
+      "weak_semantic": 528
+    }
+  },
+  "confidence": {
+    "avg_confidence": 0.5756,
+    "max_confidence": 0.7364,
+    "weak_nodes_count": 0,
+    "weak_nodes": []
+  },
+  "orphan_theories": [],
+  "interpretation": "good — network is functional, some isolated nodes"
+}

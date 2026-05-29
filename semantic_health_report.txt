@@ -1,0 +1,70 @@
+======================================================================
+  Semantic Density Report: coding_test_results.json
+======================================================================
+
+  Sentences: 4115 coded=4115 (100.0%)
+  Unique anchors: 772
+  Health score: 65.0/100
+
+  ── Anchor Entropy ──
+    Shannon: 5.7122 / 6.649 (normalized: 0.8591)
+    Status: excellent
+
+  ── Semantic Dispersion ──
+    Gini: 0.6186 (concentrated)
+
+  ── Anchor Frequency ──
+    Top-1: 领导模式 (324, 7.87%)
+    Top-5 coverage: 17.64%
+    Top-10 coverage: 23.52%
+    Top 10:
+      领导模式: 324 (7.87%) ###############
+      创新过程特征: 150 (3.65%) #######
+      创新主体: 117 (2.84%) #####
+      的工作区分: 79 (1.92%) ###
+      访谈确认信息: 56 (1.36%) ##
+      技术检验型试验: 56 (1.36%) ##
+      最终结果: 51 (1.24%) ##
+      访谈深入交流: 46 (1.12%) ##
+      落地成果: 45 (1.09%) ##
+      科研-工程耦合: 44 (1.07%) ##
+
+  ── Semantic Sinks (>2%) ──
+    领导模式: 324 (7.87%)
+    创新过程特征: 150 (3.65%)
+    创新主体: 117 (2.84%)
+
+  ── Coverage ──
+    50% covered by 70 anchors
+    80% covered by 272 anchors
+    90% covered by 428 anchors
+
+  ── Ontology Density ──
+    Avg length: 5.1 chars
+    Length distribution:
+      3 chars: 7
+      4 chars: 2074
+      5 chars: 588
+      6 chars: 839
+      7 chars: 298
+      8 chars: 176
+      9 chars: 48
+      10 chars: 66
+      11 chars: 18
+      12 chars: 1
+
+  ── Grounding Quality ──
+    Well-grounded ratio: 34.7% (poor — grounding loss critical)
+    Avg grounding score: 0.549
+    Avg jump distance:  0.451
+    Polarity violations: 0 (0.0%)
+    Jump distribution:
+      direct: 85 ##################################################
+      moderate: 1985 ##################################################
+      significant: 1798 ##################################################
+      extreme: 247 ##################################################
+    Score percentiles: p10=0.389 p25=0.474 p50=0.551 p75=0.633 p90=0.706
+    Worst grounded:
+      [0.188] 伪装与合规包装 ← 你封完箱了，然后你就可以告诉我了，然后一般15分钟到20分钟这边全部把表给导出来，很快马上给一下，这跟中午一样，然后他告...
+      [0.190] 学习方式 ← 私下比如说有可能会有些单子，就是说本来是送到这边来的，但是我们可以就说指导他送到更好的、更优质的一些实验室去这个意思，但...
+      [0.190] 开拓性知识存量增加 ← 就是他当然会去申请，就是说我现在做这个业务，必须得招一个这样的人，他是一步一步来的，不是说一下子我要搞建1个部门，然后要...

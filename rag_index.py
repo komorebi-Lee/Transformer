@@ -1,7 +1,6 @@
 import hashlib
 import json
 import logging
-import re
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -21,10 +20,6 @@ def file_sha256(path: str) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
-
-
-def normalize_text(text: str) -> str:
-    return re.sub(r"\s+", "", (text or "").strip().lower())
 
 
 def tokenize(text: str) -> List[str]:

@@ -1,0 +1,1899 @@
+{
+  "timestamp": "2026-05-29T10:02:39.200952",
+  "summary": {
+    "duplicate_theories": 4,
+    "semantic_overlaps": 0,
+    "dead_branches": 60,
+    "sparse_categories": 87,
+    "hierarchy_imbalances": 30,
+    "total_issues": 181
+  },
+  "duplicate_theories": [
+    {
+      "type": "duplicate_theories",
+      "theory_a": "修辞方式",
+      "theory_b": "修辞策略",
+      "semantic_similarity": 0.8647,
+      "shared_anchors": 0,
+      "suggested_action": "merge",
+      "priority": "high",
+      "rationale": "语义相似度0.865，共享0个锚点"
+    },
+    {
+      "type": "duplicate_theories",
+      "theory_a": "转型驱动因素",
+      "theory_b": "驱动因素",
+      "semantic_similarity": 0.8147,
+      "shared_anchors": 0,
+      "suggested_action": "merge",
+      "priority": "medium",
+      "rationale": "语义相似度0.815，共享0个锚点"
+    },
+    {
+      "type": "duplicate_theories",
+      "theory_a": "人心式领导",
+      "theory_b": "人缘式领导",
+      "semantic_similarity": 0.7979,
+      "shared_anchors": 0,
+      "suggested_action": "merge",
+      "priority": "medium",
+      "rationale": "语义相似度0.798，共享0个锚点"
+    },
+    {
+      "type": "duplicate_theories",
+      "theory_a": "人心式领导",
+      "theory_b": "集权式领导",
+      "semantic_similarity": 0.793,
+      "shared_anchors": 0,
+      "suggested_action": "merge",
+      "priority": "medium",
+      "rationale": "语义相似度0.793，共享0个锚点"
+    }
+  ],
+  "semantic_overlaps": [],
+  "dead_branches": [
+    {
+      "type": "dead_branch",
+      "l2_theme": "转型驱动因素",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "转型驱动因素"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'转型驱动因素'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "主观满意度",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "满足感与地位"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'主观满意度'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "语篇结构",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "超越追赶阶段"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'语篇结构'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "契约关系构建",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "信任基础"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'契约关系构建'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "市场结果",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "上海国资存量更大"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'市场结果'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "项目集成能力弱化",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "整合阶段主导"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'项目集成能力弱化'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "产品创新方式",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "市场导向模式"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'产品创新方式'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "提出经营理念",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "企业主导阶段"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'提出经营理念'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "创始厂长印记",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "自主创新"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'创始厂长印记'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "网络模式三",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "企业-网络-集群三层互动"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'网络模式三'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "路径引导者",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "具体路径"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'路径引导者'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "受让方类型",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "海外获取"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'受让方类型'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "知识筛选",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "机会识别能力"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'知识筛选'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "嵌入环节",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "建构型学习"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'嵌入环节'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "内在自我增强动机",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "自利动机驱动"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'内在自我增强动机'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "文化机制",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "学习机制"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'文化机制'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "调适互动",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "技术杠杆"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'调适互动'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "家庭-工作融合",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "家族创业培育要素"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'家庭-工作融合'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "童年文化经历",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "抚育成长经历"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'童年文化经历'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "初始条件",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "同源性技术初始积累"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'初始条件'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "弥补机制",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "忽视长期技术积累"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'弥补机制'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "摸索基础能力",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "市场能力积累"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'摸索基础能力'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "国际障碍",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "封建层级文化诱因"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'国际障碍'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "经营模式",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "市场导向模式"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'经营模式'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "产品表征应用",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "研发设计能力"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'产品表征应用'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "特色大型模具普及势新颖工艺被同行攻克",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "拓展前沿技术"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'特色大型模具普及势新颖工艺被同行攻克'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "创新文化协同",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "文化创新核心载体"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'创新文化协同'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "创新主体",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "创新基础"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'创新主体'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "行为风险抑制",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "风险情境"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'行为风险抑制'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "比较发现",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "差异起源"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'比较发现'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "强化组织记忆",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "创新性认知"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'强化组织记忆'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "泛家族化信任",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "信任基础"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'泛家族化信任'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "营造跨国社区",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "社群构建"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'营造跨国社区'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "初创参与",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "抚育成长经历"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'初创参与'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "转型差异",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "转型驱动因素"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'转型差异'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "社会和谐",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "合：治理建构"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'社会和谐'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "匹配关系",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "主从关系"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'匹配关系'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "动因",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "规模扩张、制度建设"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'动因'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "人力市场特征",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "关系资本弥补资源不足"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'人力市场特征'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "角色边界跨越",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "雇佣关系主体"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'角色边界跨越'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "默契与共谋",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "人缘式领导"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'默契与共谋'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "制度固化与正规化",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "制度重塑"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'制度固化与正规化'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "同质竞争加剧",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "同质竞加剧"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'同质竞争加剧'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "成长空间被挤压",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "成长空被挤压"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'成长空间被挤压'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "已有工艺持续精进",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "生产效率提升"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'已有工艺持续精进'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "民生保障",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "乡村治理困境"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'民生保障'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "资源活化",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "资源蓄能"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'资源活化'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "有中生新",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "创新基础"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'有中生新'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "丰富资源结构",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "资源能力化"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'丰富资源结构'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "核心结论",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "代理问题缓解"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'核心结论'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "研究情境",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "松散关联功能特征"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'研究情境'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "研究启示",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "核心影响因素"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'研究启示'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "创造氛围",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "话语经验建构"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'创造氛围'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "替代规律",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "替代放大因素"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'替代规律'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "儒家义利观",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "封建层级文化诱因"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'儒家义利观'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "东掌制",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "高端增值"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'东掌制'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "个人经历",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "直觉创业学习"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'个人经历'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "早期成长烙印",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "家族创业培育要素"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'早期成长烙印'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "员工持股陷阱",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "大股东困境"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'员工持股陷阱'仅有1个锚点支撑"
+    },
+    {
+      "type": "dead_branch",
+      "l2_theme": "资源依赖突破",
+      "n_anchors": 1,
+      "parent_l3s": [
+        "资源能力化"
+      ],
+      "suggested_action": "merge_into_sibling",
+      "priority": "warning",
+      "rationale": "L2主题'资源依赖突破'仅有1个锚点支撑"
+    }
+  ],
+  "sparse_categories": [
+    {
+      "type": "sparse_category",
+      "l3_theory": "企业-网络-集群三层互动",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.5303,
+      "suggested_action": "merge_into_nearest",
+      "priority": "critical",
+      "rationale": "L3理论'企业-网络-集群三层互动'仅1个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "具体路径",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.4558,
+      "suggested_action": "merge_into_nearest",
+      "priority": "critical",
+      "rationale": "L3理论'具体路径'仅1个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "海外获取",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.52,
+      "suggested_action": "merge_into_nearest",
+      "priority": "critical",
+      "rationale": "L3理论'海外获取'仅1个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "作业长制为核心",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.5179,
+      "suggested_action": "merge_into_nearest",
+      "priority": "critical",
+      "rationale": "L3理论'作业长制为核心'仅1个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "同源性技术初始积累",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.6167,
+      "suggested_action": "merge_into_nearest",
+      "priority": "critical",
+      "rationale": "L3理论'同源性技术初始积累'仅1个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "忽视长期技术积累",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.545,
+      "suggested_action": "merge_into_nearest",
+      "priority": "critical",
+      "rationale": "L3理论'忽视长期技术积累'仅1个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "市场能力积累",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.5269,
+      "suggested_action": "merge_into_nearest",
+      "priority": "critical",
+      "rationale": "L3理论'市场能力积累'仅1个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "差异起源",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.5331,
+      "suggested_action": "merge_into_nearest",
+      "priority": "critical",
+      "rationale": "L3理论'差异起源'仅1个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "多技能提升",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.5057,
+      "suggested_action": "merge_into_nearest",
+      "priority": "critical",
+      "rationale": "L3理论'多技能提升'仅1个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "核心冲突",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.479,
+      "suggested_action": "merge_into_nearest",
+      "priority": "critical",
+      "rationale": "L3理论'核心冲突'仅1个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "规模扩张、制度建设",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.4781,
+      "suggested_action": "merge_into_nearest",
+      "priority": "critical",
+      "rationale": "L3理论'规模扩张、制度建设'仅1个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "同质竞加剧",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.5161,
+      "suggested_action": "merge_into_nearest",
+      "priority": "critical",
+      "rationale": "L3理论'同质竞加剧'仅1个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "成长空被挤压",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.5278,
+      "suggested_action": "merge_into_nearest",
+      "priority": "critical",
+      "rationale": "L3理论'成长空被挤压'仅1个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "松散关联功能特征",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.478,
+      "suggested_action": "merge_into_nearest",
+      "priority": "critical",
+      "rationale": "L3理论'松散关联功能特征'仅1个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "替代放大因素",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.5755,
+      "suggested_action": "merge_into_nearest",
+      "priority": "critical",
+      "rationale": "L3理论'替代放大因素'仅1个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "配置与投资机会背离",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.5486,
+      "suggested_action": "merge_into_nearest",
+      "priority": "critical",
+      "rationale": "L3理论'配置与投资机会背离'仅1个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "先借鉴后经验",
+      "n_anchors": 2,
+      "n_l2s": 1,
+      "confidence": 0.572,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'先借鉴后经验'仅2个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "大库存优势",
+      "n_anchors": 2,
+      "n_l2s": 1,
+      "confidence": 0.4977,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'大库存优势'仅2个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "核心问题",
+      "n_anchors": 2,
+      "n_l2s": 1,
+      "confidence": 0.5244,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'核心问题'仅2个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "核心目标",
+      "n_anchors": 2,
+      "n_l2s": 1,
+      "confidence": 0.5289,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'核心目标'仅2个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "治理缺陷",
+      "n_anchors": 2,
+      "n_l2s": 1,
+      "confidence": 0.5336,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'治理缺陷'仅2个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "亏损脱困为主",
+      "n_anchors": 2,
+      "n_l2s": 1,
+      "confidence": 0.4825,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'亏损脱困为主'仅2个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "解错试验组合",
+      "n_anchors": 2,
+      "n_l2s": 1,
+      "confidence": 0.5386,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'解错试验组合'仅2个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "文化框架激活",
+      "n_anchors": 2,
+      "n_l2s": 1,
+      "confidence": 0.4771,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'文化框架激活'仅2个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "文化情境特征",
+      "n_anchors": 2,
+      "n_l2s": 1,
+      "confidence": 0.4785,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'文化情境特征'仅2个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "转型驱动因素",
+      "n_anchors": 2,
+      "n_l2s": 2,
+      "confidence": 0.586,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'转型驱动因素'仅2个锚点、2个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "家族创业培育要素",
+      "n_anchors": 2,
+      "n_l2s": 2,
+      "confidence": 0.6042,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'家族创业培育要素'仅2个锚点、2个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "抚育成长经历",
+      "n_anchors": 2,
+      "n_l2s": 2,
+      "confidence": 0.5611,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'抚育成长经历'仅2个锚点、2个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "制度重塑",
+      "n_anchors": 2,
+      "n_l2s": 2,
+      "confidence": 0.5935,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'制度重塑'仅2个锚点、2个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "资源能力化",
+      "n_anchors": 2,
+      "n_l2s": 2,
+      "confidence": 0.5934,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'资源能力化'仅2个锚点、2个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "价值共创扭曲",
+      "n_anchors": 3,
+      "n_l2s": 1,
+      "confidence": 0.5308,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'价值共创扭曲'仅3个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "技术准入合法性缺乏",
+      "n_anchors": 3,
+      "n_l2s": 1,
+      "confidence": 0.5347,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'技术准入合法性缺乏'仅3个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "模块化组织核心",
+      "n_anchors": 3,
+      "n_l2s": 1,
+      "confidence": 0.5467,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'模块化组织核心'仅3个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "实施原则",
+      "n_anchors": 3,
+      "n_l2s": 1,
+      "confidence": 0.4869,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'实施原则'仅3个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "心化内控归宿",
+      "n_anchors": 3,
+      "n_l2s": 1,
+      "confidence": 0.4781,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'心化内控归宿'仅3个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "绿色转型阶段",
+      "n_anchors": 3,
+      "n_l2s": 1,
+      "confidence": 0.4852,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'绿色转型阶段'仅3个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "未审议、董事会独断",
+      "n_anchors": 4,
+      "n_l2s": 1,
+      "confidence": 0.4972,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'未审议、董事会独断'仅4个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "特新优势难以拓展",
+      "n_anchors": 4,
+      "n_l2s": 1,
+      "confidence": 0.5155,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'特新优势难以拓展'仅4个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "新旧更替",
+      "n_anchors": 4,
+      "n_l2s": 1,
+      "confidence": 0.4786,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'新旧更替'仅4个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "间断平衡支撑",
+      "n_anchors": 4,
+      "n_l2s": 1,
+      "confidence": 0.4945,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'间断平衡支撑'仅4个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "农户+本地大户",
+      "n_anchors": 4,
+      "n_l2s": 1,
+      "confidence": 0.4922,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'农户+本地大户'仅4个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "关联交易、资金挪用",
+      "n_anchors": 5,
+      "n_l2s": 1,
+      "confidence": 0.5141,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'关联交易、资金挪用'仅5个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "延展高价值业务",
+      "n_anchors": 5,
+      "n_l2s": 1,
+      "confidence": 0.5593,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'延展高价值业务'仅5个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "财务战略传递路径",
+      "n_anchors": 5,
+      "n_l2s": 1,
+      "confidence": 0.5301,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'财务战略传递路径'仅5个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "盲目轻信媒体",
+      "n_anchors": 5,
+      "n_l2s": 1,
+      "confidence": 0.5234,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'盲目轻信媒体'仅5个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "规避监管",
+      "n_anchors": 5,
+      "n_l2s": 1,
+      "confidence": 0.4699,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'规避监管'仅5个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "负面超额收益",
+      "n_anchors": 5,
+      "n_l2s": 1,
+      "confidence": 0.5089,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'负面超额收益'仅5个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "先抑后扬粉饰业绩",
+      "n_anchors": 5,
+      "n_l2s": 1,
+      "confidence": 0.5254,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'先抑后扬粉饰业绩'仅5个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "志愿者能动阶段",
+      "n_anchors": 5,
+      "n_l2s": 1,
+      "confidence": 0.5145,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'志愿者能动阶段'仅5个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "前期",
+      "n_anchors": 6,
+      "n_l2s": 1,
+      "confidence": 0.5152,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'前期'仅6个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "社会共治机制",
+      "n_anchors": 6,
+      "n_l2s": 1,
+      "confidence": 0.4955,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'社会共治机制'仅6个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "模式二",
+      "n_anchors": 6,
+      "n_l2s": 1,
+      "confidence": 0.5432,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'模式二'仅6个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "表外融资",
+      "n_anchors": 7,
+      "n_l2s": 1,
+      "confidence": 0.4977,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'表外融资'仅7个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "生命周期+政商关系",
+      "n_anchors": 7,
+      "n_l2s": 1,
+      "confidence": 0.5334,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'生命周期+政商关系'仅7个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "EM阶段核心",
+      "n_anchors": 7,
+      "n_l2s": 1,
+      "confidence": 0.574,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'EM阶段核心'仅7个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "对价争议",
+      "n_anchors": 7,
+      "n_l2s": 1,
+      "confidence": 0.5083,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'对价争议'仅7个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "产品层面",
+      "n_anchors": 7,
+      "n_l2s": 1,
+      "confidence": 0.4862,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'产品层面'仅7个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "部分结局",
+      "n_anchors": 8,
+      "n_l2s": 1,
+      "confidence": 0.54,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'部分结局'仅8个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "生产制造+技术引进",
+      "n_anchors": 8,
+      "n_l2s": 1,
+      "confidence": 0.5199,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'生产制造+技术引进'仅8个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "否决项与月度考核",
+      "n_anchors": 8,
+      "n_l2s": 1,
+      "confidence": 0.5644,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'否决项与月度考核'仅8个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "工资与市场业绩挂钩",
+      "n_anchors": 8,
+      "n_l2s": 1,
+      "confidence": 0.5526,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'工资与市场业绩挂钩'仅8个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "供应商/顾客/员工共赢",
+      "n_anchors": 8,
+      "n_l2s": 1,
+      "confidence": 0.5601,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'供应商/顾客/员工共赢'仅8个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "中国情境局限",
+      "n_anchors": 9,
+      "n_l2s": 1,
+      "confidence": 0.4835,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'中国情境局限'仅9个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "长期效果",
+      "n_anchors": 9,
+      "n_l2s": 1,
+      "confidence": 0.5791,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'长期效果'仅9个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "内幕信息获利",
+      "n_anchors": 10,
+      "n_l2s": 1,
+      "confidence": 0.5599,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'内幕信息获利'仅10个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "乡村社会基础",
+      "n_anchors": 10,
+      "n_l2s": 1,
+      "confidence": 0.4925,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'乡村社会基础'仅10个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "远景+经营重心",
+      "n_anchors": 11,
+      "n_l2s": 1,
+      "confidence": 0.5859,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'远景+经营重心'仅11个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "内主外辅转型动力",
+      "n_anchors": 11,
+      "n_l2s": 1,
+      "confidence": 0.5196,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'内主外辅转型动力'仅11个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "专精优势无法适用",
+      "n_anchors": 12,
+      "n_l2s": 1,
+      "confidence": 0.6341,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'专精优势无法适用'仅12个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "青春期",
+      "n_anchors": 12,
+      "n_l2s": 1,
+      "confidence": 0.5918,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'青春期'仅12个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "价值判断建构",
+      "n_anchors": 12,
+      "n_l2s": 1,
+      "confidence": 0.5482,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'价值判断建构'仅12个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "变化阶段",
+      "n_anchors": 13,
+      "n_l2s": 1,
+      "confidence": 0.5926,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'变化阶段'仅13个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "市属国企整合",
+      "n_anchors": 14,
+      "n_l2s": 1,
+      "confidence": 0.558,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'市属国企整合'仅14个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "外部环境因素",
+      "n_anchors": 14,
+      "n_l2s": 1,
+      "confidence": 0.5653,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'外部环境因素'仅14个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "修辞方式",
+      "n_anchors": 16,
+      "n_l2s": 1,
+      "confidence": 0.6563,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'修辞方式'仅16个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "研发网络结构",
+      "n_anchors": 16,
+      "n_l2s": 1,
+      "confidence": 0.6218,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'研发网络结构'仅16个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "品牌形象提升",
+      "n_anchors": 16,
+      "n_l2s": 1,
+      "confidence": 0.6272,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'品牌形象提升'仅16个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "创业集聚驱动",
+      "n_anchors": 16,
+      "n_l2s": 1,
+      "confidence": 0.6296,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'创业集聚驱动'仅16个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "挤水分",
+      "n_anchors": 18,
+      "n_l2s": 1,
+      "confidence": 0.5867,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'挤水分'仅18个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "外生式学习",
+      "n_anchors": 18,
+      "n_l2s": 1,
+      "confidence": 0.6096,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'外生式学习'仅18个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "特新优丧失",
+      "n_anchors": 20,
+      "n_l2s": 1,
+      "confidence": 0.6537,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'特新优丧失'仅20个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "探索式即兴",
+      "n_anchors": 22,
+      "n_l2s": 1,
+      "confidence": 0.6279,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'探索式即兴'仅22个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "话语时间策略",
+      "n_anchors": 22,
+      "n_l2s": 1,
+      "confidence": 0.6581,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'话语时间策略'仅22个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "创造力来源",
+      "n_anchors": 23,
+      "n_l2s": 1,
+      "confidence": 0.6327,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'创造力来源'仅23个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "跨国并购前提",
+      "n_anchors": 26,
+      "n_l2s": 1,
+      "confidence": 0.6377,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'跨国并购前提'仅26个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "修辞策略",
+      "n_anchors": 43,
+      "n_l2s": 1,
+      "confidence": 0.6393,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'修辞策略'仅43个锚点、1个L2主题"
+    },
+    {
+      "type": "sparse_category",
+      "l3_theory": "组织印记",
+      "n_anchors": 51,
+      "n_l2s": 1,
+      "confidence": 0.6186,
+      "suggested_action": "merge_into_nearest",
+      "priority": "warning",
+      "rationale": "L3理论'组织印记'仅51个锚点、1个L2主题"
+    }
+  ],
+  "hierarchy_imbalances": [
+    {
+      "type": "under_developed",
+      "l3_theory": "企业-网络-集群三层互动",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.5303,
+      "suggested_action": "consolidate_or_merge",
+      "priority": "medium",
+      "rationale": "锚点数1少于L2主题数1，结构分散"
+    },
+    {
+      "type": "under_developed",
+      "l3_theory": "具体路径",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.4558,
+      "suggested_action": "consolidate_or_merge",
+      "priority": "medium",
+      "rationale": "锚点数1少于L2主题数1，结构分散"
+    },
+    {
+      "type": "under_developed",
+      "l3_theory": "海外获取",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.52,
+      "suggested_action": "consolidate_or_merge",
+      "priority": "medium",
+      "rationale": "锚点数1少于L2主题数1，结构分散"
+    },
+    {
+      "type": "under_developed",
+      "l3_theory": "作业长制为核心",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.5179,
+      "suggested_action": "consolidate_or_merge",
+      "priority": "medium",
+      "rationale": "锚点数1少于L2主题数1，结构分散"
+    },
+    {
+      "type": "under_developed",
+      "l3_theory": "同源性技术初始积累",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.6167,
+      "suggested_action": "consolidate_or_merge",
+      "priority": "medium",
+      "rationale": "锚点数1少于L2主题数1，结构分散"
+    },
+    {
+      "type": "under_developed",
+      "l3_theory": "忽视长期技术积累",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.545,
+      "suggested_action": "consolidate_or_merge",
+      "priority": "medium",
+      "rationale": "锚点数1少于L2主题数1，结构分散"
+    },
+    {
+      "type": "under_developed",
+      "l3_theory": "市场能力积累",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.5269,
+      "suggested_action": "consolidate_or_merge",
+      "priority": "medium",
+      "rationale": "锚点数1少于L2主题数1，结构分散"
+    },
+    {
+      "type": "under_developed",
+      "l3_theory": "差异起源",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.5331,
+      "suggested_action": "consolidate_or_merge",
+      "priority": "medium",
+      "rationale": "锚点数1少于L2主题数1，结构分散"
+    },
+    {
+      "type": "under_developed",
+      "l3_theory": "多技能提升",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.5057,
+      "suggested_action": "consolidate_or_merge",
+      "priority": "medium",
+      "rationale": "锚点数1少于L2主题数1，结构分散"
+    },
+    {
+      "type": "under_developed",
+      "l3_theory": "核心冲突",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.479,
+      "suggested_action": "consolidate_or_merge",
+      "priority": "medium",
+      "rationale": "锚点数1少于L2主题数1，结构分散"
+    },
+    {
+      "type": "under_developed",
+      "l3_theory": "规模扩张、制度建设",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.4781,
+      "suggested_action": "consolidate_or_merge",
+      "priority": "medium",
+      "rationale": "锚点数1少于L2主题数1，结构分散"
+    },
+    {
+      "type": "under_developed",
+      "l3_theory": "同质竞加剧",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.5161,
+      "suggested_action": "consolidate_or_merge",
+      "priority": "medium",
+      "rationale": "锚点数1少于L2主题数1，结构分散"
+    },
+    {
+      "type": "under_developed",
+      "l3_theory": "成长空被挤压",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.5278,
+      "suggested_action": "consolidate_or_merge",
+      "priority": "medium",
+      "rationale": "锚点数1少于L2主题数1，结构分散"
+    },
+    {
+      "type": "under_developed",
+      "l3_theory": "松散关联功能特征",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.478,
+      "suggested_action": "consolidate_or_merge",
+      "priority": "medium",
+      "rationale": "锚点数1少于L2主题数1，结构分散"
+    },
+    {
+      "type": "under_developed",
+      "l3_theory": "替代放大因素",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.5755,
+      "suggested_action": "consolidate_or_merge",
+      "priority": "medium",
+      "rationale": "锚点数1少于L2主题数1，结构分散"
+    },
+    {
+      "type": "under_developed",
+      "l3_theory": "配置与投资机会背离",
+      "n_anchors": 1,
+      "n_l2s": 1,
+      "confidence": 0.5486,
+      "suggested_action": "consolidate_or_merge",
+      "priority": "medium",
+      "rationale": "锚点数1少于L2主题数1，结构分散"
+    },
+    {
+      "type": "under_developed",
+      "l3_theory": "转型驱动因素",
+      "n_anchors": 2,
+      "n_l2s": 2,
+      "confidence": 0.586,
+      "suggested_action": "consolidate_or_merge",
+      "priority": "medium",
+      "rationale": "锚点数2少于L2主题数2，结构分散"
+    },
+    {
+      "type": "under_developed",
+      "l3_theory": "家族创业培育要素",
+      "n_anchors": 2,
+      "n_l2s": 2,
+      "confidence": 0.6042,
+      "suggested_action": "consolidate_or_merge",
+      "priority": "medium",
+      "rationale": "锚点数2少于L2主题数2，结构分散"
+    },
+    {
+      "type": "under_developed",
+      "l3_theory": "抚育成长经历",
+      "n_anchors": 2,
+      "n_l2s": 2,
+      "confidence": 0.5611,
+      "suggested_action": "consolidate_or_merge",
+      "priority": "medium",
+      "rationale": "锚点数2少于L2主题数2，结构分散"
+    },
+    {
+      "type": "under_developed",
+      "l3_theory": "制度重塑",
+      "n_anchors": 2,
+      "n_l2s": 2,
+      "confidence": 0.5935,
+      "suggested_action": "consolidate_or_merge",
+      "priority": "medium",
+      "rationale": "锚点数2少于L2主题数2，结构分散"
+    },
+    {
+      "type": "under_developed",
+      "l3_theory": "资源能力化",
+      "n_anchors": 2,
+      "n_l2s": 2,
+      "confidence": 0.5934,
+      "suggested_action": "consolidate_or_merge",
+      "priority": "medium",
+      "rationale": "锚点数2少于L2主题数2，结构分散"
+    },
+    {
+      "type": "over_merged",
+      "l3_theory": "自主创新",
+      "n_anchors": 28,
+      "mean_anchors": 9.3,
+      "std_anchors": 9.0,
+      "confidence": 0.7016,
+      "suggested_action": "split_candidate",
+      "priority": "medium",
+      "rationale": "锚点数28远超均值9(+9)"
+    },
+    {
+      "type": "over_merged",
+      "l3_theory": "制造环节优势",
+      "n_anchors": 28,
+      "mean_anchors": 9.3,
+      "std_anchors": 9.0,
+      "confidence": 0.6728,
+      "suggested_action": "split_candidate",
+      "priority": "medium",
+      "rationale": "锚点数28远超均值9(+9)"
+    },
+    {
+      "type": "over_merged",
+      "l3_theory": "思维基础",
+      "n_anchors": 29,
+      "mean_anchors": 9.3,
+      "std_anchors": 9.0,
+      "confidence": 0.6859,
+      "suggested_action": "split_candidate",
+      "priority": "medium",
+      "rationale": "锚点数29远超均值9(+9)"
+    },
+    {
+      "type": "over_merged",
+      "l3_theory": "功能使命定位",
+      "n_anchors": 31,
+      "mean_anchors": 9.3,
+      "std_anchors": 9.0,
+      "confidence": 0.6589,
+      "suggested_action": "split_candidate",
+      "priority": "medium",
+      "rationale": "锚点数31远超均值9(+9)"
+    },
+    {
+      "type": "over_merged",
+      "l3_theory": "学习机制",
+      "n_anchors": 32,
+      "mean_anchors": 9.3,
+      "std_anchors": 9.0,
+      "confidence": 0.7053,
+      "suggested_action": "split_candidate",
+      "priority": "medium",
+      "rationale": "锚点数32远超均值9(+9)"
+    },
+    {
+      "type": "over_merged",
+      "l3_theory": "数字化",
+      "n_anchors": 33,
+      "mean_anchors": 9.3,
+      "std_anchors": 9.0,
+      "confidence": 0.7202,
+      "suggested_action": "split_candidate",
+      "priority": "medium",
+      "rationale": "锚点数33远超均值9(+9)"
+    },
+    {
+      "type": "over_merged",
+      "l3_theory": "修辞策略",
+      "n_anchors": 43,
+      "mean_anchors": 9.3,
+      "std_anchors": 9.0,
+      "confidence": 0.6393,
+      "suggested_action": "split_candidate",
+      "priority": "medium",
+      "rationale": "锚点数43远超均值9(+9)"
+    },
+    {
+      "type": "over_merged",
+      "l3_theory": "技术杠杆",
+      "n_anchors": 44,
+      "mean_anchors": 9.3,
+      "std_anchors": 9.0,
+      "confidence": 0.7364,
+      "suggested_action": "split_candidate",
+      "priority": "medium",
+      "rationale": "锚点数44远超均值9(+9)"
+    },
+    {
+      "type": "over_merged",
+      "l3_theory": "组织印记",
+      "n_anchors": 51,
+      "mean_anchors": 9.3,
+      "std_anchors": 9.0,
+      "confidence": 0.6186,
+      "suggested_action": "split_candidate",
+      "priority": "medium",
+      "rationale": "锚点数51远超均值9(+9)"
+    }
+  ]
+}

@@ -56,15 +56,19 @@ class GroundedTheoryCoder:
         noun_like = any(flag.startswith(('n', 's', 'nt', 'nz')) for flag in flags)
         verb_like = any(flag.startswith('v') for flag in flags)
         adj_like = any(flag.startswith('a') for flag in flags)
-        if not noun_like:
+        has_info = self._has_information_cue(t)
+        # Anchor codes are often pure noun compounds; accept if the text
+        # has content markers: noun-like tokens, info-bearing cues, or
+        # verb/adjective. Only reject truly content-free strings.
+        if not (noun_like or has_info):
             return False
-        if not (verb_like or adj_like or self._has_information_cue(t)):
+        if not (noun_like or verb_like or adj_like or has_info):
             return False
         return True
 
     def _is_good_first_level_content(self, text: str) -> bool:
         t = re.sub(r'^[A-Z]\d+\s*', '', str(text or '').strip())
-        if not t or len(t) < 4:
+        if not t or len(t) < 2:
             return False
         if self._is_question_like(t):
             return False
@@ -118,9 +122,9 @@ class GroundedTheoryCoder:
 
             structured_codes = {}
 
-            first_level_codes = raw_codes.get("一阶编码", {})
-            second_level_codes = raw_codes.get("二阶编码", {})
-            third_level_codes = raw_codes.get("三阶编码", {})
+            first_level_codes = raw_codes.get("一阶编码") or raw_codes.get("first_level_codes", {})
+            second_level_codes = raw_codes.get("二阶编码") or raw_codes.get("second_level_codes", {})
+            third_level_codes = raw_codes.get("三阶编码") or raw_codes.get("third_level_codes", {})
 
             logger.info(
                 f"开始构建编码结构: 一阶{len(first_level_codes)}, 二阶{len(second_level_codes)}, 三阶{len(third_level_codes)}")

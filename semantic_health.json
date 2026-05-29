@@ -1,0 +1,167 @@
+{
+  "label": "coding_test_results.json",
+  "total_sentences": 4115,
+  "coded_sentences": 4115,
+  "coding_rate": 100.0,
+  "unique_anchors": 772,
+  "anchor_frequency": {
+    "top_anchor": "领导模式",
+    "top_count": 324,
+    "top_pct": 7.87,
+    "top5_pct": 17.64,
+    "top10_pct": 23.52,
+    "top10": [
+      {
+        "anchor": "领导模式",
+        "count": 324,
+        "pct": 7.87
+      },
+      {
+        "anchor": "创新过程特征",
+        "count": 150,
+        "pct": 3.65
+      },
+      {
+        "anchor": "创新主体",
+        "count": 117,
+        "pct": 2.84
+      },
+      {
+        "anchor": "的工作区分",
+        "count": 79,
+        "pct": 1.92
+      },
+      {
+        "anchor": "访谈确认信息",
+        "count": 56,
+        "pct": 1.36
+      },
+      {
+        "anchor": "技术检验型试验",
+        "count": 56,
+        "pct": 1.36
+      },
+      {
+        "anchor": "最终结果",
+        "count": 51,
+        "pct": 1.24
+      },
+      {
+        "anchor": "访谈深入交流",
+        "count": 46,
+        "pct": 1.12
+      },
+      {
+        "anchor": "落地成果",
+        "count": 45,
+        "pct": 1.09
+      },
+      {
+        "anchor": "科研-工程耦合",
+        "count": 44,
+        "pct": 1.07
+      }
+    ]
+  },
+  "anchor_entropy": {
+    "shannon": 5.7122,
+    "max_possible": 6.649,
+    "normalized": 0.8591,
+    "interpretation": "excellent"
+  },
+  "semantic_dispersion": {
+    "gini_coefficient": 0.6186,
+    "interpretation": "concentrated"
+  },
+  "ontology_density": {
+    "length_distribution": {
+      "3": 7,
+      "4": 2074,
+      "5": 588,
+      "6": 839,
+      "7": 298,
+      "8": 176,
+      "9": 48,
+      "10": 66,
+      "11": 18,
+      "12": 1
+    },
+    "avg_length": 5.1
+  },
+  "semantic_sinks": [
+    {
+      "anchor": "领导模式",
+      "count": 324,
+      "pct": 7.87
+    },
+    {
+      "anchor": "创新过程特征",
+      "count": 150,
+      "pct": 3.65
+    },
+    {
+      "anchor": "创新主体",
+      "count": 117,
+      "pct": 2.84
+    }
+  ],
+  "coverage": {
+    "p50_anchors": 70,
+    "p80_anchors": 272,
+    "p90_anchors": 428
+  },
+  "grounding_quality": {
+    "total": 4115,
+    "well_grounded_ratio": 0.3473,
+    "avg_grounding_score": 0.5492,
+    "avg_jump_distance": 0.4508,
+    "polarity_violations": 0,
+    "polarity_violation_rate": 0.0,
+    "jump_level_distribution": {
+      "direct": 85,
+      "moderate": 1985,
+      "significant": 1798,
+      "extreme": 247
+    },
+    "health": "poor — grounding loss critical",
+    "available": true,
+    "grounding_score_p10": 0.389,
+    "grounding_score_p25": 0.474,
+    "grounding_score_median": 0.551,
+    "grounding_score_p75": 0.633,
+    "grounding_score_p90": 0.706,
+    "worst_grounded": [
+      {
+        "sentence": "你封完箱了，然后你就可以告诉我了，然后一般15分钟到20分钟这边全部把表给导出来，很快马上给一下，这跟中午一样，然后他告诉我一个错了，其实他不告诉我我也会晒一个",
+        "anchor": "伪装与合规包装",
+        "score": 0.1884,
+        "level": "extreme"
+      },
+      {
+        "sentence": "私下比如说有可能会有些单子，就是说本来是送到这边来的，但是我们可以就说指导他送到更好的、更优质的一些实验室去这个意思，但是绝对不是说挖公司墙角，因为是因为公司在",
+        "anchor": "学习方式",
+        "score": 0.19,
+        "level": "extreme"
+      },
+      {
+        "sentence": "就是他当然会去申请，就是说我现在做这个业务，必须得招一个这样的人，他是一步一步来的，不是说一下子我要搞建1个部门，然后要招5个人、10个人，当然公司上面人力资源",
+        "anchor": "开拓性知识存量增加",
+        "score": 0.19,
+        "level": "extreme"
+      },
+      {
+        "sentence": "还是会，比如说因为很多像这种项目的话，不可能由我自己一个人从头到尾完全独立完成，就有一些比如说有一些项目就没必要，我自己一定要亲力亲为的，或者正好是这个项目的公",
+        "anchor": "新颖工艺难以拓展应用",
+        "score": 0.1903,
+        "level": "extreme"
+      },
+      {
+        "sentence": "因为客户一般问我这个项目可能比较急，我要给他一个解决方案，能做或者不能做，或者说朋友和其他一些医检所能不能做，我先把这个事情做下来，后续的话，如果他有新项目了，",
+        "anchor": "已有工艺持续精进",
+        "score": 0.2012,
+        "level": "extreme"
+      }
+    ]
+  },
+  "health_score": 65.0
+}

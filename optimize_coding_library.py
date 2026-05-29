@@ -34,7 +34,7 @@ import numpy as np
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LIBRARY_PATH = os.path.join(BASE_DIR, "coding_library.json")
 BACKUP_PATH = os.path.join(BASE_DIR, f"coding_library_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
-V11_PATH = r"C:\Users\Lenovo\Documents\xwechat_files\wxid_eo5dkcv3sf7522_8ac6\msg\file\2026-05\v11_20260428_164754.json"
+V11_PATH = os.path.join(BASE_DIR, "standard_answers", "v11_20260428_164754.json")
 OUTPUT_PATH = os.path.join(BASE_DIR, "coding_library.json")  # 直接覆盖（已备份）
 
 # ── 常量 ─────────────────────────────────────────────────
@@ -483,8 +483,33 @@ def run_optimization(
     print(f"  移除: {total_removed} 个语义重复编码")
     print(f"  选择依据: v11={v11_wins}, 描述={desc_wins}, 唯一={unique_wins}")
 
-    # ── 5. v11 三阶修正 ──
-    print(f"\n[5/7] v11 三阶归属修正...")
+    # ── 5. v11 缺失编码扩展 ──
+    print(f"\n[5/8] v11 缺失编码扩展...")
+    existing_s2_names = {code['name'] for code in canonical_codes}
+    missing_v11 = {
+        s2: s3 for s2, s3 in v11_s2_to_s3.items()
+        if s2 not in existing_s2_names
+    }
+    print(f"  v11 缺失编码: {len(missing_v11)} 个")
+    added_count = 0
+    for s2_name, s3_name in sorted(missing_v11.items()):
+        freq = sum(v11_pair_counts.get(s2_name, Counter()).values())
+        canonical_codes.append({
+            'name': s2_name,
+            'desc': f"{s2_name}（v11权威标注，{freq}次）",
+            'third_name': s3_name,
+            'third_id': -1,
+            'third_desc': '',
+            'id': f"v11_{s2_name}",
+            '_source': 'v11_expansion',
+            '_selection_reason': 'v11新增',
+            '_group_size': 1,
+        })
+        added_count += 1
+    print(f"  已添加: {added_count} 个 v11 二阶编码到库中")
+
+    # ── 6. v11 三阶修正 ──
+    print(f"\n[6/8] v11 三阶归属修正...")
     corrections = 0
     corrected_to_new_t3 = 0
     for code in canonical_codes:
@@ -505,16 +530,16 @@ def run_optimization(
 
     print(f"  三阶归属修正: {corrections} 个 (其中 {corrected_to_new_t3} 指向新三阶)")
 
-    # ── 6. 重建库 ──
-    print(f"\n[6/7] 重建编码库...")
+    # ── 7. 重建库 ──
+    print(f"\n[7/8] 重建编码库...")
     new_lib = rebuild_library(canonical_codes, lib, v11_s2_to_s3)
     stats = new_lib['optimization_stats']
     print(f"  新二阶编码: {stats['optimized_second_count']} 个")
     print(f"  新三阶编码: {stats['optimized_third_count']} 个")
     print(f"  压缩率: {stats['optimized_second_count']/max(stats['original_second_count'],1)*100:.1f}%")
 
-    # ── 7. 验证 ──
-    print(f"\n[7/7] 验证...")
+    # ── 8. 验证 ──
+    print(f"\n[8/8] 验证...")
 
     # 检查 v11 覆盖率
     new_s2_names = set()
@@ -564,6 +589,7 @@ def run_optimization(
             'groups': len(groups),
             'removed': total_removed,
             'v11_corrections': corrections,
+            'v11_added': added_count,
             'v11_coverage': v11_coverage,
         },
         'new_library': new_lib,

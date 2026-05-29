@@ -1,0 +1,6839 @@
+{
+  "timestamp": "2026-05-28T17:52:34.464808",
+  "before": {
+    "timestamp": "2026-05-28T17:52:26.804824",
+    "totals": {
+      "anchors": 1421,
+      "themes": 253,
+      "theories": 217,
+      "prov_anchors": 1404
+    },
+    "single_anchor_l2": {
+      "count": 84,
+      "ratio": 0.332,
+      "items": [
+        {
+          "theme": "东掌制",
+          "anchor_count": 1,
+          "anchors": [
+            "教育培训"
+          ],
+          "parent_theories": [
+            "高端增值"
+          ]
+        },
+        {
+          "theme": "个人经历",
+          "anchor_count": 1,
+          "anchors": [
+            "感兴趣多次"
+          ],
+          "parent_theories": [
+            "创业者个体学习"
+          ]
+        },
+        {
+          "theme": "丰富资源结构",
+          "anchor_count": 1,
+          "anchors": [
+            "周边景观资源"
+          ],
+          "parent_theories": [
+            "资源蓄能"
+          ]
+        },
+        {
+          "theme": "主观满意度",
+          "anchor_count": 1,
+          "anchors": [
+            "自我效能与成就感"
+          ],
+          "parent_theories": [
+            "满足感与地位"
+          ]
+        },
+        {
+          "theme": "交易联系脆弱",
+          "anchor_count": 1,
+          "anchors": [
+            "稳定环境"
+          ],
+          "parent_theories": [
+            "市场约束无效"
+          ]
+        },
+        {
+          "theme": "产品创新方式",
+          "anchor_count": 1,
+          "anchors": [
+            "内部价值链"
+          ],
+          "parent_theories": [
+            "产品/市场/模式创新"
+          ]
+        },
+        {
+          "theme": "产品表征应用",
+          "anchor_count": 1,
+          "anchors": [
+            "司法专业化"
+          ],
+          "parent_theories": [
+            "研发设计能力"
+          ]
+        },
+        {
+          "theme": "人力市场特征",
+          "anchor_count": 1,
+          "anchors": [
+            "老龄化程度高"
+          ],
+          "parent_theories": [
+            "关系资本弥补资源不足"
+          ]
+        },
+        {
+          "theme": "价值引领",
+          "anchor_count": 1,
+          "anchors": [
+            "个人主观判断"
+          ],
+          "parent_theories": [
+            "价值判断建构"
+          ]
+        },
+        {
+          "theme": "任务紧急性倒逼",
+          "anchor_count": 1,
+          "anchors": [
+            "游客停留短"
+          ],
+          "parent_theories": [
+            "追赶实现手段"
+          ]
+        },
+        {
+          "theme": "传承经历",
+          "anchor_count": 1,
+          "anchors": [
+            "积攒项目经验"
+          ],
+          "parent_theories": [
+            "先借鉴后经验"
+          ]
+        },
+        {
+          "theme": "儒家义利观",
+          "anchor_count": 1,
+          "anchors": [
+            "书记江老师"
+          ],
+          "parent_theories": [
+            "封建层级文化诱因"
+          ]
+        },
+        {
+          "theme": "关系导向",
+          "anchor_count": 1,
+          "anchors": [
+            "成本领先战略"
+          ],
+          "parent_theories": [
+            "关系导向"
+          ]
+        },
+        {
+          "theme": "关系形态",
+          "anchor_count": 1,
+          "anchors": [
+            "内外相融合"
+          ],
+          "parent_theories": [
+            "朋友关系"
+          ]
+        },
+        {
+          "theme": "内在自我增强动机",
+          "anchor_count": 1,
+          "anchors": [
+            "社会比较压力"
+          ],
+          "parent_theories": [
+            "自利动机驱动"
+          ]
+        },
+        {
+          "theme": "分析起点",
+          "anchor_count": 1,
+          "anchors": [
+            "标识导览"
+          ],
+          "parent_theories": [
+            "专业胜任"
+          ]
+        },
+        {
+          "theme": "创始厂长印记",
+          "anchor_count": 1,
+          "anchors": [
+            "随俗浮沉者"
+          ],
+          "parent_theories": [
+            "自主创新"
+          ]
+        },
+        {
+          "theme": "创新主体",
+          "anchor_count": 1,
+          "anchors": [
+            "创业隐喻"
+          ],
+          "parent_theories": [
+            "创新基础"
+          ]
+        },
+        {
+          "theme": "创新文化协同",
+          "anchor_count": 1,
+          "anchors": [
+            "统一价值来源"
+          ],
+          "parent_theories": [
+            "文化创新核心载体"
+          ]
+        },
+        {
+          "theme": "创造氛围",
+          "anchor_count": 1,
+          "anchors": [
+            "更话会更好"
+          ],
+          "parent_theories": [
+            "话语经验建构"
+          ]
+        },
+        {
+          "theme": "初创参与",
+          "anchor_count": 1,
+          "anchors": [
+            "创始厂长印记"
+          ],
+          "parent_theories": [
+            "抚育成长经历"
+          ]
+        },
+        {
+          "theme": "初始条件",
+          "anchor_count": 1,
+          "anchors": [
+            "初始状态"
+          ],
+          "parent_theories": [
+            "同源性技术初始积累"
+          ]
+        },
+        {
+          "theme": "利益困境",
+          "anchor_count": 1,
+          "anchors": [
+            "对对情况"
+          ],
+          "parent_theories": [
+            "配置与投资机会背离"
+          ]
+        },
+        {
+          "theme": "制度固化与正规化",
+          "anchor_count": 1,
+          "anchors": [
+            "度改动繁琐"
+          ],
+          "parent_theories": [
+            "制度重塑"
+          ]
+        },
+        {
+          "theme": "制度维来源国劣势",
+          "anchor_count": 1,
+          "anchors": [
+            "制度维来源国劣势"
+          ],
+          "parent_theories": [
+            "来源国劣势"
+          ]
+        },
+        {
+          "theme": "动力机制",
+          "anchor_count": 1,
+          "anchors": [
+            "规范性惯例"
+          ],
+          "parent_theories": [
+            "文化创新核心载体"
+          ]
+        },
+        {
+          "theme": "动因",
+          "anchor_count": 1,
+          "anchors": [
+            "爆品持续诞生"
+          ],
+          "parent_theories": [
+            "规模扩张、制度建设"
+          ]
+        },
+        {
+          "theme": "匹配关系",
+          "anchor_count": 1,
+          "anchors": [
+            "上下配合"
+          ],
+          "parent_theories": [
+            "主从关系匹配"
+          ]
+        },
+        {
+          "theme": "升级旧的技术架构",
+          "anchor_count": 1,
+          "anchors": [
+            "风格类型"
+          ],
+          "parent_theories": [
+            "技术架构重塑"
+          ]
+        },
+        {
+          "theme": "受让方类型",
+          "anchor_count": 1,
+          "anchors": [
+            "商业正外部性"
+          ],
+          "parent_theories": [
+            "海外获取"
+          ]
+        },
+        {
+          "theme": "同质竞争加剧",
+          "anchor_count": 1,
+          "anchors": [
+            "需加烧两次"
+          ],
+          "parent_theories": [
+            "同质竞加剧"
+          ]
+        },
+        {
+          "theme": "员工持股陷阱",
+          "anchor_count": 1,
+          "anchors": [
+            "们一行人"
+          ],
+          "parent_theories": [
+            "大股东失控诱因"
+          ]
+        },
+        {
+          "theme": "国际障碍",
+          "anchor_count": 1,
+          "anchors": [
+            "战略复杂性维度"
+          ],
+          "parent_theories": [
+            "封建层级文化诱因"
+          ]
+        },
+        {
+          "theme": "契约关系构建",
+          "anchor_count": 1,
+          "anchors": [
+            "战略妥协前提"
+          ],
+          "parent_theories": [
+            "信任契约补充"
+          ]
+        },
+        {
+          "theme": "家庭-工作融合",
+          "anchor_count": 1,
+          "anchors": [
+            "家庭-工作融合"
+          ],
+          "parent_theories": [
+            "家族创业培育要素"
+          ]
+        },
+        {
+          "theme": "嵌入环节",
+          "anchor_count": 1,
+          "anchors": [
+            "新颖程度"
+          ],
+          "parent_theories": [
+            "建构型学习"
+          ]
+        },
+        {
+          "theme": "已有工艺持续精进",
+          "anchor_count": 1,
+          "anchors": [
+            "做事严谨"
+          ],
+          "parent_theories": [
+            "生产效率提升"
+          ]
+        },
+        {
+          "theme": "市场结果",
+          "anchor_count": 1,
+          "anchors": [
+            "上查三代"
+          ],
+          "parent_theories": [
+            "上海国资存量更大"
+          ]
+        },
+        {
+          "theme": "弥补机制",
+          "anchor_count": 1,
+          "anchors": [
+            "作用路径"
+          ],
+          "parent_theories": [
+            "忽视长期技术积累"
+          ]
+        },
+        {
+          "theme": "强化组织记忆",
+          "anchor_count": 1,
+          "anchors": [
+            "索取额外控制"
+          ],
+          "parent_theories": [
+            "组织认知形成"
+          ]
+        },
+        {
+          "theme": "成长空间被挤压",
+          "anchor_count": 1,
+          "anchors": [
+            "摊位影响大"
+          ],
+          "parent_theories": [
+            "成长空被挤压"
+          ]
+        },
+        {
+          "theme": "成长阶段划分",
+          "anchor_count": 1,
+          "anchors": [
+            "岁开始情况"
+          ],
+          "parent_theories": [
+            "成长/可持续阶段"
+          ]
+        },
+        {
+          "theme": "提出经营理念",
+          "anchor_count": 1,
+          "anchors": [
+            "引领用户升维"
+          ],
+          "parent_theories": [
+            "市场导向模式"
+          ]
+        },
+        {
+          "theme": "摸索基础能力",
+          "anchor_count": 1,
+          "anchors": [
+            "素质提升"
+          ],
+          "parent_theories": [
+            "市场能力积累"
+          ]
+        },
+        {
+          "theme": "文化机制",
+          "anchor_count": 1,
+          "anchors": [
+            "考核机制"
+          ],
+          "parent_theories": [
+            "学习机制"
+          ]
+        },
+        {
+          "theme": "早期成长烙印",
+          "anchor_count": 1,
+          "anchors": [
+            "陶阳里优势认可"
+          ],
+          "parent_theories": [
+            "家族创业培育要素"
+          ]
+        },
+        {
+          "theme": "替代规律",
+          "anchor_count": 1,
+          "anchors": [
+            "人三宝那边"
+          ],
+          "parent_theories": [
+            "替代放大因素"
+          ]
+        },
+        {
+          "theme": "有为政府",
+          "anchor_count": 1,
+          "anchors": [
+            "项目补贴模式"
+          ],
+          "parent_theories": [
+            "政策+市场+资源约束"
+          ]
+        },
+        {
+          "theme": "核心目标",
+          "anchor_count": 1,
+          "anchors": [
+            "个人经历"
+          ],
+          "parent_theories": [
+            "核心目标"
+          ]
+        },
+        {
+          "theme": "核心结论",
+          "anchor_count": 1,
+          "anchors": [
+            "回头客少"
+          ],
+          "parent_theories": [
+            "代理问题缓解"
+          ]
+        },
+        {
+          "theme": "核心职能",
+          "anchor_count": 1,
+          "anchors": [
+            "报道倾向"
+          ],
+          "parent_theories": [
+            "核心冲突"
+          ]
+        },
+        {
+          "theme": "比较发现",
+          "anchor_count": 1,
+          "anchors": [
+            "多点声明"
+          ],
+          "parent_theories": [
+            "差异起源"
+          ]
+        },
+        {
+          "theme": "民生保障",
+          "anchor_count": 1,
+          "anchors": [
+            "辑在于既改善"
+          ],
+          "parent_theories": [
+            "乡村治理困境"
+          ]
+        },
+        {
+          "theme": "泛家族化信任",
+          "anchor_count": 1,
+          "anchors": [
+            "进入方式"
+          ],
+          "parent_theories": [
+            "信任基础"
+          ]
+        },
+        {
+          "theme": "潜在风险",
+          "anchor_count": 1,
+          "anchors": [
+            "非常规知识检索能力"
+          ],
+          "parent_theories": [
+            "风险情境"
+          ]
+        },
+        {
+          "theme": "特色大型模具普及势新颖工艺被同行攻克",
+          "anchor_count": 1,
+          "anchors": [
+            "产业链影响"
+          ],
+          "parent_theories": [
+            "拓展前沿技术"
+          ]
+        },
+        {
+          "theme": "相对优势",
+          "anchor_count": 1,
+          "anchors": [
+            "阶段二"
+          ],
+          "parent_theories": [
+            "大库存优势"
+          ]
+        },
+        {
+          "theme": "知识筛选",
+          "anchor_count": 1,
+          "anchors": [
+            "关键资源导入"
+          ],
+          "parent_theories": [
+            "机会识别能力"
+          ]
+        },
+        {
+          "theme": "研究启示",
+          "anchor_count": 1,
+          "anchors": [
+            "确认性陈述"
+          ],
+          "parent_theories": [
+            "核心影响因素"
+          ]
+        },
+        {
+          "theme": "研究情境",
+          "anchor_count": 1,
+          "anchors": [
+            "景德镇普及度高"
+          ],
+          "parent_theories": [
+            "松散关联功能特征"
+          ]
+        },
+        {
+          "theme": "社会和谐",
+          "anchor_count": 1,
+          "anchors": [
+            "人际互动"
+          ],
+          "parent_theories": [
+            "社会共治结构"
+          ]
+        },
+        {
+          "theme": "童年文化经历",
+          "anchor_count": 1,
+          "anchors": [
+            "童年文化经历"
+          ],
+          "parent_theories": [
+            "抚育成长经历"
+          ]
+        },
+        {
+          "theme": "约束机制",
+          "anchor_count": 1,
+          "anchors": [
+            "门票与收费"
+          ],
+          "parent_theories": [
+            "人员吸纳机制"
+          ]
+        },
+        {
+          "theme": "经营模式",
+          "anchor_count": 1,
+          "anchors": [
+            "回购规则"
+          ],
+          "parent_theories": [
+            "企业主导阶段"
+          ]
+        },
+        {
+          "theme": "绿色转向期",
+          "anchor_count": 1,
+          "anchors": [
+            "绿色转向期"
+          ],
+          "parent_theories": [
+            "绿色转型阶段"
+          ]
+        },
+        {
+          "theme": "网络模式三",
+          "anchor_count": 1,
+          "anchors": [
+            "筑牢本地基础"
+          ],
+          "parent_theories": [
+            "企业-网络-集群三层互动"
+          ]
+        },
+        {
+          "theme": "能力不足",
+          "anchor_count": 1,
+          "anchors": [
+            "影响机制"
+          ],
+          "parent_theories": [
+            "审计失败+监管滞后"
+          ]
+        },
+        {
+          "theme": "能力塑造",
+          "anchor_count": 1,
+          "anchors": [
+            "身股应支"
+          ],
+          "parent_theories": [
+            "多技能提升"
+          ]
+        },
+        {
+          "theme": "营造跨国社区",
+          "anchor_count": 1,
+          "anchors": [
+            "关键发现"
+          ],
+          "parent_theories": [
+            "社群构建"
+          ]
+        },
+        {
+          "theme": "行为风险抑制",
+          "anchor_count": 1,
+          "anchors": [
+            "风控能力甄别选择"
+          ],
+          "parent_theories": [
+            "风险控制"
+          ]
+        },
+        {
+          "theme": "衰败原因",
+          "anchor_count": 1,
+          "anchors": [
+            "价值迁移方式"
+          ],
+          "parent_theories": [
+            "亏损脱困为主"
+          ]
+        },
+        {
+          "theme": "角色边界跨越",
+          "anchor_count": 1,
+          "anchors": [
+            "导安排得当"
+          ],
+          "parent_theories": [
+            "雇佣关系主体"
+          ]
+        },
+        {
+          "theme": "语篇结构",
+          "anchor_count": 1,
+          "anchors": [
+            "高阶形态"
+          ],
+          "parent_theories": [
+            "超越追赶阶段"
+          ]
+        },
+        {
+          "theme": "调适互动",
+          "anchor_count": 1,
+          "anchors": [
+            "灵活向外借力"
+          ],
+          "parent_theories": [
+            "技术杠杆"
+          ]
+        },
+        {
+          "theme": "资源依赖突破",
+          "anchor_count": 1,
+          "anchors": [
+            "陶阳里治理改善"
+          ],
+          "parent_theories": [
+            "进入方式—资源克服—后发优势实现"
+          ]
+        },
+        {
+          "theme": "资源困境",
+          "anchor_count": 1,
+          "anchors": [
+            "原住民安置"
+          ],
+          "parent_theories": [
+            "关系资本弥补资源不足"
+          ]
+        },
+        {
+          "theme": "资源活化",
+          "anchor_count": 1,
+          "anchors": [
+            "般来说相关"
+          ],
+          "parent_theories": [
+            "资源能力化"
+          ]
+        },
+        {
+          "theme": "路径引导者",
+          "anchor_count": 1,
+          "anchors": [
+            "特殊模式"
+          ],
+          "parent_theories": [
+            "具体路径"
+          ]
+        },
+        {
+          "theme": "转型差异",
+          "anchor_count": 1,
+          "anchors": [
+            "理念偏差"
+          ],
+          "parent_theories": [
+            "转型驱动因素"
+          ]
+        },
+        {
+          "theme": "转型驱动因素",
+          "anchor_count": 1,
+          "anchors": [
+            "转变后心理特征"
+          ],
+          "parent_theories": [
+            "转型驱动因素"
+          ]
+        },
+        {
+          "theme": "长期雇佣",
+          "anchor_count": 1,
+          "anchors": [
+            "注意力分配"
+          ],
+          "parent_theories": [
+            "成长期"
+          ]
+        },
+        {
+          "theme": "项目集成能力弱化",
+          "anchor_count": 1,
+          "anchors": [
+            "穿铁鞋"
+          ],
+          "parent_theories": [
+            "钢铁主业横向整合"
+          ]
+        },
+        {
+          "theme": "风险管控",
+          "anchor_count": 1,
+          "anchors": [
+            "消防安全"
+          ],
+          "parent_theories": [
+            "规避监管"
+          ]
+        },
+        {
+          "theme": "默契与共谋",
+          "anchor_count": 1,
+          "anchors": [
+            "胞因人而异"
+          ],
+          "parent_theories": [
+            "人缘式领导"
+          ]
+        }
+      ]
+    },
+    "single_child_l3": {
+      "count": 183,
+      "ratio": 0.843,
+      "items": [
+        {
+          "theory": "EM阶段核心",
+          "theme_count": 1,
+          "themes": [
+            "阶段一"
+          ],
+          "total_anchors": 6
+        },
+        {
+          "theory": "一言堂、监督失效",
+          "theme_count": 1,
+          "themes": [
+            "同伴质疑与排斥"
+          ],
+          "total_anchors": 14
+        },
+        {
+          "theory": "专业化优势体现",
+          "theme_count": 1,
+          "themes": [
+            "身份变动方向"
+          ],
+          "total_anchors": 3
+        },
+        {
+          "theory": "专业胜任",
+          "theme_count": 1,
+          "themes": [
+            "分析起点"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "专精优势无法适用",
+          "theme_count": 1,
+          "themes": [
+            "专精优势无法适用"
+          ],
+          "total_anchors": 9
+        },
+        {
+          "theory": "业务主体、总部赋能",
+          "theme_count": 1,
+          "themes": [
+            "高效原因"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "中国情境局限",
+          "theme_count": 1,
+          "themes": [
+            "中国情境"
+          ],
+          "total_anchors": 7
+        },
+        {
+          "theory": "主从关系",
+          "theme_count": 1,
+          "themes": [
+            "关系强度"
+          ],
+          "total_anchors": 4
+        },
+        {
+          "theory": "主从关系匹配",
+          "theme_count": 1,
+          "themes": [
+            "匹配关系"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "乡村社会基础",
+          "theme_count": 1,
+          "themes": [
+            "本土情境"
+          ],
+          "total_anchors": 6
+        },
+        {
+          "theory": "二次创新特征",
+          "theme_count": 1,
+          "themes": [
+            "高阶形态"
+          ],
+          "total_anchors": 3
+        },
+        {
+          "theory": "亏损脱困为主",
+          "theme_count": 1,
+          "themes": [
+            "衰败原因"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "互补型共演化",
+          "theme_count": 1,
+          "themes": [
+            "趋同"
+          ],
+          "total_anchors": 3
+        },
+        {
+          "theory": "产品/市场/模式创新",
+          "theme_count": 1,
+          "themes": [
+            "产品创新方式"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "人员吸纳机制",
+          "theme_count": 1,
+          "themes": [
+            "约束机制"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "人心式领导",
+          "theme_count": 1,
+          "themes": [
+            "领导模式"
+          ],
+          "total_anchors": 4
+        },
+        {
+          "theory": "价值共创扭曲",
+          "theme_count": 1,
+          "themes": [
+            "价值失衡情境"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "企业-网络-集群三层互动",
+          "theme_count": 1,
+          "themes": [
+            "网络模式三"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "企业主导阶段",
+          "theme_count": 1,
+          "themes": [
+            "经营模式"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "低价竞加剧",
+          "theme_count": 1,
+          "themes": [
+            "低价竞争加剧"
+          ],
+          "total_anchors": 3
+        },
+        {
+          "theory": "低阶创新能力",
+          "theme_count": 1,
+          "themes": [
+            "随俗浮沉者"
+          ],
+          "total_anchors": 15
+        },
+        {
+          "theory": "作业长制为核心",
+          "theme_count": 1,
+          "themes": [
+            "角色"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "供应商/顾客/员工共赢",
+          "theme_count": 1,
+          "themes": [
+            "分工类型"
+          ],
+          "total_anchors": 5
+        },
+        {
+          "theory": "信任基础",
+          "theme_count": 1,
+          "themes": [
+            "泛家族化信任"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "信任契约补充",
+          "theme_count": 1,
+          "themes": [
+            "契约关系构建"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "信息泄露加速定价",
+          "theme_count": 1,
+          "themes": [
+            "核心现象"
+          ],
+          "total_anchors": 5
+        },
+        {
+          "theory": "修辞策略",
+          "theme_count": 1,
+          "themes": [
+            "正当性构建机制"
+          ],
+          "total_anchors": 55
+        },
+        {
+          "theory": "先借鉴后经验",
+          "theme_count": 1,
+          "themes": [
+            "传承经历"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "先抑后扬粉饰业绩",
+          "theme_count": 1,
+          "themes": [
+            "核心命题"
+          ],
+          "total_anchors": 5
+        },
+        {
+          "theory": "关系导向",
+          "theme_count": 1,
+          "themes": [
+            "关系导向"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "关联交易、资金挪用",
+          "theme_count": 1,
+          "themes": [
+            "交易特征"
+          ],
+          "total_anchors": 3
+        },
+        {
+          "theory": "具体路径",
+          "theme_count": 1,
+          "themes": [
+            "路径引导者"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "内主外辅转型动力",
+          "theme_count": 1,
+          "themes": [
+            "转型顺序"
+          ],
+          "total_anchors": 9
+        },
+        {
+          "theory": "内幕信息获利",
+          "theme_count": 1,
+          "themes": [
+            "核心行为"
+          ],
+          "total_anchors": 8
+        },
+        {
+          "theory": "农户+本地大户",
+          "theme_count": 1,
+          "themes": [
+            "村庄场域市场化"
+          ],
+          "total_anchors": 4
+        },
+        {
+          "theory": "创业者个体学习",
+          "theme_count": 1,
+          "themes": [
+            "个人经历"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "创新基础",
+          "theme_count": 1,
+          "themes": [
+            "创新主体"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "创新性认知",
+          "theme_count": 1,
+          "themes": [
+            "创造力前因"
+          ],
+          "total_anchors": 6
+        },
+        {
+          "theory": "创新扩散",
+          "theme_count": 1,
+          "themes": [
+            "有中生新"
+          ],
+          "total_anchors": 20
+        },
+        {
+          "theory": "创新技术架构",
+          "theme_count": 1,
+          "themes": [
+            "哑铃态创新架构"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "创造力来源",
+          "theme_count": 1,
+          "themes": [
+            "创造力结果"
+          ],
+          "total_anchors": 20
+        },
+        {
+          "theory": "制度压力驱动",
+          "theme_count": 1,
+          "themes": [
+            "压力来源"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "制度性约束",
+          "theme_count": 1,
+          "themes": [
+            "制度背景"
+          ],
+          "total_anchors": 9
+        },
+        {
+          "theory": "制度逻辑驱动",
+          "theme_count": 1,
+          "themes": [
+            "政府制度逻辑"
+          ],
+          "total_anchors": 4
+        },
+        {
+          "theory": "制度重塑",
+          "theme_count": 1,
+          "themes": [
+            "制度固化与正规化"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "制造环节优势",
+          "theme_count": 1,
+          "themes": [
+            "品质优势"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "前期",
+          "theme_count": 1,
+          "themes": [
+            "早期流程"
+          ],
+          "total_anchors": 5
+        },
+        {
+          "theory": "功能使命定位",
+          "theme_count": 1,
+          "themes": [
+            "落地载体"
+          ],
+          "total_anchors": 6
+        },
+        {
+          "theory": "升级前提",
+          "theme_count": 1,
+          "themes": [
+            "升级结果"
+          ],
+          "total_anchors": 6
+        },
+        {
+          "theory": "发展期",
+          "theme_count": 1,
+          "themes": [
+            "传统发展期"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "发展期主导（制革业务转型）",
+          "theme_count": 1,
+          "themes": [
+            "发展阶段"
+          ],
+          "total_anchors": 6
+        },
+        {
+          "theory": "变化阶段",
+          "theme_count": 1,
+          "themes": [
+            "变革阶段二"
+          ],
+          "total_anchors": 12
+        },
+        {
+          "theory": "合：治理建构",
+          "theme_count": 1,
+          "themes": [
+            "治理背景"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "同源性技术初始积累",
+          "theme_count": 1,
+          "themes": [
+            "初始条件"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "同质竞加剧",
+          "theme_count": 1,
+          "themes": [
+            "同质竞争加剧"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "否决项与月度考核",
+          "theme_count": 1,
+          "themes": [
+            "考核机制"
+          ],
+          "total_anchors": 8
+        },
+        {
+          "theory": "围绕定位构建",
+          "theme_count": 1,
+          "themes": [
+            "空间布局"
+          ],
+          "total_anchors": 19
+        },
+        {
+          "theory": "国资放任掏空",
+          "theme_count": 1,
+          "themes": [
+            "掏空手段"
+          ],
+          "total_anchors": 5
+        },
+        {
+          "theory": "在位者劣势",
+          "theme_count": 1,
+          "themes": [
+            "传导缺陷"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "均等控制权",
+          "theme_count": 1,
+          "themes": [
+            "控制权安排"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "外生式学习",
+          "theme_count": 1,
+          "themes": [
+            "学习方式"
+          ],
+          "total_anchors": 15
+        },
+        {
+          "theory": "外部指导帮扶阶段",
+          "theme_count": 1,
+          "themes": [
+            "干预方式"
+          ],
+          "total_anchors": 4
+        },
+        {
+          "theory": "外部环境因素",
+          "theme_count": 1,
+          "themes": [
+            "当地机会"
+          ],
+          "total_anchors": 12
+        },
+        {
+          "theory": "外部监管不足",
+          "theme_count": 1,
+          "themes": [
+            "环境特征"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "多技能提升",
+          "theme_count": 1,
+          "themes": [
+            "能力塑造"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "大库存优势",
+          "theme_count": 1,
+          "themes": [
+            "相对优势"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "大股东困境",
+          "theme_count": 1,
+          "themes": [
+            "长期困境"
+          ],
+          "total_anchors": 3
+        },
+        {
+          "theory": "大股东失控诱因",
+          "theme_count": 1,
+          "themes": [
+            "员工持股陷阱"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "实施原则",
+          "theme_count": 1,
+          "themes": [
+            "规范性惯例"
+          ],
+          "total_anchors": 3
+        },
+        {
+          "theory": "审计失败+监管滞后",
+          "theme_count": 1,
+          "themes": [
+            "能力不足"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "对价争议",
+          "theme_count": 1,
+          "themes": [
+            "证据线索"
+          ],
+          "total_anchors": 5
+        },
+        {
+          "theory": "工资与市场业绩挂钩",
+          "theme_count": 1,
+          "themes": [
+            "薪酬制度"
+          ],
+          "total_anchors": 5
+        },
+        {
+          "theory": "差异起源",
+          "theme_count": 1,
+          "themes": [
+            "比较发现"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "市场导向模式",
+          "theme_count": 1,
+          "themes": [
+            "提出经营理念"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "市场导向模式效果",
+          "theme_count": 1,
+          "themes": [
+            "市场效果"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "市场竞争加剧",
+          "theme_count": 1,
+          "themes": [
+            "数字竞争者增加"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "市场能力积累",
+          "theme_count": 1,
+          "themes": [
+            "摸索基础能力"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "市属国企整合",
+          "theme_count": 1,
+          "themes": [
+            "制度环境"
+          ],
+          "total_anchors": 14
+        },
+        {
+          "theory": "延展高价值业务",
+          "theme_count": 1,
+          "themes": [
+            "扩增高价值营收业务"
+          ],
+          "total_anchors": 4
+        },
+        {
+          "theory": "循环动力",
+          "theme_count": 1,
+          "themes": [
+            "理念现代化"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "心化内控归宿",
+          "theme_count": 1,
+          "themes": [
+            "心化内控"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "志愿者能动阶段",
+          "theme_count": 1,
+          "themes": [
+            "互动模式"
+          ],
+          "total_anchors": 4
+        },
+        {
+          "theory": "忽视长期技术积累",
+          "theme_count": 1,
+          "themes": [
+            "弥补机制"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "成长/可持续阶段",
+          "theme_count": 1,
+          "themes": [
+            "成长阶段划分"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "成长增速放缓",
+          "theme_count": 1,
+          "themes": [
+            "绩效结果"
+          ],
+          "total_anchors": 3
+        },
+        {
+          "theory": "成长期",
+          "theme_count": 1,
+          "themes": [
+            "长期雇佣"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "成长空被挤压",
+          "theme_count": 1,
+          "themes": [
+            "成长空间被挤压"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "扶强阶段共振机制",
+          "theme_count": 1,
+          "themes": [
+            "阶段一关系"
+          ],
+          "total_anchors": 34
+        },
+        {
+          "theory": "技术主导权",
+          "theme_count": 1,
+          "themes": [
+            "技术环境"
+          ],
+          "total_anchors": 18
+        },
+        {
+          "theory": "技术准入合法性缺乏",
+          "theme_count": 1,
+          "themes": [
+            "规范合法性缺乏"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "技术杠杆",
+          "theme_count": 1,
+          "themes": [
+            "调适互动"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "技术架构重塑",
+          "theme_count": 1,
+          "themes": [
+            "升级旧的技术架构"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "技术赋能",
+          "theme_count": 1,
+          "themes": [
+            "破坏性技术"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "技术迭代升级",
+          "theme_count": 1,
+          "themes": [
+            "既有技术利用性创新"
+          ],
+          "total_anchors": 4
+        },
+        {
+          "theory": "技术追赶阶段",
+          "theme_count": 1,
+          "themes": [
+            "时机问题"
+          ],
+          "total_anchors": 11
+        },
+        {
+          "theory": "技术重升阶",
+          "theme_count": 1,
+          "themes": [
+            "技术重构升阶"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "挤水分",
+          "theme_count": 1,
+          "themes": [
+            "遮蔽手段"
+          ],
+          "total_anchors": 15
+        },
+        {
+          "theory": "掏空与寻租前提",
+          "theme_count": 1,
+          "themes": [
+            "利益输送"
+          ],
+          "total_anchors": 6
+        },
+        {
+          "theory": "探索式即兴",
+          "theme_count": 1,
+          "themes": [
+            "即兴能力构建"
+          ],
+          "total_anchors": 16
+        },
+        {
+          "theory": "控制权偏移",
+          "theme_count": 1,
+          "themes": [
+            "事件类型"
+          ],
+          "total_anchors": 12
+        },
+        {
+          "theory": "政策+市场+资源约束",
+          "theme_count": 1,
+          "themes": [
+            "有为政府"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "数字化",
+          "theme_count": 1,
+          "themes": [
+            "资源数字化"
+          ],
+          "total_anchors": 24
+        },
+        {
+          "theory": "数字逻辑",
+          "theme_count": 1,
+          "themes": [
+            "数字逻辑"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "整合阶段主导",
+          "theme_count": 1,
+          "themes": [
+            "改进流程"
+          ],
+          "total_anchors": 10
+        },
+        {
+          "theory": "文化情境特征",
+          "theme_count": 1,
+          "themes": [
+            "文化层次划分"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "文化框架激活",
+          "theme_count": 1,
+          "themes": [
+            "文化资源基础"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "新旧更替",
+          "theme_count": 1,
+          "themes": [
+            "运作模式"
+          ],
+          "total_anchors": 3
+        },
+        {
+          "theory": "替代事中监督",
+          "theme_count": 1,
+          "themes": [
+            "适配策略"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "替代放大因素",
+          "theme_count": 1,
+          "themes": [
+            "替代规律"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "朋友关系",
+          "theme_count": 1,
+          "themes": [
+            "关系形态"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "服务环节优势",
+          "theme_count": 1,
+          "themes": [
+            "精益服务效果"
+          ],
+          "total_anchors": 23
+        },
+        {
+          "theory": "未审议、董事会独断",
+          "theme_count": 1,
+          "themes": [
+            "董事会之谜"
+          ],
+          "total_anchors": 4
+        },
+        {
+          "theory": "来源国劣势",
+          "theme_count": 1,
+          "themes": [
+            "制度维来源国劣势"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "松散关联功能特征",
+          "theme_count": 1,
+          "themes": [
+            "研究情境"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "核心冲突",
+          "theme_count": 1,
+          "themes": [
+            "核心职能"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "核心影响因素",
+          "theme_count": 1,
+          "themes": [
+            "研究启示"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "核心目标",
+          "theme_count": 1,
+          "themes": [
+            "核心目标"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "核心问题",
+          "theme_count": 1,
+          "themes": [
+            "核心障碍"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "模块化组织核心",
+          "theme_count": 1,
+          "themes": [
+            "核心角色"
+          ],
+          "total_anchors": 3
+        },
+        {
+          "theory": "模式二",
+          "theme_count": 1,
+          "themes": [
+            "模式二"
+          ],
+          "total_anchors": 4
+        },
+        {
+          "theory": "治理机制",
+          "theme_count": 1,
+          "themes": [
+            "组织角色"
+          ],
+          "total_anchors": 6
+        },
+        {
+          "theory": "治理缺陷",
+          "theme_count": 1,
+          "themes": [
+            "纠错性功能"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "流动驱动因素",
+          "theme_count": 1,
+          "themes": [
+            "行为主体"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "海外获取",
+          "theme_count": 1,
+          "themes": [
+            "受让方类型"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "演化机制",
+          "theme_count": 1,
+          "themes": [
+            "演化逻辑"
+          ],
+          "total_anchors": 3
+        },
+        {
+          "theory": "激励型政策认知",
+          "theme_count": 1,
+          "themes": [
+            "对策建议"
+          ],
+          "total_anchors": 13
+        },
+        {
+          "theory": "特新优丧失",
+          "theme_count": 1,
+          "themes": [
+            "特色产品难满足新需求"
+          ],
+          "total_anchors": 12
+        },
+        {
+          "theory": "现有知识深化",
+          "theme_count": 1,
+          "themes": [
+            "知识积累方式"
+          ],
+          "total_anchors": 5
+        },
+        {
+          "theory": "生产制造+技术引进",
+          "theme_count": 1,
+          "themes": [
+            "交织载体"
+          ],
+          "total_anchors": 7
+        },
+        {
+          "theory": "生产效率提升",
+          "theme_count": 1,
+          "themes": [
+            "已有工艺持续精进"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "生命周期+政商关系",
+          "theme_count": 1,
+          "themes": [
+            "生命周期"
+          ],
+          "total_anchors": 4
+        },
+        {
+          "theory": "生存驱动、人治为主",
+          "theme_count": 1,
+          "themes": [
+            "人质效应"
+          ],
+          "total_anchors": 5
+        },
+        {
+          "theory": "盲目轻信媒体",
+          "theme_count": 1,
+          "themes": [
+            "媒体行为"
+          ],
+          "total_anchors": 3
+        },
+        {
+          "theory": "直觉创业学习",
+          "theme_count": 1,
+          "themes": [
+            "创业自觉"
+          ],
+          "total_anchors": 3
+        },
+        {
+          "theory": "知识获取路径",
+          "theme_count": 1,
+          "themes": [
+            "非常规知识检索能力"
+          ],
+          "total_anchors": 3
+        },
+        {
+          "theory": "研发网络结构",
+          "theme_count": 1,
+          "themes": [
+            "网络结构"
+          ],
+          "total_anchors": 8
+        },
+        {
+          "theory": "社会共治机制",
+          "theme_count": 1,
+          "themes": [
+            "以能人为中心嵌入社会"
+          ],
+          "total_anchors": 4
+        },
+        {
+          "theory": "社会共治结构",
+          "theme_count": 1,
+          "themes": [
+            "社会和谐"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "积蓄延拓动能",
+          "theme_count": 1,
+          "themes": [
+            "身股"
+          ],
+          "total_anchors": 3
+        },
+        {
+          "theory": "稳定-突变循环",
+          "theme_count": 1,
+          "themes": [
+            "演变趋势"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "竞争优势",
+          "theme_count": 1,
+          "themes": [
+            "市场目标"
+          ],
+          "total_anchors": 3
+        },
+        {
+          "theory": "策略性变轨创新",
+          "theme_count": 1,
+          "themes": [
+            "转型模式"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "筛选效率提升",
+          "theme_count": 1,
+          "themes": [
+            "质量控制"
+          ],
+          "total_anchors": 4
+        },
+        {
+          "theory": "索酬-索赔-跳闸",
+          "theme_count": 1,
+          "themes": [
+            "身股应支"
+          ],
+          "total_anchors": 3
+        },
+        {
+          "theory": "组织印记",
+          "theme_count": 1,
+          "themes": [
+            "组织印记"
+          ],
+          "total_anchors": 60
+        },
+        {
+          "theory": "组织认知形成",
+          "theme_count": 1,
+          "themes": [
+            "强化组织记忆"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "绩效决定因素",
+          "theme_count": 1,
+          "themes": [
+            "绩效维度"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "绿色转型阶段",
+          "theme_count": 1,
+          "themes": [
+            "绿色转向期"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "自主创新",
+          "theme_count": 1,
+          "themes": [
+            "创始厂长印记"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "自利动机驱动",
+          "theme_count": 1,
+          "themes": [
+            "内在自我增强动机"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "表外融资",
+          "theme_count": 1,
+          "themes": [
+            "融资手段"
+          ],
+          "total_anchors": 6
+        },
+        {
+          "theory": "规模扩张、制度建设",
+          "theme_count": 1,
+          "themes": [
+            "动因"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "规避监管",
+          "theme_count": 1,
+          "themes": [
+            "风险管控"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "解错试验组合",
+          "theme_count": 1,
+          "themes": [
+            "规划陷阱"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "认知性约束",
+          "theme_count": 1,
+          "themes": [
+            "技艺价值片面认知约束"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "话语时间策略",
+          "theme_count": 1,
+          "themes": [
+            "时间导向"
+          ],
+          "total_anchors": 21
+        },
+        {
+          "theory": "负面超额收益",
+          "theme_count": 1,
+          "themes": [
+            "红利形成机制"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "财务战略传递路径",
+          "theme_count": 1,
+          "themes": [
+            "核心构念"
+          ],
+          "total_anchors": 4
+        },
+        {
+          "theory": "责任界定建构",
+          "theme_count": 1,
+          "themes": [
+            "财东无限责任"
+          ],
+          "total_anchors": 5
+        },
+        {
+          "theory": "资本市场层面",
+          "theme_count": 1,
+          "themes": [
+            "微观指标"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "资源能力化",
+          "theme_count": 1,
+          "themes": [
+            "资源活化"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "资源蓄能",
+          "theme_count": 1,
+          "themes": [
+            "丰富资源结构"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "资金流向高收益分部",
+          "theme_count": 1,
+          "themes": [
+            "财务特征"
+          ],
+          "total_anchors": 4
+        },
+        {
+          "theory": "资金筹集关键手段",
+          "theme_count": 1,
+          "themes": [
+            "社会动员者"
+          ],
+          "total_anchors": 3
+        },
+        {
+          "theory": "赔偿机制改善",
+          "theme_count": 1,
+          "themes": [
+            "赔偿主体优化"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "超越追赶阶段",
+          "theme_count": 1,
+          "themes": [
+            "语篇结构"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "跨国并购前提",
+          "theme_count": 1,
+          "themes": [
+            "战略行为"
+          ],
+          "total_anchors": 21
+        },
+        {
+          "theory": "进入方式—资源克服—后发优势实现",
+          "theme_count": 1,
+          "themes": [
+            "资源依赖突破"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "远景+经营重心",
+          "theme_count": 1,
+          "themes": [
+            "先发优势"
+          ],
+          "total_anchors": 9
+        },
+        {
+          "theory": "追赶实现手段",
+          "theme_count": 1,
+          "themes": [
+            "任务紧急性倒逼"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "部分结局",
+          "theme_count": 1,
+          "themes": [
+            "故身股"
+          ],
+          "total_anchors": 7
+        },
+        {
+          "theory": "配置与投资机会背离",
+          "theme_count": 1,
+          "themes": [
+            "利益困境"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "钢铁主业横向整合",
+          "theme_count": 1,
+          "themes": [
+            "项目集成能力弱化"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "长期效果",
+          "theme_count": 1,
+          "themes": [
+            "长期结果"
+          ],
+          "total_anchors": 6
+        },
+        {
+          "theory": "间断平衡支撑",
+          "theme_count": 1,
+          "themes": [
+            "关键指标"
+          ],
+          "total_anchors": 4
+        },
+        {
+          "theory": "集权领导特征",
+          "theme_count": 1,
+          "themes": [
+            "风格类型"
+          ],
+          "total_anchors": 4
+        },
+        {
+          "theory": "青春期",
+          "theme_count": 1,
+          "themes": [
+            "人才困境"
+          ],
+          "total_anchors": 10
+        },
+        {
+          "theory": "风险传染渠道",
+          "theme_count": 1,
+          "themes": [
+            "疫情沟通"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "风险情境",
+          "theme_count": 1,
+          "themes": [
+            "潜在风险"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "风险控制",
+          "theme_count": 1,
+          "themes": [
+            "行为风险抑制"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "风险防范手段",
+          "theme_count": 1,
+          "themes": [
+            "花红制"
+          ],
+          "total_anchors": 4
+        },
+        {
+          "theory": "驱动因素",
+          "theme_count": 1,
+          "themes": [
+            "议题识别"
+          ],
+          "total_anchors": 8
+        },
+        {
+          "theory": "高受控模式",
+          "theme_count": 1,
+          "themes": [
+            "模式一"
+          ],
+          "total_anchors": 2
+        }
+      ]
+    },
+    "cross_level_collisions": {
+      "count": 8,
+      "items": [
+        "专精优势无法适用",
+        "关系导向",
+        "学习机制",
+        "数字逻辑",
+        "核心目标",
+        "模式二",
+        "组织印记",
+        "转型驱动因素"
+      ]
+    },
+    "low_confidence_mappings": {
+      "count": 374,
+      "items": [
+        {
+          "anchor": "正和博弈设计",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "价值重构路径",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "双重预见路径",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "村庄空巢化",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "跨案例证据",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "联合型互动结构",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "隐形代理人条件",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "外部网络主体",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "混合机制",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "映射机制",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "泛家族化信任",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "辐射带动",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "网络强度演化",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "侵占机制",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "平民化中心演化",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "合规与安全红线",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "HR角色",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "适配型模糊",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "基础技术科学知识消化吸收",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "阶段三调节机制",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "双重逻辑耦合",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "科研-工程耦合",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "碎片式参与",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "悖论整合",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "中国移动参与动因",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "大规模跨边界集成",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "诉讼生态激活",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "模块拆解与重组",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "联合决策者",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "外源性知识升维",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "浸入式学习",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "减值特征",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "惩戒证据",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "消费需求向新能源倾斜",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "儒家义利观",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "宗族规范",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "边缘解构动因",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "下沉外部赋能",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "元素数量策略",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "心化内控",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "网络嵌入类型",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "执行闭环",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "科技攻关",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "遮蔽手段",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "权威倡导型试验",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "技术检验型试验",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "数字边界撬动",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "释放数据联通价值",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "数据驱动测试惯例",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "东道国类型",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "权力要素让渡",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "培育自主重型燃机产业生态",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "桥接跃迁跳板",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "关键技术跨界延伸",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "风险传染基础",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "演化逻辑",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "触及成长天花板",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "网络结构",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "跨组织双元能力",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "利益绑定",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "快速迭代试错",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "调用式杠杆化",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "铅球态创新架构",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "催生离职动机",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "角色脱离",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "龙江森工模式",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "数据洞察",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "职业惩罚恐惧",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "大兴安岭模式",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "获取式结构化",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "语篇结构",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "透明型互动学习",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "黑箱型互动学习",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "拓展零部件集成技术",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "纵向联结机制",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "升级悖论",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "宗族伦理",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "偷闲触发类型",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "联动预算",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "科层与契约治理",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "复合型错误",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "地下协作网络",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "宗族权威",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "角色边界跨越",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "分权型剩余控制权模式",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "汇率风险类型",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "迭代控制",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "疫情防控",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "匹配构型",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "东掌制",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "项目管理",
+          "confidence": 0.053,
+          "source": "semantic_inherited",
+          "l2": "村庄场域市场化",
+          "l3": "市场约束无效"
+        },
+        {
+          "anchor": "运营策略",
+          "confidence": 0.053,
+          "source": "semantic_inherited",
+          "l2": "村庄场域市场化",
+          "l3": "市场约束无效"
+        },
+        {
+          "anchor": "运作平台",
+          "confidence": 0.053,
+          "source": "semantic_inherited",
+          "l2": "村庄场域市场化",
+          "l3": "市场约束无效"
+        },
+        {
+          "anchor": "运营规则",
+          "confidence": 0.053,
+          "source": "semantic_inherited",
+          "l2": "村庄场域市场化",
+          "l3": "市场约束无效"
+        },
+        {
+          "anchor": "经营管控",
+          "confidence": 0.053,
+          "source": "semantic_inherited",
+          "l2": "村庄场域市场化",
+          "l3": "市场约束无效"
+        },
+        {
+          "anchor": "运营管理",
+          "confidence": 0.053,
+          "source": "v11_direct",
+          "l2": "村庄场域市场化",
+          "l3": "市场约束无效"
+        },
+        {
+          "anchor": "遗址保护",
+          "confidence": 0.056,
+          "source": "v11_direct",
+          "l2": "进入方式",
+          "l3": "组装制造能力"
+        },
+        {
+          "anchor": "传承经历",
+          "confidence": 0.058,
+          "source": "semantic_inherited",
+          "l2": "组织印记",
+          "l3": "封建层级文化诱因"
+        },
+        {
+          "anchor": "技术传承式突破",
+          "confidence": 0.058,
+          "source": "semantic_inherited",
+          "l2": "组织印记",
+          "l3": "封建层级文化诱因"
+        },
+        {
+          "anchor": "技艺传承",
+          "confidence": 0.058,
+          "source": "v11_direct",
+          "l2": "组织印记",
+          "l3": "封建层级文化诱因"
+        },
+        {
+          "anchor": "用工制度",
+          "confidence": 0.067,
+          "source": "semantic_inherited",
+          "l2": "新颖工艺难以拓展应用",
+          "l3": "特新优势难以拓展"
+        },
+        {
+          "anchor": "制作工序",
+          "confidence": 0.067,
+          "source": "v11_direct",
+          "l2": "新颖工艺难以拓展应用",
+          "l3": "特新优势难以拓展"
+        },
+        {
+          "anchor": "游客需求多样",
+          "confidence": 0.069,
+          "source": "v11_direct",
+          "l2": "核心理念",
+          "l3": "创业集聚驱动"
+        },
+        {
+          "anchor": "明确市场定位",
+          "confidence": 0.071,
+          "source": "semantic_inherited",
+          "l2": "市场空间",
+          "l3": "保证金/质押导致现金不可用"
+        },
+        {
+          "anchor": "市场进入策略",
+          "confidence": 0.071,
+          "source": "semantic_inherited",
+          "l2": "市场空间",
+          "l3": "保证金/质押导致现金不可用"
+        },
+        {
+          "anchor": "市场测度",
+          "confidence": 0.071,
+          "source": "semantic_inherited",
+          "l2": "市场空间",
+          "l3": "保证金/质押导致现金不可用"
+        },
+        {
+          "anchor": "村庄场域市场化",
+          "confidence": 0.071,
+          "source": "semantic_inherited",
+          "l2": "市场空间",
+          "l3": "保证金/质押导致现金不可用"
+        },
+        {
+          "anchor": "有效市场",
+          "confidence": 0.071,
+          "source": "semantic_inherited",
+          "l2": "市场空间",
+          "l3": "保证金/质押导致现金不可用"
+        },
+        {
+          "anchor": "市场空间",
+          "confidence": 0.071,
+          "source": "semantic_inherited",
+          "l2": "市场空间",
+          "l3": "保证金/质押导致现金不可用"
+        },
+        {
+          "anchor": "定增市场效应",
+          "confidence": 0.071,
+          "source": "semantic_inherited",
+          "l2": "市场空间",
+          "l3": "保证金/质押导致现金不可用"
+        },
+        {
+          "anchor": "经营对冲",
+          "confidence": 0.071,
+          "source": "semantic_inherited",
+          "l2": "市场空间",
+          "l3": "保证金/质押导致现金不可用"
+        },
+        {
+          "anchor": "目标市场",
+          "confidence": 0.071,
+          "source": "semantic_inherited",
+          "l2": "市场空间",
+          "l3": "保证金/质押导致现金不可用"
+        },
+        {
+          "anchor": "市场经营理念薄弱",
+          "confidence": 0.071,
+          "source": "semantic_inherited",
+          "l2": "市场空间",
+          "l3": "保证金/质押导致现金不可用"
+        },
+        {
+          "anchor": "市场进路疏通",
+          "confidence": 0.071,
+          "source": "semantic_inherited",
+          "l2": "市场空间",
+          "l3": "保证金/质押导致现金不可用"
+        },
+        {
+          "anchor": "经营效率",
+          "confidence": 0.071,
+          "source": "semantic_inherited",
+          "l2": "市场空间",
+          "l3": "保证金/质押导致现金不可用"
+        },
+        {
+          "anchor": "市场环境",
+          "confidence": 0.071,
+          "source": "semantic_inherited",
+          "l2": "市场空间",
+          "l3": "保证金/质押导致现金不可用"
+        },
+        {
+          "anchor": "寻找新市场",
+          "confidence": 0.071,
+          "source": "semantic_inherited",
+          "l2": "市场空间",
+          "l3": "保证金/质押导致现金不可用"
+        },
+        {
+          "anchor": "经营风险分担",
+          "confidence": 0.071,
+          "source": "semantic_inherited",
+          "l2": "市场空间",
+          "l3": "保证金/质押导致现金不可用"
+        },
+        {
+          "anchor": "营销环境",
+          "confidence": 0.071,
+          "source": "semantic_inherited",
+          "l2": "市场空间",
+          "l3": "保证金/质押导致现金不可用"
+        },
+        {
+          "anchor": "市场经营",
+          "confidence": 0.071,
+          "source": "v11_direct",
+          "l2": "市场空间",
+          "l3": "保证金/质押导致现金不可用"
+        },
+        {
+          "anchor": "新颖工艺难以拓展应用",
+          "confidence": 0.073,
+          "source": "semantic_inherited",
+          "l2": "品质优势",
+          "l3": "特新优势难以拓展"
+        },
+        {
+          "anchor": "已有工艺持续精进",
+          "confidence": 0.073,
+          "source": "semantic_inherited",
+          "l2": "品质优势",
+          "l3": "特新优势难以拓展"
+        },
+        {
+          "anchor": "工艺难度大",
+          "confidence": 0.073,
+          "source": "v11_direct",
+          "l2": "品质优势",
+          "l3": "特新优势难以拓展"
+        },
+        {
+          "anchor": "生态宜居",
+          "confidence": 0.074,
+          "source": "semantic_inherited",
+          "l2": "人际互动",
+          "l3": "话语经验建构"
+        },
+        {
+          "anchor": "居民态度",
+          "confidence": 0.074,
+          "source": "v11_direct",
+          "l2": "人际互动",
+          "l3": "话语经验建构"
+        },
+        {
+          "anchor": "组织主体",
+          "confidence": 0.077,
+          "source": "semantic_inherited",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "约束机制",
+          "confidence": 0.077,
+          "source": "semantic_inherited",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "分类管理",
+          "confidence": 0.077,
+          "source": "semantic_inherited",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "自治管理",
+          "confidence": 0.077,
+          "source": "semantic_inherited",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "组织制度设计",
+          "confidence": 0.077,
+          "source": "semantic_inherited",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "制度遵从",
+          "confidence": 0.077,
+          "source": "semantic_inherited",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "管理模式",
+          "confidence": 0.077,
+          "source": "semantic_inherited",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "薪酬制度",
+          "confidence": 0.077,
+          "source": "semantic_inherited",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "制度环境",
+          "confidence": 0.077,
+          "source": "semantic_inherited",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "管理原则",
+          "confidence": 0.077,
+          "source": "semantic_inherited",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "企业管理",
+          "confidence": 0.077,
+          "source": "semantic_inherited",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "高管思维",
+          "confidence": 0.077,
+          "source": "semantic_inherited",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "法律制度",
+          "confidence": 0.077,
+          "source": "semantic_inherited",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "管理层反制",
+          "confidence": 0.077,
+          "source": "semantic_inherited",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "治理阶段",
+          "confidence": 0.077,
+          "source": "semantic_inherited",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "企业能力复制机制",
+          "confidence": 0.077,
+          "source": "semantic_inherited",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "权力监控",
+          "confidence": 0.077,
+          "source": "semantic_inherited",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "控制结构",
+          "confidence": 0.077,
+          "source": "semantic_inherited",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "治理机制",
+          "confidence": 0.077,
+          "source": "semantic_inherited",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "集中管理",
+          "confidence": 0.077,
+          "source": "semantic_inherited",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "社会控制",
+          "confidence": 0.077,
+          "source": "semantic_inherited",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "风险管控",
+          "confidence": 0.077,
+          "source": "semantic_inherited",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "边界规范化管理",
+          "confidence": 0.077,
+          "source": "semantic_inherited",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "管理柔性",
+          "confidence": 0.077,
+          "source": "semantic_inherited",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "管理体制",
+          "confidence": 0.077,
+          "source": "v11_direct",
+          "l2": "阶段一关系",
+          "l3": "扶强阶段共振机制"
+        },
+        {
+          "anchor": "主打产品族群特征",
+          "confidence": 0.078,
+          "source": "semantic_inherited",
+          "l2": "正当性构建机制",
+          "l3": "修辞策略"
+        },
+        {
+          "anchor": "非市场特征",
+          "confidence": 0.078,
+          "source": "semantic_inherited",
+          "l2": "正当性构建机制",
+          "l3": "修辞策略"
+        },
+        {
+          "anchor": "数据沉淀与特征识别",
+          "confidence": 0.078,
+          "source": "semantic_inherited",
+          "l2": "正当性构建机制",
+          "l3": "修辞策略"
+        },
+        {
+          "anchor": "人力市场特征",
+          "confidence": 0.078,
+          "source": "semantic_inherited",
+          "l2": "正当性构建机制",
+          "l3": "修辞策略"
+        },
+        {
+          "anchor": "交易特征",
+          "confidence": 0.078,
+          "source": "semantic_inherited",
+          "l2": "正当性构建机制",
+          "l3": "修辞策略"
+        },
+        {
+          "anchor": "企业能力变异方向",
+          "confidence": 0.078,
+          "source": "semantic_inherited",
+          "l2": "正当性构建机制",
+          "l3": "修辞策略"
+        },
+        {
+          "anchor": "抽象化业务逻辑",
+          "confidence": 0.078,
+          "source": "semantic_inherited",
+          "l2": "正当性构建机制",
+          "l3": "修辞策略"
+        },
+        {
+          "anchor": "实施特征",
+          "confidence": 0.078,
+          "source": "semantic_inherited",
+          "l2": "正当性构建机制",
+          "l3": "修辞策略"
+        },
+        {
+          "anchor": "战略特征",
+          "confidence": 0.078,
+          "source": "semantic_inherited",
+          "l2": "正当性构建机制",
+          "l3": "修辞策略"
+        },
+        {
+          "anchor": "企业话语特征",
+          "confidence": 0.078,
+          "source": "semantic_inherited",
+          "l2": "正当性构建机制",
+          "l3": "修辞策略"
+        },
+        {
+          "anchor": "竞争性观点共生",
+          "confidence": 0.078,
+          "source": "semantic_inherited",
+          "l2": "正当性构建机制",
+          "l3": "修辞策略"
+        },
+        {
+          "anchor": "股权结构特征",
+          "confidence": 0.078,
+          "source": "semantic_inherited",
+          "l2": "正当性构建机制",
+          "l3": "修辞策略"
+        },
+        {
+          "anchor": "自组织特征",
+          "confidence": 0.078,
+          "source": "semantic_inherited",
+          "l2": "正当性构建机制",
+          "l3": "修辞策略"
+        },
+        {
+          "anchor": "治理结构特征",
+          "confidence": 0.078,
+          "source": "semantic_inherited",
+          "l2": "正当性构建机制",
+          "l3": "修辞策略"
+        },
+        {
+          "anchor": "成长特征",
+          "confidence": 0.078,
+          "source": "semantic_inherited",
+          "l2": "正当性构建机制",
+          "l3": "修辞策略"
+        },
+        {
+          "anchor": "抽取共性需求",
+          "confidence": 0.078,
+          "source": "semantic_inherited",
+          "l2": "正当性构建机制",
+          "l3": "修辞策略"
+        },
+        {
+          "anchor": "财务特征",
+          "confidence": 0.078,
+          "source": "semantic_inherited",
+          "l2": "正当性构建机制",
+          "l3": "修辞策略"
+        },
+        {
+          "anchor": "行业共性特征",
+          "confidence": 0.078,
+          "source": "v11_direct",
+          "l2": "正当性构建机制",
+          "l3": "修辞策略"
+        },
+        {
+          "anchor": "服务特色",
+          "confidence": 0.083,
+          "source": "semantic_inherited",
+          "l2": "同伴质疑与排斥",
+          "l3": "一言堂、监督失效"
+        },
+        {
+          "anchor": "服务标准化",
+          "confidence": 0.083,
+          "source": "semantic_inherited",
+          "l2": "同伴质疑与排斥",
+          "l3": "一言堂、监督失效"
+        },
+        {
+          "anchor": "精益服务效果",
+          "confidence": 0.083,
+          "source": "semantic_inherited",
+          "l2": "同伴质疑与排斥",
+          "l3": "一言堂、监督失效"
+        },
+        {
+          "anchor": "服务自增强",
+          "confidence": 0.083,
+          "source": "semantic_inherited",
+          "l2": "同伴质疑与排斥",
+          "l3": "一言堂、监督失效"
+        },
+        {
+          "anchor": "质量控制",
+          "confidence": 0.083,
+          "source": "semantic_inherited",
+          "l2": "同伴质疑与排斥",
+          "l3": "一言堂、监督失效"
+        },
+        {
+          "anchor": "数字技术支撑服务",
+          "confidence": 0.083,
+          "source": "semantic_inherited",
+          "l2": "同伴质疑与排斥",
+          "l3": "一言堂、监督失效"
+        },
+        {
+          "anchor": "质量与安全失控",
+          "confidence": 0.083,
+          "source": "semantic_inherited",
+          "l2": "同伴质疑与排斥",
+          "l3": "一言堂、监督失效"
+        },
+        {
+          "anchor": "服务质量",
+          "confidence": 0.083,
+          "source": "v11_direct",
+          "l2": "同伴质疑与排斥",
+          "l3": "一言堂、监督失效"
+        },
+        {
+          "anchor": "具体化产品定位",
+          "confidence": 0.091,
+          "source": "semantic_inherited",
+          "l2": "解译",
+          "l3": "修辞方式"
+        },
+        {
+          "anchor": "产权碎片化",
+          "confidence": 0.091,
+          "source": "semantic_inherited",
+          "l2": "解译",
+          "l3": "修辞方式"
+        },
+        {
+          "anchor": "产业实践市场化",
+          "confidence": 0.091,
+          "source": "semantic_inherited",
+          "l2": "解译",
+          "l3": "修辞方式"
+        },
+        {
+          "anchor": "系列品牌产品批量转化",
+          "confidence": 0.091,
+          "source": "semantic_inherited",
+          "l2": "解译",
+          "l3": "修辞方式"
+        },
+        {
+          "anchor": "产品价值化",
+          "confidence": 0.091,
+          "source": "semantic_inherited",
+          "l2": "解译",
+          "l3": "修辞方式"
+        },
+        {
+          "anchor": "家电模具工艺趋同争同质模具产能过剩",
+          "confidence": 0.091,
+          "source": "semantic_inherited",
+          "l2": "解译",
+          "l3": "修辞方式"
+        },
+        {
+          "anchor": "空间布局",
+          "confidence": 0.091,
+          "source": "semantic_inherited",
+          "l2": "落地载体",
+          "l3": "研发设计能力"
+        },
+        {
+          "anchor": "绿色化生产",
+          "confidence": 0.091,
+          "source": "semantic_inherited",
+          "l2": "解译",
+          "l3": "修辞方式"
+        },
+        {
+          "anchor": "农产品交易电商化",
+          "confidence": 0.091,
+          "source": "semantic_inherited",
+          "l2": "解译",
+          "l3": "修辞方式"
+        },
+        {
+          "anchor": "角色同化",
+          "confidence": 0.091,
+          "source": "semantic_inherited",
+          "l2": "解译",
+          "l3": "修辞方式"
+        },
+        {
+          "anchor": "产品规范化片面认知约束",
+          "confidence": 0.091,
+          "source": "semantic_inherited",
+          "l2": "解译",
+          "l3": "修辞方式"
+        },
+        {
+          "anchor": "同源性技术复刻",
+          "confidence": 0.091,
+          "source": "semantic_inherited",
+          "l2": "解译",
+          "l3": "修辞方式"
+        },
+        {
+          "anchor": "手工vs机械",
+          "confidence": 0.091,
+          "source": "v11_direct",
+          "l2": "伪装与合规包装",
+          "l3": "隐蔽性操作"
+        },
+        {
+          "anchor": "产品同质化",
+          "confidence": 0.091,
+          "source": "v11_direct",
+          "l2": "解译",
+          "l3": "修辞方式"
+        },
+        {
+          "anchor": "街区空间布局",
+          "confidence": 0.091,
+          "source": "v11_direct",
+          "l2": "落地载体",
+          "l3": "研发设计能力"
+        },
+        {
+          "anchor": "制度性与交易性约束",
+          "confidence": 0.095,
+          "source": "semantic_inherited",
+          "l2": "制度背景",
+          "l3": "制度性约束"
+        },
+        {
+          "anchor": "规范合法性缺乏",
+          "confidence": 0.095,
+          "source": "semantic_inherited",
+          "l2": "制度背景",
+          "l3": "制度性约束"
+        },
+        {
+          "anchor": "制度劣势凸显",
+          "confidence": 0.095,
+          "source": "semantic_inherited",
+          "l2": "制度背景",
+          "l3": "制度性约束"
+        },
+        {
+          "anchor": "制度约束突破",
+          "confidence": 0.095,
+          "source": "semantic_inherited",
+          "l2": "制度背景",
+          "l3": "制度性约束"
+        },
+        {
+          "anchor": "治理失效原因",
+          "confidence": 0.095,
+          "source": "semantic_inherited",
+          "l2": "制度背景",
+          "l3": "制度性约束"
+        },
+        {
+          "anchor": "治理缺陷",
+          "confidence": 0.095,
+          "source": "semantic_inherited",
+          "l2": "制度背景",
+          "l3": "制度性约束"
+        },
+        {
+          "anchor": "内部不协调",
+          "confidence": 0.095,
+          "source": "semantic_inherited",
+          "l2": "制度背景",
+          "l3": "制度性约束"
+        },
+        {
+          "anchor": "项目集成能力弱化",
+          "confidence": 0.095,
+          "source": "semantic_inherited",
+          "l2": "制度背景",
+          "l3": "制度性约束"
+        },
+        {
+          "anchor": "管理制度不完善",
+          "confidence": 0.095,
+          "source": "v11_direct",
+          "l2": "制度背景",
+          "l3": "制度性约束"
+        },
+        {
+          "anchor": "消防安全",
+          "confidence": 0.1,
+          "source": "v11_direct",
+          "l2": "风险管控",
+          "l3": "规避监管"
+        },
+        {
+          "anchor": "技术与理念供给",
+          "confidence": 0.111,
+          "source": "semantic_inherited",
+          "l2": "组织印记",
+          "l3": "组织印记"
+        },
+        {
+          "anchor": "专业优势被同行赶超势精细技艺被机器替代",
+          "confidence": 0.111,
+          "source": "semantic_inherited",
+          "l2": "组织印记",
+          "l3": "组织印记"
+        },
+        {
+          "anchor": "技术参与",
+          "confidence": 0.111,
+          "source": "semantic_inherited",
+          "l2": "组织印记",
+          "l3": "组织印记"
+        },
+        {
+          "anchor": "技术前景识别",
+          "confidence": 0.111,
+          "source": "semantic_inherited",
+          "l2": "组织印记",
+          "l3": "组织印记"
+        },
+        {
+          "anchor": "代理问题",
+          "confidence": 0.111,
+          "source": "semantic_inherited",
+          "l2": "低价竞争加剧",
+          "l3": "低价竞加剧"
+        },
+        {
+          "anchor": "成本逻辑",
+          "confidence": 0.111,
+          "source": "semantic_inherited",
+          "l2": "低价竞争加剧",
+          "l3": "低价竞加剧"
+        },
+        {
+          "anchor": "技术环境",
+          "confidence": 0.111,
+          "source": "semantic_inherited",
+          "l2": "组织印记",
+          "l3": "组织印记"
+        },
+        {
+          "anchor": "技术累积性",
+          "confidence": 0.111,
+          "source": "semantic_inherited",
+          "l2": "组织印记",
+          "l3": "组织印记"
+        },
+        {
+          "anchor": "技术维度",
+          "confidence": 0.111,
+          "source": "semantic_inherited",
+          "l2": "组织印记",
+          "l3": "组织印记"
+        },
+        {
+          "anchor": "破坏性技术",
+          "confidence": 0.111,
+          "source": "semantic_inherited",
+          "l2": "组织印记",
+          "l3": "组织印记"
+        },
+        {
+          "anchor": "技术特征",
+          "confidence": 0.111,
+          "source": "semantic_inherited",
+          "l2": "组织印记",
+          "l3": "组织印记"
+        },
+        {
+          "anchor": "技术战略",
+          "confidence": 0.111,
+          "source": "semantic_inherited",
+          "l2": "组织印记",
+          "l3": "组织印记"
+        },
+        {
+          "anchor": "触及行业技术天花板",
+          "confidence": 0.111,
+          "source": "semantic_inherited",
+          "l2": "组织印记",
+          "l3": "组织印记"
+        },
+        {
+          "anchor": "技术范式",
+          "confidence": 0.111,
+          "source": "semantic_inherited",
+          "l2": "组织印记",
+          "l3": "组织印记"
+        },
+        {
+          "anchor": "技术聚合数据",
+          "confidence": 0.111,
+          "source": "semantic_inherited",
+          "l2": "组织印记",
+          "l3": "组织印记"
+        },
+        {
+          "anchor": "技术融合阶段",
+          "confidence": 0.111,
+          "source": "semantic_inherited",
+          "l2": "组织印记",
+          "l3": "组织印记"
+        },
+        {
+          "anchor": "技术研发能力",
+          "confidence": 0.111,
+          "source": "semantic_inherited",
+          "l2": "组织印记",
+          "l3": "组织印记"
+        },
+        {
+          "anchor": "引进汽车模具技术重重建生产工艺流程",
+          "confidence": 0.111,
+          "source": "semantic_inherited",
+          "l2": "组织印记",
+          "l3": "组织印记"
+        },
+        {
+          "anchor": "外部技术知识内化",
+          "confidence": 0.111,
+          "source": "semantic_inherited",
+          "l2": "组织印记",
+          "l3": "组织印记"
+        },
+        {
+          "anchor": "开发特殊制造工艺",
+          "confidence": 0.111,
+          "source": "semantic_inherited",
+          "l2": "组织印记",
+          "l3": "组织印记"
+        },
+        {
+          "anchor": "技术摄入",
+          "confidence": 0.111,
+          "source": "semantic_inherited",
+          "l2": "组织印记",
+          "l3": "组织印记"
+        },
+        {
+          "anchor": "工艺技术",
+          "confidence": 0.111,
+          "source": "v11_direct",
+          "l2": "组织印记",
+          "l3": "组织印记"
+        },
+        {
+          "anchor": "定价问题",
+          "confidence": 0.111,
+          "source": "v11_direct",
+          "l2": "低价竞争加剧",
+          "l3": "低价竞加剧"
+        },
+        {
+          "anchor": "用户粘性不足",
+          "confidence": 0.115,
+          "source": "semantic_inherited",
+          "l2": "学习机制",
+          "l3": "学习机制"
+        },
+        {
+          "anchor": "特色产品难满足新需求",
+          "confidence": 0.115,
+          "source": "semantic_inherited",
+          "l2": "学习机制",
+          "l3": "学习机制"
+        },
+        {
+          "anchor": "宣传推广不足",
+          "confidence": 0.115,
+          "source": "v11_direct",
+          "l2": "学习机制",
+          "l3": "学习机制"
+        },
+        {
+          "anchor": "平台开发能力提升",
+          "confidence": 0.125,
+          "source": "semantic_inherited",
+          "l2": "交织载体",
+          "l3": "产品层面"
+        },
+        {
+          "anchor": "产品特征",
+          "confidence": 0.125,
+          "source": "semantic_inherited",
+          "l2": "交织载体",
+          "l3": "产品层面"
+        },
+        {
+          "anchor": "产品约束",
+          "confidence": 0.125,
+          "source": "semantic_inherited",
+          "l2": "交织载体",
+          "l3": "产品层面"
+        },
+        {
+          "anchor": "构建产品代际",
+          "confidence": 0.125,
+          "source": "semantic_inherited",
+          "l2": "交织载体",
+          "l3": "产品层面"
+        },
+        {
+          "anchor": "产品策略",
+          "confidence": 0.125,
+          "source": "semantic_inherited",
+          "l2": "交织载体",
+          "l3": "产品层面"
+        },
+        {
+          "anchor": "产品体系整合",
+          "confidence": 0.125,
+          "source": "semantic_inherited",
+          "l2": "交织载体",
+          "l3": "产品层面"
+        },
+        {
+          "anchor": "产品定位",
+          "confidence": 0.125,
+          "source": "semantic_inherited",
+          "l2": "交织载体",
+          "l3": "产品层面"
+        },
+        {
+          "anchor": "形成产品战略能力",
+          "confidence": 0.125,
+          "source": "semantic_inherited",
+          "l2": "交织载体",
+          "l3": "产品层面"
+        },
+        {
+          "anchor": "构建产品序列",
+          "confidence": 0.125,
+          "source": "semantic_inherited",
+          "l2": "交织载体",
+          "l3": "产品层面"
+        },
+        {
+          "anchor": "自主研发核心模块",
+          "confidence": 0.125,
+          "source": "semantic_inherited",
+          "l2": "交织载体",
+          "l3": "产品层面"
+        },
+        {
+          "anchor": "产品规划惯例",
+          "confidence": 0.125,
+          "source": "semantic_inherited",
+          "l2": "交织载体",
+          "l3": "产品层面"
+        },
+        {
+          "anchor": "产品核心竞争力",
+          "confidence": 0.125,
+          "source": "semantic_inherited",
+          "l2": "交织载体",
+          "l3": "产品层面"
+        },
+        {
+          "anchor": "产品表征应用",
+          "confidence": 0.125,
+          "source": "semantic_inherited",
+          "l2": "交织载体",
+          "l3": "产品层面"
+        },
+        {
+          "anchor": "开发明星产品",
+          "confidence": 0.125,
+          "source": "semantic_inherited",
+          "l2": "交织载体",
+          "l3": "产品层面"
+        },
+        {
+          "anchor": "研发型机制",
+          "confidence": 0.125,
+          "source": "semantic_inherited",
+          "l2": "交织载体",
+          "l3": "产品层面"
+        },
+        {
+          "anchor": "开发环节行动",
+          "confidence": 0.125,
+          "source": "semantic_inherited",
+          "l2": "交织载体",
+          "l3": "产品层面"
+        },
+        {
+          "anchor": "产品开发",
+          "confidence": 0.125,
+          "source": "v11_direct",
+          "l2": "交织载体",
+          "l3": "产品层面"
+        },
+        {
+          "anchor": "旅游经济水平",
+          "confidence": 0.127,
+          "source": "semantic_inherited",
+          "l2": "精益服务效果",
+          "l3": "服务环节优势"
+        },
+        {
+          "anchor": "游客体验不足",
+          "confidence": 0.127,
+          "source": "v11_direct",
+          "l2": "精益服务效果",
+          "l3": "服务环节优势"
+        },
+        {
+          "anchor": "业态规划",
+          "confidence": 0.143,
+          "source": "semantic_inherited",
+          "l2": "市场失灵",
+          "l3": "市场约束无效"
+        },
+        {
+          "anchor": "哑铃态创新架构",
+          "confidence": 0.143,
+          "source": "semantic_inherited",
+          "l2": "市场失灵",
+          "l3": "市场约束无效"
+        },
+        {
+          "anchor": "生态编排战略选择",
+          "confidence": 0.143,
+          "source": "semantic_inherited",
+          "l2": "市场失灵",
+          "l3": "市场约束无效"
+        },
+        {
+          "anchor": "业态互补",
+          "confidence": 0.143,
+          "source": "semantic_inherited",
+          "l2": "市场失灵",
+          "l3": "市场约束无效"
+        },
+        {
+          "anchor": "配置机制",
+          "confidence": 0.143,
+          "source": "semantic_inherited",
+          "l2": "市场失灵",
+          "l3": "市场约束无效"
+        },
+        {
+          "anchor": "网络形态",
+          "confidence": 0.143,
+          "source": "semantic_inherited",
+          "l2": "市场失灵",
+          "l3": "市场约束无效"
+        },
+        {
+          "anchor": "生态化能力",
+          "confidence": 0.143,
+          "source": "semantic_inherited",
+          "l2": "市场失灵",
+          "l3": "市场约束无效"
+        },
+        {
+          "anchor": "静态配置方式",
+          "confidence": 0.143,
+          "source": "semantic_inherited",
+          "l2": "市场失灵",
+          "l3": "市场约束无效"
+        },
+        {
+          "anchor": "淡旺季差异",
+          "confidence": 0.143,
+          "source": "v11_direct",
+          "l2": "议题识别",
+          "l3": "驱动因素"
+        },
+        {
+          "anchor": "原住民生计",
+          "confidence": 0.143,
+          "source": "v11_direct",
+          "l2": "随俗浮沉者",
+          "l3": "低阶创新能力"
+        },
+        {
+          "anchor": "业态配置",
+          "confidence": 0.143,
+          "source": "v11_direct",
+          "l2": "市场失灵",
+          "l3": "市场约束无效"
+        },
+        {
+          "anchor": "青花工艺",
+          "confidence": 0.143,
+          "source": "v11_direct",
+          "l2": "核心构念",
+          "l3": "财务战略传递路径"
+        },
+        {
+          "anchor": "世界遗产标准",
+          "confidence": 0.148,
+          "source": "v11_direct",
+          "l2": "空间布局",
+          "l3": "围绕定位构建"
+        },
+        {
+          "anchor": "非遗传承人",
+          "confidence": 0.154,
+          "source": "v11_direct",
+          "l2": "组织印记",
+          "l3": "封建层级文化诱因"
+        },
+        {
+          "anchor": "消费者行为",
+          "confidence": 0.158,
+          "source": "semantic_inherited",
+          "l2": "掏空手段",
+          "l3": "国资放任掏空"
+        },
+        {
+          "anchor": "游客消费心理",
+          "confidence": 0.158,
+          "source": "v11_direct",
+          "l2": "掏空手段",
+          "l3": "国资放任掏空"
+        },
+        {
+          "anchor": "产品创新方式",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "有中生新",
+          "l3": "创新扩散"
+        },
+        {
+          "anchor": "领导模式",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "有中生新",
+          "l3": "创新扩散"
+        },
+        {
+          "anchor": "价值引领",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "文化底色",
+          "l3": "封建层级文化诱因"
+        },
+        {
+          "anchor": "价值逻辑",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "文化底色",
+          "l3": "封建层级文化诱因"
+        },
+        {
+          "anchor": "新颖型机制",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "有中生新",
+          "l3": "创新扩散"
+        },
+        {
+          "anchor": "价值维度",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "文化底色",
+          "l3": "封建层级文化诱因"
+        },
+        {
+          "anchor": "价值创造方式",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "有中生新",
+          "l3": "创新扩散"
+        },
+        {
+          "anchor": "社会价值实现",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "文化底色",
+          "l3": "封建层级文化诱因"
+        },
+        {
+          "anchor": "其他各类话题",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "确立合法化身份",
+          "l3": "品牌形象提升"
+        },
+        {
+          "anchor": "价值属性重新定位",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "文化底色",
+          "l3": "封建层级文化诱因"
+        },
+        {
+          "anchor": "生产模式",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "有中生新",
+          "l3": "创新扩散"
+        },
+        {
+          "anchor": "发展阶段",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "有中生新",
+          "l3": "创新扩散"
+        },
+        {
+          "anchor": "文化比较思考",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "文化底色",
+          "l3": "封建层级文化诱因"
+        },
+        {
+          "anchor": "文化机制",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "文化底色",
+          "l3": "封建层级文化诱因"
+        },
+        {
+          "anchor": "文化类型",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "文化底色",
+          "l3": "封建层级文化诱因"
+        },
+        {
+          "anchor": "文化基础",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "文化底色",
+          "l3": "封建层级文化诱因"
+        },
+        {
+          "anchor": "文化底色",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "文化底色",
+          "l3": "封建层级文化诱因"
+        },
+        {
+          "anchor": "互动模式",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "有中生新",
+          "l3": "创新扩散"
+        },
+        {
+          "anchor": "社会价值赋能型",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "文化底色",
+          "l3": "封建层级文化诱因"
+        },
+        {
+          "anchor": "价值匹配",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "文化底色",
+          "l3": "封建层级文化诱因"
+        },
+        {
+          "anchor": "模式适应风险",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "有中生新",
+          "l3": "创新扩散"
+        },
+        {
+          "anchor": "运作模式",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "有中生新",
+          "l3": "创新扩散"
+        },
+        {
+          "anchor": "丰富价值结构",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "文化底色",
+          "l3": "封建层级文化诱因"
+        },
+        {
+          "anchor": "控制模式",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "有中生新",
+          "l3": "创新扩散"
+        },
+        {
+          "anchor": "组织文化",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "文化底色",
+          "l3": "封建层级文化诱因"
+        },
+        {
+          "anchor": "模式二",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "有中生新",
+          "l3": "创新扩散"
+        },
+        {
+          "anchor": "核心问题",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "确立合法化身份",
+          "l3": "品牌形象提升"
+        },
+        {
+          "anchor": "国民共享模式",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "有中生新",
+          "l3": "创新扩散"
+        },
+        {
+          "anchor": "模式可持续性压力",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "有中生新",
+          "l3": "创新扩散"
+        },
+        {
+          "anchor": "开发模式",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "有中生新",
+          "l3": "创新扩散"
+        },
+        {
+          "anchor": "社会价值",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "文化底色",
+          "l3": "封建层级文化诱因"
+        },
+        {
+          "anchor": "绿色价值能力提升",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "文化底色",
+          "l3": "封建层级文化诱因"
+        },
+        {
+          "anchor": "具体化价值主张",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "文化底色",
+          "l3": "封建层级文化诱因"
+        },
+        {
+          "anchor": "蝶变模式",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "有中生新",
+          "l3": "创新扩散"
+        },
+        {
+          "anchor": "价值提供模式",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "有中生新",
+          "l3": "创新扩散"
+        },
+        {
+          "anchor": "追赶模式",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "有中生新",
+          "l3": "创新扩散"
+        },
+        {
+          "anchor": "拓展生态价值",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "文化底色",
+          "l3": "封建层级文化诱因"
+        },
+        {
+          "anchor": "文化特征",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "文化底色",
+          "l3": "封建层级文化诱因"
+        },
+        {
+          "anchor": "模式一",
+          "confidence": 0.167,
+          "source": "semantic_inherited",
+          "l2": "有中生新",
+          "l3": "创新扩散"
+        },
+        {
+          "anchor": "创新发展模式",
+          "confidence": 0.167,
+          "source": "v11_direct",
+          "l2": "有中生新",
+          "l3": "创新扩散"
+        },
+        {
+          "anchor": "其他问题",
+          "confidence": 0.167,
+          "source": "v11_direct",
+          "l2": "确立合法化身份",
+          "l3": "品牌形象提升"
+        },
+        {
+          "anchor": "标识导览",
+          "confidence": 0.167,
+          "source": "v11_direct",
+          "l2": "分析起点",
+          "l3": "专业胜任"
+        },
+        {
+          "anchor": "游客流量变化",
+          "confidence": 0.176,
+          "source": "v11_direct",
+          "l2": "角色",
+          "l3": "创业集聚驱动"
+        },
+        {
+          "anchor": "公共空间营造",
+          "confidence": 0.2,
+          "source": "semantic_inherited",
+          "l2": "核心理念",
+          "l3": "创业集聚驱动"
+        },
+        {
+          "anchor": "推进系统化重组",
+          "confidence": 0.2,
+          "source": "semantic_inherited",
+          "l2": "村庄场域市场化",
+          "l3": "农户+本地大户"
+        },
+        {
+          "anchor": "传统发展期",
+          "confidence": 0.2,
+          "source": "semantic_inherited",
+          "l2": "村庄场域市场化",
+          "l3": "农户+本地大户"
+        },
+        {
+          "anchor": "规划功能",
+          "confidence": 0.2,
+          "source": "semantic_inherited",
+          "l2": "核心理念",
+          "l3": "创业集聚驱动"
+        },
+        {
+          "anchor": "延展行动空间",
+          "confidence": 0.2,
+          "source": "semantic_inherited",
+          "l2": "核心理念",
+          "l3": "创业集聚驱动"
+        },
+        {
+          "anchor": "规划陷阱",
+          "confidence": 0.2,
+          "source": "semantic_inherited",
+          "l2": "核心理念",
+          "l3": "创业集聚驱动"
+        },
+        {
+          "anchor": "传统供应链",
+          "confidence": 0.2,
+          "source": "semantic_inherited",
+          "l2": "村庄场域市场化",
+          "l3": "农户+本地大户"
+        },
+        {
+          "anchor": "游客文化认知",
+          "confidence": 0.2,
+          "source": "v11_direct",
+          "l2": "思维方式",
+          "l3": "思维基础"
+        },
+        {
+          "anchor": "文创产品开发",
+          "confidence": 0.2,
+          "source": "v11_direct",
+          "l2": "扩增高价值营收业务",
+          "l3": "延展高价值业务"
+        },
+        {
+          "anchor": "传统与创新并重",
+          "confidence": 0.2,
+          "source": "v11_direct",
+          "l2": "村庄场域市场化",
+          "l3": "农户+本地大户"
+        },
+        {
+          "anchor": "空间规划",
+          "confidence": 0.2,
+          "source": "v11_direct",
+          "l2": "核心理念",
+          "l3": "创业集聚驱动"
+        },
+        {
+          "anchor": "股份合作制",
+          "confidence": 0.214,
+          "source": "semantic_inherited",
+          "l2": "人才培养",
+          "l3": "建构型学习"
+        },
+        {
+          "anchor": "校企合作",
+          "confidence": 0.214,
+          "source": "v11_direct",
+          "l2": "人才培养",
+          "l3": "建构型学习"
+        },
+        {
+          "anchor": "产学研协同",
+          "confidence": 0.222,
+          "source": "semantic_inherited",
+          "l2": "学习方式",
+          "l3": "外生式学习"
+        },
+        {
+          "anchor": "创新行动赋能",
+          "confidence": 0.222,
+          "source": "semantic_inherited",
+          "l2": "文化类型",
+          "l3": "建构型学习"
+        },
+        {
+          "anchor": "研究对象",
+          "confidence": 0.222,
+          "source": "semantic_inherited",
+          "l2": "学习方式",
+          "l3": "外生式学习"
+        },
+        {
+          "anchor": "创新文化协同",
+          "confidence": 0.222,
+          "source": "semantic_inherited",
+          "l2": "文化类型",
+          "l3": "建构型学习"
+        },
+        {
+          "anchor": "研究情境",
+          "confidence": 0.222,
+          "source": "semantic_inherited",
+          "l2": "学习方式",
+          "l3": "外生式学习"
+        },
+        {
+          "anchor": "研究启示",
+          "confidence": 0.222,
+          "source": "semantic_inherited",
+          "l2": "学习方式",
+          "l3": "外生式学习"
+        },
+        {
+          "anchor": "组织平台",
+          "confidence": 0.222,
+          "source": "semantic_inherited",
+          "l2": "文化类型",
+          "l3": "建构型学习"
+        },
+        {
+          "anchor": "知识聚变创造",
+          "confidence": 0.222,
+          "source": "semantic_inherited",
+          "l2": "文化类型",
+          "l3": "建构型学习"
+        },
+        {
+          "anchor": "研学教育",
+          "confidence": 0.222,
+          "source": "v11_direct",
+          "l2": "学习方式",
+          "l3": "外生式学习"
+        },
+        {
+          "anchor": "活动创新",
+          "confidence": 0.222,
+          "source": "v11_direct",
+          "l2": "文化类型",
+          "l3": "建构型学习"
+        },
+        {
+          "anchor": "历史建筑保护",
+          "confidence": 0.222,
+          "source": "v11_direct",
+          "l2": "学习方式",
+          "l3": "外生式学习"
+        },
+        {
+          "anchor": "国企特定功能",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "低效原因",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "利益输送",
+          "l3": "掏空与寻租前提"
+        },
+        {
+          "anchor": "价值失衡情境",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "利益输送",
+          "l3": "掏空与寻租前提"
+        },
+        {
+          "anchor": "低价竞争加剧",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "利益输送",
+          "l3": "掏空与寻租前提"
+        },
+        {
+          "anchor": "交叉竞争出现",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "利益输送",
+          "l3": "掏空与寻租前提"
+        },
+        {
+          "anchor": "嵌入基层协商",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "组织角色",
+          "l3": "治理机制"
+        },
+        {
+          "anchor": "合作深化",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "品牌意义获取",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "价值目标",
+          "l3": "价值判断建构"
+        },
+        {
+          "anchor": "品牌共创方式",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "价值目标",
+          "l3": "价值判断建构"
+        },
+        {
+          "anchor": "品牌关联",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "价值目标",
+          "l3": "价值判断建构"
+        },
+        {
+          "anchor": "品牌培育方式",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "价值目标",
+          "l3": "价值判断建构"
+        },
+        {
+          "anchor": "品牌阶段",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "价值目标",
+          "l3": "价值判断建构"
+        },
+        {
+          "anchor": "业务内容",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "阶段一",
+          "l3": "EM阶段核心"
+        },
+        {
+          "anchor": "政府驱动主导型",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "学徒制",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "人才培养",
+          "l3": "建构型学习"
+        },
+        {
+          "anchor": "学习机制",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "人才培养",
+          "l3": "建构型学习"
+        },
+        {
+          "anchor": "内外政企协同",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "组织学习方式",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "人才培养",
+          "l3": "建构型学习"
+        },
+        {
+          "anchor": "民企策略",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "整合式协作",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "组织角色",
+          "l3": "治理机制"
+        },
+        {
+          "anchor": "技术合作网络领导",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "调适互动",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "组织角色",
+          "l3": "治理机制"
+        },
+        {
+          "anchor": "基层政府与民众协作",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "政社合作型试验",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "合作关系制度化",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "公共功能国企使命",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "产业融合",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "内部合谋",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "资源碰撞与合作激活",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "群体离职",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "同伴质疑与排斥",
+          "l3": "一言堂、监督失效"
+        },
+        {
+          "anchor": "市场牵引的资源协同",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "组织角色",
+          "l3": "治理机制"
+        },
+        {
+          "anchor": "中端协同",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "组织角色",
+          "l3": "治理机制"
+        },
+        {
+          "anchor": "形象工程",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "价值目标",
+          "l3": "价值判断建构"
+        },
+        {
+          "anchor": "问题致辞职",
+          "confidence": 0.25,
+          "source": "v11_direct",
+          "l2": "同伴质疑与排斥",
+          "l3": "一言堂、监督失效"
+        },
+        {
+          "anchor": "原住民问题",
+          "confidence": 0.25,
+          "source": "v11_direct",
+          "l2": "在地化适应",
+          "l3": "乡村治理困境"
+        },
+        {
+          "anchor": "品牌建设",
+          "confidence": 0.25,
+          "source": "v11_direct",
+          "l2": "价值目标",
+          "l3": "价值判断建构"
+        },
+        {
+          "anchor": "多方协调",
+          "confidence": 0.25,
+          "source": "v11_direct",
+          "l2": "组织角色",
+          "l3": "治理机制"
+        },
+        {
+          "anchor": "政企合作",
+          "confidence": 0.25,
+          "source": "v11_direct",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "访谈内容",
+          "confidence": 0.25,
+          "source": "v11_direct",
+          "l2": "阶段一",
+          "l3": "EM阶段核心"
+        },
+        {
+          "anchor": "颜色釉工艺",
+          "confidence": 0.261,
+          "source": "v11_direct",
+          "l2": "品质优势",
+          "l3": "制造环节优势"
+        },
+        {
+          "anchor": "文化遗产展示",
+          "confidence": 0.267,
+          "source": "v11_direct",
+          "l2": "落地载体",
+          "l3": "功能使命定位"
+        },
+        {
+          "anchor": "稳定外部渠道",
+          "confidence": 0.286,
+          "source": "semantic_inherited",
+          "l2": "新颖工艺难以拓展应用",
+          "l3": "特新优势难以拓展"
+        },
+        {
+          "anchor": "电商供应链",
+          "confidence": 0.286,
+          "source": "semantic_inherited",
+          "l2": "新颖工艺难以拓展应用",
+          "l3": "特新优势难以拓展"
+        },
+        {
+          "anchor": "渠道模式",
+          "confidence": 0.286,
+          "source": "semantic_inherited",
+          "l2": "新颖工艺难以拓展应用",
+          "l3": "特新优势难以拓展"
+        },
+        {
+          "anchor": "销售渠道",
+          "confidence": 0.286,
+          "source": "v11_direct",
+          "l2": "新颖工艺难以拓展应用",
+          "l3": "特新优势难以拓展"
+        }
+      ]
+    },
+    "unmapped_anchors": {
+      "count": 4,
+      "items": [
+        "初创参",
+        "技术参",
+        "数据化参",
+        "碎片式参"
+      ]
+    },
+    "distribution": {
+      "anchors_per_theme": {
+        "min": 1,
+        "p25": 1,
+        "median": 3,
+        "p75": 6,
+        "max": 64,
+        "mean": 5.3
+      },
+      "themes_per_theory": {
+        "min": 1,
+        "p25": 1,
+        "median": 1,
+        "p75": 1,
+        "max": 5,
+        "mean": 1.2
+      }
+    },
+    "health_score": 36.9
+  },
+  "after": {
+    "timestamp": "2026-05-28T17:52:34.442758",
+    "totals": {
+      "anchors": 1421,
+      "themes": 234,
+      "theories": 152,
+      "prov_anchors": 1404
+    },
+    "single_anchor_l2": {
+      "count": 60,
+      "ratio": 0.256,
+      "items": [
+        {
+          "theme": "东掌制",
+          "anchor_count": 1,
+          "anchors": [
+            "教育培训"
+          ],
+          "parent_theories": [
+            "高端增值"
+          ]
+        },
+        {
+          "theme": "个人经历",
+          "anchor_count": 1,
+          "anchors": [
+            "感兴趣多次"
+          ],
+          "parent_theories": [
+            "直觉创业学习"
+          ]
+        },
+        {
+          "theme": "丰富资源结构",
+          "anchor_count": 1,
+          "anchors": [
+            "般来说相关"
+          ],
+          "parent_theories": [
+            "资源能力化"
+          ]
+        },
+        {
+          "theme": "主观满意度",
+          "anchor_count": 1,
+          "anchors": [
+            "自我效能与成就感"
+          ],
+          "parent_theories": [
+            "满足感与地位"
+          ]
+        },
+        {
+          "theme": "产品创新方式",
+          "anchor_count": 1,
+          "anchors": [
+            "内部价值链"
+          ],
+          "parent_theories": [
+            "市场导向模式"
+          ]
+        },
+        {
+          "theme": "产品表征应用",
+          "anchor_count": 1,
+          "anchors": [
+            "司法专业化"
+          ],
+          "parent_theories": [
+            "研发设计能力"
+          ]
+        },
+        {
+          "theme": "人力市场特征",
+          "anchor_count": 1,
+          "anchors": [
+            "老龄化程度高"
+          ],
+          "parent_theories": [
+            "关系资本弥补资源不足"
+          ]
+        },
+        {
+          "theme": "儒家义利观",
+          "anchor_count": 1,
+          "anchors": [
+            "书记江老师"
+          ],
+          "parent_theories": [
+            "封建层级文化诱因"
+          ]
+        },
+        {
+          "theme": "内在自我增强动机",
+          "anchor_count": 1,
+          "anchors": [
+            "社会比较压力"
+          ],
+          "parent_theories": [
+            "自利动机驱动"
+          ]
+        },
+        {
+          "theme": "创始厂长印记",
+          "anchor_count": 1,
+          "anchors": [
+            "随俗浮沉者"
+          ],
+          "parent_theories": [
+            "自主创新"
+          ]
+        },
+        {
+          "theme": "创新主体",
+          "anchor_count": 1,
+          "anchors": [
+            "创业隐喻"
+          ],
+          "parent_theories": [
+            "创新基础"
+          ]
+        },
+        {
+          "theme": "创新文化协同",
+          "anchor_count": 1,
+          "anchors": [
+            "统一价值来源"
+          ],
+          "parent_theories": [
+            "文化创新核心载体"
+          ]
+        },
+        {
+          "theme": "创造氛围",
+          "anchor_count": 1,
+          "anchors": [
+            "更话会更好"
+          ],
+          "parent_theories": [
+            "话语经验建构"
+          ]
+        },
+        {
+          "theme": "初创参与",
+          "anchor_count": 1,
+          "anchors": [
+            "创始厂长印记"
+          ],
+          "parent_theories": [
+            "抚育成长经历"
+          ]
+        },
+        {
+          "theme": "初始条件",
+          "anchor_count": 1,
+          "anchors": [
+            "初始状态"
+          ],
+          "parent_theories": [
+            "同源性技术初始积累"
+          ]
+        },
+        {
+          "theme": "制度固化与正规化",
+          "anchor_count": 1,
+          "anchors": [
+            "度改动繁琐"
+          ],
+          "parent_theories": [
+            "制度重塑"
+          ]
+        },
+        {
+          "theme": "动因",
+          "anchor_count": 1,
+          "anchors": [
+            "爆品持续诞生"
+          ],
+          "parent_theories": [
+            "规模扩张、制度建设"
+          ]
+        },
+        {
+          "theme": "匹配关系",
+          "anchor_count": 1,
+          "anchors": [
+            "上下配合"
+          ],
+          "parent_theories": [
+            "主从关系"
+          ]
+        },
+        {
+          "theme": "受让方类型",
+          "anchor_count": 1,
+          "anchors": [
+            "商业正外部性"
+          ],
+          "parent_theories": [
+            "海外获取"
+          ]
+        },
+        {
+          "theme": "同质竞争加剧",
+          "anchor_count": 1,
+          "anchors": [
+            "需加烧两次"
+          ],
+          "parent_theories": [
+            "同质竞加剧"
+          ]
+        },
+        {
+          "theme": "员工持股陷阱",
+          "anchor_count": 1,
+          "anchors": [
+            "们一行人"
+          ],
+          "parent_theories": [
+            "大股东困境"
+          ]
+        },
+        {
+          "theme": "国际障碍",
+          "anchor_count": 1,
+          "anchors": [
+            "战略复杂性维度"
+          ],
+          "parent_theories": [
+            "封建层级文化诱因"
+          ]
+        },
+        {
+          "theme": "契约关系构建",
+          "anchor_count": 1,
+          "anchors": [
+            "战略妥协前提"
+          ],
+          "parent_theories": [
+            "信任基础"
+          ]
+        },
+        {
+          "theme": "家庭-工作融合",
+          "anchor_count": 1,
+          "anchors": [
+            "家庭-工作融合"
+          ],
+          "parent_theories": [
+            "家族创业培育要素"
+          ]
+        },
+        {
+          "theme": "嵌入环节",
+          "anchor_count": 1,
+          "anchors": [
+            "新颖程度"
+          ],
+          "parent_theories": [
+            "建构型学习"
+          ]
+        },
+        {
+          "theme": "已有工艺持续精进",
+          "anchor_count": 1,
+          "anchors": [
+            "做事严谨"
+          ],
+          "parent_theories": [
+            "生产效率提升"
+          ]
+        },
+        {
+          "theme": "市场结果",
+          "anchor_count": 1,
+          "anchors": [
+            "上查三代"
+          ],
+          "parent_theories": [
+            "上海国资存量更大"
+          ]
+        },
+        {
+          "theme": "弥补机制",
+          "anchor_count": 1,
+          "anchors": [
+            "作用路径"
+          ],
+          "parent_theories": [
+            "忽视长期技术积累"
+          ]
+        },
+        {
+          "theme": "强化组织记忆",
+          "anchor_count": 1,
+          "anchors": [
+            "索取额外控制"
+          ],
+          "parent_theories": [
+            "创新性认知"
+          ]
+        },
+        {
+          "theme": "成长空间被挤压",
+          "anchor_count": 1,
+          "anchors": [
+            "摊位影响大"
+          ],
+          "parent_theories": [
+            "成长空被挤压"
+          ]
+        },
+        {
+          "theme": "提出经营理念",
+          "anchor_count": 1,
+          "anchors": [
+            "回购规则"
+          ],
+          "parent_theories": [
+            "企业主导阶段"
+          ]
+        },
+        {
+          "theme": "摸索基础能力",
+          "anchor_count": 1,
+          "anchors": [
+            "素质提升"
+          ],
+          "parent_theories": [
+            "市场能力积累"
+          ]
+        },
+        {
+          "theme": "文化机制",
+          "anchor_count": 1,
+          "anchors": [
+            "考核机制"
+          ],
+          "parent_theories": [
+            "学习机制"
+          ]
+        },
+        {
+          "theme": "早期成长烙印",
+          "anchor_count": 1,
+          "anchors": [
+            "陶阳里优势认可"
+          ],
+          "parent_theories": [
+            "家族创业培育要素"
+          ]
+        },
+        {
+          "theme": "替代规律",
+          "anchor_count": 1,
+          "anchors": [
+            "人三宝那边"
+          ],
+          "parent_theories": [
+            "替代放大因素"
+          ]
+        },
+        {
+          "theme": "有中生新",
+          "anchor_count": 1,
+          "anchors": [
+            "可及性良好"
+          ],
+          "parent_theories": [
+            "创新基础"
+          ]
+        },
+        {
+          "theme": "核心结论",
+          "anchor_count": 1,
+          "anchors": [
+            "回头客少"
+          ],
+          "parent_theories": [
+            "代理问题缓解"
+          ]
+        },
+        {
+          "theme": "比较发现",
+          "anchor_count": 1,
+          "anchors": [
+            "多点声明"
+          ],
+          "parent_theories": [
+            "差异起源"
+          ]
+        },
+        {
+          "theme": "民生保障",
+          "anchor_count": 1,
+          "anchors": [
+            "辑在于既改善"
+          ],
+          "parent_theories": [
+            "乡村治理困境"
+          ]
+        },
+        {
+          "theme": "泛家族化信任",
+          "anchor_count": 1,
+          "anchors": [
+            "进入方式"
+          ],
+          "parent_theories": [
+            "信任基础"
+          ]
+        },
+        {
+          "theme": "特色大型模具普及势新颖工艺被同行攻克",
+          "anchor_count": 1,
+          "anchors": [
+            "产业链影响"
+          ],
+          "parent_theories": [
+            "拓展前沿技术"
+          ]
+        },
+        {
+          "theme": "知识筛选",
+          "anchor_count": 1,
+          "anchors": [
+            "关键资源导入"
+          ],
+          "parent_theories": [
+            "机会识别能力"
+          ]
+        },
+        {
+          "theme": "研究启示",
+          "anchor_count": 1,
+          "anchors": [
+            "确认性陈述"
+          ],
+          "parent_theories": [
+            "核心影响因素"
+          ]
+        },
+        {
+          "theme": "研究情境",
+          "anchor_count": 1,
+          "anchors": [
+            "景德镇普及度高"
+          ],
+          "parent_theories": [
+            "松散关联功能特征"
+          ]
+        },
+        {
+          "theme": "社会和谐",
+          "anchor_count": 1,
+          "anchors": [
+            "人际互动"
+          ],
+          "parent_theories": [
+            "合：治理建构"
+          ]
+        },
+        {
+          "theme": "童年文化经历",
+          "anchor_count": 1,
+          "anchors": [
+            "童年文化经历"
+          ],
+          "parent_theories": [
+            "抚育成长经历"
+          ]
+        },
+        {
+          "theme": "经营模式",
+          "anchor_count": 1,
+          "anchors": [
+            "引领用户升维"
+          ],
+          "parent_theories": [
+            "市场导向模式"
+          ]
+        },
+        {
+          "theme": "网络模式三",
+          "anchor_count": 1,
+          "anchors": [
+            "筑牢本地基础"
+          ],
+          "parent_theories": [
+            "企业-网络-集群三层互动"
+          ]
+        },
+        {
+          "theme": "营造跨国社区",
+          "anchor_count": 1,
+          "anchors": [
+            "关键发现"
+          ],
+          "parent_theories": [
+            "社群构建"
+          ]
+        },
+        {
+          "theme": "行为风险抑制",
+          "anchor_count": 1,
+          "anchors": [
+            "非常规知识检索能力"
+          ],
+          "parent_theories": [
+            "风险情境"
+          ]
+        },
+        {
+          "theme": "角色边界跨越",
+          "anchor_count": 1,
+          "anchors": [
+            "导安排得当"
+          ],
+          "parent_theories": [
+            "雇佣关系主体"
+          ]
+        },
+        {
+          "theme": "语篇结构",
+          "anchor_count": 1,
+          "anchors": [
+            "高阶形态"
+          ],
+          "parent_theories": [
+            "超越追赶阶段"
+          ]
+        },
+        {
+          "theme": "调适互动",
+          "anchor_count": 1,
+          "anchors": [
+            "灵活向外借力"
+          ],
+          "parent_theories": [
+            "技术杠杆"
+          ]
+        },
+        {
+          "theme": "资源依赖突破",
+          "anchor_count": 1,
+          "anchors": [
+            "陶阳里治理改善"
+          ],
+          "parent_theories": [
+            "资源能力化"
+          ]
+        },
+        {
+          "theme": "资源活化",
+          "anchor_count": 1,
+          "anchors": [
+            "周边景观资源"
+          ],
+          "parent_theories": [
+            "资源蓄能"
+          ]
+        },
+        {
+          "theme": "路径引导者",
+          "anchor_count": 1,
+          "anchors": [
+            "特殊模式"
+          ],
+          "parent_theories": [
+            "具体路径"
+          ]
+        },
+        {
+          "theme": "转型差异",
+          "anchor_count": 1,
+          "anchors": [
+            "转变后心理特征"
+          ],
+          "parent_theories": [
+            "转型驱动因素"
+          ]
+        },
+        {
+          "theme": "转型驱动因素",
+          "anchor_count": 1,
+          "anchors": [
+            "理念偏差"
+          ],
+          "parent_theories": [
+            "转型驱动因素"
+          ]
+        },
+        {
+          "theme": "项目集成能力弱化",
+          "anchor_count": 1,
+          "anchors": [
+            "穿铁鞋"
+          ],
+          "parent_theories": [
+            "整合阶段主导"
+          ]
+        },
+        {
+          "theme": "默契与共谋",
+          "anchor_count": 1,
+          "anchors": [
+            "胞因人而异"
+          ],
+          "parent_theories": [
+            "人缘式领导"
+          ]
+        }
+      ]
+    },
+    "single_child_l3": {
+      "count": 82,
+      "ratio": 0.539,
+      "items": [
+        {
+          "theory": "EM阶段核心",
+          "theme_count": 1,
+          "themes": [
+            "阶段一"
+          ],
+          "total_anchors": 7
+        },
+        {
+          "theory": "专精优势无法适用",
+          "theme_count": 1,
+          "themes": [
+            "专精优势无法适用(主题)"
+          ],
+          "total_anchors": 12
+        },
+        {
+          "theory": "中国情境局限",
+          "theme_count": 1,
+          "themes": [
+            "中国情境"
+          ],
+          "total_anchors": 9
+        },
+        {
+          "theory": "乡村社会基础",
+          "theme_count": 1,
+          "themes": [
+            "本土情境"
+          ],
+          "total_anchors": 10
+        },
+        {
+          "theory": "亏损脱困为主",
+          "theme_count": 1,
+          "themes": [
+            "衰败原因"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "产品层面",
+          "theme_count": 1,
+          "themes": [
+            "产品特征"
+          ],
+          "total_anchors": 7
+        },
+        {
+          "theory": "价值共创扭曲",
+          "theme_count": 1,
+          "themes": [
+            "价值失衡情境"
+          ],
+          "total_anchors": 3
+        },
+        {
+          "theory": "价值判断建构",
+          "theme_count": 1,
+          "themes": [
+            "价值目标"
+          ],
+          "total_anchors": 12
+        },
+        {
+          "theory": "企业-网络-集群三层互动",
+          "theme_count": 1,
+          "themes": [
+            "网络模式三"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "作业长制为核心",
+          "theme_count": 1,
+          "themes": [
+            "角色"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "供应商/顾客/员工共赢",
+          "theme_count": 1,
+          "themes": [
+            "分工类型"
+          ],
+          "total_anchors": 8
+        },
+        {
+          "theory": "修辞方式",
+          "theme_count": 1,
+          "themes": [
+            "话语功能"
+          ],
+          "total_anchors": 16
+        },
+        {
+          "theory": "修辞策略",
+          "theme_count": 1,
+          "themes": [
+            "正当性构建机制"
+          ],
+          "total_anchors": 43
+        },
+        {
+          "theory": "先借鉴后经验",
+          "theme_count": 1,
+          "themes": [
+            "传承经历"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "先抑后扬粉饰业绩",
+          "theme_count": 1,
+          "themes": [
+            "核心命题"
+          ],
+          "total_anchors": 5
+        },
+        {
+          "theory": "关联交易、资金挪用",
+          "theme_count": 1,
+          "themes": [
+            "交易特征"
+          ],
+          "total_anchors": 5
+        },
+        {
+          "theory": "具体路径",
+          "theme_count": 1,
+          "themes": [
+            "路径引导者"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "内主外辅转型动力",
+          "theme_count": 1,
+          "themes": [
+            "转型顺序"
+          ],
+          "total_anchors": 11
+        },
+        {
+          "theory": "内幕信息获利",
+          "theme_count": 1,
+          "themes": [
+            "核心行为"
+          ],
+          "total_anchors": 10
+        },
+        {
+          "theory": "农户+本地大户",
+          "theme_count": 1,
+          "themes": [
+            "村庄场域市场化"
+          ],
+          "total_anchors": 4
+        },
+        {
+          "theory": "创业集聚驱动",
+          "theme_count": 1,
+          "themes": [
+            "核心理念"
+          ],
+          "total_anchors": 16
+        },
+        {
+          "theory": "创造力来源",
+          "theme_count": 1,
+          "themes": [
+            "创造力结果"
+          ],
+          "total_anchors": 23
+        },
+        {
+          "theory": "前期",
+          "theme_count": 1,
+          "themes": [
+            "早期流程"
+          ],
+          "total_anchors": 6
+        },
+        {
+          "theory": "变化阶段",
+          "theme_count": 1,
+          "themes": [
+            "变革阶段二"
+          ],
+          "total_anchors": 13
+        },
+        {
+          "theory": "同源性技术初始积累",
+          "theme_count": 1,
+          "themes": [
+            "初始条件"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "同质竞加剧",
+          "theme_count": 1,
+          "themes": [
+            "同质竞争加剧"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "否决项与月度考核",
+          "theme_count": 1,
+          "themes": [
+            "考核机制"
+          ],
+          "total_anchors": 8
+        },
+        {
+          "theory": "品牌形象提升",
+          "theme_count": 1,
+          "themes": [
+            "意见领袖演化"
+          ],
+          "total_anchors": 16
+        },
+        {
+          "theory": "外生式学习",
+          "theme_count": 1,
+          "themes": [
+            "学习方式"
+          ],
+          "total_anchors": 18
+        },
+        {
+          "theory": "外部环境因素",
+          "theme_count": 1,
+          "themes": [
+            "当地机会"
+          ],
+          "total_anchors": 14
+        },
+        {
+          "theory": "多技能提升",
+          "theme_count": 1,
+          "themes": [
+            "能力构建"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "大库存优势",
+          "theme_count": 1,
+          "themes": [
+            "相对优势"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "实施原则",
+          "theme_count": 1,
+          "themes": [
+            "规范性惯例"
+          ],
+          "total_anchors": 3
+        },
+        {
+          "theory": "对价争议",
+          "theme_count": 1,
+          "themes": [
+            "证据线索"
+          ],
+          "total_anchors": 7
+        },
+        {
+          "theory": "工资与市场业绩挂钩",
+          "theme_count": 1,
+          "themes": [
+            "薪酬制度"
+          ],
+          "total_anchors": 8
+        },
+        {
+          "theory": "差异起源",
+          "theme_count": 1,
+          "themes": [
+            "比较发现"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "市场能力积累",
+          "theme_count": 1,
+          "themes": [
+            "摸索基础能力"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "市属国企整合",
+          "theme_count": 1,
+          "themes": [
+            "制度环境"
+          ],
+          "total_anchors": 14
+        },
+        {
+          "theory": "延展高价值业务",
+          "theme_count": 1,
+          "themes": [
+            "扩增高价值营收业务"
+          ],
+          "total_anchors": 5
+        },
+        {
+          "theory": "心化内控归宿",
+          "theme_count": 1,
+          "themes": [
+            "心化内控"
+          ],
+          "total_anchors": 3
+        },
+        {
+          "theory": "志愿者能动阶段",
+          "theme_count": 1,
+          "themes": [
+            "互动模式"
+          ],
+          "total_anchors": 5
+        },
+        {
+          "theory": "忽视长期技术积累",
+          "theme_count": 1,
+          "themes": [
+            "弥补机制"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "成长空被挤压",
+          "theme_count": 1,
+          "themes": [
+            "成长空间被挤压"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "技术准入合法性缺乏",
+          "theme_count": 1,
+          "themes": [
+            "规范合法性缺乏"
+          ],
+          "total_anchors": 3
+        },
+        {
+          "theory": "挤水分",
+          "theme_count": 1,
+          "themes": [
+            "遮蔽手段"
+          ],
+          "total_anchors": 18
+        },
+        {
+          "theory": "探索式即兴",
+          "theme_count": 1,
+          "themes": [
+            "即兴能力构建"
+          ],
+          "total_anchors": 22
+        },
+        {
+          "theory": "文化情境特征",
+          "theme_count": 1,
+          "themes": [
+            "文化层次划分"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "文化框架激活",
+          "theme_count": 1,
+          "themes": [
+            "文化资源基础"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "新旧更替",
+          "theme_count": 1,
+          "themes": [
+            "运作模式"
+          ],
+          "total_anchors": 4
+        },
+        {
+          "theory": "替代放大因素",
+          "theme_count": 1,
+          "themes": [
+            "替代规律"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "未审议、董事会独断",
+          "theme_count": 1,
+          "themes": [
+            "董事会之谜"
+          ],
+          "total_anchors": 4
+        },
+        {
+          "theory": "松散关联功能特征",
+          "theme_count": 1,
+          "themes": [
+            "研究情境"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "核心冲突",
+          "theme_count": 1,
+          "themes": [
+            "核心角色"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "核心目标",
+          "theme_count": 1,
+          "themes": [
+            "价值目标"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "核心问题",
+          "theme_count": 1,
+          "themes": [
+            "核心障碍"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "模块化组织核心",
+          "theme_count": 1,
+          "themes": [
+            "核心角色"
+          ],
+          "total_anchors": 3
+        },
+        {
+          "theory": "模式二",
+          "theme_count": 1,
+          "themes": [
+            "模式二(主题)"
+          ],
+          "total_anchors": 6
+        },
+        {
+          "theory": "治理缺陷",
+          "theme_count": 1,
+          "themes": [
+            "纠错性功能"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "海外获取",
+          "theme_count": 1,
+          "themes": [
+            "受让方类型"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "特新优丧失",
+          "theme_count": 1,
+          "themes": [
+            "特色产品难满足新需求"
+          ],
+          "total_anchors": 20
+        },
+        {
+          "theory": "特新优势难以拓展",
+          "theme_count": 1,
+          "themes": [
+            "新颖工艺难以拓展应用"
+          ],
+          "total_anchors": 4
+        },
+        {
+          "theory": "生产制造+技术引进",
+          "theme_count": 1,
+          "themes": [
+            "交织载体"
+          ],
+          "total_anchors": 8
+        },
+        {
+          "theory": "生命周期+政商关系",
+          "theme_count": 1,
+          "themes": [
+            "生命周期"
+          ],
+          "total_anchors": 7
+        },
+        {
+          "theory": "盲目轻信媒体",
+          "theme_count": 1,
+          "themes": [
+            "媒体行为"
+          ],
+          "total_anchors": 5
+        },
+        {
+          "theory": "研发网络结构",
+          "theme_count": 1,
+          "themes": [
+            "网络结构"
+          ],
+          "total_anchors": 16
+        },
+        {
+          "theory": "社会共治机制",
+          "theme_count": 1,
+          "themes": [
+            "以能人为中心嵌入社会"
+          ],
+          "total_anchors": 6
+        },
+        {
+          "theory": "组织印记",
+          "theme_count": 1,
+          "themes": [
+            "组织印记(主题)"
+          ],
+          "total_anchors": 51
+        },
+        {
+          "theory": "绿色转型阶段",
+          "theme_count": 1,
+          "themes": [
+            "绿色转向期"
+          ],
+          "total_anchors": 3
+        },
+        {
+          "theory": "表外融资",
+          "theme_count": 1,
+          "themes": [
+            "融资手段"
+          ],
+          "total_anchors": 7
+        },
+        {
+          "theory": "规模扩张、制度建设",
+          "theme_count": 1,
+          "themes": [
+            "动因"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "规避监管",
+          "theme_count": 1,
+          "themes": [
+            "花红制"
+          ],
+          "total_anchors": 5
+        },
+        {
+          "theory": "解错试验组合",
+          "theme_count": 1,
+          "themes": [
+            "规划陷阱"
+          ],
+          "total_anchors": 2
+        },
+        {
+          "theory": "话语时间策略",
+          "theme_count": 1,
+          "themes": [
+            "时间导向"
+          ],
+          "total_anchors": 22
+        },
+        {
+          "theory": "负面超额收益",
+          "theme_count": 1,
+          "themes": [
+            "红利形成机制"
+          ],
+          "total_anchors": 5
+        },
+        {
+          "theory": "财务战略传递路径",
+          "theme_count": 1,
+          "themes": [
+            "核心构念"
+          ],
+          "total_anchors": 5
+        },
+        {
+          "theory": "跨国并购前提",
+          "theme_count": 1,
+          "themes": [
+            "战略行为"
+          ],
+          "total_anchors": 26
+        },
+        {
+          "theory": "远景+经营重心",
+          "theme_count": 1,
+          "themes": [
+            "先发优势"
+          ],
+          "total_anchors": 11
+        },
+        {
+          "theory": "部分结局",
+          "theme_count": 1,
+          "themes": [
+            "故身股"
+          ],
+          "total_anchors": 8
+        },
+        {
+          "theory": "配置与投资机会背离",
+          "theme_count": 1,
+          "themes": [
+            "长期困境"
+          ],
+          "total_anchors": 1
+        },
+        {
+          "theory": "长期效果",
+          "theme_count": 1,
+          "themes": [
+            "长期结果"
+          ],
+          "total_anchors": 9
+        },
+        {
+          "theory": "间断平衡支撑",
+          "theme_count": 1,
+          "themes": [
+            "关键指标"
+          ],
+          "total_anchors": 4
+        },
+        {
+          "theory": "青春期",
+          "theme_count": 1,
+          "themes": [
+            "人才困境"
+          ],
+          "total_anchors": 12
+        }
+      ]
+    },
+    "cross_level_collisions": {
+      "count": 1,
+      "items": [
+        "转型驱动因素"
+      ]
+    },
+    "low_confidence_mappings": {
+      "count": 75,
+      "items": [
+        {
+          "anchor": "碎片式参与",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "龙江森工模式",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "大兴安岭模式",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "东掌制",
+          "confidence": 0.0,
+          "source": "unmapped",
+          "l2": null,
+          "l3": null
+        },
+        {
+          "anchor": "运营管理",
+          "confidence": 0.053,
+          "source": "v11_direct",
+          "l2": "村庄场域市场化",
+          "l3": "市场约束无效"
+        },
+        {
+          "anchor": "行业共性特征",
+          "confidence": 0.078,
+          "source": "v11_direct",
+          "l2": "正当性构建机制",
+          "l3": "修辞策略"
+        },
+        {
+          "anchor": "公共空间营造",
+          "confidence": 0.2,
+          "source": "semantic_inherited",
+          "l2": "核心理念",
+          "l3": "创业集聚驱动"
+        },
+        {
+          "anchor": "推进系统化重组",
+          "confidence": 0.2,
+          "source": "semantic_inherited",
+          "l2": "村庄场域市场化",
+          "l3": "农户+本地大户"
+        },
+        {
+          "anchor": "传统发展期",
+          "confidence": 0.2,
+          "source": "semantic_inherited",
+          "l2": "村庄场域市场化",
+          "l3": "农户+本地大户"
+        },
+        {
+          "anchor": "规划功能",
+          "confidence": 0.2,
+          "source": "semantic_inherited",
+          "l2": "核心理念",
+          "l3": "创业集聚驱动"
+        },
+        {
+          "anchor": "延展行动空间",
+          "confidence": 0.2,
+          "source": "semantic_inherited",
+          "l2": "核心理念",
+          "l3": "创业集聚驱动"
+        },
+        {
+          "anchor": "规划陷阱",
+          "confidence": 0.2,
+          "source": "semantic_inherited",
+          "l2": "核心理念",
+          "l3": "创业集聚驱动"
+        },
+        {
+          "anchor": "传统供应链",
+          "confidence": 0.2,
+          "source": "semantic_inherited",
+          "l2": "村庄场域市场化",
+          "l3": "农户+本地大户"
+        },
+        {
+          "anchor": "游客文化认知",
+          "confidence": 0.2,
+          "source": "v11_direct",
+          "l2": "思维方式",
+          "l3": "思维基础"
+        },
+        {
+          "anchor": "文创产品开发",
+          "confidence": 0.2,
+          "source": "v11_direct",
+          "l2": "扩增高价值营收业务",
+          "l3": "延展高价值业务"
+        },
+        {
+          "anchor": "传统与创新并重",
+          "confidence": 0.2,
+          "source": "v11_direct",
+          "l2": "村庄场域市场化",
+          "l3": "农户+本地大户"
+        },
+        {
+          "anchor": "空间规划",
+          "confidence": 0.2,
+          "source": "v11_direct",
+          "l2": "核心理念",
+          "l3": "创业集聚驱动"
+        },
+        {
+          "anchor": "股份合作制",
+          "confidence": 0.214,
+          "source": "semantic_inherited",
+          "l2": "人才培养",
+          "l3": "建构型学习"
+        },
+        {
+          "anchor": "校企合作",
+          "confidence": 0.214,
+          "source": "v11_direct",
+          "l2": "人才培养",
+          "l3": "建构型学习"
+        },
+        {
+          "anchor": "产学研协同",
+          "confidence": 0.222,
+          "source": "semantic_inherited",
+          "l2": "学习方式",
+          "l3": "外生式学习"
+        },
+        {
+          "anchor": "创新行动赋能",
+          "confidence": 0.222,
+          "source": "semantic_inherited",
+          "l2": "文化类型",
+          "l3": "建构型学习"
+        },
+        {
+          "anchor": "研究对象",
+          "confidence": 0.222,
+          "source": "semantic_inherited",
+          "l2": "学习方式",
+          "l3": "外生式学习"
+        },
+        {
+          "anchor": "创新文化协同",
+          "confidence": 0.222,
+          "source": "semantic_inherited",
+          "l2": "文化类型",
+          "l3": "建构型学习"
+        },
+        {
+          "anchor": "研究情境",
+          "confidence": 0.222,
+          "source": "semantic_inherited",
+          "l2": "学习方式",
+          "l3": "外生式学习"
+        },
+        {
+          "anchor": "研究启示",
+          "confidence": 0.222,
+          "source": "semantic_inherited",
+          "l2": "学习方式",
+          "l3": "外生式学习"
+        },
+        {
+          "anchor": "组织平台",
+          "confidence": 0.222,
+          "source": "semantic_inherited",
+          "l2": "文化类型",
+          "l3": "建构型学习"
+        },
+        {
+          "anchor": "知识聚变创造",
+          "confidence": 0.222,
+          "source": "semantic_inherited",
+          "l2": "文化类型",
+          "l3": "建构型学习"
+        },
+        {
+          "anchor": "研学教育",
+          "confidence": 0.222,
+          "source": "v11_direct",
+          "l2": "学习方式",
+          "l3": "外生式学习"
+        },
+        {
+          "anchor": "活动创新",
+          "confidence": 0.222,
+          "source": "v11_direct",
+          "l2": "文化类型",
+          "l3": "建构型学习"
+        },
+        {
+          "anchor": "历史建筑保护",
+          "confidence": 0.222,
+          "source": "v11_direct",
+          "l2": "学习方式",
+          "l3": "外生式学习"
+        },
+        {
+          "anchor": "国企特定功能",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "低效原因",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "利益输送",
+          "l3": "国资放任掏空"
+        },
+        {
+          "anchor": "价值失衡情境",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "利益输送",
+          "l3": "国资放任掏空"
+        },
+        {
+          "anchor": "低价竞争加剧",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "利益输送",
+          "l3": "国资放任掏空"
+        },
+        {
+          "anchor": "交叉竞争出现",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "利益输送",
+          "l3": "国资放任掏空"
+        },
+        {
+          "anchor": "嵌入基层协商",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "组织角色",
+          "l3": "治理机制"
+        },
+        {
+          "anchor": "合作深化",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "品牌意义获取",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "价值目标",
+          "l3": "价值判断建构"
+        },
+        {
+          "anchor": "品牌共创方式",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "价值目标",
+          "l3": "价值判断建构"
+        },
+        {
+          "anchor": "品牌关联",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "价值目标",
+          "l3": "价值判断建构"
+        },
+        {
+          "anchor": "品牌培育方式",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "价值目标",
+          "l3": "价值判断建构"
+        },
+        {
+          "anchor": "品牌阶段",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "价值目标",
+          "l3": "价值判断建构"
+        },
+        {
+          "anchor": "业务内容",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "阶段一",
+          "l3": "EM阶段核心"
+        },
+        {
+          "anchor": "政府驱动主导型",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "学徒制",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "人才培养",
+          "l3": "建构型学习"
+        },
+        {
+          "anchor": "学习机制",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "人才培养",
+          "l3": "建构型学习"
+        },
+        {
+          "anchor": "内外政企协同",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "组织学习方式",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "人才培养",
+          "l3": "建构型学习"
+        },
+        {
+          "anchor": "民企策略",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "整合式协作",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "组织角色",
+          "l3": "治理机制"
+        },
+        {
+          "anchor": "技术合作网络领导",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "调适互动",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "组织角色",
+          "l3": "治理机制"
+        },
+        {
+          "anchor": "基层政府与民众协作",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "政社合作型试验",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "合作关系制度化",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "公共功能国企使命",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "产业融合",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "内部合谋",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "资源碰撞与合作激活",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "群体离职",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "同伴质疑与排斥",
+          "l3": "外部监管不足"
+        },
+        {
+          "anchor": "市场牵引的资源协同",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "组织角色",
+          "l3": "治理机制"
+        },
+        {
+          "anchor": "中端协同",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "组织角色",
+          "l3": "治理机制"
+        },
+        {
+          "anchor": "形象工程",
+          "confidence": 0.25,
+          "source": "semantic_inherited",
+          "l2": "价值目标",
+          "l3": "价值判断建构"
+        },
+        {
+          "anchor": "问题致辞职",
+          "confidence": 0.25,
+          "source": "v11_direct",
+          "l2": "同伴质疑与排斥",
+          "l3": "外部监管不足"
+        },
+        {
+          "anchor": "原住民问题",
+          "confidence": 0.25,
+          "source": "v11_direct",
+          "l2": "在地化适应",
+          "l3": "乡村治理困境"
+        },
+        {
+          "anchor": "品牌建设",
+          "confidence": 0.25,
+          "source": "v11_direct",
+          "l2": "价值目标",
+          "l3": "价值判断建构"
+        },
+        {
+          "anchor": "多方协调",
+          "confidence": 0.25,
+          "source": "v11_direct",
+          "l2": "组织角色",
+          "l3": "治理机制"
+        },
+        {
+          "anchor": "政企合作",
+          "confidence": 0.25,
+          "source": "v11_direct",
+          "l2": "制度环境",
+          "l3": "市属国企整合"
+        },
+        {
+          "anchor": "访谈内容",
+          "confidence": 0.25,
+          "source": "v11_direct",
+          "l2": "阶段一",
+          "l3": "EM阶段核心"
+        },
+        {
+          "anchor": "颜色釉工艺",
+          "confidence": 0.261,
+          "source": "v11_direct",
+          "l2": "品质优势",
+          "l3": "制造环节优势"
+        },
+        {
+          "anchor": "文化遗产展示",
+          "confidence": 0.267,
+          "source": "v11_direct",
+          "l2": "落地载体",
+          "l3": "功能使命定位"
+        },
+        {
+          "anchor": "稳定外部渠道",
+          "confidence": 0.286,
+          "source": "semantic_inherited",
+          "l2": "新颖工艺难以拓展应用",
+          "l3": "特新优势难以拓展"
+        },
+        {
+          "anchor": "电商供应链",
+          "confidence": 0.286,
+          "source": "semantic_inherited",
+          "l2": "新颖工艺难以拓展应用",
+          "l3": "特新优势难以拓展"
+        },
+        {
+          "anchor": "渠道模式",
+          "confidence": 0.286,
+          "source": "semantic_inherited",
+          "l2": "新颖工艺难以拓展应用",
+          "l3": "特新优势难以拓展"
+        },
+        {
+          "anchor": "销售渠道",
+          "confidence": 0.286,
+          "source": "v11_direct",
+          "l2": "新颖工艺难以拓展应用",
+          "l3": "特新优势难以拓展"
+        }
+      ]
+    },
+    "unmapped_anchors": {
+      "count": 4,
+      "items": [
+        "初创参",
+        "技术参",
+        "数据化参",
+        "碎片式参"
+      ]
+    },
+    "distribution": {
+      "anchors_per_theme": {
+        "min": 1,
+        "p25": 1,
+        "median": 4,
+        "p75": 8,
+        "max": 51,
+        "mean": 6.1
+      },
+      "themes_per_theory": {
+        "min": 1,
+        "p25": 1,
+        "median": 1,
+        "p75": 2,
+        "max": 4,
+        "mean": 1.6
+      }
+    },
+    "health_score": 67.8
+  },
+  "changes": {
+    "l2_merged": 20,
+    "l3_merged": 64,
+    "collisions_resolved": 8,
+    "mappings_upgraded": 299
+  }
+}

@@ -1,0 +1,578 @@
+{
+  "timestamp": "2026-05-29T10:02:39.211014",
+  "policy_version": "1.0",
+  "summary": {
+    "total_violations": 63,
+    "critical": 0,
+    "warning": 63
+  },
+  "violations": [
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "东掌制",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'东掌制'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "个人经历",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'个人经历'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "丰富资源结构",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'丰富资源结构'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "主观满意度",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'主观满意度'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "产品创新方式",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'产品创新方式'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "产品表征应用",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'产品表征应用'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "人力市场特征",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'人力市场特征'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.max_anchors_per_l3",
+      "target": "修辞策略",
+      "target_type": "l3_theory",
+      "value": 43,
+      "threshold": 40,
+      "severity": "warning",
+      "message": "L3理论'修辞策略'有43个锚点(限制≤40)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "儒家义利观",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'儒家义利观'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "内在自我增强动机",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'内在自我增强动机'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "创始厂长印记",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'创始厂长印记'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "创新主体",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'创新主体'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "创新文化协同",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'创新文化协同'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "创造氛围",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'创造氛围'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "初创参与",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'初创参与'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "初始条件",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'初始条件'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "制度固化与正规化",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'制度固化与正规化'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "动因",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'动因'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "匹配关系",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'匹配关系'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "受让方类型",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'受让方类型'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "同质竞争加剧",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'同质竞争加剧'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "员工持股陷阱",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'员工持股陷阱'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "国际障碍",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'国际障碍'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "契约关系构建",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'契约关系构建'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "家庭-工作融合",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'家庭-工作融合'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "嵌入环节",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'嵌入环节'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "已有工艺持续精进",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'已有工艺持续精进'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "市场结果",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'市场结果'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "弥补机制",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'弥补机制'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "强化组织记忆",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'强化组织记忆'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "成长空间被挤压",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'成长空间被挤压'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.max_anchors_per_l3",
+      "target": "技术杠杆",
+      "target_type": "l3_theory",
+      "value": 44,
+      "threshold": 40,
+      "severity": "warning",
+      "message": "L3理论'技术杠杆'有44个锚点(限制≤40)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "提出经营理念",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'提出经营理念'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "摸索基础能力",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'摸索基础能力'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "文化机制",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'文化机制'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "早期成长烙印",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'早期成长烙印'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "替代规律",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'替代规律'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "有中生新",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'有中生新'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "核心结论",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'核心结论'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "比较发现",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'比较发现'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "民生保障",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'民生保障'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "泛家族化信任",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'泛家族化信任'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "特色大型模具普及势新颖工艺被同行攻克",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'特色大型模具普及势新颖工艺被同行攻克'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "知识筛选",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'知识筛选'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "研究启示",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'研究启示'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "研究情境",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'研究情境'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "社会和谐",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'社会和谐'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "童年文化经历",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'童年文化经历'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.max_anchors_per_l3",
+      "target": "组织印记",
+      "target_type": "l3_theory",
+      "value": 51,
+      "threshold": 40,
+      "severity": "warning",
+      "message": "L3理论'组织印记'有51个锚点(限制≤40)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "经营模式",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'经营模式'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "网络模式三",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'网络模式三'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "营造跨国社区",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'营造跨国社区'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "行为风险抑制",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'行为风险抑制'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "角色边界跨越",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'角色边界跨越'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "语篇结构",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'语篇结构'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "调适互动",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'调适互动'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "资源依赖突破",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'资源依赖突破'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "资源活化",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'资源活化'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "路径引导者",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'路径引导者'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "转型差异",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'转型差异'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "转型驱动因素",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'转型驱动因素'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "项目集成能力弱化",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'项目集成能力弱化'仅有1个锚点(要求≥2)"
+    },
+    {
+      "rule": "hierarchy.min_anchors_per_l2",
+      "target": "默契与共谋",
+      "target_type": "l2_theme",
+      "value": 1,
+      "threshold": 2,
+      "severity": "warning",
+      "message": "L2主题'默契与共谋'仅有1个锚点(要求≥2)"
+    }
+  ]
+}

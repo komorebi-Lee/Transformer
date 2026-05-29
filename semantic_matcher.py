@@ -1,29 +1,14 @@
 import torch
 import numpy as np
-import json
 import os
-from datetime import datetime
 from typing import List, Dict, Any, Tuple, Optional
 import logging
 
 logger = logging.getLogger(__name__)
 
-# 尝试导入psutil库用于内存监控
-psutil = None
-try:
-    import psutil
-    logger.info("psutil 库加载成功")
-except ImportError as e:
-    logger.warning(f"psutil 库加载失败: {e}")
-    logger.warning("内存监控功能将不可用")
-
-# 尝试导入 sentence-transformers
 SentenceTransformer = None
 try:
     from sentence_transformers import SentenceTransformer
-    from sentence_transformers import InputExample
-    from sentence_transformers import losses
-    from torch.utils.data import DataLoader
     logger.info("sentence-transformers 库加载成功")
 except ImportError as e:
     logger.warning(f"sentence-transformers 库加载失败: {e}")
@@ -52,15 +37,10 @@ class SemanticMatcher:
         self.model = None
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.embeddings_cache: Dict[str, np.ndarray] = {}
-        self.feedback_data: List[Dict[str, Any]] = []
-        self.feedback_file = os.path.join(Config.LOCAL_MODELS_DIR, "feedback_data.json")
         self.code_weights: Dict[str, float] = {}
         self.cache_size_limit = 10000  # 缓存大小限制
         self.batch_size_limit = 1000   # 批处理大小限制
 
-        # 加载历史反馈数据
-        self.load_feedback_data()
-        
         if SentenceTransformer:
             self.load_model()
         else:
@@ -311,148 +291,6 @@ class SemanticMatcher:
             logger.error(f"匹配二阶编码到三阶编码失败: {e}")
             return None
 
-    def record_feedback(self, first_level_text: str, second_level_code: Dict[str, Any], is_correct: bool):
-        """
-        记录用户反馈
-
-        Args:
-            first_level_text: 一阶编码文本
-            second_level_code: 二阶编码
-            is_correct: 反馈是否正确
-        """
-        try:
-            feedback_item = {
-                "first_level_text": first_level_text,
-                "second_level_code": second_level_code,
-                "is_correct": is_correct,
-                "timestamp": datetime.now().isoformat()
-            }
-            self.feedback_data.append(feedback_item)
-            
-            # 更新编码权重
-            code_id = second_level_code.get('id')
-            if code_id:
-                if code_id not in self.code_weights:
-                    self.code_weights[code_id] = 0.5
-                
-                if is_correct:
-                    # 增加权重
-                    self.code_weights[code_id] = min(1.0, self.code_weights[code_id] + 0.1)
-                else:
-                    # 减少权重
-                    self.code_weights[code_id] = max(0.0, self.code_weights[code_id] - 0.1)
-            
-            # 保存反馈数据
-            self.save_feedback_data()
-            logger.info(f"用户反馈已记录: {'正确' if is_correct else '错误'}")
-            
-        except Exception as e:
-            logger.error(f"记录用户反馈失败: {e}")
-
-    def load_feedback_data(self):
-        """
-        加载历史反馈数据
-        """
-        try:
-            if os.path.exists(self.feedback_file):
-                with open(self.feedback_file, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                    self.feedback_data = data.get('feedback_data', [])
-                    self.code_weights = data.get('code_weights', {})
-                logger.info(f"加载反馈数据成功，共 {len(self.feedback_data)} 条记录")
-        except Exception as e:
-            logger.error(f"加载反馈数据失败: {e}")
-
-    def save_feedback_data(self):
-        """
-        保存反馈数据
-        """
-        try:
-            data = {
-                'feedback_data': self.feedback_data,
-                'code_weights': self.code_weights
-            }
-            with open(self.feedback_file, 'w', encoding='utf-8') as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
-            logger.info(f"反馈数据已保存到: {self.feedback_file}")
-        except Exception as e:
-            logger.error(f"保存反馈数据失败: {e}")
-
-    def incremental_train(self, epochs: int = 3, batch_size: int = 16):
-        """
-        模型增量训练
-
-        Args:
-            epochs: 训练轮数
-            batch_size: 批次大小
-
-        Returns:
-            是否训练成功
-        """
-        try:
-            if not self.model:
-                logger.warning("模型不可用，无法进行增量训练")
-                return False
-            
-            if len(self.feedback_data) < 10:
-                logger.warning("反馈数据不足，需要至少10条反馈才能进行增量训练")
-                return False
-            
-            # 记录训练前内存使用
-            self._log_memory_usage("训练前")
-            
-            # 准备训练数据（分批处理）
-            train_examples = []
-            batch_size_data = 1000  # 数据分批处理大小
-            
-            for i in range(0, len(self.feedback_data), batch_size_data):
-                batch_feedback = self.feedback_data[i:i + batch_size_data]
-                for feedback in batch_feedback:
-                    first_level_text = feedback['first_level_text']
-                    second_level_code = feedback['second_level_code']
-                    second_level_text = f"{second_level_code.get('name', '')} {second_level_code.get('description', '')}"
-                    
-                    if feedback['is_correct']:
-                        # 正例
-                        train_examples.append(InputExample(texts=[first_level_text, second_level_text], label=1.0))
-                    else:
-                        # 负例
-                        train_examples.append(InputExample(texts=[first_level_text, second_level_text], label=0.0))
-                
-                # 每批数据处理后清理缓存
-                self._manage_cache()
-                self._log_memory_usage(f"处理第 {i//batch_size_data + 1} 批数据后")
-            
-            # 创建数据加载器
-            train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=batch_size)
-            
-            # 定义损失函数
-            train_loss = losses.CosineSimilarityLoss(self.model)
-            
-            # 开始训练
-            logger.info(f"开始增量训练，共 {len(train_examples)} 个样本，{epochs} 轮")
-            self._log_memory_usage("训练开始前")
-            
-            self.model.fit(
-                train_objectives=[(train_dataloader, train_loss)],
-                epochs=epochs,
-                warmup_steps=100,
-                output_path=self.model_name,
-                show_progress_bar=True
-            )
-            
-            # 清除缓存，使用新模型
-            self.clear_cache()
-            self._log_memory_usage("训练完成后")
-            logger.info("增量训练完成，模型已更新")
-            return True
-            
-        except Exception as e:
-            logger.error(f"增量训练失败: {e}")
-            # 发生异常时清理缓存
-            self.clear_cache()
-            return False
-
     def update_code_embeddings(self, second_level_codes: List[Dict[str, Any]]):
         """
         更新编码库的嵌入向量
@@ -473,22 +311,6 @@ class SemanticMatcher:
         except Exception as e:
             logger.error(f"更新编码嵌入失败: {e}")
 
-    def clear_cache(self):
-        """
-        清除嵌入缓存
-        """
-        self.embeddings_cache.clear()
-        logger.info("嵌入缓存已清除")
-
-    def get_cache_size(self) -> int:
-        """
-        获取缓存大小
-
-        Returns:
-            缓存中的嵌入数量
-        """
-        return len(self.embeddings_cache)
-
     def _manage_cache(self):
         """
         管理缓存大小，当超出限制时清理最旧的缓存
@@ -501,49 +323,3 @@ class SemanticMatcher:
             for item in items:
                 del self.embeddings_cache[item]
             logger.info(f"缓存已清理，当前大小: {len(self.embeddings_cache)}")
-
-    def get_feedback_stats(self) -> Dict[str, Any]:
-        """
-        获取反馈统计信息
-
-        Returns:
-            反馈统计信息
-        """
-        total = len(self.feedback_data)
-        correct = sum(1 for f in self.feedback_data if f['is_correct'])
-        incorrect = total - correct
-        
-        return {
-            'total_feedback': total,
-            'correct_feedback': correct,
-            'incorrect_feedback': incorrect,
-            'code_weights_count': len(self.code_weights)
-        }
-
-    def _get_memory_usage(self) -> Dict[str, float]:
-        """
-        获取当前内存使用情况
-
-        Returns:
-            内存使用情况字典
-        """
-        if psutil:
-            process = psutil.Process(os.getpid())
-            memory_info = process.memory_info()
-            return {
-                'rss': memory_info.rss / 1024 / 1024,  # MB
-                'vms': memory_info.vms / 1024 / 1024,  # MB
-                'percent': process.memory_percent()
-            }
-        return {}
-
-    def _log_memory_usage(self, message: str):
-        """
-        记录内存使用情况
-
-        Args:
-            message: 日志消息
-        """
-        memory_usage = self._get_memory_usage()
-        if memory_usage:
-            logger.info(f"{message} - 内存使用: RSS={memory_usage['rss']:.2f}MB, 百分比={memory_usage['percent']:.2f}%")
