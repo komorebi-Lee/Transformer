@@ -23573,3 +23573,720 @@ ModuleNotFoundError("No module named 'faiss.swigfaiss_avx2'")
 2026-05-29 16:43:36,973 - main_window - INFO - 搜索内容: 如果是说像我们这种运营，或者是其他的一些岗位，职能岗位或者市场岗位，我认为越轨创新还是很有必要的...
 2026-05-29 16:43:36,979 - main_window - INFO - 成功高亮编码内容
 2026-05-29 16:47:51,203 - coding_library_manager - INFO - 编码库加载成功，包含 722 个三阶编码和 1228 个二阶编码
+2026-05-31 12:31:10,004 - app_launcher - WARNING - BERT模型不存在，将使用降级模式
+2026-05-31 12:31:25,982 - numexpr.utils - INFO - NumExpr defaulting to 16 threads.
+2026-05-31 12:31:28,851 - root - INFO - pyarrow 20.0.0 导入成功
+2026-05-31 12:31:30,128 - semantic_matcher - INFO - sentence-transformers 库加载成功
+2026-05-31 12:31:30,629 - training_manager - INFO - scikit-learn 版本: 1.7.2
+2026-05-31 12:31:30,818 - hyperparameter_optimizer - WARNING - optuna库未安装，贝叶斯优化功能不可用
+2026-05-31 12:31:30,823 - model_manager - INFO - 使用设备: cpu
+2026-05-31 12:31:30,836 - data_processor - INFO - 已启用精准受访者提取（SpeakerRoleExtractor + QA分类器）
+2026-05-31 12:31:30,859 - coding_library_manager - INFO - 编码库加载成功，包含 722 个三阶编码和 1228 个二阶编码
+2026-05-31 12:31:30,860 - enhanced_coding_generator - INFO - 编码库加载成功
+2026-05-31 12:31:30,860 - semantic_matcher - INFO - 正在加载sentence-transformer模型: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-31 12:31:30,866 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2026-05-31 12:31:30,866 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-31 12:31:30,866 - semantic_matcher - ERROR - 加载模型失败: Path D:\zthree2\local_models\bge-small-zh-v1.5 not found
+2026-05-31 12:31:30,869 - enhanced_coding_generator - WARNING - RAG组件初始化失败: No module named 'decision_policy'，退回到传统匹配路径
+2026-05-31 12:31:30,869 - main_window - INFO - 使用原有的 EnhancedCodingGenerator
+2026-05-31 12:31:30,873 - standard_answer_manager - INFO - 标准答案已加载: v78_20260429_091237.json
+2026-05-31 12:31:30,874 - standard_answer_manager - INFO - 成功加载最新的标准答案: v78_20260429_091237.json
+2026-05-31 12:31:31,107 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-31 12:31:31,108 - model_manager - ERROR - Reranker 模型不存在: D:\zthree2\local_models\custom_bert_4layer
+2026-05-31 12:31:31,108 - model_manager - ERROR - 请先运行: python model_builder.py
+2026-05-31 12:31:31,108 - main_window - ERROR - 启动模型下载失败: 'PyQt5.QtCore.pyqtSignal' object has no attribute 'connect'
+2026-05-31 12:31:32,057 - app_launcher - INFO - 扎根理论编码分析系统启动成功，主窗口已显示
+2026-05-31 12:31:32,657 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-31 12:31:32,657 - model_manager - ERROR - Reranker 模型不存在: D:\zthree2\local_models\custom_bert_4layer
+2026-05-31 12:31:32,657 - model_manager - ERROR - 请先运行: python model_builder.py
+2026-05-31 12:31:32,659 - main_window - ERROR - 启动模型下载失败: 'PyQt5.QtCore.pyqtSignal' object has no attribute 'connect'
+2026-05-31 12:32:27,006 - project_manager - INFO - 项目已加载: 14
+2026-05-31 12:33:01,979 - main_window - INFO - Updated structured codes from tree. Total third: 4
+2026-05-31 12:33:15,450 - main_window - INFO - 导航请求: Content='B：这个他其实是一个直线的关系，可能就是...', Number='640'
+2026-05-31 12:33:15,539 - main_window - INFO - 搜索内容: B：这个他其实是一个直线的关系，可能就是你的部门主管，你的主任，然后到经理...
+2026-05-31 12:33:15,549 - main_window - INFO - 成功高亮编码内容
+2026-05-31 12:33:16,232 - main_window - INFO - 导航请求: Content='其他的话，相当于人家只是一个配合，因为你...', Number='641'
+2026-05-31 12:33:16,238 - main_window - INFO - 搜索内容: 其他的话，相当于人家只是一个配合，因为你这个项目对他们部门也会有一些影响，也会增加人家的工作量啊，所...
+2026-05-31 12:33:16,239 - main_window - INFO - 成功高亮编码内容
+2026-05-31 12:33:16,972 - main_window - INFO - 导航请求: Content='B：我这边主要是负责样本中心，和物流以及...', Number='698'
+2026-05-31 12:33:17,015 - main_window - INFO - 搜索内容: B：我这边主要是负责样本中心，和物流以及运营对接，然后样本到样后进行简单处理再和实验部对接...
+2026-05-31 12:33:17,016 - main_window - INFO - 成功高亮编码内容
+2026-05-31 12:33:17,819 - main_window - INFO - 导航请求: Content='B：因为我之前觉得样本中心在没有负责人的...', Number='716'
+2026-05-31 12:33:17,824 - main_window - INFO - 搜索内容: B：因为我之前觉得样本中心在没有负责人的情况下，确实处于比较混乱、无序的状态，然后现在在我接手这个工...
+2026-05-31 12:33:17,825 - main_window - INFO - 成功高亮编码内容
+2026-05-31 12:33:19,273 - main_window - INFO - 导航请求: Content='B：这个他其实是一个直线的关系，可能就是...', Number='640'
+2026-05-31 12:33:19,299 - main_window - INFO - 搜索内容: B：这个他其实是一个直线的关系，可能就是你的部门主管，你的主任，然后到经理...
+2026-05-31 12:33:19,305 - main_window - INFO - 成功高亮编码内容
+2026-05-31 12:33:22,102 - main_window - INFO - 导航请求: Content='其他的话，相当于人家只是一个配合，因为你...', Number='641'
+2026-05-31 12:33:22,107 - main_window - INFO - 搜索内容: 其他的话，相当于人家只是一个配合，因为你这个项目对他们部门也会有一些影响，也会增加人家的工作量啊，所...
+2026-05-31 12:33:22,107 - main_window - INFO - 成功高亮编码内容
+2026-05-31 12:33:22,975 - main_window - INFO - 导航请求: Content='B：因为我之前觉得样本中心在没有负责人的...', Number='716'
+2026-05-31 12:33:22,999 - main_window - INFO - 搜索内容: B：因为我之前觉得样本中心在没有负责人的情况下，确实处于比较混乱、无序的状态，然后现在在我接手这个工...
+2026-05-31 12:33:23,001 - main_window - INFO - 成功高亮编码内容
+2026-05-31 12:33:23,842 - main_window - INFO - 导航请求: Content='B：我这边主要是负责样本中心，和物流以及...', Number='698'
+2026-05-31 12:33:23,848 - main_window - INFO - 搜索内容: B：我这边主要是负责样本中心，和物流以及运营对接，然后样本到样后进行简单处理再和实验部对接...
+2026-05-31 12:33:23,848 - main_window - INFO - 成功高亮编码内容
+2026-05-31 12:34:41,545 - main_window - INFO - Updated structured codes from tree. Total third: 4
+2026-05-31 12:50:13,400 - main_window - INFO - 导航请求: Content='有些问题我可能完不成的时候，我叫领导去吩...', Number='406'
+2026-05-31 12:50:13,432 - main_window - INFO - 搜索内容: 有些问题我可能完不成的时候，我叫领导去吩咐别人，大家互相帮忙，而且我们觉得我们至少运营团队大家都很团...
+2026-05-31 12:50:13,455 - main_window - INFO - 成功高亮编码内容
+2026-05-31 12:50:13,504 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 406
+2026-05-31 12:50:13,504 - main_window - INFO - 最终确定的一阶编码句子编号: 406
+2026-05-31 12:50:13,506 - main_window - INFO - 关联编号完整列表: ['406']
+2026-05-31 12:50:13,506 - main_window - INFO - sentence_details数量: 1
+2026-05-31 12:50:13,506 - main_window - INFO - 弹出对话框句子1 - 编号: 406, 内容前30字: 有些问题我可能完不成的时候，我叫领导去吩咐别人，大家互相帮忙...
+2026-05-31 12:53:33,779 - manual_coding_dialog - INFO - 从item_data获取一阶编码编号: A22
+2026-05-31 12:53:33,780 - manual_coding_dialog - INFO - 最终确定的一阶编码编号: A22
+2026-05-31 12:53:33,781 - manual_coding_dialog - INFO - 选择了文件: C:/Users/lq886/Desktop/各种各样的文档/文本分析项目/文本样本/文本样本1/文本样本2/康圣访谈3（谢文英）.docx
+2026-05-31 12:53:33,781 - manual_coding_dialog - INFO - 找到文件数据: 康圣访谈3（谢文英）.docx
+2026-05-31 12:53:33,781 - manual_coding_dialog - INFO - 使用缓存中的自动编码内容: 康圣访谈3（谢文英）.docx
+2026-05-31 12:53:33,818 - manual_coding_dialog - INFO - 文本内容显示成功
+2026-05-31 12:53:33,826 - manual_coding_dialog - INFO - 根据一阶编码文件名切换到文件: 康圣访谈3（谢文英）.docx
+2026-05-31 12:53:33,838 - manual_coding_dialog - INFO - 成功高亮一阶编码的original_content
+2026-05-31 12:53:53,556 - manual_coding_dialog - INFO - 选择了文本: 你平时做的这么多工作，就是负责这些内容都是工作职责要求的吗？...
+2026-05-31 12:53:56,651 - manual_coding_dialog - INFO - 向前找到编号 837，当前句子编号: 838 for sentence: 你平时做的这么多工作，就是负责这些内容都是工作职责要求的吗？...
+2026-05-31 12:53:56,653 - manual_coding_dialog - INFO - 已为文本添加编码标记: [A2498]
+2026-05-31 12:53:56,711 - manual_coding_dialog - INFO - 添加一阶编码(未分类): A2498 - 11
+2026-05-31 12:57:40,669 - manual_coding_dialog - INFO - 从item_data获取一阶编码编号: A120
+2026-05-31 12:57:40,669 - manual_coding_dialog - INFO - 最终确定的一阶编码编号: A120
+2026-05-31 12:57:40,671 - manual_coding_dialog - INFO - 选择了文件: C:/Users/lq886/Desktop/各种各样的文档/文本分析项目/文本样本/文本样本1/文本样本2/康圣访谈29.docx
+2026-05-31 12:57:40,679 - manual_coding_dialog - INFO - 已保存文件的编码标记状态: 康圣访谈3（谢文英）.docx
+2026-05-31 12:57:40,679 - manual_coding_dialog - INFO - 找到文件数据: 康圣访谈29.docx
+2026-05-31 12:57:40,679 - manual_coding_dialog - INFO - 使用缓存中的自动编码内容: 康圣访谈29.docx
+2026-05-31 12:57:40,716 - manual_coding_dialog - INFO - 文本内容显示成功
+2026-05-31 12:57:40,727 - manual_coding_dialog - INFO - 根据一阶编码文件名切换到文件: 康圣访谈29.docx
+2026-05-31 12:57:40,734 - manual_coding_dialog - INFO - 成功高亮一阶编码的original_content
+2026-05-31 12:57:42,809 - manual_coding_dialog - INFO - 从item_data获取一阶编码编号: A120
+2026-05-31 12:57:42,810 - manual_coding_dialog - INFO - 最终确定的一阶编码编号: A120
+2026-05-31 12:57:42,810 - manual_coding_dialog - INFO - 选择了文件: C:/Users/lq886/Desktop/各种各样的文档/文本分析项目/文本样本/文本样本1/文本样本2/康圣访谈29.docx
+2026-05-31 12:57:42,861 - manual_coding_dialog - INFO - 找到文件数据: 康圣访谈29.docx
+2026-05-31 12:57:42,862 - manual_coding_dialog - INFO - 使用缓存中的自动编码内容: 康圣访谈29.docx
+2026-05-31 12:57:42,868 - manual_coding_dialog - INFO - 文本内容显示成功
+2026-05-31 12:57:42,873 - manual_coding_dialog - INFO - 根据一阶编码文件名切换到文件: 康圣访谈29.docx
+2026-05-31 12:57:42,878 - manual_coding_dialog - INFO - 成功高亮一阶编码的original_content
+2026-05-31 12:57:49,316 - main_window - INFO - Updated structured codes from tree. Total third: 4
+2026-05-31 12:57:52,887 - main_window - INFO - Updated structured codes from tree. Total third: 4
+2026-05-31 12:57:57,959 - main_window - INFO - Updated structured codes from tree. Total third: 4
+2026-05-31 12:58:02,982 - main_window - INFO - Updated structured codes from tree. Total third: 4
+2026-05-31 12:58:06,155 - main_window - INFO - 导航请求: Content='B：可能说没有具体接触过，直接想可能也不...', Number='259'
+2026-05-31 12:58:06,192 - main_window - INFO - 搜索内容: B：可能说没有具体接触过，直接想可能也不太好去想，因为怎么讲他做的好的话，可能说如果他用自己的时间去...
+2026-05-31 12:58:06,198 - main_window - INFO - 成功高亮编码内容
+2026-05-31 12:58:07,755 - main_window - INFO - Updated structured codes from tree. Total third: 4
+2026-05-31 12:58:11,500 - main_window - INFO - Updated structured codes from tree. Total third: 4
+2026-05-31 12:58:14,232 - main_window - INFO - Updated structured codes from tree. Total third: 4
+2026-05-31 12:58:36,403 - main_window - INFO - 导航请求: Content='其他的话，相当于人家只是一个配合，因为你...', Number='641'
+2026-05-31 12:58:36,423 - main_window - INFO - 搜索内容: 其他的话，相当于人家只是一个配合，因为你这个项目对他们部门也会有一些影响，也会增加人家的工作量啊，所...
+2026-05-31 12:58:36,429 - main_window - INFO - 成功高亮编码内容
+2026-05-31 13:34:55,224 - manual_coding_dialog - INFO - 已保存文件的编码标记状态: 康圣访谈29.docx
+2026-05-31 13:34:55,224 - manual_coding_dialog - INFO - 对话框关闭时已保存编码标记状态
+2026-05-31 13:43:43,536 - app_launcher - WARNING - BERT模型不存在，将使用降级模式
+2026-05-31 13:43:54,474 - numexpr.utils - INFO - NumExpr defaulting to 16 threads.
+2026-05-31 13:43:56,448 - root - INFO - pyarrow 20.0.0 导入成功
+2026-05-31 13:43:57,254 - semantic_matcher - INFO - sentence-transformers 库加载成功
+2026-05-31 13:43:57,500 - training_manager - INFO - scikit-learn 版本: 1.7.2
+2026-05-31 13:43:57,591 - hyperparameter_optimizer - WARNING - optuna库未安装，贝叶斯优化功能不可用
+2026-05-31 13:43:57,593 - model_manager - INFO - 使用设备: cpu
+2026-05-31 13:43:57,597 - data_processor - INFO - 已启用精准受访者提取（SpeakerRoleExtractor + QA分类器）
+2026-05-31 13:43:57,605 - coding_library_manager - INFO - 编码库加载成功，包含 722 个三阶编码和 1228 个二阶编码
+2026-05-31 13:43:57,606 - enhanced_coding_generator - INFO - 编码库加载成功
+2026-05-31 13:43:57,606 - semantic_matcher - INFO - 正在加载sentence-transformer模型: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-31 13:43:57,612 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2026-05-31 13:43:57,612 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-31 13:43:57,612 - semantic_matcher - ERROR - 加载模型失败: Path D:\zthree2\local_models\bge-small-zh-v1.5 not found
+2026-05-31 13:43:57,614 - enhanced_coding_generator - WARNING - RAG组件初始化失败: No module named 'decision_policy'，退回到传统匹配路径
+2026-05-31 13:43:57,614 - main_window - INFO - 使用原有的 EnhancedCodingGenerator
+2026-05-31 13:43:57,617 - standard_answer_manager - INFO - 标准答案已加载: v78_20260429_091237.json
+2026-05-31 13:43:57,617 - standard_answer_manager - INFO - 成功加载最新的标准答案: v78_20260429_091237.json
+2026-05-31 13:43:57,789 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-31 13:43:57,789 - model_manager - ERROR - Reranker 模型不存在: D:\zthree2\local_models\custom_bert_4layer
+2026-05-31 13:43:57,789 - model_manager - ERROR - 请先运行: python model_builder.py
+2026-05-31 13:43:57,790 - main_window - ERROR - 启动模型下载失败: 'PyQt5.QtCore.pyqtSignal' object has no attribute 'connect'
+2026-05-31 13:43:58,741 - app_launcher - INFO - 扎根理论编码分析系统启动成功，主窗口已显示
+2026-05-31 13:43:59,342 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-31 13:43:59,343 - model_manager - ERROR - Reranker 模型不存在: D:\zthree2\local_models\custom_bert_4layer
+2026-05-31 13:43:59,343 - model_manager - ERROR - 请先运行: python model_builder.py
+2026-05-31 13:43:59,343 - main_window - ERROR - 启动模型下载失败: 'PyQt5.QtCore.pyqtSignal' object has no attribute 'connect'
+2026-05-31 13:44:09,377 - project_manager - INFO - 项目已加载: 14
+2026-05-31 13:44:36,755 - main_window - INFO - 已保存撤回状态: 拖拽移动编码，当前撤回栈大小: 1
+2026-05-31 13:44:36,881 - main_window - INFO - Updated structured codes from tree. Total third: 4
+2026-05-31 13:44:42,147 - main_window - INFO - 导航请求: Content='B：我的内容转变是特别大的，以前在医学部...', Number='834'
+2026-05-31 13:44:42,196 - main_window - INFO - 搜索内容: B：我的内容转变是特别大的，以前在医学部工作的话，就是每天做各种临床的一些实验，临床的一些检验工作，...
+2026-05-31 13:44:42,196 - main_window - INFO - 成功高亮编码内容
+2026-05-31 13:44:43,066 - main_window - INFO - 导航请求: Content='B：因为我之前觉得样本中心在没有负责人的...', Number='716'
+2026-05-31 13:44:43,115 - main_window - INFO - 搜索内容: B：因为我之前觉得样本中心在没有负责人的情况下，确实处于比较混乱、无序的状态，然后现在在我接手这个工...
+2026-05-31 13:44:43,117 - main_window - INFO - 成功高亮编码内容
+2026-05-31 13:44:43,541 - main_window - INFO - 导航请求: Content='B：我的内容转变是特别大的，以前在医学部...', Number='834'
+2026-05-31 13:44:43,561 - main_window - INFO - 搜索内容: B：我的内容转变是特别大的，以前在医学部工作的话，就是每天做各种临床的一些实验，临床的一些检验工作，...
+2026-05-31 13:44:43,562 - main_window - INFO - 成功高亮编码内容
+2026-05-31 13:44:44,195 - main_window - INFO - 导航请求: Content='B：因为我之前觉得样本中心在没有负责人的...', Number='716'
+2026-05-31 13:44:44,218 - main_window - INFO - 搜索内容: B：因为我之前觉得样本中心在没有负责人的情况下，确实处于比较混乱、无序的状态，然后现在在我接手这个工...
+2026-05-31 13:44:44,219 - main_window - INFO - 成功高亮编码内容
+2026-05-31 13:44:44,362 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 716
+2026-05-31 13:44:44,362 - main_window - INFO - 最终确定的一阶编码句子编号: 716
+2026-05-31 13:44:44,363 - main_window - INFO - 关联编号完整列表: ['716']
+2026-05-31 13:44:44,363 - main_window - INFO - sentence_details数量: 1
+2026-05-31 13:44:44,363 - main_window - INFO - 弹出对话框句子1 - 编号: 716, 内容前30字: B：因为我之前觉得样本中心在没有负责人的情况下，确实处于比较...
+2026-05-31 13:44:49,806 - main_window - INFO - 已保存撤回状态: 拖拽移动编码，当前撤回栈大小: 2
+2026-05-31 13:44:49,926 - main_window - INFO - Updated structured codes from tree. Total third: 4
+2026-05-31 13:44:51,965 - main_window - INFO - Updated structured codes from tree. Total third: 4
+2026-05-31 13:44:51,966 - main_window - INFO - 已撤回操作: 拖拽移动编码
+2026-05-31 13:44:52,802 - main_window - INFO - Updated structured codes from tree. Total third: 4
+2026-05-31 13:44:52,802 - main_window - INFO - 已撤回操作: 拖拽移动编码
+2026-05-31 13:44:58,245 - main_window - ERROR - 保存编码失败: name 'PathManager' is not defined
+2026-05-31 13:45:19,889 - manual_coding_dialog - INFO - 从item_data获取一阶编码编号: A32
+2026-05-31 13:45:19,889 - manual_coding_dialog - INFO - 最终确定的一阶编码编号: A32
+2026-05-31 13:45:19,890 - manual_coding_dialog - INFO - 选择了文件: C:/Users/lq886/Desktop/各种各样的文档/文本分析项目/文本样本/文本样本1/文本样本2/康圣访谈5翟圣.docx
+2026-05-31 13:45:19,890 - manual_coding_dialog - INFO - 找到文件数据: 康圣访谈5翟圣.docx
+2026-05-31 13:45:19,890 - manual_coding_dialog - INFO - 使用缓存中的自动编码内容: 康圣访谈5翟圣.docx
+2026-05-31 13:45:19,895 - manual_coding_dialog - INFO - 文本内容显示成功
+2026-05-31 13:45:19,901 - manual_coding_dialog - INFO - 根据一阶编码文件名切换到文件: 康圣访谈5翟圣.docx
+2026-05-31 13:45:19,946 - manual_coding_dialog - INFO - 编码 A32 找到 1 个句子
+2026-05-31 13:45:19,947 - manual_coding_dialog - INFO - 根据文件名找到文件路径: C:/Users/lq886/Desktop/各种各样的文档/文本分析项目/文本样本/文本样本1/文本样本2/康圣访谈5翟圣.docx
+2026-05-31 13:45:19,970 - manual_coding_dialog - INFO - 通过编码内容定位成功
+2026-05-31 13:45:19,970 - manual_coding_dialog - INFO - 已定位到位置: 8000
+2026-05-31 13:45:19,970 - manual_coding_dialog - INFO - 使用精确方式高亮了编码 A32
+2026-05-31 13:45:22,264 - manual_coding_dialog - INFO - 已保存文件的编码标记状态: 康圣访谈5翟圣.docx
+2026-05-31 13:45:22,431 - manual_coding_dialog - INFO - 已获取 1 个文件的编码标记状态
+2026-05-31 13:45:23,099 - manual_coding_dialog - INFO - 最后编码位置已保存
+2026-05-31 13:45:23,197 - manual_coding_dialog - INFO - 已获取 1 个文件的编码标记状态
+2026-05-31 13:45:28,833 - manual_coding_dialog - INFO - 编码已保存: D:\zthree2\手动编码保存编码\手动编码_20260531_134522.json
+2026-05-31 13:45:28,833 - manual_coding_dialog - INFO - 编码树已保存: D:\zthree2\手动编码保存编码\手动编码编码树保存\编码树_20260531_134522.json
+2026-05-31 13:45:30,562 - manual_coding_dialog - INFO - 已保存撤回状态: 拖拽移动编码，当前撤回栈大小: 1
+2026-05-31 13:45:32,388 - manual_coding_dialog - INFO - 已撤回操作: 拖拽移动编码
+2026-05-31 13:45:33,722 - manual_coding_dialog - INFO - 已保存文件的编码标记状态: 康圣访谈5翟圣.docx
+2026-05-31 13:45:33,723 - manual_coding_dialog - INFO - 对话框关闭时已保存编码标记状态
+2026-05-31 13:45:34,942 - manual_coding_dialog - INFO - 已保存文件的编码标记状态: 康圣访谈5翟圣.docx
+2026-05-31 13:45:35,064 - manual_coding_dialog - INFO - 已获取 1 个文件的编码标记状态
+2026-05-31 13:45:35,613 - manual_coding_dialog - INFO - 最后编码位置已保存
+2026-05-31 13:45:35,672 - manual_coding_dialog - INFO - 已获取 1 个文件的编码标记状态
+2026-05-31 13:45:37,934 - manual_coding_dialog - INFO - 编码已保存: D:\zthree2\手动编码保存编码\手动编码_20260531_134534.json
+2026-05-31 13:45:37,934 - manual_coding_dialog - INFO - 编码树已保存: D:\zthree2\手动编码保存编码\手动编码编码树保存\编码树_20260531_134534.json
+2026-05-31 13:45:40,640 - main_window - INFO - 已保存撤回状态: 拖拽移动编码，当前撤回栈大小: 1
+2026-05-31 13:45:41,018 - main_window - INFO - Updated structured codes from tree. Total third: 4
+2026-05-31 13:45:42,909 - main_window - ERROR - 保存编码失败: name 'PathManager' is not defined
+2026-05-31 13:47:28,533 - app_launcher - INFO - 应用程序正常退出
+2026-05-31 13:47:33,630 - app_launcher - WARNING - BERT模型不存在，将使用降级模式
+2026-05-31 13:47:43,585 - numexpr.utils - INFO - NumExpr defaulting to 16 threads.
+2026-05-31 13:47:45,450 - root - INFO - pyarrow 20.0.0 导入成功
+2026-05-31 13:47:46,174 - semantic_matcher - INFO - sentence-transformers 库加载成功
+2026-05-31 13:47:46,388 - training_manager - INFO - scikit-learn 版本: 1.7.2
+2026-05-31 13:47:46,413 - hyperparameter_optimizer - WARNING - optuna库未安装，贝叶斯优化功能不可用
+2026-05-31 13:47:46,415 - model_manager - INFO - 使用设备: cpu
+2026-05-31 13:47:46,419 - data_processor - INFO - 已启用精准受访者提取（SpeakerRoleExtractor + QA分类器）
+2026-05-31 13:47:46,427 - coding_library_manager - INFO - 编码库加载成功，包含 722 个三阶编码和 1228 个二阶编码
+2026-05-31 13:47:46,427 - enhanced_coding_generator - INFO - 编码库加载成功
+2026-05-31 13:47:46,427 - semantic_matcher - INFO - 正在加载sentence-transformer模型: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-31 13:47:46,433 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2026-05-31 13:47:46,433 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-31 13:47:46,434 - semantic_matcher - ERROR - 加载模型失败: Path D:\zthree2\local_models\bge-small-zh-v1.5 not found
+2026-05-31 13:47:46,436 - enhanced_coding_generator - WARNING - RAG组件初始化失败: No module named 'decision_policy'，退回到传统匹配路径
+2026-05-31 13:47:46,436 - main_window - INFO - 使用原有的 EnhancedCodingGenerator
+2026-05-31 13:47:46,439 - standard_answer_manager - INFO - 标准答案已加载: v78_20260429_091237.json
+2026-05-31 13:47:46,439 - standard_answer_manager - INFO - 成功加载最新的标准答案: v78_20260429_091237.json
+2026-05-31 13:47:46,599 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-31 13:47:46,599 - model_manager - ERROR - Reranker 模型不存在: D:\zthree2\local_models\custom_bert_4layer
+2026-05-31 13:47:46,599 - model_manager - ERROR - 请先运行: python model_builder.py
+2026-05-31 13:47:46,600 - main_window - ERROR - 启动模型下载失败: 'PyQt5.QtCore.pyqtSignal' object has no attribute 'connect'
+2026-05-31 13:47:47,520 - app_launcher - INFO - 扎根理论编码分析系统启动成功，主窗口已显示
+2026-05-31 13:47:48,133 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-31 13:47:48,134 - model_manager - ERROR - Reranker 模型不存在: D:\zthree2\local_models\custom_bert_4layer
+2026-05-31 13:47:48,134 - model_manager - ERROR - 请先运行: python model_builder.py
+2026-05-31 13:47:48,134 - main_window - ERROR - 启动模型下载失败: 'PyQt5.QtCore.pyqtSignal' object has no attribute 'connect'
+2026-05-31 13:48:28,007 - project_manager - INFO - 项目已加载: 14
+2026-05-31 13:48:49,527 - main_window - INFO - 已保存撤回状态: 拖拽移动编码，当前撤回栈大小: 1
+2026-05-31 13:48:49,655 - main_window - INFO - Updated structured codes from tree. Total third: 4
+2026-05-31 13:48:52,395 - main_window - INFO - Updated structured codes from tree. Total third: 4
+2026-05-31 13:48:52,395 - main_window - INFO - 已撤回操作: 拖拽移动编码
+2026-05-31 13:48:58,109 - main_window - INFO - 编码已保存: D:\zthree2\自动编码保存编码\自动编码_20260531_134854.json
+2026-05-31 13:53:48,321 - app_launcher - INFO - 应用程序正常退出
+2026-05-31 13:53:54,983 - app_launcher - WARNING - BERT模型不存在，将使用降级模式
+2026-05-31 13:54:05,248 - numexpr.utils - INFO - NumExpr defaulting to 16 threads.
+2026-05-31 13:54:07,158 - root - INFO - pyarrow 20.0.0 导入成功
+2026-05-31 13:54:07,896 - semantic_matcher - INFO - sentence-transformers 库加载成功
+2026-05-31 13:54:08,106 - training_manager - INFO - scikit-learn 版本: 1.7.2
+2026-05-31 13:54:08,129 - hyperparameter_optimizer - WARNING - optuna库未安装，贝叶斯优化功能不可用
+2026-05-31 13:54:08,132 - model_manager - INFO - 使用设备: cpu
+2026-05-31 13:54:08,134 - data_processor - INFO - 已启用精准受访者提取（SpeakerRoleExtractor + QA分类器）
+2026-05-31 13:54:08,143 - coding_library_manager - INFO - 编码库加载成功，包含 722 个三阶编码和 1228 个二阶编码
+2026-05-31 13:54:08,143 - enhanced_coding_generator - INFO - 编码库加载成功
+2026-05-31 13:54:08,143 - semantic_matcher - INFO - 正在加载sentence-transformer模型: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-31 13:54:08,148 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2026-05-31 13:54:08,149 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-31 13:54:08,149 - semantic_matcher - ERROR - 加载模型失败: Path D:\zthree2\local_models\bge-small-zh-v1.5 not found
+2026-05-31 13:54:08,150 - enhanced_coding_generator - WARNING - RAG组件初始化失败: No module named 'decision_policy'，退回到传统匹配路径
+2026-05-31 13:54:08,151 - main_window - INFO - 使用原有的 EnhancedCodingGenerator
+2026-05-31 13:54:08,154 - standard_answer_manager - INFO - 标准答案已加载: v78_20260429_091237.json
+2026-05-31 13:54:08,154 - standard_answer_manager - INFO - 成功加载最新的标准答案: v78_20260429_091237.json
+2026-05-31 13:54:08,305 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-31 13:54:08,306 - model_manager - ERROR - Reranker 模型不存在: D:\zthree2\local_models\custom_bert_4layer
+2026-05-31 13:54:08,306 - model_manager - ERROR - 请先运行: python model_builder.py
+2026-05-31 13:54:08,306 - main_window - ERROR - 启动模型下载失败: 'PyQt5.QtCore.pyqtSignal' object has no attribute 'connect'
+2026-05-31 13:54:09,265 - app_launcher - INFO - 扎根理论编码分析系统启动成功，主窗口已显示
+2026-05-31 13:54:09,865 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-31 13:54:09,867 - model_manager - ERROR - Reranker 模型不存在: D:\zthree2\local_models\custom_bert_4layer
+2026-05-31 13:54:09,867 - model_manager - ERROR - 请先运行: python model_builder.py
+2026-05-31 13:54:09,867 - main_window - ERROR - 启动模型下载失败: 'PyQt5.QtCore.pyqtSignal' object has no attribute 'connect'
+2026-05-31 13:54:36,070 - project_manager - INFO - 项目已加载: 14
+2026-05-31 13:55:08,590 - main_window - INFO - 导航请求: Content='B:我也想问，但是一看我们部门除了我好像...', Number='500'
+2026-05-31 13:55:08,639 - main_window - INFO - 搜索内容: B:我也想问，但是一看我们部门除了我好像没别人更适合去了，因为你看我这次去晒的这么黑，因为我告诉你,...
+2026-05-31 13:55:08,669 - main_window - INFO - 成功高亮编码内容
+2026-05-31 13:55:09,472 - main_window - INFO - 导航请求: Content='B：这个他其实是一个直线的关系，可能就是...', Number='640'
+2026-05-31 13:55:09,528 - main_window - INFO - 搜索内容: B：这个他其实是一个直线的关系，可能就是你的部门主管，你的主任，然后到经理...
+2026-05-31 13:55:09,535 - main_window - INFO - 成功高亮编码内容
+2026-05-31 13:55:10,489 - main_window - INFO - 导航请求: Content='就看这个事情最终需要哪个层级的领导来做主...', Number='604'
+2026-05-31 13:55:10,493 - main_window - INFO - 搜索内容: 就看这个事情最终需要哪个层级的领导来做主，那基本上就可以敲定这个事情，就是说会按这个项目的大小程度来...
+2026-05-31 13:55:10,493 - main_window - INFO - 成功高亮编码内容
+2026-05-31 13:55:12,430 - main_window - INFO - 导航请求: Content='其他的话，相当于人家只是一个配合，因为你...', Number='641'
+2026-05-31 13:55:12,436 - main_window - INFO - 搜索内容: 其他的话，相当于人家只是一个配合，因为你这个项目对他们部门也会有一些影响，也会增加人家的工作量啊，所...
+2026-05-31 13:55:12,436 - main_window - INFO - 成功高亮编码内容
+2026-05-31 13:55:22,964 - main_window - INFO - 导航请求: Content='B:我也想问，但是一看我们部门除了我好像...', Number='500'
+2026-05-31 13:55:22,984 - main_window - INFO - 搜索内容: B:我也想问，但是一看我们部门除了我好像没别人更适合去了，因为你看我这次去晒的这么黑，因为我告诉你,...
+2026-05-31 13:55:23,002 - main_window - INFO - 成功高亮编码内容
+2026-05-31 13:55:25,222 - main_window - INFO - 导航请求: Content='就看这个事情最终需要哪个层级的领导来做主...', Number='604'
+2026-05-31 13:55:25,248 - main_window - INFO - 搜索内容: 就看这个事情最终需要哪个层级的领导来做主，那基本上就可以敲定这个事情，就是说会按这个项目的大小程度来...
+2026-05-31 13:55:25,249 - main_window - INFO - 成功高亮编码内容
+2026-05-31 13:55:26,071 - main_window - INFO - 导航请求: Content='其他的话，相当于人家只是一个配合，因为你...', Number='641'
+2026-05-31 13:55:26,075 - main_window - INFO - 搜索内容: 其他的话，相当于人家只是一个配合，因为你这个项目对他们部门也会有一些影响，也会增加人家的工作量啊，所...
+2026-05-31 13:55:26,075 - main_window - INFO - 成功高亮编码内容
+2026-05-31 13:55:27,469 - main_window - INFO - 导航请求: Content='B：这个他其实是一个直线的关系，可能就是...', Number='640'
+2026-05-31 13:55:27,475 - main_window - INFO - 搜索内容: B：这个他其实是一个直线的关系，可能就是你的部门主管，你的主任，然后到经理...
+2026-05-31 13:55:27,475 - main_window - INFO - 成功高亮编码内容
+2026-05-31 13:55:41,932 - main_window - INFO - 编码已保存: D:\zthree2\自动编码保存编码\自动编码_20260531_135538.json
+2026-05-31 13:58:48,835 - main_window - INFO - 导航请求: Content='然后会跟这边总的上面领导很多的，环球上面...', Number='432'
+2026-05-31 13:58:48,859 - main_window - INFO - 搜索内容: 然后会跟这边总的上面领导很多的，环球上面的领导，每个人都有，除了每个部门的利益，每个人有个人的利益，...
+2026-05-31 13:58:48,871 - main_window - INFO - 成功高亮编码内容
+2026-05-31 13:58:50,140 - main_window - INFO - 导航请求: Content='B:我也想问，但是一看我们部门除了我好像...', Number='500'
+2026-05-31 13:58:50,150 - main_window - INFO - 搜索内容: B:我也想问，但是一看我们部门除了我好像没别人更适合去了，因为你看我这次去晒的这么黑，因为我告诉你,...
+2026-05-31 13:58:50,151 - main_window - INFO - 成功高亮编码内容
+2026-05-31 13:58:50,645 - main_window - INFO - 导航请求: Content='就看这个事情最终需要哪个层级的领导来做主...', Number='604'
+2026-05-31 13:58:50,669 - main_window - INFO - 搜索内容: 就看这个事情最终需要哪个层级的领导来做主，那基本上就可以敲定这个事情，就是说会按这个项目的大小程度来...
+2026-05-31 13:58:50,669 - main_window - INFO - 成功高亮编码内容
+2026-05-31 13:58:51,198 - main_window - INFO - 导航请求: Content='B：这个他其实是一个直线的关系，可能就是...', Number='640'
+2026-05-31 13:58:51,202 - main_window - INFO - 搜索内容: B：这个他其实是一个直线的关系，可能就是你的部门主管，你的主任，然后到经理...
+2026-05-31 13:58:51,204 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:05:09,372 - app_launcher - INFO - 应用程序正常退出
+2026-05-31 14:05:17,195 - app_launcher - WARNING - BERT模型不存在，将使用降级模式
+2026-05-31 14:05:27,494 - numexpr.utils - INFO - NumExpr defaulting to 16 threads.
+2026-05-31 14:05:29,455 - root - INFO - pyarrow 20.0.0 导入成功
+2026-05-31 14:05:30,238 - semantic_matcher - INFO - sentence-transformers 库加载成功
+2026-05-31 14:05:30,461 - training_manager - INFO - scikit-learn 版本: 1.7.2
+2026-05-31 14:05:30,483 - hyperparameter_optimizer - WARNING - optuna库未安装，贝叶斯优化功能不可用
+2026-05-31 14:05:30,485 - model_manager - INFO - 使用设备: cpu
+2026-05-31 14:05:30,487 - data_processor - INFO - 已启用精准受访者提取（SpeakerRoleExtractor + QA分类器）
+2026-05-31 14:05:30,495 - coding_library_manager - INFO - 编码库加载成功，包含 722 个三阶编码和 1228 个二阶编码
+2026-05-31 14:05:30,495 - enhanced_coding_generator - INFO - 编码库加载成功
+2026-05-31 14:05:30,496 - semantic_matcher - INFO - 正在加载sentence-transformer模型: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-31 14:05:30,502 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2026-05-31 14:05:30,502 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-31 14:05:30,502 - semantic_matcher - ERROR - 加载模型失败: Path D:\zthree2\local_models\bge-small-zh-v1.5 not found
+2026-05-31 14:05:30,503 - enhanced_coding_generator - WARNING - RAG组件初始化失败: No module named 'decision_policy'，退回到传统匹配路径
+2026-05-31 14:05:30,504 - main_window - INFO - 使用原有的 EnhancedCodingGenerator
+2026-05-31 14:05:30,507 - standard_answer_manager - INFO - 标准答案已加载: v78_20260429_091237.json
+2026-05-31 14:05:30,507 - standard_answer_manager - INFO - 成功加载最新的标准答案: v78_20260429_091237.json
+2026-05-31 14:05:30,663 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-31 14:05:30,663 - model_manager - ERROR - Reranker 模型不存在: D:\zthree2\local_models\custom_bert_4layer
+2026-05-31 14:05:30,663 - model_manager - ERROR - 请先运行: python model_builder.py
+2026-05-31 14:05:30,663 - main_window - ERROR - 启动模型下载失败: 'PyQt5.QtCore.pyqtSignal' object has no attribute 'connect'
+2026-05-31 14:05:31,629 - app_launcher - INFO - 扎根理论编码分析系统启动成功，主窗口已显示
+2026-05-31 14:05:32,229 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-31 14:05:32,229 - model_manager - ERROR - Reranker 模型不存在: D:\zthree2\local_models\custom_bert_4layer
+2026-05-31 14:05:32,229 - model_manager - ERROR - 请先运行: python model_builder.py
+2026-05-31 14:05:32,230 - main_window - ERROR - 启动模型下载失败: 'PyQt5.QtCore.pyqtSignal' object has no attribute 'connect'
+2026-05-31 14:07:01,918 - project_manager - INFO - 项目已加载: 14
+2026-05-31 14:07:51,512 - main_window - INFO - 导航请求: Content='就看这个事情最终需要哪个层级的领导来做主...', Number='604'
+2026-05-31 14:07:51,540 - main_window - INFO - 搜索内容: 就看这个事情最终需要哪个层级的领导来做主，那基本上就可以敲定这个事情，就是说会按这个项目的大小程度来...
+2026-05-31 14:07:51,548 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:07:53,061 - main_window - INFO - 导航请求: Content='B：这个他其实是一个直线的关系，可能就是...', Number='640'
+2026-05-31 14:07:53,067 - main_window - INFO - 搜索内容: B：这个他其实是一个直线的关系，可能就是你的部门主管，你的主任，然后到经理...
+2026-05-31 14:07:53,068 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:07:53,534 - main_window - INFO - 导航请求: Content='其他的话，相当于人家只是一个配合，因为你...', Number='641'
+2026-05-31 14:07:53,540 - main_window - INFO - 搜索内容: 其他的话，相当于人家只是一个配合，因为你这个项目对他们部门也会有一些影响，也会增加人家的工作量啊，所...
+2026-05-31 14:07:53,540 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:07:54,155 - main_window - INFO - 导航请求: Content='B：我这边主要是负责样本中心，和物流以及...', Number='698'
+2026-05-31 14:07:54,176 - main_window - INFO - 搜索内容: B：我这边主要是负责样本中心，和物流以及运营对接，然后样本到样后进行简单处理再和实验部对接...
+2026-05-31 14:07:54,177 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:08:01,055 - main_window - INFO - 已保存撤回状态: 合并一阶编码，当前撤回栈大小: 1
+2026-05-31 14:08:05,497 - main_window - INFO - Updated structured codes from tree. Total third: 4
+2026-05-31 14:08:13,202 - main_window - INFO - 导航请求: Content='因为我们现在的领导跟以前领导不一样，现在...', Number='60'
+2026-05-31 14:08:13,225 - main_window - INFO - 搜索内容: 因为我们现在的领导跟以前领导不一样，现在领导的暴露性会更大，因为我们总经理就是可能跟领导团队的关系...
+2026-05-31 14:08:13,229 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:08:13,826 - main_window - INFO - 导航请求: Content='B：之前考虑过，其实我不知道，我个人理解...', Number='122'
+2026-05-31 14:08:13,834 - main_window - INFO - 搜索内容: B：之前考虑过，其实我不知道，我个人理解觉得医学行业这种情况会比较少，如果说是医学行业的其他部门有可...
+2026-05-31 14:08:13,835 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:08:14,265 - main_window - INFO - 导航请求: Content='B：就是说不需要学会导体的话，像最活跃的...', Number='133'
+2026-05-31 14:08:14,273 - main_window - INFO - 搜索内容: B：就是说不需要学会导体的话，像最活跃的部门应该是市场销售部，是活跃的嘛，其实我具体不太懂，所以我们...
+2026-05-31 14:08:14,273 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:08:14,726 - main_window - INFO - 导航请求: Content='如果说不好，他也会对自己行为负责任...', Number='145'
+2026-05-31 14:08:14,734 - main_window - INFO - 搜索内容: 如果说不好，他也会对自己行为负责任...
+2026-05-31 14:08:14,735 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:08:15,156 - main_window - INFO - 导航请求: Content='B：日常的工作内容主要就是负责实验流程管...', Number='183'
+2026-05-31 14:08:15,193 - main_window - INFO - 搜索内容: B：日常的工作内容主要就是负责实验流程管控，然后弄好之后，负责后面的一些任务安排，安排上面一个人去做...
+2026-05-31 14:08:15,195 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:08:15,664 - main_window - INFO - 导航请求: Content='B：一般是领导直接负责我们的，只要他同意...', Number='193'
+2026-05-31 14:08:15,671 - main_window - INFO - 搜索内容: B：一般是领导直接负责我们的，只要他同意，一般没问题了...
+2026-05-31 14:08:15,673 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:08:16,214 - main_window - INFO - 导航请求: Content='B：对我自己来说的话，其实如果说是不同部...', Number='252'
+2026-05-31 14:08:16,222 - main_window - INFO - 搜索内容: B：对我自己来说的话，其实如果说是不同部门之间相互之间没有什么接触的，可能说也不会去想这个事情...
+2026-05-31 14:08:16,223 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:08:16,916 - main_window - INFO - 导航请求: Content='B：可能说没有具体接触过，直接想可能也不...', Number='259'
+2026-05-31 14:08:16,922 - main_window - INFO - 搜索内容: B：可能说没有具体接触过，直接想可能也不太好去想，因为怎么讲他做的好的话，可能说如果他用自己的时间去...
+2026-05-31 14:08:16,925 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:08:17,806 - main_window - INFO - 导航请求: Content='B：我觉得这个会有影响，肯定会有影响的，...', Number='268'
+2026-05-31 14:08:17,813 - main_window - INFO - 搜索内容: B：我觉得这个会有影响，肯定会有影响的，因为他毕竟要做的是自己工作以外的其他事情，相当于不属于自己职...
+2026-05-31 14:08:17,814 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:08:18,621 - main_window - INFO - 导航请求: Content='B：可是公司的领导或者是我们部门的主管或...', Number='294'
+2026-05-31 14:08:18,629 - main_window - INFO - 搜索内容: B：可是公司的领导或者是我们部门的主管或是主任，他们同意这样去执行去评估之后得出来一个结论...
+2026-05-31 14:08:18,629 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:08:22,638 - main_window - INFO - 已保存撤回状态: 合并一阶编码，当前撤回栈大小: 2
+2026-05-31 14:08:28,641 - main_window - INFO - Updated structured codes from tree. Total third: 4
+2026-05-31 14:08:32,141 - main_window - INFO - 导航请求: Content='因为我们现在的领导跟以前领导不一样，现在...', Number='60'
+2026-05-31 14:08:32,166 - main_window - INFO - 搜索内容: 因为我们现在的领导跟以前领导不一样，现在领导的暴露性会更大，因为我们总经理就是可能跟领导团队的关系...
+2026-05-31 14:08:32,170 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:08:32,255 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 60
+2026-05-31 14:08:32,255 - main_window - INFO - 最终确定的一阶编码句子编号: 60
+2026-05-31 14:08:32,255 - main_window - INFO - 关联编号完整列表: ['60', 'A15', 'A16', 'A17', 'A18', 'A02', 'A03', 'A04', 'A05', 'A06', 'A07', 'A08', 'A09', 'A10']
+2026-05-31 14:08:32,255 - main_window - INFO - sentence_details数量: 14
+2026-05-31 14:08:32,256 - main_window - INFO - 弹出对话框句子1 - 编号: 60, 内容前30字: 因为我们现在的领导跟以前领导不一样，现在领导的暴露性会更大，...
+2026-05-31 14:08:32,256 - main_window - INFO - 弹出对话框句子2 - 编号: A15, 内容前30字: 就看这个事情最终需要哪个层级的领导来做主，那基本上就可以敲定...
+2026-05-31 14:08:32,256 - main_window - INFO - 弹出对话框句子3 - 编号: A16, 内容前30字: B：这个他其实是一个直线的关系，可能就是你的部门主管，你的主...
+2026-05-31 14:08:32,256 - main_window - INFO - 弹出对话框句子4 - 编号: A17, 内容前30字: 其他的话，相当于人家只是一个配合，因为你这个项目对他们部门也...
+2026-05-31 14:08:32,256 - main_window - INFO - 弹出对话框句子5 - 编号: A18, 内容前30字: B：我这边主要是负责样本中心，和物流以及运营对接，然后样本到...
+2026-05-31 14:08:32,256 - main_window - INFO - 弹出对话框句子6 - 编号: A02, 内容前30字: B：之前考虑过，其实我不知道，我个人理解觉得医学行业这种情况...
+2026-05-31 14:08:32,256 - main_window - INFO - 弹出对话框句子7 - 编号: A03, 内容前30字: B：就是说不需要学会导体的话，像最活跃的部门应该是市场销售部...
+2026-05-31 14:08:32,256 - main_window - INFO - 弹出对话框句子8 - 编号: A04, 内容前30字: 如果说不好，他也会对自己行为负责任...
+2026-05-31 14:08:32,256 - main_window - INFO - 弹出对话框句子9 - 编号: A05, 内容前30字: B：日常的工作内容主要就是负责实验流程管控，然后弄好之后，负...
+2026-05-31 14:08:32,256 - main_window - INFO - 弹出对话框句子10 - 编号: A06, 内容前30字: B：一般是领导直接负责我们的，只要他同意，一般没问题了...
+2026-05-31 14:08:32,256 - main_window - INFO - 弹出对话框句子11 - 编号: A07, 内容前30字: B：对我自己来说的话，其实如果说是不同部门之间相互之间没有什...
+2026-05-31 14:08:32,256 - main_window - INFO - 弹出对话框句子12 - 编号: A08, 内容前30字: B：可能说没有具体接触过，直接想可能也不太好去想，因为怎么讲...
+2026-05-31 14:08:32,258 - main_window - INFO - 弹出对话框句子13 - 编号: A09, 内容前30字: B：我觉得这个会有影响，肯定会有影响的，因为他毕竟要做的是自...
+2026-05-31 14:08:32,258 - main_window - INFO - 弹出对话框句子14 - 编号: A10, 内容前30字: B：可是公司的领导或者是我们部门的主管或是主任，他们同意这样...
+2026-05-31 14:08:44,556 - main_window - INFO - 导航请求: Content='因为我们现在的领导跟以前领导不一样，现在...', Number='60'
+2026-05-31 14:08:44,563 - main_window - INFO - 搜索内容: 因为我们现在的领导跟以前领导不一样，现在领导的暴露性会更大，因为我们总经理就是可能跟领导团队的关系...
+2026-05-31 14:08:44,563 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:09:49,687 - manual_coding_dialog - INFO - 从item_data获取一阶编码编号: A01
+2026-05-31 14:09:49,688 - manual_coding_dialog - INFO - 最终确定的一阶编码编号: A01
+2026-05-31 14:09:49,688 - manual_coding_dialog - INFO - 选择了文件: C:/Users/lq886/Desktop/各种各样的文档/文本分析项目/文本样本/文本样本1/文本样本2/康圣访谈 4（董国祥）.docx
+2026-05-31 14:09:49,688 - manual_coding_dialog - INFO - 找到文件数据: 康圣访谈 4（董国祥）.docx
+2026-05-31 14:09:49,688 - manual_coding_dialog - INFO - 使用缓存中的自动编码内容: 康圣访谈 4（董国祥）.docx
+2026-05-31 14:09:49,695 - manual_coding_dialog - INFO - 文本内容显示成功
+2026-05-31 14:09:49,701 - manual_coding_dialog - INFO - 根据一阶编码文件名切换到文件: 康圣访谈 4（董国祥）.docx
+2026-05-31 14:09:49,707 - manual_coding_dialog - INFO - 成功高亮一阶编码的original_content
+2026-05-31 14:09:50,466 - manual_coding_dialog - INFO - 从item_data获取一阶编码编号: A11
+2026-05-31 14:09:50,466 - manual_coding_dialog - INFO - 最终确定的一阶编码编号: A11
+2026-05-31 14:09:50,467 - manual_coding_dialog - INFO - 选择了文件: C:/Users/lq886/Desktop/各种各样的文档/文本分析项目/文本样本/文本样本1/文本样本2/康圣访谈 13（张桂）.docx
+2026-05-31 14:09:50,468 - manual_coding_dialog - INFO - 已保存文件的编码标记状态: 康圣访谈 4（董国祥）.docx
+2026-05-31 14:09:50,468 - manual_coding_dialog - INFO - 找到文件数据: 康圣访谈 13（张桂）.docx
+2026-05-31 14:09:50,468 - manual_coding_dialog - INFO - 使用缓存中的自动编码内容: 康圣访谈 13（张桂）.docx
+2026-05-31 14:09:50,475 - manual_coding_dialog - INFO - 文本内容显示成功
+2026-05-31 14:09:50,481 - manual_coding_dialog - INFO - 根据一阶编码文件名切换到文件: 康圣访谈 13（张桂）.docx
+2026-05-31 14:09:50,491 - manual_coding_dialog - INFO - 成功高亮一阶编码的original_content
+2026-05-31 14:09:51,352 - manual_coding_dialog - INFO - 从item_data获取一阶编码编号: A12
+2026-05-31 14:09:51,352 - manual_coding_dialog - INFO - 最终确定的一阶编码编号: A12
+2026-05-31 14:09:51,352 - manual_coding_dialog - INFO - 选择了文件: C:/Users/lq886/Desktop/各种各样的文档/文本分析项目/文本样本/文本样本1/文本样本2/康圣访谈 13（张桂）.docx
+2026-05-31 14:09:51,453 - manual_coding_dialog - INFO - 找到文件数据: 康圣访谈 13（张桂）.docx
+2026-05-31 14:09:51,453 - manual_coding_dialog - INFO - 使用缓存中的自动编码内容: 康圣访谈 13（张桂）.docx
+2026-05-31 14:09:51,462 - manual_coding_dialog - INFO - 文本内容显示成功
+2026-05-31 14:09:51,466 - manual_coding_dialog - INFO - 根据一阶编码文件名切换到文件: 康圣访谈 13（张桂）.docx
+2026-05-31 14:09:51,484 - manual_coding_dialog - INFO - 成功高亮一阶编码的original_content
+2026-05-31 14:09:51,919 - manual_coding_dialog - INFO - 从item_data获取一阶编码编号: A13
+2026-05-31 14:09:51,919 - manual_coding_dialog - INFO - 最终确定的一阶编码编号: A13
+2026-05-31 14:09:51,919 - manual_coding_dialog - INFO - 选择了文件: C:/Users/lq886/Desktop/各种各样的文档/文本分析项目/文本样本/文本样本1/文本样本2/康圣访谈 13（张桂）.docx
+2026-05-31 14:09:51,987 - manual_coding_dialog - INFO - 找到文件数据: 康圣访谈 13（张桂）.docx
+2026-05-31 14:09:51,988 - manual_coding_dialog - INFO - 使用缓存中的自动编码内容: 康圣访谈 13（张桂）.docx
+2026-05-31 14:09:51,994 - manual_coding_dialog - INFO - 文本内容显示成功
+2026-05-31 14:09:51,998 - manual_coding_dialog - INFO - 根据一阶编码文件名切换到文件: 康圣访谈 13（张桂）.docx
+2026-05-31 14:09:52,010 - manual_coding_dialog - INFO - 成功高亮一阶编码的original_content
+2026-05-31 14:09:52,873 - manual_coding_dialog - INFO - 从item_data获取一阶编码编号: A14
+2026-05-31 14:09:52,874 - manual_coding_dialog - INFO - 最终确定的一阶编码编号: A14
+2026-05-31 14:09:52,874 - manual_coding_dialog - INFO - 选择了文件: C:/Users/lq886/Desktop/各种各样的文档/文本分析项目/文本样本/文本样本1/文本样本2/康圣访谈 13（张桂）.docx
+2026-05-31 14:09:52,943 - manual_coding_dialog - INFO - 找到文件数据: 康圣访谈 13（张桂）.docx
+2026-05-31 14:09:52,943 - manual_coding_dialog - INFO - 使用缓存中的自动编码内容: 康圣访谈 13（张桂）.docx
+2026-05-31 14:09:52,953 - manual_coding_dialog - INFO - 文本内容显示成功
+2026-05-31 14:09:52,961 - manual_coding_dialog - INFO - 根据一阶编码文件名切换到文件: 康圣访谈 13（张桂）.docx
+2026-05-31 14:09:52,991 - manual_coding_dialog - INFO - 成功高亮一阶编码的original_content
+2026-05-31 14:10:01,980 - manual_coding_dialog - INFO - 从item_data获取一阶编码编号: A01
+2026-05-31 14:10:01,981 - manual_coding_dialog - INFO - 最终确定的一阶编码编号: A01
+2026-05-31 14:10:01,981 - manual_coding_dialog - INFO - 选择了文件: C:/Users/lq886/Desktop/各种各样的文档/文本分析项目/文本样本/文本样本1/文本样本2/康圣访谈 4（董国祥）.docx
+2026-05-31 14:10:01,985 - manual_coding_dialog - INFO - 已保存文件的编码标记状态: 康圣访谈 13（张桂）.docx
+2026-05-31 14:10:01,986 - manual_coding_dialog - INFO - 找到文件数据: 康圣访谈 4（董国祥）.docx
+2026-05-31 14:10:01,986 - manual_coding_dialog - INFO - 使用缓存中的自动编码内容: 康圣访谈 4（董国祥）.docx
+2026-05-31 14:10:01,992 - manual_coding_dialog - INFO - 文本内容显示成功
+2026-05-31 14:10:01,997 - manual_coding_dialog - INFO - 根据一阶编码文件名切换到文件: 康圣访谈 4（董国祥）.docx
+2026-05-31 14:10:02,001 - manual_coding_dialog - INFO - 成功高亮一阶编码的original_content
+2026-05-31 14:10:02,087 - manual_coding_dialog - INFO - 从关联编号获取一阶编码实际句子编号: 60
+2026-05-31 14:10:02,087 - manual_coding_dialog - INFO - 最终确定的一阶编码句子编号: 60
+2026-05-31 14:10:02,087 - manual_coding_dialog - INFO - 关联编号完整列表: ['60', '122', '133', '145', '183', '193', '252', '259', '268', '294', '604', '640', '641', '698']
+2026-05-31 14:10:02,087 - manual_coding_dialog - INFO - sentence_details数量: 14
+2026-05-31 14:10:02,088 - manual_coding_dialog - INFO - 弹出对话框句子1 - 编号: 60, 内容前30字: 因为我们现在的领导跟以前领导不一样，现在领导的暴露性会更大，...
+2026-05-31 14:10:02,088 - manual_coding_dialog - INFO - 弹出对话框句子2 - 编号: A15, 内容前30字: 就看这个事情最终需要哪个层级的领导来做主，那基本上就可以敲定...
+2026-05-31 14:10:02,088 - manual_coding_dialog - INFO - 弹出对话框句子3 - 编号: A16, 内容前30字: B：这个他其实是一个直线的关系，可能就是你的部门主管，你的主...
+2026-05-31 14:10:02,088 - manual_coding_dialog - INFO - 弹出对话框句子4 - 编号: A17, 内容前30字: 其他的话，相当于人家只是一个配合，因为你这个项目对他们部门也...
+2026-05-31 14:10:02,088 - manual_coding_dialog - INFO - 弹出对话框句子5 - 编号: A18, 内容前30字: B：我这边主要是负责样本中心，和物流以及运营对接，然后样本到...
+2026-05-31 14:10:02,088 - manual_coding_dialog - INFO - 弹出对话框句子6 - 编号: A02, 内容前30字: B：之前考虑过，其实我不知道，我个人理解觉得医学行业这种情况...
+2026-05-31 14:10:02,088 - manual_coding_dialog - INFO - 弹出对话框句子7 - 编号: A03, 内容前30字: B：就是说不需要学会导体的话，像最活跃的部门应该是市场销售部...
+2026-05-31 14:10:02,089 - manual_coding_dialog - INFO - 弹出对话框句子8 - 编号: A04, 内容前30字: 如果说不好，他也会对自己行为负责任...
+2026-05-31 14:10:02,089 - manual_coding_dialog - INFO - 弹出对话框句子9 - 编号: A05, 内容前30字: B：日常的工作内容主要就是负责实验流程管控，然后弄好之后，负...
+2026-05-31 14:10:02,089 - manual_coding_dialog - INFO - 弹出对话框句子10 - 编号: A06, 内容前30字: B：一般是领导直接负责我们的，只要他同意，一般没问题了...
+2026-05-31 14:10:02,089 - manual_coding_dialog - INFO - 弹出对话框句子11 - 编号: A07, 内容前30字: B：对我自己来说的话，其实如果说是不同部门之间相互之间没有什...
+2026-05-31 14:10:02,089 - manual_coding_dialog - INFO - 弹出对话框句子12 - 编号: A08, 内容前30字: B：可能说没有具体接触过，直接想可能也不太好去想，因为怎么讲...
+2026-05-31 14:10:02,089 - manual_coding_dialog - INFO - 弹出对话框句子13 - 编号: A09, 内容前30字: B：我觉得这个会有影响，肯定会有影响的，因为他毕竟要做的是自...
+2026-05-31 14:10:02,089 - manual_coding_dialog - INFO - 弹出对话框句子14 - 编号: A10, 内容前30字: B：可是公司的领导或者是我们部门的主管或是主任，他们同意这样...
+2026-05-31 14:10:16,025 - manual_coding_dialog - INFO - 选择了文本: 会有这种情况。...
+2026-05-31 14:10:16,147 - manual_coding_dialog - INFO - 已保存撤回状态: 添加一阶编码，当前撤回栈大小: 1
+2026-05-31 14:10:22,615 - manual_coding_dialog - INFO - 选择了文本: 会有这种情况。...
+2026-05-31 14:10:22,734 - manual_coding_dialog - INFO - 已保存撤回状态: 添加一阶编码，当前撤回栈大小: 2
+2026-05-31 14:10:24,360 - manual_coding_dialog - INFO - 向前找到编号 54，当前句子编号: 55 for sentence: 会有这种情况。...
+2026-05-31 14:10:24,362 - manual_coding_dialog - INFO - 已为文本添加编码标记: [A2498]
+2026-05-31 14:10:24,418 - manual_coding_dialog - INFO - 添加一阶编码(未分类): A2498 - 11
+2026-05-31 14:10:25,929 - manual_coding_dialog - INFO - 从item_data获取一阶编码编号: A33
+2026-05-31 14:10:25,929 - manual_coding_dialog - INFO - 最终确定的一阶编码编号: A33
+2026-05-31 14:10:25,929 - manual_coding_dialog - INFO - 选择了文件: C:/Users/lq886/Desktop/各种各样的文档/文本分析项目/文本样本/文本样本1/文本样本2/康圣访谈6黄军涛.docx
+2026-05-31 14:10:25,930 - manual_coding_dialog - INFO - 已保存文件的编码标记状态: 康圣访谈 4（董国祥）.docx
+2026-05-31 14:10:25,932 - manual_coding_dialog - INFO - 找到文件数据: 康圣访谈6黄军涛.docx
+2026-05-31 14:10:25,932 - manual_coding_dialog - INFO - 使用缓存中的自动编码内容: 康圣访谈6黄军涛.docx
+2026-05-31 14:10:25,937 - manual_coding_dialog - INFO - 文本内容显示成功
+2026-05-31 14:10:25,943 - manual_coding_dialog - INFO - 根据一阶编码文件名切换到文件: 康圣访谈6黄军涛.docx
+2026-05-31 14:10:25,943 - manual_coding_dialog - INFO - 成功高亮一阶编码的original_content
+2026-05-31 14:10:26,464 - manual_coding_dialog - INFO - 从item_data获取一阶编码编号: A34
+2026-05-31 14:10:26,464 - manual_coding_dialog - INFO - 最终确定的一阶编码编号: A34
+2026-05-31 14:10:26,464 - manual_coding_dialog - INFO - 选择了文件: C:/Users/lq886/Desktop/各种各样的文档/文本分析项目/文本样本/文本样本1/文本样本2/康圣访谈6黄军涛.docx
+2026-05-31 14:10:26,520 - manual_coding_dialog - INFO - 找到文件数据: 康圣访谈6黄军涛.docx
+2026-05-31 14:10:26,520 - manual_coding_dialog - INFO - 使用缓存中的自动编码内容: 康圣访谈6黄军涛.docx
+2026-05-31 14:10:26,525 - manual_coding_dialog - INFO - 文本内容显示成功
+2026-05-31 14:10:26,527 - manual_coding_dialog - INFO - 根据一阶编码文件名切换到文件: 康圣访谈6黄军涛.docx
+2026-05-31 14:10:26,575 - manual_coding_dialog - INFO - 编码 A34 找到 1 个句子
+2026-05-31 14:10:26,576 - manual_coding_dialog - INFO - 根据文件名找到文件路径: C:/Users/lq886/Desktop/各种各样的文档/文本分析项目/文本样本/文本样本1/文本样本2/康圣访谈6黄军涛.docx
+2026-05-31 14:10:26,583 - manual_coding_dialog - INFO - 通过编码内容定位成功
+2026-05-31 14:10:26,583 - manual_coding_dialog - INFO - 已定位到位置: 4223
+2026-05-31 14:10:26,585 - manual_coding_dialog - INFO - 使用精确方式高亮了编码 A34
+2026-05-31 14:10:27,033 - manual_coding_dialog - INFO - 从item_data获取一阶编码编号: A35
+2026-05-31 14:10:27,034 - manual_coding_dialog - INFO - 最终确定的一阶编码编号: A35
+2026-05-31 14:10:27,034 - manual_coding_dialog - INFO - 选择了文件: C:/Users/lq886/Desktop/各种各样的文档/文本分析项目/文本样本/文本样本1/文本样本2/康圣访谈6黄军涛.docx
+2026-05-31 14:10:27,086 - manual_coding_dialog - INFO - 找到文件数据: 康圣访谈6黄军涛.docx
+2026-05-31 14:10:27,086 - manual_coding_dialog - INFO - 使用缓存中的自动编码内容: 康圣访谈6黄军涛.docx
+2026-05-31 14:10:27,092 - manual_coding_dialog - INFO - 文本内容显示成功
+2026-05-31 14:10:27,096 - manual_coding_dialog - INFO - 根据一阶编码文件名切换到文件: 康圣访谈6黄军涛.docx
+2026-05-31 14:10:27,101 - manual_coding_dialog - INFO - 成功高亮一阶编码的original_content
+2026-05-31 14:10:37,418 - manual_coding_dialog - INFO - 从item_data获取一阶编码编号: A19
+2026-05-31 14:10:37,418 - manual_coding_dialog - INFO - 最终确定的一阶编码编号: A19
+2026-05-31 14:10:37,418 - manual_coding_dialog - INFO - 选择了文件: C:/Users/lq886/Desktop/各种各样的文档/文本分析项目/文本样本/文本样本1/文本样本2/康圣访谈2（张思婷）.docx
+2026-05-31 14:10:37,430 - manual_coding_dialog - INFO - 已保存文件的编码标记状态: 康圣访谈6黄军涛.docx
+2026-05-31 14:10:37,430 - manual_coding_dialog - INFO - 找到文件数据: 康圣访谈2（张思婷）.docx
+2026-05-31 14:10:37,430 - manual_coding_dialog - INFO - 使用缓存中的自动编码内容: 康圣访谈2（张思婷）.docx
+2026-05-31 14:10:37,434 - manual_coding_dialog - INFO - 文本内容显示成功
+2026-05-31 14:10:37,439 - manual_coding_dialog - INFO - 根据一阶编码文件名切换到文件: 康圣访谈2（张思婷）.docx
+2026-05-31 14:10:37,444 - manual_coding_dialog - INFO - 成功高亮一阶编码的original_content
+2026-05-31 14:10:37,804 - manual_coding_dialog - INFO - 从item_data获取一阶编码编号: A20
+2026-05-31 14:10:37,805 - manual_coding_dialog - INFO - 最终确定的一阶编码编号: A20
+2026-05-31 14:10:37,805 - manual_coding_dialog - INFO - 选择了文件: C:/Users/lq886/Desktop/各种各样的文档/文本分析项目/文本样本/文本样本1/文本样本2/康圣访谈3（谢文英）.docx
+2026-05-31 14:10:37,811 - manual_coding_dialog - INFO - 已保存文件的编码标记状态: 康圣访谈2（张思婷）.docx
+2026-05-31 14:10:37,811 - manual_coding_dialog - INFO - 找到文件数据: 康圣访谈3（谢文英）.docx
+2026-05-31 14:10:37,811 - manual_coding_dialog - INFO - 使用缓存中的自动编码内容: 康圣访谈3（谢文英）.docx
+2026-05-31 14:10:37,816 - manual_coding_dialog - INFO - 文本内容显示成功
+2026-05-31 14:10:37,821 - manual_coding_dialog - INFO - 根据一阶编码文件名切换到文件: 康圣访谈3（谢文英）.docx
+2026-05-31 14:10:37,826 - manual_coding_dialog - INFO - 成功高亮一阶编码的original_content
+2026-05-31 14:10:38,698 - manual_coding_dialog - INFO - 从item_data获取一阶编码编号: A21
+2026-05-31 14:10:38,698 - manual_coding_dialog - INFO - 最终确定的一阶编码编号: A21
+2026-05-31 14:10:38,698 - manual_coding_dialog - INFO - 选择了文件: C:/Users/lq886/Desktop/各种各样的文档/文本分析项目/文本样本/文本样本1/文本样本2/康圣访谈3（谢文英）.docx
+2026-05-31 14:10:38,752 - manual_coding_dialog - INFO - 找到文件数据: 康圣访谈3（谢文英）.docx
+2026-05-31 14:10:38,753 - manual_coding_dialog - INFO - 使用缓存中的自动编码内容: 康圣访谈3（谢文英）.docx
+2026-05-31 14:10:38,759 - manual_coding_dialog - INFO - 文本内容显示成功
+2026-05-31 14:10:38,764 - manual_coding_dialog - INFO - 根据一阶编码文件名切换到文件: 康圣访谈3（谢文英）.docx
+2026-05-31 14:10:38,770 - manual_coding_dialog - INFO - 成功高亮一阶编码的original_content
+2026-05-31 14:10:39,082 - manual_coding_dialog - INFO - 从item_data获取一阶编码编号: A22
+2026-05-31 14:10:39,083 - manual_coding_dialog - INFO - 最终确定的一阶编码编号: A22
+2026-05-31 14:10:39,083 - manual_coding_dialog - INFO - 选择了文件: C:/Users/lq886/Desktop/各种各样的文档/文本分析项目/文本样本/文本样本1/文本样本2/康圣访谈3（谢文英）.docx
+2026-05-31 14:10:39,135 - manual_coding_dialog - INFO - 找到文件数据: 康圣访谈3（谢文英）.docx
+2026-05-31 14:10:39,135 - manual_coding_dialog - INFO - 使用缓存中的自动编码内容: 康圣访谈3（谢文英）.docx
+2026-05-31 14:10:39,140 - manual_coding_dialog - INFO - 文本内容显示成功
+2026-05-31 14:10:39,144 - manual_coding_dialog - INFO - 根据一阶编码文件名切换到文件: 康圣访谈3（谢文英）.docx
+2026-05-31 14:10:39,147 - manual_coding_dialog - INFO - 成功高亮一阶编码的original_content
+2026-05-31 14:10:39,450 - manual_coding_dialog - INFO - 从item_data获取一阶编码编号: A23
+2026-05-31 14:10:39,450 - manual_coding_dialog - INFO - 最终确定的一阶编码编号: A23
+2026-05-31 14:10:39,450 - manual_coding_dialog - INFO - 选择了文件: C:/Users/lq886/Desktop/各种各样的文档/文本分析项目/文本样本/文本样本1/文本样本2/康圣访谈3（谢文英）.docx
+2026-05-31 14:10:39,504 - manual_coding_dialog - INFO - 找到文件数据: 康圣访谈3（谢文英）.docx
+2026-05-31 14:10:39,504 - manual_coding_dialog - INFO - 使用缓存中的自动编码内容: 康圣访谈3（谢文英）.docx
+2026-05-31 14:10:39,510 - manual_coding_dialog - INFO - 文本内容显示成功
+2026-05-31 14:10:39,513 - manual_coding_dialog - INFO - 根据一阶编码文件名切换到文件: 康圣访谈3（谢文英）.docx
+2026-05-31 14:10:39,518 - manual_coding_dialog - INFO - 成功高亮一阶编码的original_content
+2026-05-31 14:10:46,704 - manual_coding_dialog - INFO - 已保存文件的编码标记状态: 康圣访谈3（谢文英）.docx
+2026-05-31 14:10:46,704 - manual_coding_dialog - INFO - 对话框关闭时已保存编码标记状态
+2026-05-31 14:10:48,689 - manual_coding_dialog - INFO - 已保存文件的编码标记状态: 康圣访谈3（谢文英）.docx
+2026-05-31 14:10:48,805 - manual_coding_dialog - INFO - 已获取 5 个文件的编码标记状态
+2026-05-31 14:10:49,335 - manual_coding_dialog - INFO - 最后编码位置已保存
+2026-05-31 14:10:49,401 - manual_coding_dialog - INFO - 已获取 5 个文件的编码标记状态
+2026-05-31 14:10:51,407 - manual_coding_dialog - INFO - 编码已保存: D:\zthree2\手动编码保存编码\手动编码_20260531_141048.json
+2026-05-31 14:10:51,407 - manual_coding_dialog - INFO - 编码树已保存: D:\zthree2\手动编码保存编码\手动编码编码树保存\编码树_20260531_141048.json
+2026-05-31 14:11:38,893 - main_window - INFO - 导航请求: Content='因为我说的是上一个公司，这个公司我才来不...', Number='2029'
+2026-05-31 14:11:38,955 - main_window - INFO - 搜索内容: 因为我说的是上一个公司，这个公司我才来不久，因为我本来就不是学医的，有一些事情只能按照公司，但在我负...
+2026-05-31 14:11:38,962 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:11:41,800 - main_window - INFO - 已保存撤回状态: 拖拽移动编码，当前撤回栈大小: 3
+2026-05-31 14:11:41,915 - main_window - INFO - Updated structured codes from tree. Total third: 4
+2026-05-31 14:11:43,930 - main_window - INFO - 导航请求: Content='因为我说的是上一个公司，这个公司我才来不...', Number='2029'
+2026-05-31 14:11:43,936 - main_window - INFO - 搜索内容: 因为我说的是上一个公司，这个公司我才来不久，因为我本来就不是学医的，有一些事情只能按照公司，但在我负...
+2026-05-31 14:11:43,936 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:11:44,832 - main_window - INFO - 导航请求: Content='B：像正常自己工作职责范围内的，不管是已...', Number='1993'
+2026-05-31 14:11:44,839 - main_window - INFO - 搜索内容: B：像正常自己工作职责范围内的，不管是已成型或者没有成型的，如果条件允许的，领导反对，自己会去尝试一...
+2026-05-31 14:11:44,839 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:11:48,471 - main_window - INFO - 导航请求: Content='B：利的话就是说帮助公司提高一些知名度，...', Number='1630'
+2026-05-31 14:11:48,499 - main_window - INFO - 搜索内容: B：利的话就是说帮助公司提高一些知名度，弊的话肯定是你做的不好，可能对公司造成一些影响，或者对个人造...
+2026-05-31 14:11:48,537 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:12:05,315 - main_window - INFO - 导航请求: Content='B: 反对意见应该不是我们营销团队，应该...', Number='A34'
+2026-05-31 14:12:05,321 - main_window - INFO - 搜索内容: B: 反对意见应该不是我们营销团队，应该是我们的服务物流团队和我们的实验室团队...
+2026-05-31 14:12:05,321 - main_window - INFO - 直接内容搜索失败，回退到标记搜索
+2026-05-31 14:12:09,070 - main_window - INFO - 导航请求: Content='但是反对意见不由我们来负责，应该是由上面...', Number='1221'
+2026-05-31 14:12:09,100 - main_window - INFO - 搜索内容: 但是反对意见不由我们来负责，应该是由上面的老板，他只要决定了做这个事情，反对意见都是由他去处理的...
+2026-05-31 14:12:09,105 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:12:09,918 - main_window - INFO - 导航请求: Content='B: 长远来说都是有好处，没有说对哪个部...', Number='A36'
+2026-05-31 14:12:09,928 - main_window - INFO - 搜索内容: B: 长远来说都是有好处，没有说对哪个部门不好的，因为有了这些能够提升他们...
+2026-05-31 14:12:09,929 - main_window - INFO - 直接内容搜索失败，回退到标记搜索
+2026-05-31 14:16:31,865 - app_launcher - INFO - 应用程序正常退出
+2026-05-31 14:16:37,217 - app_launcher - WARNING - BERT模型不存在，将使用降级模式
+2026-05-31 14:16:47,149 - numexpr.utils - INFO - NumExpr defaulting to 16 threads.
+2026-05-31 14:16:49,026 - root - INFO - pyarrow 20.0.0 导入成功
+2026-05-31 14:16:49,752 - semantic_matcher - INFO - sentence-transformers 库加载成功
+2026-05-31 14:16:49,963 - training_manager - INFO - scikit-learn 版本: 1.7.2
+2026-05-31 14:16:49,987 - hyperparameter_optimizer - WARNING - optuna库未安装，贝叶斯优化功能不可用
+2026-05-31 14:16:49,989 - model_manager - INFO - 使用设备: cpu
+2026-05-31 14:16:49,991 - data_processor - INFO - 已启用精准受访者提取（SpeakerRoleExtractor + QA分类器）
+2026-05-31 14:16:50,000 - coding_library_manager - INFO - 编码库加载成功，包含 722 个三阶编码和 1228 个二阶编码
+2026-05-31 14:16:50,001 - enhanced_coding_generator - INFO - 编码库加载成功
+2026-05-31 14:16:50,001 - semantic_matcher - INFO - 正在加载sentence-transformer模型: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-31 14:16:50,006 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2026-05-31 14:16:50,006 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-31 14:16:50,006 - semantic_matcher - ERROR - 加载模型失败: Path D:\zthree2\local_models\bge-small-zh-v1.5 not found
+2026-05-31 14:16:50,007 - enhanced_coding_generator - WARNING - RAG组件初始化失败: No module named 'decision_policy'，退回到传统匹配路径
+2026-05-31 14:16:50,008 - main_window - INFO - 使用原有的 EnhancedCodingGenerator
+2026-05-31 14:16:50,012 - standard_answer_manager - INFO - 标准答案已加载: v78_20260429_091237.json
+2026-05-31 14:16:50,012 - standard_answer_manager - INFO - 成功加载最新的标准答案: v78_20260429_091237.json
+2026-05-31 14:16:50,162 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-31 14:16:50,162 - model_manager - ERROR - Reranker 模型不存在: D:\zthree2\local_models\custom_bert_4layer
+2026-05-31 14:16:50,163 - model_manager - ERROR - 请先运行: python model_builder.py
+2026-05-31 14:16:50,163 - main_window - ERROR - 启动模型下载失败: 'PyQt5.QtCore.pyqtSignal' object has no attribute 'connect'
+2026-05-31 14:16:51,124 - app_launcher - INFO - 扎根理论编码分析系统启动成功，主窗口已显示
+2026-05-31 14:16:51,725 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-31 14:16:51,725 - model_manager - ERROR - Reranker 模型不存在: D:\zthree2\local_models\custom_bert_4layer
+2026-05-31 14:16:51,725 - model_manager - ERROR - 请先运行: python model_builder.py
+2026-05-31 14:16:51,725 - main_window - ERROR - 启动模型下载失败: 'PyQt5.QtCore.pyqtSignal' object has no attribute 'connect'
+2026-05-31 14:17:39,960 - project_manager - INFO - 项目已加载: 14
+2026-05-31 14:18:08,181 - main_window - INFO - 导航请求: Content='B：因为我之前觉得样本中心在没有负责人的...', Number='716'
+2026-05-31 14:18:08,247 - main_window - INFO - 搜索内容: B：因为我之前觉得样本中心在没有负责人的情况下，确实处于比较混乱、无序的状态，然后现在在我接手这个工...
+2026-05-31 14:18:08,247 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:18:08,591 - main_window - INFO - 导航请求: Content='B：我这边主要是负责样本中心，和物流以及...', Number='698'
+2026-05-31 14:18:08,598 - main_window - INFO - 搜索内容: B：我这边主要是负责样本中心，和物流以及运营对接，然后样本到样后进行简单处理再和实验部对接...
+2026-05-31 14:18:08,598 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:18:08,941 - main_window - INFO - 导航请求: Content='其他的话，相当于人家只是一个配合，因为你...', Number='641'
+2026-05-31 14:18:08,994 - main_window - INFO - 搜索内容: 其他的话，相当于人家只是一个配合，因为你这个项目对他们部门也会有一些影响，也会增加人家的工作量啊，所...
+2026-05-31 14:18:08,999 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:18:09,345 - main_window - INFO - 导航请求: Content='B：这个他其实是一个直线的关系，可能就是...', Number='640'
+2026-05-31 14:18:09,351 - main_window - INFO - 搜索内容: B：这个他其实是一个直线的关系，可能就是你的部门主管，你的主任，然后到经理...
+2026-05-31 14:18:09,351 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:18:18,220 - main_window - INFO - 已保存撤回状态: 合并一阶编码，当前撤回栈大小: 1
+2026-05-31 14:18:19,584 - main_window - INFO - Updated structured codes from tree. Total third: 4
+2026-05-31 14:18:24,148 - main_window - INFO - 导航请求: Content='B：因为我之前觉得样本中心在没有负责人的...', Number='716'
+2026-05-31 14:18:24,169 - main_window - INFO - 搜索内容: B：因为我之前觉得样本中心在没有负责人的情况下，确实处于比较混乱、无序的状态，然后现在在我接手这个工...
+2026-05-31 14:18:24,170 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:18:24,254 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 716
+2026-05-31 14:18:24,254 - main_window - INFO - 最终确定的一阶编码句子编号: 716
+2026-05-31 14:18:24,254 - main_window - INFO - 关联编号完整列表: ['716', 'A18', 'A17', 'A16']
+2026-05-31 14:18:24,254 - main_window - INFO - sentence_details数量: 4
+2026-05-31 14:18:24,255 - main_window - INFO - 弹出对话框句子1 - 编号: 716, 内容前30字: B：因为我之前觉得样本中心在没有负责人的情况下，确实处于比较...
+2026-05-31 14:18:24,255 - main_window - INFO - 弹出对话框句子2 - 编号: A18, 内容前30字: B：我这边主要是负责样本中心，和物流以及运营对接，然后样本到...
+2026-05-31 14:18:24,255 - main_window - INFO - 弹出对话框句子3 - 编号: A17, 内容前30字: 其他的话，相当于人家只是一个配合，因为你这个项目对他们部门也...
+2026-05-31 14:18:24,255 - main_window - INFO - 弹出对话框句子4 - 编号: A16, 内容前30字: B：这个他其实是一个直线的关系，可能就是你的部门主管，你的主...
+2026-05-31 14:19:43,436 - main_window - INFO - 导航请求: Content='B：我觉得有的事情并不是适合每个人干，还...', Number='903'
+2026-05-31 14:19:43,466 - main_window - INFO - 搜索内容: B：我觉得有的事情并不是适合每个人干，还是说你一个团队里面如果所有的人都去这样的话，我觉得会有一点危...
+2026-05-31 14:19:43,479 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:20:01,069 - main_window - INFO - 导航请求: Content='B：我觉得有的事情并不是适合每个人干，还...', Number='903'
+2026-05-31 14:20:01,080 - main_window - INFO - 搜索内容: B：我觉得有的事情并不是适合每个人干，还是说你一个团队里面如果所有的人都去这样的话，我觉得会有一点危...
+2026-05-31 14:20:01,081 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:20:01,402 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 903
+2026-05-31 14:20:01,402 - main_window - INFO - 最终确定的一阶编码句子编号: 903
+2026-05-31 14:20:01,403 - main_window - INFO - 关联编号完整列表: ['903']
+2026-05-31 14:20:01,403 - main_window - INFO - sentence_details数量: 1
+2026-05-31 14:20:01,404 - main_window - INFO - 弹出对话框句子1 - 编号: 903, 内容前30字: B：我觉得有的事情并不是适合每个人干，还是说你一个团队里面如...
+2026-05-31 14:20:05,662 - main_window - INFO - 导航请求: Content='B：就上级，他觉得可能这东西没有必要，你...', Number='913'
+2026-05-31 14:20:05,671 - main_window - INFO - 搜索内容: B：就上级，他觉得可能这东西没有必要，你做了的话是不会有什么影响的，然后就不让你在这个团队里面使用这...
+2026-05-31 14:20:05,671 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:20:08,832 - main_window - INFO - 已保存撤回状态: 拖拽移动编码，当前撤回栈大小: 2
+2026-05-31 14:20:08,953 - main_window - INFO - Updated structured codes from tree. Total third: 4
+2026-05-31 14:20:12,346 - main_window - INFO - 已保存撤回状态: 拖拽移动编码，当前撤回栈大小: 3
+2026-05-31 14:20:12,484 - main_window - INFO - Updated structured codes from tree. Total third: 4
+2026-05-31 14:31:26,935 - manual_coding_dialog - INFO - 对话框关闭时已保存编码标记状态
+2026-05-31 14:31:29,021 - manual_coding_dialog - INFO - 已获取 0 个文件的编码标记状态
+2026-05-31 14:31:29,574 - manual_coding_dialog - INFO - 最后编码位置已保存
+2026-05-31 14:31:29,645 - manual_coding_dialog - INFO - 已获取 0 个文件的编码标记状态
+2026-05-31 14:31:31,509 - manual_coding_dialog - INFO - 编码已保存: D:\zthree2\手动编码保存编码\手动编码_20260531_143128.json
+2026-05-31 14:31:31,509 - manual_coding_dialog - INFO - 编码树已保存: D:\zthree2\手动编码保存编码\手动编码编码树保存\编码树_20260531_143128.json
+2026-05-31 14:31:35,578 - app_launcher - INFO - 应用程序正常退出
+2026-05-31 14:31:53,853 - app_launcher - WARNING - BERT模型不存在，将使用降级模式
+2026-05-31 14:32:03,868 - numexpr.utils - INFO - NumExpr defaulting to 16 threads.
+2026-05-31 14:32:05,723 - root - INFO - pyarrow 20.0.0 导入成功
+2026-05-31 14:32:06,460 - semantic_matcher - INFO - sentence-transformers 库加载成功
+2026-05-31 14:32:06,670 - training_manager - INFO - scikit-learn 版本: 1.7.2
+2026-05-31 14:32:06,693 - hyperparameter_optimizer - WARNING - optuna库未安装，贝叶斯优化功能不可用
+2026-05-31 14:32:06,696 - model_manager - INFO - 使用设备: cpu
+2026-05-31 14:32:06,698 - data_processor - INFO - 已启用精准受访者提取（SpeakerRoleExtractor + QA分类器）
+2026-05-31 14:32:06,706 - coding_library_manager - INFO - 编码库加载成功，包含 722 个三阶编码和 1228 个二阶编码
+2026-05-31 14:32:06,706 - enhanced_coding_generator - INFO - 编码库加载成功
+2026-05-31 14:32:06,706 - semantic_matcher - INFO - 正在加载sentence-transformer模型: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-31 14:32:06,713 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2026-05-31 14:32:06,713 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-31 14:32:06,713 - semantic_matcher - ERROR - 加载模型失败: Path D:\zthree2\local_models\bge-small-zh-v1.5 not found
+2026-05-31 14:32:06,714 - enhanced_coding_generator - WARNING - RAG组件初始化失败: No module named 'decision_policy'，退回到传统匹配路径
+2026-05-31 14:32:06,715 - main_window - INFO - 使用原有的 EnhancedCodingGenerator
+2026-05-31 14:32:06,718 - standard_answer_manager - INFO - 标准答案已加载: v78_20260429_091237.json
+2026-05-31 14:32:06,718 - standard_answer_manager - INFO - 成功加载最新的标准答案: v78_20260429_091237.json
+2026-05-31 14:32:06,873 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-31 14:32:06,873 - model_manager - ERROR - Reranker 模型不存在: D:\zthree2\local_models\custom_bert_4layer
+2026-05-31 14:32:06,873 - model_manager - ERROR - 请先运行: python model_builder.py
+2026-05-31 14:32:06,873 - main_window - ERROR - 启动模型下载失败: 'PyQt5.QtCore.pyqtSignal' object has no attribute 'connect'
+2026-05-31 14:32:07,837 - app_launcher - INFO - 扎根理论编码分析系统启动成功，主窗口已显示
+2026-05-31 14:32:08,438 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-31 14:32:08,439 - model_manager - ERROR - Reranker 模型不存在: D:\zthree2\local_models\custom_bert_4layer
+2026-05-31 14:32:08,439 - model_manager - ERROR - 请先运行: python model_builder.py
+2026-05-31 14:32:08,439 - main_window - ERROR - 启动模型下载失败: 'PyQt5.QtCore.pyqtSignal' object has no attribute 'connect'
+2026-05-31 14:32:16,729 - app_launcher - INFO - 应用程序正常退出
+2026-05-31 14:38:37,677 - app_launcher - WARNING - BERT模型不存在，将使用降级模式
+2026-05-31 14:38:48,988 - numexpr.utils - INFO - NumExpr defaulting to 16 threads.
+2026-05-31 14:38:50,984 - root - INFO - pyarrow 20.0.0 导入成功
+2026-05-31 14:38:51,792 - semantic_matcher - INFO - sentence-transformers 库加载成功
+2026-05-31 14:38:52,033 - training_manager - INFO - scikit-learn 版本: 1.7.2
+2026-05-31 14:38:52,058 - hyperparameter_optimizer - WARNING - optuna库未安装，贝叶斯优化功能不可用
+2026-05-31 14:38:52,061 - model_manager - INFO - 使用设备: cpu
+2026-05-31 14:38:52,064 - data_processor - INFO - 已启用精准受访者提取（SpeakerRoleExtractor + QA分类器）
+2026-05-31 14:38:52,075 - coding_library_manager - INFO - 编码库加载成功，包含 722 个三阶编码和 1228 个二阶编码
+2026-05-31 14:38:52,076 - enhanced_coding_generator - INFO - 编码库加载成功
+2026-05-31 14:38:52,077 - semantic_matcher - INFO - 正在加载sentence-transformer模型: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-31 14:38:52,082 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2026-05-31 14:38:52,082 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: D:\zthree2\local_models\bge-small-zh-v1.5
+2026-05-31 14:38:52,083 - semantic_matcher - ERROR - 加载模型失败: Path D:\zthree2\local_models\bge-small-zh-v1.5 not found
+2026-05-31 14:38:52,084 - enhanced_coding_generator - WARNING - RAG组件初始化失败: No module named 'decision_policy'，退回到传统匹配路径
+2026-05-31 14:38:52,085 - main_window - INFO - 使用原有的 EnhancedCodingGenerator
+2026-05-31 14:38:52,088 - standard_answer_manager - INFO - 标准答案已加载: v78_20260429_091237.json
+2026-05-31 14:38:52,088 - standard_answer_manager - INFO - 成功加载最新的标准答案: v78_20260429_091237.json
+2026-05-31 14:38:52,244 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-31 14:38:52,245 - model_manager - ERROR - Reranker 模型不存在: D:\zthree2\local_models\custom_bert_4layer
+2026-05-31 14:38:52,245 - model_manager - ERROR - 请先运行: python model_builder.py
+2026-05-31 14:38:52,245 - main_window - ERROR - 启动模型下载失败: 'PyQt5.QtCore.pyqtSignal' object has no attribute 'connect'
+2026-05-31 14:38:53,223 - app_launcher - INFO - 扎根理论编码分析系统启动成功，主窗口已显示
+2026-05-31 14:38:53,825 - model_manager - INFO - 加载模型: reranker=custom_bert_4layer, sentence=bge-small-zh-v1.5
+2026-05-31 14:38:53,825 - model_manager - ERROR - Reranker 模型不存在: D:\zthree2\local_models\custom_bert_4layer
+2026-05-31 14:38:53,825 - model_manager - ERROR - 请先运行: python model_builder.py
+2026-05-31 14:38:53,825 - main_window - ERROR - 启动模型下载失败: 'PyQt5.QtCore.pyqtSignal' object has no attribute 'connect'
+2026-05-31 14:39:05,250 - project_manager - INFO - 项目已加载: 14
+2026-05-31 14:39:27,483 - main_window - INFO - 编码已保存: D:\zthree2\自动编码保存编码\自动编码_20260531_143926.json
+2026-05-31 14:40:19,889 - main_window - INFO - 导航请求: Content='然后他其实也很想知道我们的检测平台里面具...', Number='837'
+2026-05-31 14:40:19,934 - main_window - INFO - 搜索内容: 然后他其实也很想知道我们的检测平台里面具体在做什么，对他这份标本负不负责，然后我刚好又是从实验室出来...
+2026-05-31 14:40:19,935 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:40:20,203 - main_window - INFO - 从关联编号获取一阶编码实际句子编号: 837
+2026-05-31 14:40:20,205 - main_window - INFO - 最终确定的一阶编码句子编号: 837
+2026-05-31 14:40:20,205 - main_window - INFO - 关联编号完整列表: ['837']
+2026-05-31 14:40:20,205 - main_window - INFO - sentence_details数量: 1
+2026-05-31 14:40:20,206 - main_window - INFO - 弹出对话框句子1 - 编号: 837, 内容前30字: 然后他其实也很想知道我们的检测平台里面具体在做什么，对他这份...
+2026-05-31 14:40:22,252 - main_window - INFO - 导航请求: Content='B：我这边主要是负责样本中心，和物流以及...', Number='698'
+2026-05-31 14:40:22,297 - main_window - INFO - 搜索内容: B：我这边主要是负责样本中心，和物流以及运营对接，然后样本到样后进行简单处理再和实验部对接...
+2026-05-31 14:40:22,298 - main_window - INFO - 成功高亮编码内容
+2026-05-31 14:40:23,557 - main_window - INFO - 已保存撤回状态: 拖拽移动编码，当前撤回栈大小: 1
+2026-05-31 14:40:23,691 - main_window - INFO - Updated structured codes from tree. Total third: 4
+2026-05-31 14:43:27,294 - app_launcher - INFO - 应用程序正常退出

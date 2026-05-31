@@ -67,6 +67,7 @@ class DragDropTreeWidget(QTreeWidget):
         # 处理内部拖放
         if event.source() == self:
             if self.dialog:
+                self.dialog._save_undo_state("拖拽移动编码")
                 target_item = self.itemAt(event.pos())
                 selected_items = self.selectedItems()
                 if self.dialog.handle_first_level_drop(target_item, selected_items):
@@ -112,6 +113,10 @@ class ManualCodingDialog(QDialog):
         self.current_codes = {}
         # 未分类的一阶编码临时存储
         self.unclassified_first_codes = []
+        # 撤回功能相关
+        self._undo_stack = []
+        self._max_undo_steps = 50
+        self._is_undo_operation = False
         self.init_ui()
         self.load_existing_codes()
 
@@ -196,6 +201,10 @@ class ManualCodingDialog(QDialog):
         self._save_shortcut = QShortcut(QKeySequence("Ctrl+S"), self)
         self._save_shortcut.setContext(Qt.WidgetWithChildrenShortcut)
         self._save_shortcut.activated.connect(self.save_coding)
+
+        self._undo_shortcut = QShortcut(QKeySequence("Ctrl+Z"), self)
+        self._undo_shortcut.setContext(Qt.WidgetWithChildrenShortcut)
+        self._undo_shortcut.activated.connect(self.undo_operation)
 
         # 保存文本文档引用
         self.text_document = self.text_display.document()
@@ -1559,6 +1568,7 @@ class ManualCodingDialog(QDialog):
     def add_third_category(self):
         """添加三阶编码"""
         try:
+            self._save_undo_state("添加三阶编码")
             # 使用自定义对话框，包含更大的文本编辑框
             dialog = QDialog(self)
             dialog.setWindowTitle("添加三阶编码")
@@ -1635,6 +1645,7 @@ class ManualCodingDialog(QDialog):
     def add_second_to_selected_third(self):
         """在选中的三阶节点下添加二阶编码"""
         try:
+            self._save_undo_state("添加二阶编码")
             current_item = self.coding_tree.currentItem()
             if not current_item:
                 QMessageBox.information(self, "提示", "请先在右侧树中选择一个三阶节点")
@@ -1729,6 +1740,7 @@ class ManualCodingDialog(QDialog):
     def add_first_to_selected_second(self):
         """在选中的二阶节点下添加一阶编码"""
         try:
+            self._save_undo_state("添加一阶编码到二阶")
             current_item = self.coding_tree.currentItem()
             if not current_item:
                 QMessageBox.information(self, "提示", "请先在右侧树中选择一个二阶节点")
@@ -1970,8 +1982,9 @@ class ManualCodingDialog(QDialog):
             logger.error(f"更新统计信息失败: {e}")
 
     def add_parent_second_for_first(self):
-        """为选中的一阶编码添加父节点二阶编码"""
+        """为多个一阶编码添加共同的二阶父节点"""
         try:
+            self._save_undo_state("为一阶添加二阶父节点")
             selected_items = self.coding_tree.selectedItems()
             if not selected_items:
                 QMessageBox.information(self, "提示", "请先选中至少一个一阶编码")
@@ -2101,8 +2114,9 @@ class ManualCodingDialog(QDialog):
             QMessageBox.critical(self, "错误", f"添加失败:\n{str(e)}")
 
     def add_parent_third_for_second(self):
-        """为选中的二阶编码添加父节点三阶编码"""
+        """为多个二阶编码添加共同的三阶父节点"""
         try:
+            self._save_undo_state("为二阶添加三阶父节点")
             selected_items = self.coding_tree.selectedItems()
             if not selected_items:
                 QMessageBox.information(self, "提示", "请先选中至少一个二阶编码")
@@ -5478,6 +5492,7 @@ class ManualCodingDialog(QDialog):
         if not current_items:
             QMessageBox.information(self, "提示", "请先选择一个节点")
             return
+        self._save_undo_state("编辑编码")
 
         # 如果选择了多个节点，执行批量编辑
         if len(current_items) > 1:
@@ -5822,6 +5837,7 @@ class ManualCodingDialog(QDialog):
         if not selected_items:
             QMessageBox.information(self, "提示", "请先选择一个或多个节点")
             return
+        self._save_undo_state("删除编码")
 
         # 统计选中的编码类型
         level_counts = {1: 0, 2: 0, 3: 0}
@@ -6889,6 +6905,7 @@ class ManualCodingDialog(QDialog):
     def add_first_level_direct(self):
         """直接添加一阶编码 - 添加到树的根部作为未分类"""
         try:
+            self._save_undo_state("添加一阶编码")
             # 获取一阶编码内容
             first_content = self.first_content_edit.toPlainText().strip()
 
@@ -8248,3 +8265,101 @@ class ManualCodingDialog(QDialog):
         except Exception as e:
             logger.error(f"加载编码文件失败: {e}")
             QMessageBox.critical(self, "错误", f"加载编码文件失败: {str(e)}")
+
+    def _save_undo_state(self, action_name):
+        """保存当前状态到撤回栈"""
+        if self._is_undo_operation:
+            return
+        try:
+            import copy
+            state = {
+                'action': action_name,
+                'current_codes': copy.deepcopy(self.current_codes),
+                'unclassified_first_codes': copy.deepcopy(self.unclassified_first_codes),
+                'loaded_files': copy.deepcopy(self.loaded_files),
+                'tree_data': self.extract_tree_data(),
+                'text_content': self.text_display.toPlainText(),
+            }
+            self._undo_stack.append(state)
+            if len(self._undo_stack) > self._max_undo_steps:
+                self._undo_stack.pop(0)
+            logger.info(f"已保存撤回状态: {action_name}，当前撤回栈大小: {len(self._undo_stack)}")
+        except Exception as e:
+            logger.error(f"保存撤回状态失败: {e}")
+
+    def undo_operation(self):
+        """执行撤回操作"""
+        try:
+            if not self._undo_stack:
+                if hasattr(self, 'statusBar'):
+                    self.statusBar().showMessage("没有可撤回的操作")
+                return
+
+            self._is_undo_operation = True
+            state = self._undo_stack.pop()
+
+            self.current_codes = state['current_codes']
+            self.unclassified_first_codes = state['unclassified_first_codes']
+            self.loaded_files = state['loaded_files']
+
+            self.rebuild_tree_from_data(state['tree_data'])
+
+            current_file = self.get_current_file_path()
+            if current_file and current_file in self.loaded_files:
+                self.text_display.setPlainText(state['text_content'])
+
+            self.update_structured_codes_from_tree()
+
+            if hasattr(self, 'statusBar'):
+                self.statusBar().showMessage(f"已撤回: {state['action']}")
+            logger.info(f"已撤回操作: {state['action']}")
+
+        except Exception as e:
+            logger.error(f"撤回操作失败: {e}")
+            QMessageBox.critical(self, "错误", f"撤回失败: {str(e)}")
+        finally:
+            self._is_undo_operation = False
+
+    def extract_tree_data(self):
+        """从树形控件提取完整数据结构"""
+        tree_data = []
+        for i in range(self.coding_tree.topLevelItemCount()):
+            item = self.coding_tree.topLevelItem(i)
+            tree_data.append(self._extract_item_data(item))
+        return tree_data
+
+    def _extract_item_data(self, item):
+        """递归提取树形节点数据"""
+        item_data = {
+            'text': item.text(0),
+            'columns': [item.text(j) for j in range(1, self.coding_tree.columnCount())],
+            'data': item.data(0, Qt.UserRole),
+            'children': []
+        }
+        for i in range(item.childCount()):
+            child = item.child(i)
+            item_data['children'].append(self._extract_item_data(child))
+        return item_data
+
+    def rebuild_tree_from_data(self, tree_data):
+        """从数据结构重建树形控件"""
+        try:
+            self.coding_tree.clear()
+            for item_data in tree_data:
+                item = self._rebuild_item_from_data(item_data)
+                self.coding_tree.addTopLevelItem(item)
+            self.coding_tree.expandAll()
+        except Exception as e:
+            logger.error(f"重建树形控件失败: {e}")
+
+    def _rebuild_item_from_data(self, item_data):
+        """从数据递归重建树形节点"""
+        item = QTreeWidgetItem()
+        item.setText(0, item_data['text'])
+        for j, col_text in enumerate(item_data['columns']):
+            item.setText(j + 1, col_text)
+        item.setData(0, Qt.UserRole, item_data['data'])
+        for child_data in item_data['children']:
+            child = self._rebuild_item_from_data(child_data)
+            item.addChild(child)
+        return item

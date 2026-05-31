@@ -12,10 +12,10 @@ from PyQt5.QtWidgets import (QMainWindow, QVBoxLayout, QHBoxLayout, QWidget,
                              QTreeWidget, QTreeWidgetItem, QInputDialog,
                              QGroupBox, QSplitter, QMenu, QDialog, QDialogButtonBox,
                              QLineEdit, QFormLayout, QComboBox, QCheckBox, QTabWidget,
-                             QDoubleSpinBox,
+                             QDoubleSpinBox, QShortcut,
                              QApplication)
 from PyQt5.QtCore import Qt, QSettings, QThread, pyqtSignal, QTimer, QRegularExpression, QEvent, QMimeData
-from PyQt5.QtGui import QFont, QColor, QTextCursor, QIcon
+from PyQt5.QtGui import QFont, QColor, QTextCursor, QIcon, QKeySequence
 from typing import Dict, List, Any, Optional
 import traceback
 import numpy as np
@@ -38,6 +38,7 @@ from governance_dashboard import GovernanceDashboard
 from excel_processor import ExcelProcessorDialog
 from config import Config
 from project_manager import ProjectManager
+from path_manager import PathManager
 from bert_finetuner import BERTFineTuner
 from bert_dataset import GroundedTheoryDataset, get_label_mapping
 from hyperparameter_optimizer import HyperparameterOptimizer
@@ -88,6 +89,7 @@ class DragDropTreeWidget(QTreeWidget):
         """处理拖放释放事件"""
         if event.source() == self:
             if self.main_window:
+                self.main_window._save_undo_state("拖拽移动编码")
                 target_item = self.itemAt(event.pos())
                 selected_items = self.selectedItems()
                 if self.main_window.handle_first_level_drop(target_item, selected_items):
@@ -370,6 +372,10 @@ class MainWindow(QMainWindow):
         self.auto_coding_cache = {}
         # 编码标记映射 - 用于存储一阶编码与文本位置的映射
         self.code_markers_map = {}
+        # 撤回功能相关
+        self._undo_stack = []
+        self._max_undo_steps = 50
+        self._is_undo_operation = False
 
     def create_left_panel(self):
         """创建左侧面板"""
@@ -1851,6 +1857,7 @@ class MainWindow(QMainWindow):
             return
 
         try:
+            self._save_undo_state("自动生成编码")
             coding_thresholds = self.prompt_auto_coding_thresholds()
             if coding_thresholds is None:
                 return
@@ -3317,6 +3324,15 @@ class MainWindow(QMainWindow):
         if model_info['name'] != '无':
             self.current_model_label.setText(f"当前加载模型: {model_info['name']} ({model_info['type']})")
 
+        # 添加快捷键
+        self._undo_shortcut = QShortcut(QKeySequence("Ctrl+Z"), self)
+        self._undo_shortcut.setContext(Qt.WidgetWithChildrenShortcut)
+        self._undo_shortcut.activated.connect(self.undo_operation)
+
+        self._save_shortcut = QShortcut(QKeySequence("Ctrl+S"), self)
+        self._save_shortcut.setContext(Qt.WidgetWithChildrenShortcut)
+        self._save_shortcut.activated.connect(self.save_coding)
+
     def perform_search(self):
         """执行搜索"""
         search_text = self.search_line_edit.text().strip()
@@ -3620,7 +3636,7 @@ class MainWindow(QMainWindow):
         if action == getattr(self, "_hover_move_target_action", None):
             self._hover_move_is_active = True
             self._hover_move_timer.stop()
-            self._hover_move_timer.start(5000)
+            self._hover_move_timer.start(0)  # 立即弹出，不等待
         else:
             self._hover_move_is_active = False
             self._hover_move_timer.stop()
@@ -3646,7 +3662,7 @@ class MainWindow(QMainWindow):
             self._hover_move_dialog_open = False
 
     def merge_selected_first_level_codes(self):
-        """合并选中的一阶编码，保留第一个，其他作为关联文本"""
+        """合并选中的一阶编码，弹出对话框选择主一阶编码，其他作为关联编码"""
         selected_items = self.coding_tree.selectedItems()
         if len(selected_items) < 2:
             QMessageBox.information(self, "提示", "请先选择至少两个一阶编码")
@@ -3664,7 +3680,75 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "警告", "仅支持合并一阶编码")
             return
 
-        primary_item = selected_items[0]
+        # 保存撤回状态
+        self._save_undo_state("合并一阶编码")
+
+        # 创建选择主编码的对话框
+        dialog = QDialog(self)
+        dialog.setWindowTitle("选择主一阶编码")
+        dialog.resize(700, 500)
+
+        layout = QVBoxLayout(dialog)
+
+        label = QLabel(f"请选择一个一阶编码作为主编码，其他将作为关联编码：")
+        layout.addWidget(label)
+
+        # 使用QListWidget显示所有待选编码
+        from PyQt5.QtWidgets import QListWidget, QListWidgetItem
+        list_widget = QListWidget()
+        list_widget.setSelectionMode(QListWidget.SelectionMode.SingleSelection)
+
+        # 填充列表
+        item_text_map = {}
+        for item in selected_items:
+            item_text = item.text(0)
+            list_item = QListWidgetItem(item_text)
+            list_widget.addItem(list_item)
+            item_text_map[item_text] = item
+
+        # 默认选中第一个
+        if list_widget.count() > 0:
+            list_widget.setCurrentRow(0)
+
+        layout.addWidget(list_widget)
+
+        # 按钮
+        button_layout = QHBoxLayout()
+        ok_button = QPushButton("确定")
+        cancel_button = QPushButton("取消")
+
+        button_layout.addWidget(ok_button)
+        button_layout.addWidget(cancel_button)
+        layout.addLayout(button_layout)
+
+        primary_item = None
+
+        def on_ok():
+            nonlocal primary_item
+            current_list_item = list_widget.currentItem()
+            if not current_list_item:
+                QMessageBox.warning(dialog, "警告", "请选择一个一阶编码作为主编码")
+                return
+
+            item_text = current_list_item.text()
+            primary_item = item_text_map.get(item_text)
+            if not primary_item:
+                QMessageBox.warning(dialog, "警告", "选择无效")
+                return
+
+            dialog.accept()
+
+        def on_cancel():
+            dialog.reject()
+
+        ok_button.clicked.connect(on_ok)
+        cancel_button.clicked.connect(on_cancel)
+
+        result = dialog.exec_()
+        if result != QDialog.DialogCode.Accepted or not primary_item:
+            return
+
+        # 执行合并
         primary_data = primary_item.data(0, Qt.UserRole) or {}
         merged_details = list(primary_data.get("sentence_details", []))
         merged_ids = [str(sid).strip() for sid in primary_data.get("sentence_ids", []) if str(sid).strip()]
@@ -3682,7 +3766,10 @@ class MainWindow(QMainWindow):
                     merged_details.append(dict(detail))
                     add_sentence_id(detail.get("sentence_id") or detail.get("code_id"))
 
-        for item in selected_items[1:]:
+        # 收集所有非主编码的项
+        other_items = [item for item in selected_items if item is not primary_item]
+
+        for item in other_items:
             item_data = item.data(0, Qt.UserRole) or {}
             item_details = item_data.get("sentence_details", [])
             if item_details:
@@ -3832,7 +3919,13 @@ class MainWindow(QMainWindow):
                         break
 
                 if bracket_end >= 0:
-                    return full_text_content[bracket_start + 1:bracket_end]
+                    # 修复：向前找到的编号是上一个句子的编号，需要+1才是当前句子的编号
+                    found_number = full_text_content[bracket_start + 1:bracket_end]
+                    if found_number.isdigit():
+                        current_number = str(int(found_number) + 1)
+                        logger.info(f"向前找到编号 {found_number}，当前句子编号: {current_number} for sentence: {sentence_clean[:30]}...")
+                        return current_number
+                    return found_number
 
         for file_path, file_data in self.loaded_files.items():
             numbered_content = file_data.get('numbered_content', '')
@@ -3845,6 +3938,7 @@ class MainWindow(QMainWindow):
 
             if pos >= 0:
                 search_start = pos
+                bracket_start = -1
                 for i in range(search_start - 1, max(0, search_start - 20), -1):
                     if numbered_content[i] == '[':
                         bracket_start = i
@@ -3861,7 +3955,13 @@ class MainWindow(QMainWindow):
                             break
 
                     if bracket_end >= 0:
-                        return numbered_content[bracket_start + 1:bracket_end]
+                        # 修复：向前找到的编号是上一个句子的编号，需要+1才是当前句子的编号
+                        found_number = numbered_content[bracket_start + 1:bracket_end]
+                        if found_number.isdigit():
+                            current_number = str(int(found_number) + 1)
+                            logger.info(f"向前找到编号 {found_number}，当前句子编号: {current_number} for sentence: {sentence_clean[:30]}...")
+                            return current_number
+                        return found_number
 
         return ""
 
@@ -4374,7 +4474,7 @@ class MainWindow(QMainWindow):
         """批量编辑一阶编码"""
         dialog = QDialog(self)
         dialog.setWindowTitle("批量编辑一阶编码")
-        dialog.resize(600, 500)
+        dialog.resize(750, 500)
 
         layout = QVBoxLayout(dialog)
 
@@ -4392,13 +4492,169 @@ class MainWindow(QMainWindow):
         operation_group = QGroupBox("批量操作")
         operation_layout = QVBoxLayout(operation_group)
 
+        # 第一行：移除自动生成标识 + 选择主编码按钮
+        first_row_layout = QHBoxLayout()
+
         # 选项：移除自动生成标识
         remove_auto_checkbox = QCheckBox("移除自动生成标识")
-        operation_layout.addWidget(remove_auto_checkbox)
+        first_row_layout.addWidget(remove_auto_checkbox)
 
-        # 选项：更新来源为手动
+        # 选择主编码按钮（放在"移除自动生成标识"的正右方）
+        select_primary_button = QPushButton("选择主一阶编码")
+        select_primary_button.setStyleSheet("""
+            QPushButton {
+                background-color: white;
+                color: black;
+                border: 1px solid #ccc;
+                padding: 3px 10px;
+                border-radius: 2px;
+            }
+            QPushButton:hover {
+                background-color: #f0f0f0;
+            }
+        """)
+        first_row_layout.addWidget(select_primary_button)
+        first_row_layout.addStretch()
+        operation_layout.addLayout(first_row_layout)
+
+        # 第二行：更新来源为手动
         update_source_checkbox = QCheckBox("更新来源为手动")
         operation_layout.addWidget(update_source_checkbox)
+
+        def on_select_primary():
+            # 保存撤回状态
+            self._save_undo_state("合并一阶编码")
+
+            # 创建选择主编码的对话框
+            select_dialog = QDialog(dialog)
+            select_dialog.setWindowTitle("选择主一阶编码")
+            select_dialog.resize(600, 400)
+
+            select_layout = QVBoxLayout(select_dialog)
+
+            select_label = QLabel("请选择一个一阶编码作为主编码，其他将作为关联编码：")
+            select_layout.addWidget(select_label)
+
+            select_list = QListWidget()
+            select_list.setSelectionMode(QListWidget.SelectionMode.SingleSelection)
+
+            item_text_map = {}
+            for item in items:
+                item_text = item.text(0)
+                list_item = QListWidgetItem(item_text)
+                select_list.addItem(list_item)
+                item_text_map[item_text] = item
+
+            if select_list.count() > 0:
+                select_list.setCurrentRow(0)
+
+            select_layout.addWidget(select_list)
+
+            select_button_layout = QHBoxLayout()
+            select_ok_button = QPushButton("确定")
+            select_cancel_button = QPushButton("取消")
+            select_button_layout.addWidget(select_ok_button)
+            select_button_layout.addWidget(select_cancel_button)
+            select_layout.addLayout(select_button_layout)
+
+            primary_item = None
+
+            def on_select_ok():
+                nonlocal primary_item
+                current_list_item = select_list.currentItem()
+                if not current_list_item:
+                    QMessageBox.warning(select_dialog, "警告", "请选择一个一阶编码作为主编码")
+                    return
+
+                item_text = current_list_item.text()
+                primary_item = item_text_map.get(item_text)
+                if not primary_item:
+                    QMessageBox.warning(select_dialog, "警告", "选择无效")
+                    return
+
+                select_dialog.accept()
+
+            select_ok_button.clicked.connect(on_select_ok)
+            select_cancel_button.clicked.connect(select_dialog.reject)
+
+            result = select_dialog.exec_()
+            if result != QDialog.DialogCode.Accepted or not primary_item:
+                return
+
+            # 执行合并
+            primary_data = primary_item.data(0, Qt.UserRole) or {}
+            merged_details = list(primary_data.get("sentence_details", []))
+            merged_ids = [str(sid).strip() for sid in primary_data.get("sentence_ids", []) if str(sid).strip()]
+
+            def add_sentence_id(value):
+                if not value:
+                    return
+                sid = str(value).strip().strip('[]')
+                if sid and sid not in merged_ids:
+                    merged_ids.append(sid)
+
+            def add_details(details):
+                for detail in details:
+                    if isinstance(detail, dict):
+                        merged_details.append(dict(detail))
+                        add_sentence_id(detail.get("sentence_id") or detail.get("code_id"))
+
+            other_items = [item for item in items if item is not primary_item]
+
+            for item in other_items:
+                item_data = item.data(0, Qt.UserRole) or {}
+                item_details = item_data.get("sentence_details", [])
+                if item_details:
+                    add_details(item_details)
+                else:
+                    content = item_data.get("content") or item_data.get("name") or item.text(0)
+                    sentence_ids = item_data.get("sentence_ids", [])
+                    if not sentence_ids:
+                        associated = item.text(5)
+                        if associated:
+                            sentence_ids = [s.strip() for s in associated.split(',') if s.strip()]
+
+                    if not sentence_ids:
+                        sentence_ids = [""]
+
+                    for sid in sentence_ids:
+                        detail = {
+                            "text": content,
+                            "content": content,
+                            "original_content": content,
+                        }
+                        if sid:
+                            detail["sentence_id"] = str(sid).strip()
+                        merged_details.append(detail)
+                        add_sentence_id(sid)
+
+                parent = item.parent()
+                if parent:
+                    parent.removeChild(item)
+                else:
+                    root = self.coding_tree.invisibleRootItem()
+                    root.removeChild(item)
+
+            primary_data["sentence_details"] = merged_details
+            if merged_ids:
+                primary_data["sentence_ids"] = merged_ids
+                primary_item.setText(5, ", ".join(merged_ids))
+
+            primary_data["sentence_count"] = len(merged_details) if merged_details else 1
+            primary_item.setText(4, str(primary_data["sentence_count"]))
+            primary_item.setData(0, Qt.UserRole, primary_data)
+
+            if primary_item.parent():
+                self.update_statistics_for_item(primary_item.parent())
+
+            self.update_structured_codes_from_tree()
+            self.coding_tree.setCurrentItem(primary_item)
+
+            QMessageBox.information(self, "成功", "一阶编码已合并，关联文本已保留")
+            dialog.accept()
+
+        select_primary_button.clicked.connect(on_select_primary)
+        operation_layout.addWidget(select_primary_button)
 
         layout.addWidget(operation_group)
 
@@ -4522,6 +4778,7 @@ class MainWindow(QMainWindow):
         if len(selected_items) > 1:
             QMessageBox.information(self, "提示", "请只选择一个编码节点进行编辑")
             return
+        self._save_undo_state("编辑编码")
 
         item = selected_items[0]
         item_data = item.data(0, Qt.UserRole)
@@ -4574,6 +4831,7 @@ class MainWindow(QMainWindow):
         if not selected_items:
             QMessageBox.information(self, "提示", "请先选择一个或多个节点")
             return
+        self._save_undo_state("删除编码")
 
         # 统计选中的编码类型
         level_counts = {1: 0, 2: 0, 3: 0}
@@ -4656,6 +4914,7 @@ class MainWindow(QMainWindow):
     def add_parent_second_for_first(self):
         """为选中的一阶编码添加父节点二阶编码"""
         try:
+            self._save_undo_state("为一阶添加二阶父节点")
             selected_items = self.coding_tree.selectedItems()
             if not selected_items:
                 QMessageBox.information(self, "提示", "请先选中至少一个一阶编码")
@@ -4876,6 +5135,7 @@ class MainWindow(QMainWindow):
     def add_parent_third_for_second(self):
         """为选中的二阶编码添加父节点三阶编码"""
         try:
+            self._save_undo_state("为二阶添加三阶父节点")
             selected_items = self.coding_tree.selectedItems()
             if not selected_items:
                 QMessageBox.information(self, "提示", "请先选中至少一个二阶编码")
@@ -6395,6 +6655,7 @@ class MainWindow(QMainWindow):
         )
 
         if reply == QMessageBox.Yes:
+            self._save_undo_state("清空编码")
             self.structured_codes = {}
             self.coding_tree.clear()
             self.statusBar().showMessage("编码已清空")
@@ -7699,3 +7960,157 @@ class MainWindow(QMainWindow):
         except Exception as e:
             logger.error(f"打开Excel处理器失败: {e}")
             QMessageBox.critical(self, "错误", f"打开Excel处理器失败: {str(e)}")
+
+    def _save_undo_state(self, action_name):
+        """保存当前状态到撤回栈"""
+        if self._is_undo_operation:
+            return
+        try:
+            import copy
+            state = {
+                'action': action_name,
+                'structured_codes': copy.deepcopy(self.structured_codes),
+                'loaded_files': copy.deepcopy(self.loaded_files),
+                'auto_coding_cache': copy.deepcopy(self.auto_coding_cache),
+                'code_markers_map': copy.deepcopy(self.code_markers_map),
+                'tree_data': self._extract_tree_data(),
+                'text_content': self.text_display.toPlainText(),
+            }
+            self._undo_stack.append(state)
+            if len(self._undo_stack) > self._max_undo_steps:
+                self._undo_stack.pop(0)
+            logger.info(f"已保存撤回状态: {action_name}，当前撤回栈大小: {len(self._undo_stack)}")
+        except Exception as e:
+            logger.error(f"保存撤回状态失败: {e}")
+
+    def undo_operation(self):
+        """执行撤回操作"""
+        try:
+            if not self._undo_stack:
+                self.statusBar().showMessage("没有可撤回的操作")
+                return
+
+            self._is_undo_operation = True
+            state = self._undo_stack.pop()
+
+            self.structured_codes = state['structured_codes']
+            self.loaded_files = state['loaded_files']
+            self.auto_coding_cache = state['auto_coding_cache']
+            self.code_markers_map = state['code_markers_map']
+
+            self._rebuild_tree_from_data(state['tree_data'])
+
+            current_file = self.get_current_file_path()
+            if current_file and current_file in self.loaded_files:
+                self.text_display.setPlainText(state['text_content'])
+
+            self.update_structured_codes_from_tree()
+
+            self.statusBar().showMessage(f"已撤回: {state['action']}")
+            logger.info(f"已撤回操作: {state['action']}")
+
+        except Exception as e:
+            logger.error(f"撤回操作失败: {e}")
+            QMessageBox.critical(self, "错误", f"撤回失败: {str(e)}")
+        finally:
+            self._is_undo_operation = False
+
+    def _extract_tree_data(self):
+        """从树形控件提取完整数据结构"""
+        tree_data = []
+        for i in range(self.coding_tree.topLevelItemCount()):
+            item = self.coding_tree.topLevelItem(i)
+            tree_data.append(self._extract_item_data(item))
+        return tree_data
+
+    def _extract_item_data(self, item):
+        """递归提取树形节点数据"""
+        item_data = {
+            'text': item.text(0),
+            'columns': [item.text(j) for j in range(1, self.coding_tree.columnCount())],
+            'data': item.data(0, Qt.UserRole),
+            'children': []
+        }
+        for i in range(item.childCount()):
+            child = item.child(i)
+            item_data['children'].append(self._extract_item_data(child))
+        return item_data
+
+    def _rebuild_tree_from_data(self, tree_data):
+        """从数据结构重建树形控件"""
+        try:
+            self.coding_tree.clear()
+            for item_data in tree_data:
+                item = self._rebuild_item_from_data(item_data)
+                self.coding_tree.addTopLevelItem(item)
+            self.coding_tree.expandAll()
+        except Exception as e:
+            logger.error(f"重建树形控件失败: {e}")
+
+    def _rebuild_item_from_data(self, item_data):
+        """从数据递归重建树形节点"""
+        item = QTreeWidgetItem()
+        item.setText(0, item_data['text'])
+        for j, col_text in enumerate(item_data['columns']):
+            item.setText(j + 1, col_text)
+        item.setData(0, Qt.UserRole, item_data['data'])
+        for child_data in item_data['children']:
+            child = self._rebuild_item_from_data(child_data)
+            item.addChild(child)
+        return item
+
+    def get_current_file_path(self):
+        """获取当前选中的文件路径"""
+        try:
+            current_item = self.file_list.currentItem()
+            if current_item:
+                return current_item.data(Qt.UserRole)
+            return None
+        except Exception as e:
+            logger.error(f"获取当前文件路径失败: {e}")
+            return None
+
+    def save_coding(self):
+        """保存编码 - 自动保存当前的编码结果"""
+        try:
+            if not self.loaded_files:
+                QMessageBox.warning(self, "警告", "没有可保存的文件")
+                return
+
+            if not self.structured_codes:
+                QMessageBox.warning(self, "警告", "没有编码结果可保存")
+                return
+
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            save_dir = PathManager.get_auto_coding_save_dir()
+            PathManager.ensure_dir(save_dir)
+
+            filename = f"自动编码_{timestamp}.json"
+            file_path = PathManager.join(save_dir, filename)
+
+            # 在保存前，将自动编码缓存中的内容也更新到loaded_files中
+            if hasattr(self, 'auto_coding_cache') and self.auto_coding_cache:
+                for file_path_cache, content in self.auto_coding_cache.items():
+                    if file_path_cache in self.loaded_files:
+                        self.loaded_files[file_path_cache]['full_marked_content'] = content
+
+            save_data = {
+                "timestamp": datetime.now().isoformat(),
+                "structured_codes": self.structured_codes,
+                "loaded_files": self.loaded_files,
+                "auto_coding_cache": self.auto_coding_cache,
+                "code_markers_map": self.code_markers_map,
+            }
+
+            with PathManager.safe_open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(save_data, f, ensure_ascii=False, indent=2)
+
+            QMessageBox.information(self, "成功", f"编码已保存到: {file_path}")
+            logger.info(f"编码已保存: {file_path}")
+            self.statusBar().showMessage(f"编码已保存: {os.path.basename(file_path)}")
+            return True
+
+        except Exception as e:
+            logger.error(f"保存编码失败: {e}")
+            QMessageBox.critical(self, "错误", f"保存失败: {str(e)}")
+            return False
