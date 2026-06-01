@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QFormLayout,
                              QListWidget, QListWidgetItem, QLabel, QMessageBox,
                              QTreeWidget, QTreeWidgetItem, QSplitter, QComboBox,
                              QInputDialog, QDialogButtonBox, QApplication, QMenu, QAction,
-                             QCheckBox, QShortcut)
+                             QCheckBox, QShortcut, QAbstractItemView)
 from PyQt5.QtCore import Qt, QMimeData, QTimer, QEvent, QRegularExpression
 from PyQt5.QtGui import QTextDocument, QTextCursor
 from PyQt5.QtGui import QFont, QColor, QKeySequence
@@ -64,31 +64,48 @@ class DragDropTreeWidget(QTreeWidget):
 
     def dropEvent(self, event):
         """处理拖放释放事件"""
-        # 处理内部拖放
-        if event.source() == self:
-            if self.dialog:
-                self.dialog._save_undo_state("拖拽移动编码")
-                target_item = self.itemAt(event.pos())
-                selected_items = self.selectedItems()
-                if self.dialog.handle_first_level_drop(target_item, selected_items):
-                    event.acceptProposedAction()
-                    return
+        try:
+            if event.source() == self:
+                if self.dialog:
+                    target_item = self.itemAt(event.pos())
+                    selected_items = self.selectedItems()
 
-            # 调用父类的dropEvent处理内部移动
-            super().dropEvent(event)
-            # 拖放完成后更新编码结构
-            if self.dialog:
-                self.dialog.update_structured_codes_from_tree()
-        # 处理文本拖放
-        elif event.mimeData().hasText():
-            if self.dialog:
-                event.setDropAction(Qt.CopyAction)
-                self.dialog.handle_drop_on_tree(event)
-                event.accept()
+                    if target_item and selected_items:
+                        target_data = target_item.data(0, Qt.UserRole)
+                        target_level = target_data.get("level") if isinstance(target_data, dict) else None
+                        all_first = all(
+                            isinstance(item.data(0, Qt.UserRole), dict)
+                            and item.data(0, Qt.UserRole).get("level") == 1
+                            for item in selected_items
+                        )
+
+                        if target_level == 1 and all_first:
+                            event.setDropAction(Qt.IgnoreAction)
+                            event.accept()
+                            self.dialog.handle_first_level_drop(target_item, selected_items)
+                            return
+
+                    self.dialog._save_undo_state("拖拽移动编码")
+                    super().dropEvent(event)
+                    self.dialog.update_structured_codes_from_tree()
+                else:
+                    super().dropEvent(event)
+            elif event.mimeData().hasText():
+                if self.dialog:
+                    event.setDropAction(Qt.CopyAction)
+                    self.dialog.handle_drop_on_tree(event)
+                    event.accept()
+                else:
+                    event.ignore()
             else:
                 event.ignore()
-        else:
-            event.ignore()
+        except Exception:
+            import traceback
+            traceback.print_exc()
+            try:
+                super().dropEvent(event)
+            except Exception:
+                pass
 
     def _is_ancestor(self, item, potential_ancestor):
         """检查item是否是potential_ancestor的祖先节点"""
@@ -97,6 +114,7 @@ class DragDropTreeWidget(QTreeWidget):
                 return True
             potential_ancestor = potential_ancestor.parent()
         return False
+
 
 
 class ManualCodingDialog(QDialog):
@@ -991,7 +1009,7 @@ class ManualCodingDialog(QDialog):
             item.setText(2, "1")
             item.setText(3, "1")  # 文件来源数
             item.setText(4, "1")  # 句子来源数
-            item.setText(5, ", ".join(sentence_numbers) if sentence_numbers else code_id)  # 关联编号
+            item.setText(5, ",".join(sentence_numbers) if sentence_numbers else "")  # 关联编号
 
             item.setData(0, Qt.UserRole, {
                 "level": 1,
@@ -2674,6 +2692,7 @@ class ManualCodingDialog(QDialog):
             content = item_data.get("name", "") or item_data.get("content", "")
             sentence_details = item_data.get("sentence_details", [])
             code_id = item_data.get("code_id", "")
+            sentence_ids = item_data.get("sentence_ids", [])
 
             # 如果code_id缺失，尽量从sentence_details中补全
             if not code_id and sentence_details:
@@ -2681,7 +2700,7 @@ class ManualCodingDialog(QDialog):
                 code_id = first_detail.get("code_id", "") or first_detail.get("sentence_id", "")
 
             # 弹出句子详情对话框
-            self.show_sentence_details_dialog(sentence_details, content, code_id)
+            self.show_sentence_details_dialog(sentence_details, content, code_id, sentence_ids)
 
         except Exception as e:
             logger.error(f"双击树项目时出错: {e}")
@@ -4576,28 +4595,34 @@ class ManualCodingDialog(QDialog):
             logger.error(f"导入编码结果失败: {e}")
             QMessageBox.critical(self, "错误", f"导入编码结果失败: {str(e)}")
 
-    def show_sentence_details_dialog(self, sentence_details, content, code_id):
+    def show_sentence_details_dialog(self, sentence_details, content, code_id, sentence_ids=None):
         """显示句子详情对话框 - 支持编辑功能，保持TextNumbering编号不变"""
         try:
-            # 首先从当前选中的项目中获取关联编号（从编码树第5列获取）
-            associated_number = ""
-            current_item = self.coding_tree.currentItem()
-            if current_item:
-                associated_number = current_item.text(5)  # 关联编号在第5列
+            # 从传入的 sentence_ids 构建可靠的纯数字关联编号列表
+            associated_numbers_list = []
+            if sentence_ids:
+                for sid in sentence_ids:
+                    sid_str = str(sid).strip().strip('[]')
+                    if sid_str.isdigit():
+                        associated_numbers_list.append(sid_str)
 
-            # 获取一阶编码的完整内容（从编码树第0列获取）
-            coding_tree_content = ""
-            if current_item:
-                coding_tree_content = current_item.text(0)
+            # 如果 sentence_ids 没有纯数字，回退到从树列读取
+            if not associated_numbers_list:
+                associated_number = ""
+                current_item = self.coding_tree.currentItem()
+                if current_item:
+                    associated_number = current_item.text(5)
+                if associated_number:
+                    for num in associated_number.split(','):
+                        num = num.strip().strip('[]')
+                        if num.isdigit():
+                            associated_numbers_list.append(num)
 
-            # 从编码树内容中提取纯内容（去除 code_id 前缀）
-            pure_content = coding_tree_content
-            if code_id and pure_content.startswith(code_id):
-                # 移除 code_id 前缀
-                if pure_content.startswith(code_id + ': '):
-                    pure_content = pure_content[len(code_id + ': '):]
-                elif pure_content.startswith(code_id + ' '):
-                    pure_content = pure_content[len(code_id + ' '):]
+            # 获取一阶编码的完整内容（从sentence_details获取，而不是从树列text(0)获取）
+            pure_content = ""
+            if sentence_details and len(sentence_details) > 0:
+                first_detail = sentence_details[0]
+                pure_content = first_detail.get('original_content', '') or first_detail.get('text', '') or first_detail.get('content', '')
 
             # 对纯内容进行清理，移除可能的编号标记和编码标识符，获取不含编号的内容
             import re
@@ -4606,11 +4631,6 @@ class ManualCodingDialog(QDialog):
             # 修复：移除句子开头的编码标识符（如"A01 "、"B02 "等）
             content_without_number = re.sub(r'^[A-Z]\d+\s+', '', content_without_number)
             content_without_number = content_without_number.strip()
-
-            # 从关联编号中解析出多个句子编号
-            associated_numbers_list = []
-            if associated_number:
-                associated_numbers_list = [num.strip() for num in associated_number.split(',') if num.strip()]
 
             # 处理句子详情，获取所有句子
             sentences_list = []
@@ -4629,23 +4649,50 @@ class ManualCodingDialog(QDialog):
                             clean_text = re.sub(r'^[A-Z]\d+\s+', '', clean_text)
                             clean_text = clean_text.strip()
 
-                            # 优先使用句子详情中的编号
-                            sent_number = detail.get('sentence_id', '') or detail.get('code_id', '')
-                            # 如果没有，尝试从文本中提取
-                            if not sent_number:
+                            # 优先使用 text_number（纯数字句子编号，最可靠）
+                            sent_number = detail.get('text_number', '')
+                            # 其次从 sentence_id 或 code_id 获取，但只接受纯数字
+                            if not sent_number or not str(sent_number).strip().strip('[]').isdigit():
+                                candidate = detail.get('sentence_id', '') or detail.get('code_id', '')
+                                if candidate and str(candidate).strip().strip('[]').isdigit():
+                                    sent_number = candidate
+                            # 最后兜底：直接从文本中提取 [数字] 模式（100%可靠）
+                            if not sent_number or not str(sent_number).strip().strip('[]').isdigit():
                                 number_match = re.search(r'\[(\d+)\]', sent_text)
                                 if number_match:
                                     sent_number = number_match.group(1)
+
+                            # 清理 sent_number，只保留纯数字
+                            if sent_number:
+                                sent_str = str(sent_number).strip().strip('[]')
+                                if sent_str.isdigit():
+                                    sent_number = sent_str
+                                else:
+                                    sent_number = ''
 
                             sentences_list.append({
                                 'text': clean_text,
                                 'original_text': sent_text,
                                 'number': str(sent_number) if sent_number else '',
                                 'file_path': detail.get('file_path', ''),
-                                'filename': detail.get('filename', '')  # 保存文件名
+                                'filename': detail.get('filename', '')
                             })
-                            # 保存原始数据副本
-                            original_sentences_data.append(dict(detail))
+                            # 保存原始数据副本，并确保有 text_number（纯数字）
+                            detail_copy = dict(detail)
+                            if sent_number:
+                                detail_copy['text_number'] = sent_number
+                            original_sentences_data.append(detail_copy)
+
+            # 修复：确保所有句子编号都是纯数字（用关联编号列表中的句子编号替换编码ID）
+            if associated_numbers_list:
+                digit_index = 0
+                for i, sentence in enumerate(sentences_list):
+                    sent_num = sentence.get('number', '')
+                    if not sent_num or not sent_num.isdigit():
+                        if digit_index < len(associated_numbers_list):
+                            sentence['number'] = associated_numbers_list[digit_index]
+                            logger.info(f"修复句子{i+1}编号: {sent_num} -> {associated_numbers_list[digit_index]}")
+                        digit_index += 1
 
             # 确保至少有一个句子（显示原始句子内容）
             if not sentences_list:
@@ -4664,8 +4711,17 @@ class ManualCodingDialog(QDialog):
             # 优先使用sentence_details中第一项的句子编号
             if sentence_details and len(sentence_details) > 0:
                 first_detail = sentence_details[0]
-                # 获取实际的句子编号，确保是数字编号而不是编码标识符
-                first_code_number = first_detail.get('code_id', '') or first_detail.get('sentence_id', '')
+                # 优先使用 text_number（最可靠）
+                first_code_number = first_detail.get('text_number', '')
+                # 其次从 sentence_id 或 code_id 获取，但只接受纯数字
+                if not first_code_number or not str(first_code_number).strip().strip('[]').isdigit():
+                    first_code_number = first_detail.get('code_id', '') or first_detail.get('sentence_id', '')
+                    if first_code_number:
+                        first_str = str(first_code_number).strip().strip('[]')
+                        if first_str.isdigit():
+                            first_code_number = first_str
+                        else:
+                            first_code_number = ''
                 # 如果获取到的是编码标识符（如A01），则从关联编号中获取
                 if first_code_number and not first_code_number.isdigit():
                     if associated_numbers_list:
@@ -4977,24 +5033,42 @@ class ManualCodingDialog(QDialog):
                     # 句子1：一阶编码本身（原始句子内容）
                     if sentences_list:
                         first_sentence = sentences_list[0]
+                        # 确保 first_sentence['number'] 是纯数字
+                        first_num = first_sentence.get('number', '')
+                        first_num_str = str(first_num).strip().strip('[]')
+                        if first_num_str.isdigit():
+                            first_num = first_num_str
+                        else:
+                            first_num = first_code_number if first_code_number and first_code_number.isdigit() else ''
                         new_sentence_details.append({
                             'text': first_sentence['text'],
-                            'code_id': first_code_number if first_code_number and first_code_number.isdigit() else
-                            first_sentence['number'],
-                            'sentence_id': first_code_number if first_code_number and first_code_number.isdigit() else
-                            first_sentence['number'],
-                            'original_content': first_sentence['text']
+                            'code_id': first_num,
+                            'sentence_id': first_num,
+                            'text_number': first_num,
+                            'original_content': first_sentence['text'],
+                            'file_path': first_sentence.get('file_path', ''),
+                            'filename': first_sentence.get('filename', '')
                         })
 
                     # 后续句子：关联的句子
                     for i in range(1, len(sentences_list)):
                         sentence = sentences_list[i]
+                        # 确保 sentence['number'] 是纯数字
+                        sent_num = sentence.get('number', '')
+                        sent_num_str = str(sent_num).strip().strip('[]')
+                        if sent_num_str.isdigit():
+                            sent_num = sent_num_str
+                        else:
+                            sent_num = ''
                         new_sentence_details.append({
                             'text': sentence['text'],
-                            'code_id': sentence['number'],
-                            'sentence_id': sentence['number'],
+                            'code_id': sent_num,
+                            'sentence_id': sent_num,
+                            'text_number': sent_num,
                             'original_content': sentence['original_text'] if sentence['original_text'] else sentence[
-                                'text']
+                                'text'],
+                            'file_path': sentence.get('file_path', ''),
+                            'filename': sentence.get('filename', '')
                         })
 
                     # 更新当前选中项的数据
@@ -5033,7 +5107,12 @@ class ManualCodingDialog(QDialog):
 
                             if all_numbers:
                                 all_numbers.sort(key=lambda x: int(x))
-                                current_item.setText(5, ", ".join(all_numbers) + ",")
+                                # 存储 sentence_ids（纯数字列表）
+                                item_data['sentence_ids'] = all_numbers
+                                current_item.setText(5, ",".join(all_numbers))
+                            else:
+                                item_data['sentence_ids'] = []
+                                current_item.setText(5, "")
 
                     # 数据同步：更新整体数据结构
                     self.update_structured_codes_from_tree()
@@ -5301,7 +5380,7 @@ class ManualCodingDialog(QDialog):
             self._hover_move_dialog_open = False
 
     def merge_selected_first_level_codes(self):
-        """合并选中的一阶编码，保留第一个，其他作为关联文本"""
+        """合并选中的一阶编码，弹出对话框选择主一阶编码，其他作为关联文本"""
         selected_items = self.coding_tree.selectedItems()
         if len(selected_items) < 2:
             QMessageBox.information(self, "提示", "请先选择至少两个一阶编码")
@@ -5319,23 +5398,145 @@ class ManualCodingDialog(QDialog):
             QMessageBox.warning(self, "警告", "仅支持合并一阶编码")
             return
 
-        primary_item = selected_items[0]
+        self._save_undo_state("合并一阶编码")
+
+        # 弹出对话框选择主编码
+        dialog = QDialog(self)
+        dialog.setWindowTitle("选择主一阶编码")
+        dialog.resize(700, 500)
+
+        dlg_layout = QVBoxLayout(dialog)
+
+        dlg_label = QLabel("请选择一个一阶编码作为主编码，其他将作为关联编码：")
+        dlg_layout.addWidget(dlg_label)
+
+        list_widget = QListWidget()
+        list_widget.setSelectionMode(QListWidget.SelectionMode.SingleSelection)
+
+        item_text_map = {}
+        for item in selected_items:
+            item_text = item.text(0)
+            list_item = QListWidgetItem(item_text)
+            list_widget.addItem(list_item)
+            item_text_map[item_text] = item
+
+        if list_widget.count() > 0:
+            list_widget.setCurrentRow(0)
+
+        dlg_layout.addWidget(list_widget)
+
+        btn_layout = QHBoxLayout()
+        ok_button = QPushButton("确定")
+        cancel_button = QPushButton("取消")
+
+        btn_layout.addWidget(ok_button)
+        btn_layout.addWidget(cancel_button)
+        dlg_layout.addLayout(btn_layout)
+
+        primary_item = None
+
+        def on_ok():
+            nonlocal primary_item
+            current_list_item = list_widget.currentItem()
+            if not current_list_item:
+                QMessageBox.warning(dialog, "警告", "请选择一个一阶编码作为主编码")
+                return
+            item_text = current_list_item.text()
+            primary_item = item_text_map.get(item_text)
+            if not primary_item:
+                QMessageBox.warning(dialog, "警告", "选择无效")
+                return
+            dialog.accept()
+
+        def on_cancel():
+            dialog.reject()
+
+        ok_button.clicked.connect(on_ok)
+        cancel_button.clicked.connect(on_cancel)
+
+        result = dialog.exec_()
+        if result != QDialog.DialogCode.Accepted or not primary_item:
+            return
+
+        # 执行合并
         primary_data = primary_item.data(0, Qt.UserRole) or {}
         merged_details = list(primary_data.get("sentence_details", []))
-        merged_ids = []
+        merged_ids = [str(sid).strip() for sid in primary_data.get("sentence_ids", [])
+                      if str(sid).strip() and str(sid).strip().strip('[]').isdigit()]
 
         def add_sentence_id(value):
             if not value:
                 return
             sid = str(value).strip().strip('[]')
-            if sid and sid not in merged_ids:
+            if sid and sid.isdigit() and sid not in merged_ids:
                 merged_ids.append(sid)
+
+        # 确保主编码自身的 sentence_details 也有正确的 text_number，并加入 merged_ids
+        for detail in merged_details:
+            if isinstance(detail, dict):
+                text_number = ''
+                # 逐个检查所有文本字段（不用 or 短路）
+                for field in ('text', 'content', 'original_content'):
+                    field_text = detail.get(field, '')
+                    if field_text:
+                        number_match = re.search(r'\[(\d+)\]', field_text)
+                        if number_match:
+                            text_number = number_match.group(1)
+                            break
+                if not text_number:
+                    for key in ('text_number', 'sentence_id', 'code_id'):
+                        val = detail.get(key, '')
+                        if val and str(val).strip().strip('[]').isdigit():
+                            text_number = str(val).strip().strip('[]')
+                            break
+                if text_number:
+                    detail['text_number'] = text_number
+                    detail['sentence_id'] = text_number
+                    detail['code_id'] = text_number
+                    add_sentence_id(text_number)
+
+        # 兜底1：从 numbered_content 提取 [NNN]
+        if not merged_ids:
+            numbered_content = primary_data.get('numbered_content', '')
+            if numbered_content:
+                for match in re.finditer(r'\[(\d+)\]', numbered_content):
+                    add_sentence_id(match.group(1))
+
+        # 兜底2：从列5读取已有的纯数字编号
+        if not merged_ids:
+            existing_col5 = primary_item.text(5).strip()
+            if existing_col5:
+                for part in existing_col5.split(','):
+                    part = part.strip()
+                    if part.isdigit():
+                        add_sentence_id(part)
 
         def add_details(details):
             for detail in details:
                 if isinstance(detail, dict):
-                    merged_details.append(dict(detail))
-                    add_sentence_id(detail.get("sentence_id") or detail.get("code_id"))
+                    detail_copy = dict(detail)
+                    text_number = ''
+                    # 逐个检查所有文本字段（不用 or 短路）
+                    for field in ('text', 'content', 'original_content'):
+                        field_text = detail_copy.get(field, '')
+                        if field_text:
+                            number_match = re.search(r'\[(\d+)\]', field_text)
+                            if number_match:
+                                text_number = number_match.group(1)
+                                break
+                    if not text_number:
+                        for key in ('text_number', 'sentence_id', 'code_id'):
+                            val = detail_copy.get(key, '')
+                            if val and str(val).strip().strip('[]').isdigit():
+                                text_number = str(val).strip().strip('[]')
+                                break
+                    if text_number:
+                        detail_copy['text_number'] = text_number
+                        detail_copy['sentence_id'] = text_number
+                        detail_copy['code_id'] = text_number
+                    merged_details.append(detail_copy)
+                    if text_number:
+                        add_sentence_id(text_number)
 
         for item in selected_items:
             item_data = item.data(0, Qt.UserRole) or {}
@@ -5347,7 +5548,9 @@ class ManualCodingDialog(QDialog):
                 for sid in [s.strip() for s in associated.split(',') if s.strip()]:
                     add_sentence_id(sid)
 
-        for item in selected_items[1:]:
+        other_items = [item for item in selected_items if item is not primary_item]
+
+        for item in other_items:
             item_data = item.data(0, Qt.UserRole) or {}
             item_details = item_data.get("sentence_details", [])
             if item_details:
@@ -5364,15 +5567,26 @@ class ManualCodingDialog(QDialog):
                     sentence_ids = [""]
 
                 for sid in sentence_ids:
+                    sid_str = str(sid).strip().strip('[]')
+                    if sid_str.isdigit():
+                        clean_sid = sid_str
+                    else:
+                        clean_sid = ''
+                        # 从文本中提取
+                        number_match = re.search(r'\[(\d+)\]', content)
+                        if number_match:
+                            clean_sid = number_match.group(1)
                     detail = {
                         "text": content,
                         "content": content,
                         "original_content": content,
                     }
-                    if sid:
-                        detail["sentence_id"] = str(sid).strip()
+                    if clean_sid:
+                        detail["sentence_id"] = clean_sid
+                        detail["code_id"] = clean_sid
+                        detail["text_number"] = clean_sid
                     merged_details.append(detail)
-                    add_sentence_id(sid)
+                    add_sentence_id(clean_sid)
 
             parent = item.parent()
             if parent:
@@ -5385,10 +5599,37 @@ class ManualCodingDialog(QDialog):
         primary_data["sentence_details"] = merged_details
         if merged_ids:
             primary_data["sentence_ids"] = merged_ids
-            primary_item.setText(5, ", ".join(merged_ids))
+            primary_item.setText(5, ",".join(merged_ids))
+        else:
+            primary_data["sentence_ids"] = []
+            primary_item.setText(5, "")
 
         primary_data["sentence_count"] = len(merged_details) if merged_details else 1
         primary_item.setText(4, str(primary_data["sentence_count"]))
+
+        code_id = primary_data.get("code_id", "")
+        numbered_content = primary_data.get("numbered_content", "")
+        content = primary_data.get("content", "") or primary_data.get("name", "")
+
+        if code_id and numbered_content:
+            content_text = numbered_content
+            if content_text.startswith(code_id + ': '):
+                original_content = content_text[len(code_id + ': '):]
+            elif content_text.startswith(code_id + ' '):
+                original_content = content_text[len(code_id + ' '):]
+            else:
+                original_content = content_text
+            original_content = re.sub(r'^[A-Z]\d+\s+', '', original_content)
+            original_content = re.sub(r'^\d+\s*,\s*\d+\s*', '', original_content)
+            original_content = re.sub(r'^(?:\[\d+\]|\d+)\s+', '', original_content)
+            original_content = re.sub(r'\s*\[\d+\]', '', original_content)
+            display_content = f"{code_id} {original_content}"
+        else:
+            display_content = numbered_content if numbered_content else content
+
+        primary_item.setText(0, display_content)
+        if merged_ids:
+            primary_item.setText(5, ",".join(merged_ids))
         primary_item.setData(0, Qt.UserRole, primary_data)
 
         if primary_item.parent():
@@ -5400,7 +5641,7 @@ class ManualCodingDialog(QDialog):
         QMessageBox.information(self, "成功", "一阶编码已合并，关联文本已保留")
 
     def handle_first_level_drop(self, target_item, selected_items):
-        """处理一阶编码拖拽到二阶编码"""
+        """处理一阶编码拖拽到二阶编码或合并到其他一阶编码"""
         if not target_item or not selected_items:
             return False
 
@@ -5412,14 +5653,194 @@ class ManualCodingDialog(QDialog):
             return False
 
         target_level = get_level(target_item)
-        if target_level == 2:
-            target_second = target_item
-        elif target_level == 1 and target_item.parent() and get_level(target_item.parent()) == 2:
-            target_second = target_item.parent()
+        if target_level == 1:
+            return self._merge_dropped_to_first_level(target_item, selected_items)
+        elif target_level == 2:
+            return self.move_first_items_to_second(selected_items, target_item, show_message=False)
         else:
             return False
 
-        return self.move_first_items_to_second(selected_items, target_second, show_message=False)
+    def _merge_dropped_to_first_level(self, target_item, selected_items):
+        """将拖拽的一阶编码合并为目标一阶编码的关联文本"""
+        if target_item in selected_items:
+            return False
+
+        self._save_undo_state("拖拽合并一阶编码")
+
+        target_data = target_item.data(0, Qt.UserRole) or {}
+        merged_details = list(target_data.get("sentence_details", []))
+        merged_ids = [str(sid).strip() for sid in target_data.get("sentence_ids", [])
+                      if str(sid).strip() and str(sid).strip().strip('[]').isdigit()]
+
+        def add_sentence_id(value):
+            if not value:
+                return
+            sid = str(value).strip().strip('[]')
+            if sid and sid.isdigit() and sid not in merged_ids:
+                merged_ids.append(sid)
+
+        # 确保目标编码自身的 sentence_details 也有正确的 text_number，并加入 merged_ids
+        for detail in merged_details:
+            if isinstance(detail, dict):
+                text_number = ''
+                # 逐个检查所有文本字段（不用 or 短路）
+                for field in ('text', 'content', 'original_content'):
+                    field_text = detail.get(field, '')
+                    if field_text:
+                        number_match = re.search(r'\[(\d+)\]', field_text)
+                        if number_match:
+                            text_number = number_match.group(1)
+                            break
+                if not text_number:
+                    for key in ('text_number', 'sentence_id', 'code_id'):
+                        val = detail.get(key, '')
+                        if val and str(val).strip().strip('[]').isdigit():
+                            text_number = str(val).strip().strip('[]')
+                            break
+                if text_number:
+                    detail['text_number'] = text_number
+                    detail['sentence_id'] = text_number
+                    detail['code_id'] = text_number
+                    add_sentence_id(text_number)
+
+        # 兜底1：从 numbered_content 提取 [NNN]
+        if not merged_ids:
+            numbered_content = target_data.get('numbered_content', '')
+            if numbered_content:
+                for match in re.finditer(r'\[(\d+)\]', numbered_content):
+                    add_sentence_id(match.group(1))
+
+        # 兜底2：从列5读取已有的纯数字编号
+        if not merged_ids:
+            existing_col5 = target_item.text(5).strip()
+            if existing_col5:
+                for part in existing_col5.split(','):
+                    part = part.strip()
+                    if part.isdigit():
+                        add_sentence_id(part)
+
+        def get_sentence_number_for_code(item):
+            """根据编码获取对应的句子编号（只返回纯数字）"""
+            item_data = item.data(0, Qt.UserRole) or {}
+            sentence_details = item_data.get("sentence_details", [])
+            if sentence_details:
+                for d in sentence_details:
+                    if isinstance(d, dict):
+                        sid = d.get('text_number') or d.get('sentence_id')
+                        if sid is not None and str(sid).strip():
+                            sid_str = str(sid).strip().strip('[]')
+                            if sid_str.isdigit():
+                                return sid_str
+            sentence_ids = item_data.get("sentence_ids", [])
+            if sentence_ids:
+                first_sid = str(sentence_ids[0]).strip().strip('[]')
+                if first_sid.isdigit():
+                    return first_sid
+            code_id = item_data.get("code_id", "")
+            if code_id:
+                code_num = re.sub(r'^[A-Z]+', '', str(code_id))
+                if code_num.isdigit():
+                    return code_num
+            return ""
+
+        for src_item in selected_items:
+            if src_item is target_item:
+                continue
+            src_data = src_item.data(0, Qt.UserRole) or {}
+            src_details = src_data.get("sentence_details", [])
+            if src_details:
+                for d in src_details:
+                    if isinstance(d, dict):
+                        detail_copy = dict(d)
+                        text_number = ''
+                        # 逐个检查所有文本字段（不用 or 短路）
+                        for field in ('text', 'content', 'original_content'):
+                            field_text = detail_copy.get(field, '')
+                            if field_text:
+                                number_match = re.search(r'\[(\d+)\]', field_text)
+                                if number_match:
+                                    text_number = number_match.group(1)
+                                    break
+                        if not text_number:
+                            for key in ('text_number', 'sentence_id', 'code_id'):
+                                val = detail_copy.get(key, '')
+                                if val and str(val).strip().strip('[]').isdigit():
+                                    text_number = str(val).strip().strip('[]')
+                                    break
+                        if text_number:
+                            detail_copy['text_number'] = text_number
+                            detail_copy['sentence_id'] = text_number
+                            detail_copy['code_id'] = text_number
+                        merged_details.append(detail_copy)
+                        if text_number:
+                            add_sentence_id(text_number)
+            else:
+                content = src_data.get("content") or src_data.get("name") or src_item.text(0)
+                sentence_number = get_sentence_number_for_code(src_item)
+                detail = {
+                    "text": content,
+                    "content": content,
+                    "original_content": content,
+                }
+                if sentence_number:
+                    detail["sentence_id"] = str(sentence_number).strip()
+                    detail["code_id"] = str(sentence_number).strip()
+                    detail["text_number"] = str(sentence_number).strip()
+                    add_sentence_id(sentence_number)
+                merged_details.append(detail)
+
+            src_parent = src_item.parent()
+            if src_parent:
+                src_parent.removeChild(src_item)
+            else:
+                idx = self.coding_tree.indexOfTopLevelItem(src_item)
+                if idx >= 0:
+                    self.coding_tree.takeTopLevelItem(idx)
+
+        target_data["sentence_details"] = merged_details
+        if merged_ids:
+            target_data["sentence_ids"] = merged_ids
+            target_item.setText(5, ",".join(merged_ids))
+        else:
+            target_data["sentence_ids"] = []
+            target_item.setText(5, "")
+
+        target_data["sentence_count"] = len(merged_details) if merged_details else 1
+        target_item.setText(4, str(target_data["sentence_count"]))
+
+        code_id = target_data.get("code_id", "")
+        numbered_content = target_data.get("numbered_content", "")
+        content = target_data.get("content", "") or target_data.get("name", "")
+
+        if code_id and numbered_content:
+            content_text = numbered_content
+            if content_text.startswith(code_id + ': '):
+                original_content = content_text[len(code_id + ': '):]
+            elif content_text.startswith(code_id + ' '):
+                original_content = content_text[len(code_id + ' '):]
+            else:
+                original_content = content_text
+            original_content = re.sub(r'^[A-Z]\d+\s+', '', original_content)
+            original_content = re.sub(r'^\d+\s*,\s*\d+\s*', '', original_content)
+            original_content = re.sub(r'^(?:\[\d+\]|\d+)\s+', '', original_content)
+            original_content = re.sub(r'\s*\[\d+\]', '', original_content)
+            display_content = f"{code_id} {original_content}"
+        else:
+            display_content = numbered_content if numbered_content else content
+
+        target_item.setText(0, display_content)
+        if merged_ids:
+            target_item.setText(5, ",".join(merged_ids))
+        target_item.setData(0, Qt.UserRole, target_data)
+
+        if target_item.parent():
+            self.update_statistics_for_item(target_item.parent())
+
+        self.update_structured_codes_from_tree()
+        self.coding_tree.setCurrentItem(target_item)
+
+        QMessageBox.information(self, "提示", "一阶编码已合并为关联文本")
+        return True
 
     def move_first_items_to_second(self, first_level_items, new_parent, show_message=True):
         """将多个一阶编码移动到指定二阶编码下"""
@@ -6177,7 +6598,20 @@ class ManualCodingDialog(QDialog):
                         for sentence in sentence_details:
                             if isinstance(sentence, dict):
                                 file_path = sentence.get('file_path', '')
-                                sentence_id = sentence.get('sentence_id', '')
+                                # 只接受纯数字的句子编号
+                                sentence_id = sentence.get('text_number') or sentence.get('sentence_id', '')
+                                if sentence_id:
+                                    sid_str = str(sentence_id).strip().strip('[]')
+                                    if sid_str.isdigit():
+                                        sentence_id = sid_str
+                                    else:
+                                        # 如果不是纯数字，从文本中提取
+                                        sent_text = sentence.get('text', '') or sentence.get('content', '') or ''
+                                        number_match = re.search(r'\[(\d+)\]', sent_text)
+                                        if number_match:
+                                            sentence_id = number_match.group(1)
+                                        else:
+                                            sentence_id = ''
 
                                 if file_path:
                                     first_file_sources.add(file_path)
@@ -6193,25 +6627,22 @@ class ManualCodingDialog(QDialog):
                             second_code_ids.append(code_id)
                             third_code_ids.append(code_id)
 
-                        # 修复：将句子编号替换为所属一阶编码的编号
-                        # 提取原始内容（去除可能的编号前缀）
-                        if content_text.startswith(code_id + ': '):
-                            original_content = content_text[len(code_id + ': '):]
-                        elif content_text.startswith(code_id + ' '):
-                            original_content = content_text[len(code_id + ' '):]
+                        sentence_ids = content.get('sentence_ids', [])
+                        if code_id and content_text:
+                            if content_text.startswith(code_id + ': '):
+                                original_content = content_text[len(code_id + ': '):]
+                            elif content_text.startswith(code_id + ' '):
+                                original_content = content_text[len(code_id + ' '):]
+                            else:
+                                original_content = content_text
+                            if original_content and (original_content[0].isdigit() or original_content.startswith('[')):
+                                import re
+                                original_content = re.sub(r'^\d+\s*,\s*\d+\s*', '', original_content)
+                                original_content = re.sub(r'^(?:\[\d+\]|\d+)\s+', '', original_content)
+                                original_content = re.sub(r'\s*\[\d+\]', '', original_content)
+                            display_content = f"{code_id} {original_content}"
                         else:
-                            original_content = content_text
-
-                        # 额外修复：移除可能的句子编号前缀（如 "1, 58 ", "68 ", "[68] ", "1 " 等）
-                        # 只有当原始内容以数字开头时才尝试清理，避免误伤
-                        if original_content and (original_content[0].isdigit() or original_content.startswith('[')):
-                            import re
-                            # 移除 "1, 58 " 这种格式 (文件索引, 句子索引)
-                            original_content = re.sub(r'^\d+\s*,\s*\d+\s*', '', original_content)
-                            # 移除 "68 " 或 "[68] " 或 "1 " 这种格式
-                            original_content = re.sub(r'^(?:\[\d+\]|\d+)\s+', '', original_content)
-
-                        display_content = f"{code_id} {original_content}"
+                            display_content = content_text
                         first_item.setText(0, display_content)
 
                         # 重新定义 numbered_first_content 用于数据存储
@@ -6227,17 +6658,44 @@ class ManualCodingDialog(QDialog):
                         # 与自动编码界面保持一致，显示句子ID
                         associated_id = ""
 
-                        # 收集所有可能的句子ID
+                        # 收集所有可能的句子ID（只接受纯数字）
                         all_ids = set()
 
-                        # 从first_sentence_sources提取
-                        all_ids.update(first_sentence_sources)
+                        # 优先级1：已存储的 sentence_ids（来自合并/拖拽操作，最可靠）
+                        stored_sentence_ids = content.get('sentence_ids', [])
+                        if stored_sentence_ids:
+                            for sid in stored_sentence_ids:
+                                sid_str = str(sid).strip().strip('[]')
+                                if sid_str.isdigit():
+                                    all_ids.add(sid_str)
 
-                        # 从sentence_details提取
+                        # 优先级2：从first_sentence_sources提取
+                        if not all_ids:
+                            for sid in first_sentence_sources:
+                                sid_str = str(sid).strip().strip('[]')
+                                if sid_str.isdigit():
+                                    all_ids.add(sid_str)
+
+                        # 优先级3：从sentence_details提取稳定主键
                         if not all_ids and sentence_details:
                             for s in sentence_details:
-                                if isinstance(s, dict) and s.get('sentence_id'):
-                                    all_ids.add(str(s.get('sentence_id')))
+                                if not isinstance(s, dict):
+                                    continue
+                                # 优先使用 text_number，只接受纯数字
+                                stable_id = s.get('text_number')
+                                if not stable_id or not str(stable_id).strip().strip('[]').isdigit():
+                                    stable_id = s.get('sentence_id')
+                                if not stable_id or not str(stable_id).strip().strip('[]').isdigit():
+                                    stable_id = None
+                                    # 从文本中提取
+                                    sent_text = s.get('text', '') or s.get('content', '') or ''
+                                    number_match = re.search(r'\[(\d+)\]', sent_text)
+                                    if number_match:
+                                        stable_id = number_match.group(1)
+                                if stable_id is not None and str(stable_id).strip():
+                                    sid_str = str(stable_id).strip().strip('[]')
+                                    if sid_str.isdigit():
+                                        all_ids.add(sid_str)
 
                         # 方法：从sentence_details的原始内容提取（与主窗口相同的逻辑）
                         extracted_sentence_ids = []
@@ -6316,7 +6774,7 @@ class ManualCodingDialog(QDialog):
                             ids = sorted(all_ids, key=lambda x: int(x) if x.isdigit() else float('inf'))
                             # 移除可能的括号，只保留数字
                             clean_ids = [sid.strip('[]') if isinstance(sid, str) else str(sid) for sid in ids]
-                            associated_id = ", ".join(clean_ids)
+                            associated_id = ",".join(clean_ids)
 
                         first_item.setText(5, associated_id)  # 关联编号
                         first_item.setData(0, Qt.UserRole, {
@@ -6326,7 +6784,8 @@ class ManualCodingDialog(QDialog):
                             "parent": second_cat,
                             "code_id": code_id,
                             "sentence_details": sentence_details,
-                            "sentence_count": sentence_count
+                            "sentence_count": sentence_count,
+                            "sentence_ids": list(all_ids) if all_ids else []
                         })
                         first_count += 1
 
@@ -6383,7 +6842,7 @@ class ManualCodingDialog(QDialog):
                     first_sentence_sources = set()
                     for sentence in sentence_details:
                         if isinstance(sentence, dict):
-                            sentence_id = sentence.get('sentence_id', '')
+                            sentence_id = sentence.get('text_number') or sentence.get('sentence_id', '')
                             if sentence_id:
                                 first_sentence_sources.add(str(sentence_id))
 
@@ -6394,25 +6853,38 @@ class ManualCodingDialog(QDialog):
                     first_item.setText(4, str(sentence_count))  # 句子来源数
 
                     # Fix: Show sentence IDs in "Associated ID" column if available
-                    # 与自动编码界面保持一致，显示句子ID
+                    # 与自动编码界面保持一致，显示句子ID（纯数字）而不是 Code ID
                     associated_id = ""
 
                     # 收集所有可能的句子ID
                     all_ids = set()
 
-                    # 从first_sentence_sources提取
-                    all_ids.update(first_sentence_sources)
+                    # 从first_sentence_sources提取，只保留纯数字
+                    for sid in first_sentence_sources:
+                        sid_str = str(sid).strip().strip('[]')
+                        if sid_str.isdigit():
+                            all_ids.add(sid_str)
 
-                    # 从sentence_details提取
-                    if not all_ids and sentence_details:
+                    # 从sentence_details提取，只保留纯数字
+                    if sentence_details:
                         for s in sentence_details:
-                            if isinstance(s, dict) and s.get('sentence_id'):
-                                all_ids.add(str(s.get('sentence_id')))
+                            if isinstance(s, dict):
+                                stable_id = s.get('text_number') or s.get('sentence_id')
+                                if stable_id:
+                                    sid_str = str(stable_id).strip().strip('[]')
+                                    if sid_str.isdigit():
+                                        all_ids.add(sid_str)
 
-                    # 从numbered_content提取
+                    # 从numbered_content提取（兜底）
                     if not all_ids and numbered_content:
                         import re
                         match = re.search(r'^\s*\[(\d+)\]', numbered_content.strip())
+                        if match:
+                            all_ids.add(match.group(1))
+
+                    # 最后的兜底：直接搜索 numbered_content 中的 [数字] 模式
+                    if not all_ids:
+                        match = re.search(r'\[(\d+)\]', numbered_content or '')
                         if match:
                             all_ids.add(match.group(1))
 
@@ -7779,29 +8251,35 @@ class ManualCodingDialog(QDialog):
                 # 同时更新数据结构中的句子数
                 target_item_data["sentence_count"] = total_sentences
 
-                # 更新目标项的关联编号（第5列）
-                # 修复：确保一阶编码自身的编号在关联编号的第一位
                 if new_sentence_details and len(new_sentence_details) > 0:
-                    # 一阶编码自身的编号（第一项）
                     first_level_code_id = new_sentence_details[0].get('code_id', '')
+                    if not first_level_code_id or not first_level_code_id.isdigit():
+                        first_level_code_id = new_sentence_details[0].get('sentence_id', '')
+                        if not first_level_code_id or not first_level_code_id.isdigit():
+                            first_level_code_id = new_sentence_details[0].get('text_number', '')
+                            if first_level_code_id and not first_level_code_id.isdigit():
+                                first_level_code_id = ''
 
-                    # 收集其他句子的编号（除了一阶编码自身）
                     other_ids = []
                     for detail in new_sentence_details[1:]:
                         code_id = detail.get('code_id', '')
+                        if not code_id or not code_id.isdigit():
+                            code_id = detail.get('sentence_id', '')
+                        if not code_id or not code_id.isdigit():
+                            code_id = detail.get('text_number', '')
                         if code_id and code_id.isdigit() and code_id not in other_ids:
                             other_ids.append(code_id)
 
-                    # 对其他编号进行排序
                     other_ids.sort(key=lambda x: int(x))
 
-                    # 组合编号：一阶编码自身编号 + 其他编号
                     all_ids = []
                     if first_level_code_id and first_level_code_id.isdigit():
                         all_ids.append(first_level_code_id)
                     all_ids.extend(other_ids)
 
-                    updated_code_ids = ", ".join(all_ids) if all_ids else ""
+                    updated_code_ids = ",".join(all_ids) if all_ids else ""
+
+                    target_item_data["sentence_ids"] = all_ids
                 else:
                     updated_code_ids = ""
 
