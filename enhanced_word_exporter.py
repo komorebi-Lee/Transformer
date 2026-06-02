@@ -21,15 +21,18 @@ class EnhancedWordExporter:
     def export_structured_codes_with_hyperlinks(self, file_path: str,
                                                 structured_codes: Dict[str, Any],
                                                 combined_text: str,
-                                                text_mapping: Dict[str, Any]) -> bool:
+                                                text_mapping: Dict[str, Any],
+                                                higher_level_data: list = None) -> bool:
         """导出编码结构到Word文档，包含超链接和编号系统"""
         try:
+            if higher_level_data is None:
+                higher_level_data = []
             self.document = Document()
 
             # 设置文档属性
             self.document.core_properties.title = "扎根理论编码分析结果"
             self.document.core_properties.author = "扎根理论编码分析系统"
-            self.document.core_properties.comments = "自动生成的扎根理论三级编码分析报告"
+            self.document.core_properties.comments = "自动生成的扎根理论多级编码分析报告"
 
             # 添加标题
             title = self.document.add_heading('扎根理论编码分析结果', 0)
@@ -48,14 +51,21 @@ class EnhancedWordExporter:
             self.document.add_paragraph(f"二阶编码数量: {total_second}")
             self.document.add_paragraph(f"一阶编码数量: {total_first}")
 
+            has_higher = len(higher_level_data) > 0
+            if has_higher:
+                self.document.add_paragraph(f"四/五/六阶编码组数量: {len(higher_level_data)}")
+
             self.document.add_paragraph()  # 空行
 
             # 根据合并文本和句子来源构建文件顺序与一阶编码显示编号映射
             file_index_map = self._build_file_index_map_from_combined_text(combined_text)
             code_display_map = self._build_first_level_display_id_map(structured_codes, file_index_map)
 
-            # 第一部分：三级编码表格
-            self.add_coding_table_with_new_format(structured_codes, code_display_map)
+            # 第一部分：编码表格
+            if has_higher:
+                self.add_multi_order_coding_table(structured_codes, higher_level_data, code_display_map)
+            else:
+                self.add_coding_table_with_new_format(structured_codes, code_display_map)
 
             # 分页
             self.document.add_page_break()
@@ -196,6 +206,178 @@ class EnhancedWordExporter:
                                 }
 
         return code_references
+
+    def add_multi_order_coding_table(self, structured_codes: Dict[str, Any],
+                                      higher_level_data: list,
+                                      code_display_map: Dict[str, str] = None):
+        """添加多阶编码表格 - 支持1-6阶完整结构"""
+        if code_display_map is None:
+            code_display_map = {}
+        heading = self.document.add_heading('一、编码结构', level=1)
+
+        col_count = 6
+        table = self.document.add_table(rows=1, cols=col_count)
+        table.style = 'Light Grid Accent 1'
+
+        hdr_cells = table.rows[0].cells
+        headers = ['六阶编码', '五阶编码', '四阶编码', '三阶编码', '二阶编码', '一阶编码']
+        for i, h in enumerate(headers):
+            hdr_cells[i].text = h
+            for paragraph in hdr_cells[i].paragraphs:
+                paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                for run in paragraph.runs:
+                    run.font.bold = True
+
+        covered = set()
+
+        for item_data in higher_level_data:
+            self._add_higher_rows(table, item_data, [], code_display_map, covered)
+
+        for third_category, second_categories in structured_codes.items():
+            clean_third = self.clean_category_name(third_category)
+            for second_category, first_contents in second_categories.items():
+                clean_second = self.clean_category_name(second_category)
+                for content_data in first_contents:
+                    code_id = ''
+                    display_text = ''
+                    if isinstance(content_data, dict):
+                        code_id = content_data.get('code_id', '')
+                        base_content = content_data.get('content', '') or content_data.get('numbered_content', '')
+                        clean_content = self.clean_first_level_content(base_content) if base_content else ''
+                        display_id = code_display_map.get(code_id, code_id)
+                        if display_id and clean_content:
+                            display_text = f"{display_id} {clean_content}"
+                        elif base_content:
+                            display_text = base_content
+                        else:
+                            display_text = content_data.get('numbered_content', '') or ''
+                        key = (clean_third, clean_second, code_id)
+                    else:
+                        display_text = str(content_data)
+                        key = (clean_third, clean_second, display_text)
+
+                    if key not in covered:
+                        row_cells = table.add_row().cells
+                        for c in range(3):
+                            row_cells[c].text = ''
+                        row_cells[3].text = third_category
+                        row_cells[4].text = second_category
+                        row_cells[5].text = display_text
+                        if code_id:
+                            self.add_bookmark_to_paragraph(row_cells[5].paragraphs[0], f"code_{code_id}")
+
+    def _add_higher_rows(self, table, item_data: Dict[str, Any],
+                         parent_path: list, code_display_map: Dict[str, str],
+                         covered: set):
+        """递归添加高阶编码行"""
+        text = item_data.get('text', '')
+        data = item_data.get('data', {}) or {}
+        level = data.get('level', 3) if isinstance(data, dict) else 3
+
+        current_path = parent_path + [text]
+
+        children = item_data.get('children', [])
+        if not children and data:
+            first_items = data.get('children', []) if isinstance(data, dict) else []
+            children = first_items
+
+        if not children:
+            return
+
+        for child in children:
+            child_text = child.get('text', '')
+            child_data = child.get('data', {}) or {}
+            child_level = child_data.get('level', 3) if isinstance(child_data, dict) else 3
+
+            if child_level in (4, 5, 6):
+                self._add_higher_rows(table, child, current_path, code_display_map, covered)
+            elif child_level == 3:
+                self._add_third_order_rows(table, child, current_path, code_display_map, covered)
+            elif child_level == 2:
+                self._add_second_order_rows_from_table(table, child, current_path, code_display_map, covered)
+            elif child_level == 1:
+                row_cells = table.add_row().cells
+                self._fill_higher_columns(row_cells, current_path)
+                display_text = self._get_first_display_text(child, code_display_map)
+                row_cells[5].text = display_text
+
+    def _add_third_order_rows(self, table, third_item: Dict, parent_path: list,
+                               code_display_map: Dict, covered: set):
+        """从三阶节点添加行"""
+        third_text = third_item.get('text', '')
+        children = third_item.get('children', [])
+        for child in children:
+            child_data = child.get('data', {}) or {}
+            child_level = child_data.get('level', 2) if isinstance(child_data, dict) else 2
+            if child_level == 2:
+                second_text = child.get('text', '')
+                grand_children = child.get('children', [])
+                for gc in grand_children:
+                    gc_data = gc.get('data', {}) or {}
+                    gc_level = gc_data.get('level', 1) if isinstance(gc_data, dict) else 1
+                    if gc_level == 1:
+                        code_id = gc_data.get('code_id', '') if isinstance(gc_data, dict) else ''
+                        display_text = self._get_first_display_text(gc, code_display_map)
+                        clean_third = self.clean_category_name(third_text)
+                        clean_second = self.clean_category_name(second_text)
+                        key = (clean_third, clean_second, code_id)
+                        covered.add(key)
+
+                        row_cells = table.add_row().cells
+                        self._fill_higher_columns(row_cells, parent_path)
+                        row_cells[3].text = third_text
+                        row_cells[4].text = second_text
+                        row_cells[5].text = display_text
+                        if code_id:
+                            self.add_bookmark_to_paragraph(row_cells[5].paragraphs[0], f"code_{code_id}")
+
+    def _add_second_order_rows_from_table(self, table, second_item: Dict, parent_path: list,
+                                          code_display_map: Dict, covered: set):
+        """从二阶节点添加行"""
+        second_text = second_item.get('text', '')
+        children = second_item.get('children', [])
+        for gc in children:
+            gc_data = gc.get('data', {}) or {}
+            gc_level = gc_data.get('level', 1) if isinstance(gc_data, dict) else 1
+            if gc_level == 1:
+                code_id = gc_data.get('code_id', '') if isinstance(gc_data, dict) else ''
+                display_text = self._get_first_display_text(gc, code_display_map)
+                clean_third = self.clean_category_name('')
+                clean_second = self.clean_category_name(second_text)
+                key = (clean_third, clean_second, code_id)
+                covered.add(key)
+
+                row_cells = table.add_row().cells
+                self._fill_higher_columns(row_cells, parent_path)
+                row_cells[3].text = ''
+                row_cells[4].text = second_text
+                row_cells[5].text = display_text
+                if code_id:
+                    self.add_bookmark_to_paragraph(row_cells[5].paragraphs[0], f"code_{code_id}")
+
+    def _fill_higher_columns(self, row_cells, parent_path: list):
+        """填充高阶列（6/5/4阶）"""
+        start_col = 6 - len(parent_path)
+        for i, name in enumerate(parent_path):
+            if start_col + i < 6:
+                row_cells[start_col + i].text = name
+        for c in range(start_col):
+            row_cells[c].text = ''
+
+    def _get_first_display_text(self, item: Dict, code_display_map: Dict) -> str:
+        """获取一阶编码的显示文本"""
+        data = item.get('data', {}) or {}
+        text = item.get('text', '')
+        if isinstance(data, dict):
+            code_id = data.get('code_id', '')
+            content = data.get('content', '') or data.get('numbered_content', '')
+            clean_content = self.clean_first_level_content(content) if content else ''
+            display_id = code_display_map.get(code_id, code_id) if code_display_map else ''
+            if display_id and clean_content:
+                return f"{display_id} {clean_content}"
+            if content:
+                return content
+        return text
 
     def _build_file_index_map_from_combined_text(self, combined_text: str) -> Dict[str, int]:
         """根据合并文本中出现的文件顺序构建文件索引映射。

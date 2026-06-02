@@ -131,6 +131,8 @@ class ManualCodingDialog(QDialog):
         self.current_codes = {}
         # 未分类的一阶编码临时存储
         self.unclassified_first_codes = []
+        # 高阶编码数据（4-6阶）
+        self.higher_level_data = []
         # 撤回功能相关
         self._undo_stack = []
         self._max_undo_steps = 50
@@ -439,25 +441,40 @@ class ManualCodingDialog(QDialog):
 
         structure_layout.addWidget(self.coding_tree)
 
-        # 树形操作按钮
+        # 树形操作按钮（第一行）
         tree_buttons_layout = QHBoxLayout()
 
-        expand_btn = QPushButton("展开全部")
+        expand_btn = QPushButton("展开")
+        expand_btn.setFixedWidth(70)
         expand_btn.clicked.connect(self.coding_tree.expandAll)
 
-        collapse_btn = QPushButton("折叠全部")
+        collapse_btn = QPushButton("折叠")
+        collapse_btn.setFixedWidth(70)
         collapse_btn.clicked.connect(self.coding_tree.collapseAll)
 
         self.edit_code_btn = QPushButton("编辑编码")
+        self.edit_code_btn.setFixedWidth(80)
         self.edit_code_btn.clicked.connect(self.edit_tree_item)
 
         tree_buttons_layout.addWidget(expand_btn)
         tree_buttons_layout.addWidget(collapse_btn)
         tree_buttons_layout.addWidget(self.edit_code_btn)
 
+        add_parent_fifth_btn = QPushButton("为四阶添加父节点(五阶)")
+        add_parent_fifth_btn.setMinimumWidth(160)
+        add_parent_fifth_btn.clicked.connect(self.add_parent_fifth_for_fourth)
+        add_parent_fifth_btn.setToolTip("选中多个四阶编码，为其添加共同的父节点五阶编码")
+        tree_buttons_layout.addWidget(add_parent_fifth_btn)
+
+        add_parent_sixth_btn = QPushButton("为五阶添加父节点(六阶)")
+        add_parent_sixth_btn.setMinimumWidth(160)
+        add_parent_sixth_btn.clicked.connect(self.add_parent_sixth_for_fifth)
+        add_parent_sixth_btn.setToolTip("选中多个五阶编码，为其添加共同的父节点六阶编码")
+        tree_buttons_layout.addWidget(add_parent_sixth_btn)
+
         structure_layout.addLayout(tree_buttons_layout)
 
-        # 层级操作按钮
+        # 层级操作按钮（第二行）
         hierarchy_buttons_layout = QHBoxLayout()
 
         add_parent_second_btn = QPushButton("为一阶添加父节点(二阶)")
@@ -470,6 +487,11 @@ class ManualCodingDialog(QDialog):
 
         hierarchy_buttons_layout.addWidget(add_parent_second_btn)
         hierarchy_buttons_layout.addWidget(add_parent_third_btn)
+
+        add_parent_fourth_btn = QPushButton("为三阶添加父节点(四阶)")
+        add_parent_fourth_btn.clicked.connect(self.add_parent_fourth_for_third)
+        add_parent_fourth_btn.setToolTip("选中多个三阶编码，为其添加共同的父节点四阶编码")
+        hierarchy_buttons_layout.addWidget(add_parent_fourth_btn)
 
         structure_layout.addLayout(hierarchy_buttons_layout)
 
@@ -1782,6 +1804,12 @@ class ManualCodingDialog(QDialog):
                 QMessageBox.warning(self, "验证错误", error_msg)
                 return
 
+            # 验证一阶编码质量（语气词、你我他、吗）
+            is_quality_ok, quality_msg = self.validate_first_level_quality(clean_content)
+            if not is_quality_ok:
+                QMessageBox.warning(self, "不合格一阶编码", f'一阶编码不合格:\n{quality_msg}\n\n一阶编码评判标准：没有语气词，没有【你我他】，没有【吗】疑问词，注意动词，形容词，名词。')
+                return
+
             # 检查是否已存在
             if self.is_content_exists(clean_content):
                 QMessageBox.warning(self, "警告", "该一阶编码已存在")
@@ -2268,6 +2296,330 @@ class ManualCodingDialog(QDialog):
 
         except Exception as e:
             logger.error(f"添加父节点三阶编码失败: {e}")
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(self, "错误", f"添加失败:\n{str(e)}")
+
+    def add_parent_fourth_for_third(self):
+        """为多个三阶编码添加共同的四阶父节点"""
+        try:
+            self._save_undo_state("为三阶添加四阶父节点")
+            selected_items = self.coding_tree.selectedItems()
+            if not selected_items:
+                QMessageBox.information(self, "提示", "请先选中至少一个三阶编码")
+                return
+
+            third_level_items = []
+            for item in selected_items:
+                item_data = item.data(0, Qt.UserRole)
+                if item_data and item_data.get("level") == 3:
+                    if item.parent():
+                        parent_data = item.parent().data(0, Qt.UserRole)
+                        if parent_data and parent_data.get("level") == 4:
+                            QMessageBox.warning(self, "警告",
+                                                f"三阶编码 '{item.text(0)}' 已经有父节点四阶编码 '{item.parent().text(0)}'")
+                            return
+                    third_level_items.append(item)
+
+            if not third_level_items:
+                QMessageBox.warning(self, "警告", "请选中三阶编码！")
+                return
+
+            dialog = QDialog(self)
+            dialog.setWindowTitle("添加四阶编码")
+            dialog.resize(600, 500)
+
+            layout = QVBoxLayout(dialog)
+
+            label = QLabel(f"为 {len(third_level_items)} 个三阶编码添加父节点四阶编码 (输入内容):")
+            layout.addWidget(label)
+
+            text_edit = QTextEdit()
+            text_edit.setMinimumHeight(250)
+            text_edit.setMaximumHeight(350)
+            text_edit.setPlaceholderText("输入四阶编码内容...")
+            layout.addWidget(text_edit)
+
+            button_layout = QHBoxLayout()
+            ok_button = QPushButton("确定")
+            cancel_button = QPushButton("取消")
+            button_layout.addWidget(ok_button)
+            button_layout.addWidget(cancel_button)
+            layout.addLayout(button_layout)
+
+            def on_ok():
+                fourth_name = text_edit.toPlainText().strip()
+                if not fourth_name:
+                    QMessageBox.warning(dialog, "警告", "四阶编码名称不能为空")
+                    return
+
+                is_valid, clean_name, error_msg = self.validate_category_name(fourth_name, "fourth")
+                if not is_valid:
+                    QMessageBox.warning(dialog, "验证错误", error_msg)
+                    return
+
+                code_id = self.generate_fourth_code_id()
+                numbered_name = f"{code_id} {clean_name}"
+
+                fourth_item = QTreeWidgetItem(self.coding_tree)
+                fourth_item.setText(0, numbered_name)
+                fourth_item.setText(1, "四阶编码")
+                fourth_item.setText(3, "0")
+                fourth_item.setText(4, "0")
+                fourth_item.setText(5, code_id)
+                fourth_item.setData(0, Qt.UserRole, {
+                    "level": 4,
+                    "name": clean_name,
+                    "code_id": code_id
+                })
+
+                for item in third_level_items:
+                    parent = item.parent()
+                    if parent:
+                        parent.removeChild(item)
+                    else:
+                        index = self.coding_tree.indexOfTopLevelItem(item)
+                        self.coding_tree.takeTopLevelItem(index)
+
+                    fourth_item.addChild(item)
+
+                    item_data = item.data(0, Qt.UserRole)
+                    item_data["parent"] = clean_name
+                    item.setData(0, Qt.UserRole, item_data)
+
+                    for j in range(item.childCount()):
+                        second_item = item.child(j)
+                        second_data = second_item.data(0, Qt.UserRole)
+                        second_data["core_category"] = clean_name
+                        second_item.setData(0, Qt.UserRole, second_data)
+
+                        for k in range(second_item.childCount()):
+                            first_item = second_item.child(k)
+                            first_data = first_item.data(0, Qt.UserRole)
+                            first_data["core_category"] = clean_name
+                            first_item.setData(0, Qt.UserRole, first_data)
+
+                self.update_statistics_for_item(fourth_item)
+                fourth_item.setExpanded(True)
+                self.update_structured_codes_from_tree()
+                logger.info(f"为 {len(third_level_items)} 个三阶编码添加了父节点四阶编码: {clean_name}")
+                QMessageBox.information(self, "成功", f"已为 {len(third_level_items)} 个三阶编码添加四阶编码: {clean_name}")
+                dialog.accept()
+
+            ok_button.clicked.connect(on_ok)
+            cancel_button.clicked.connect(dialog.reject)
+            dialog.exec_()
+
+        except Exception as e:
+            logger.error(f"添加父节点四阶编码失败: {e}")
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(self, "错误", f"添加失败:\n{str(e)}")
+
+    def add_parent_fifth_for_fourth(self):
+        """为多个四阶编码添加共同的五阶父节点"""
+        try:
+            self._save_undo_state("为四阶添加五阶父节点")
+            selected_items = self.coding_tree.selectedItems()
+            if not selected_items:
+                QMessageBox.information(self, "提示", "请先选中至少一个四阶编码")
+                return
+
+            fourth_level_items = []
+            for item in selected_items:
+                item_data = item.data(0, Qt.UserRole)
+                if item_data and item_data.get("level") == 4:
+                    if item.parent():
+                        parent_data = item.parent().data(0, Qt.UserRole)
+                        if parent_data and parent_data.get("level") == 5:
+                            QMessageBox.warning(self, "警告",
+                                                f"四阶编码 '{item.text(0)}' 已经有父节点五阶编码 '{item.parent().text(0)}'")
+                            return
+                    fourth_level_items.append(item)
+
+            if not fourth_level_items:
+                QMessageBox.warning(self, "警告", "请选中四阶编码！")
+                return
+
+            dialog = QDialog(self)
+            dialog.setWindowTitle("添加五阶编码")
+            dialog.resize(600, 500)
+
+            layout = QVBoxLayout(dialog)
+
+            label = QLabel(f"为 {len(fourth_level_items)} 个四阶编码添加父节点五阶编码 (输入内容):")
+            layout.addWidget(label)
+
+            text_edit = QTextEdit()
+            text_edit.setMinimumHeight(250)
+            text_edit.setMaximumHeight(350)
+            text_edit.setPlaceholderText("输入五阶编码内容...")
+            layout.addWidget(text_edit)
+
+            button_layout = QHBoxLayout()
+            ok_button = QPushButton("确定")
+            cancel_button = QPushButton("取消")
+            button_layout.addWidget(ok_button)
+            button_layout.addWidget(cancel_button)
+            layout.addLayout(button_layout)
+
+            def on_ok():
+                fifth_name = text_edit.toPlainText().strip()
+                if not fifth_name:
+                    QMessageBox.warning(dialog, "警告", "五阶编码名称不能为空")
+                    return
+
+                is_valid, clean_name, error_msg = self.validate_category_name(fifth_name, "fifth")
+                if not is_valid:
+                    QMessageBox.warning(dialog, "验证错误", error_msg)
+                    return
+
+                code_id = self.generate_fifth_code_id()
+                numbered_name = f"{code_id} {clean_name}"
+
+                fifth_item = QTreeWidgetItem(self.coding_tree)
+                fifth_item.setText(0, numbered_name)
+                fifth_item.setText(1, "五阶编码")
+                fifth_item.setText(3, "0")
+                fifth_item.setText(4, "0")
+                fifth_item.setText(5, code_id)
+                fifth_item.setData(0, Qt.UserRole, {
+                    "level": 5,
+                    "name": clean_name,
+                    "code_id": code_id
+                })
+
+                for item in fourth_level_items:
+                    parent = item.parent()
+                    if parent:
+                        parent.removeChild(item)
+                    else:
+                        index = self.coding_tree.indexOfTopLevelItem(item)
+                        self.coding_tree.takeTopLevelItem(index)
+
+                    fifth_item.addChild(item)
+
+                    item_data = item.data(0, Qt.UserRole)
+                    item_data["parent"] = clean_name
+                    item.setData(0, Qt.UserRole, item_data)
+
+                self.update_statistics_for_item(fifth_item)
+                fifth_item.setExpanded(True)
+                self.update_structured_codes_from_tree()
+                logger.info(f"为 {len(fourth_level_items)} 个四阶编码添加了父节点五阶编码: {clean_name}")
+                QMessageBox.information(self, "成功", f"已为 {len(fourth_level_items)} 个四阶编码添加五阶编码: {clean_name}")
+                dialog.accept()
+
+            ok_button.clicked.connect(on_ok)
+            cancel_button.clicked.connect(dialog.reject)
+            dialog.exec_()
+
+        except Exception as e:
+            logger.error(f"添加父节点五阶编码失败: {e}")
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(self, "错误", f"添加失败:\n{str(e)}")
+
+    def add_parent_sixth_for_fifth(self):
+        """为多个五阶编码添加共同的六阶父节点"""
+        try:
+            self._save_undo_state("为五阶添加六阶父节点")
+            selected_items = self.coding_tree.selectedItems()
+            if not selected_items:
+                QMessageBox.information(self, "提示", "请先选中至少一个五阶编码")
+                return
+
+            fifth_level_items = []
+            for item in selected_items:
+                item_data = item.data(0, Qt.UserRole)
+                if item_data and item_data.get("level") == 5:
+                    if item.parent():
+                        parent_data = item.parent().data(0, Qt.UserRole)
+                        if parent_data and parent_data.get("level") == 6:
+                            QMessageBox.warning(self, "警告",
+                                                f"五阶编码 '{item.text(0)}' 已经有父节点六阶编码 '{item.parent().text(0)}'")
+                            return
+                    fifth_level_items.append(item)
+
+            if not fifth_level_items:
+                QMessageBox.warning(self, "警告", "请选中五阶编码！")
+                return
+
+            dialog = QDialog(self)
+            dialog.setWindowTitle("添加六阶编码")
+            dialog.resize(600, 500)
+
+            layout = QVBoxLayout(dialog)
+
+            label = QLabel(f"为 {len(fifth_level_items)} 个五阶编码添加父节点六阶编码 (输入内容):")
+            layout.addWidget(label)
+
+            text_edit = QTextEdit()
+            text_edit.setMinimumHeight(250)
+            text_edit.setMaximumHeight(350)
+            text_edit.setPlaceholderText("输入六阶编码内容...")
+            layout.addWidget(text_edit)
+
+            button_layout = QHBoxLayout()
+            ok_button = QPushButton("确定")
+            cancel_button = QPushButton("取消")
+            button_layout.addWidget(ok_button)
+            button_layout.addWidget(cancel_button)
+            layout.addLayout(button_layout)
+
+            def on_ok():
+                sixth_name = text_edit.toPlainText().strip()
+                if not sixth_name:
+                    QMessageBox.warning(dialog, "警告", "六阶编码名称不能为空")
+                    return
+
+                is_valid, clean_name, error_msg = self.validate_category_name(sixth_name, "sixth")
+                if not is_valid:
+                    QMessageBox.warning(dialog, "验证错误", error_msg)
+                    return
+
+                code_id = self.generate_sixth_code_id()
+                numbered_name = f"{code_id} {clean_name}"
+
+                sixth_item = QTreeWidgetItem(self.coding_tree)
+                sixth_item.setText(0, numbered_name)
+                sixth_item.setText(1, "六阶编码")
+                sixth_item.setText(3, "0")
+                sixth_item.setText(4, "0")
+                sixth_item.setText(5, code_id)
+                sixth_item.setData(0, Qt.UserRole, {
+                    "level": 6,
+                    "name": clean_name,
+                    "code_id": code_id
+                })
+
+                for item in fifth_level_items:
+                    parent = item.parent()
+                    if parent:
+                        parent.removeChild(item)
+                    else:
+                        index = self.coding_tree.indexOfTopLevelItem(item)
+                        self.coding_tree.takeTopLevelItem(index)
+
+                    sixth_item.addChild(item)
+
+                    item_data = item.data(0, Qt.UserRole)
+                    item_data["parent"] = clean_name
+                    item.setData(0, Qt.UserRole, item_data)
+
+                self.update_statistics_for_item(sixth_item)
+                sixth_item.setExpanded(True)
+                self.update_structured_codes_from_tree()
+                logger.info(f"为 {len(fifth_level_items)} 个五阶编码添加了父节点六阶编码: {clean_name}")
+                QMessageBox.information(self, "成功", f"已为 {len(fifth_level_items)} 个五阶编码添加六阶编码: {clean_name}")
+                dialog.accept()
+
+            ok_button.clicked.connect(on_ok)
+            cancel_button.clicked.connect(dialog.reject)
+            dialog.exec_()
+
+        except Exception as e:
+            logger.error(f"添加父节点六阶编码失败: {e}")
             import traceback
             traceback.print_exc()
             QMessageBox.critical(self, "错误", f"添加失败:\n{str(e)}")
@@ -4314,6 +4666,7 @@ class ManualCodingDialog(QDialog):
         tree_data = {
             "current_codes": self.current_codes,
             "unclassified_first_codes": self.unclassified_first_codes,
+            "higher_level_data": self.higher_level_data,
             "tree_structure": self.capture_tree_state()
         }
         return tree_data
@@ -4437,7 +4790,8 @@ class ManualCodingDialog(QDialog):
                 "tree_data": tree_data,
                 "files_with_marks": self.get_files_with_coding_marks(),  # 保存文件编码标记状态
                 "current_codes": self.current_codes,
-                "unclassified_first_codes": self.unclassified_first_codes
+                "unclassified_first_codes": self.unclassified_first_codes,
+                "higher_level_data": self.higher_level_data
             }
 
             # 保存完整的编码结构和文件状态
@@ -4576,6 +4930,9 @@ class ManualCodingDialog(QDialog):
                     if 'unclassified_first_codes' in coding_data:
                         self.unclassified_first_codes = coding_data['unclassified_first_codes']
 
+                    if 'higher_level_data' in coding_data:
+                        self.higher_level_data = coding_data['higher_level_data']
+
                     # 恢复文件的编码标记状态
                     if 'files_with_marks' in coding_data:
                         self.restore_files_with_coding_marks(coding_data['files_with_marks'])
@@ -4688,7 +5045,7 @@ class ManualCodingDialog(QDialog):
                 digit_index = 0
                 for i, sentence in enumerate(sentences_list):
                     sent_num = sentence.get('number', '')
-                    if not sent_num or not sent_num.isdigit():
+                    if not sent_num or not str(sent_num).isdigit():
                         if digit_index < len(associated_numbers_list):
                             sentence['number'] = associated_numbers_list[digit_index]
                             logger.info(f"修复句子{i+1}编号: {sent_num} -> {associated_numbers_list[digit_index]}")
@@ -4723,7 +5080,7 @@ class ManualCodingDialog(QDialog):
                         else:
                             first_code_number = ''
                 # 如果获取到的是编码标识符（如A01），则从关联编号中获取
-                if first_code_number and not first_code_number.isdigit():
+                if first_code_number and not str(first_code_number).isdigit():
                     if associated_numbers_list:
                         first_code_number = associated_numbers_list[0]
                         logger.info(f"从关联编号获取一阶编码实际句子编号: {first_code_number}")
@@ -4735,11 +5092,11 @@ class ManualCodingDialog(QDialog):
                 if not sentences_list[0].get('file_path'):
                     if sentence_details and len(sentence_details) > 0:
                         sentences_list[0]['file_path'] = sentence_details[0].get('file_path', '')
-                if not sentences_list[0].get('number') and first_code_number and first_code_number.isdigit():
+                if not sentences_list[0].get('number') and first_code_number and str(first_code_number).isdigit():
                     sentences_list[0]['number'] = first_code_number
 
             # 如果上述方式失败，使用关联编号列表中的第一个编号
-            if not first_code_number or not first_code_number.isdigit():
+            if not first_code_number or not str(first_code_number).isdigit():
                 if associated_numbers_list:
                     first_code_number = associated_numbers_list[0]
                     logger.info(f"使用关联编号第一项作为一阶编码句子编号: {first_code_number}")
@@ -4803,7 +5160,7 @@ class ManualCodingDialog(QDialog):
                         sentence_content = re.sub(r'^[A-Z]\d+\s+', '', sentence_content)  # 修复：移除开头编码标识符
                         sentence_content = sentence_content.strip()
                         # 使用实际的句子编号而不是编码标识符(如A01)
-                        sentence_number = first_code_number if first_code_number and first_code_number.isdigit() else ""
+                        sentence_number = first_code_number if first_code_number and str(first_code_number).isdigit() else ""
                         if not sentence_number:
                             sentence_number = sentences_list[0].get('number', '')
                         logger.info(f"弹出对话框句子1 - 编号: {sentence_number}, 内容前30字: {sentence_content[:30]}...")
@@ -5039,7 +5396,7 @@ class ManualCodingDialog(QDialog):
                         if first_num_str.isdigit():
                             first_num = first_num_str
                         else:
-                            first_num = first_code_number if first_code_number and first_code_number.isdigit() else ''
+                            first_num = first_code_number if first_code_number and str(first_code_number).isdigit() else ''
                         new_sentence_details.append({
                             'text': first_sentence['text'],
                             'code_id': first_num,
@@ -5098,11 +5455,11 @@ class ManualCodingDialog(QDialog):
 
                             # 更新关联编号
                             all_numbers = []
-                            if first_code_number and first_code_number.isdigit():
+                            if first_code_number and str(first_code_number).isdigit():
                                 all_numbers.append(first_code_number)
                             for i in range(1, len(sentences_list)):
                                 num = sentences_list[i].get('number', '')
-                                if num and num.isdigit() and num not in all_numbers:
+                                if num and str(num).isdigit() and num not in all_numbers:
                                     all_numbers.append(num)
 
                             if all_numbers:
@@ -5294,6 +5651,18 @@ class ManualCodingDialog(QDialog):
         add_third_action = QAction("为二阶添加父节点(三阶)", self)
         add_third_action.triggered.connect(self.add_parent_third_for_second)
         menu.addAction(add_third_action)
+
+        add_fourth_action = QAction("为三阶添加父节点(四阶)", self)
+        add_fourth_action.triggered.connect(self.add_parent_fourth_for_third)
+        menu.addAction(add_fourth_action)
+
+        add_fifth_action = QAction("为四阶添加父节点(五阶)", self)
+        add_fifth_action.triggered.connect(self.add_parent_fifth_for_fourth)
+        menu.addAction(add_fifth_action)
+
+        add_sixth_action = QAction("为五阶添加父节点(六阶)", self)
+        add_sixth_action.triggered.connect(self.add_parent_sixth_for_fifth)
+        menu.addAction(add_sixth_action)
 
         # 根据当前选中节点动态添加"修改父节点"选项
         if clicked_item:
@@ -6330,6 +6699,7 @@ class ManualCodingDialog(QDialog):
         """从树形结构更新编码数据"""
         self.current_codes = {}
         self.unclassified_first_codes = []
+        self.higher_level_data = []
 
         for i in range(self.coding_tree.topLevelItemCount()):
             top_item = self.coding_tree.topLevelItem(i)
@@ -6340,7 +6710,10 @@ class ManualCodingDialog(QDialog):
 
             level = item_data.get("level")
 
-            if level == 3:
+            if level in (4, 5, 6):
+                self.higher_level_data.append(self._extract_item_data(top_item))
+                self._process_subtree(top_item)
+            elif level == 3:
                 # 三阶编码
                 third_display_name = top_item.text(0)
                 # 解析显示名称，获取原始名称（去掉编号）
@@ -6420,9 +6793,118 @@ class ManualCodingDialog(QDialog):
                 print(f"    {second_cat}: {len(first_contents)} 个一阶编码")
         print(f"DEBUG: 未分类一阶编码: {len(self.unclassified_first_codes)} 个")
 
+    def _extract_item_data(self, item):
+        """递归提取树形节点数据"""
+        item_data = {
+            'text': item.text(0),
+            'columns': [item.text(j) for j in range(1, self.coding_tree.columnCount())],
+            'data': item.data(0, Qt.UserRole),
+            'children': []
+        }
+        for i in range(item.childCount()):
+            child = item.child(i)
+            item_data['children'].append(self._extract_item_data(child))
+        return item_data
+
+    def _rebuild_item_from_data(self, item_data):
+        """从数据递归重建树形节点"""
+        item = QTreeWidgetItem()
+        item.setText(0, item_data['text'])
+        for j, col_text in enumerate(item_data['columns']):
+            item.setText(j + 1, col_text)
+        item.setData(0, Qt.UserRole, item_data['data'])
+        for child_data in item_data['children']:
+            child = self._rebuild_item_from_data(child_data)
+            item.addChild(child)
+        return item
+
+    def _save_higher_level_items(self):
+        """保存4-6阶编码的树数据"""
+        higher_items = []
+        for i in range(self.coding_tree.topLevelItemCount()):
+            top_item = self.coding_tree.topLevelItem(i)
+            top_data = top_item.data(0, Qt.UserRole) or {}
+            if top_data.get("level") in (4, 5, 6):
+                higher_items.append(self._extract_item_data(top_item))
+        return higher_items
+
+    def _restore_higher_level_items(self, higher_items):
+        """恢复4-6阶编码到树中"""
+        if not higher_items:
+            return
+        existing_names = set()
+        for i in range(self.coding_tree.topLevelItemCount()):
+            existing_names.add(self.coding_tree.topLevelItem(i).text(0))
+        for item_data in higher_items:
+            if item_data.get('text', '') not in existing_names:
+                item = self._rebuild_item_from_data(item_data)
+                self.coding_tree.addTopLevelItem(item)
+
+    def _process_subtree(self, parent_item):
+        """递归处理高阶编码下的子树，将3阶及以下内容提取到current_codes"""
+        if not parent_item:
+            return
+        for i in range(parent_item.childCount()):
+            child = parent_item.child(i)
+            child_data = child.data(0, Qt.UserRole) or {}
+            child_level = child_data.get("level", 3)
+
+            if child_level in (4, 5, 6):
+                self._process_subtree(child)
+            else:
+                import re
+                third_display_name = child.text(0)
+                third_parts = third_display_name.split(' ', 1)
+                if len(third_parts) > 1 and re.match(r'^[A-Z]\d{2}$', third_parts[0]):
+                    third_name = third_parts[1]
+                else:
+                    third_name = third_display_name
+
+                self.current_codes[third_display_name] = {}
+
+                for j in range(child.childCount()):
+                    second_item = child.child(j)
+                    second_display_name = second_item.text(0)
+                    second_parts = second_display_name.split(' ', 1)
+                    if len(second_parts) > 1 and re.match(r'^[A-Z]\d{2}$', second_parts[0]):
+                        second_name = second_parts[1]
+                    else:
+                        second_name = second_display_name
+
+                    self.current_codes[third_display_name][second_display_name] = []
+
+                    for k in range(second_item.childCount()):
+                        first_item = second_item.child(k)
+                        first_item_data = first_item.data(0, Qt.UserRole)
+                        if first_item_data and isinstance(first_item_data, dict):
+                            import copy
+                            self.current_codes[third_display_name][second_display_name].append(copy.deepcopy(first_item_data))
+                        else:
+                            first_content = first_item.text(0)
+                            self.current_codes[third_display_name][second_display_name].append(first_content)
+
+    def _collect_third_names(self, item_data, covered: set):
+        """递归收集高阶编码下已有的三阶编码名称"""
+        if not item_data:
+            return
+        data = item_data.get('data', {}) or {}
+        level = data.get('level', 0) if isinstance(data, dict) else 0
+        if level == 3:
+            covered.add(item_data.get('text', ''))
+        for child in item_data.get('children', []):
+            self._collect_third_names(child, covered)
+
     def update_coding_tree(self):
         """更新编码结构树"""
         try:
+            # 保存高阶编码数据以便重建后恢复
+            higher_items = self._save_higher_level_items()
+
+            # 收集高阶编码下已有的三阶编码名称，避免重复
+            covered_third_names = set()
+            for hitem in higher_items:
+                self._collect_third_names(hitem, covered_third_names)
+
             # ---------------------------------------------------------
             # 自动修复编号：确保所有一阶编码都有A开头的规范编号
             # ---------------------------------------------------------
@@ -6522,6 +7004,9 @@ class ManualCodingDialog(QDialog):
 
             # 添加三阶编码及其子节点
             for third_cat, second_cats in self.current_codes.items():
+                # 如果该三阶编码已在高阶编码下存在，跳过
+                if third_cat in covered_third_names:
+                    continue
                 # 解析三阶编码名称，提取编号和内容
                 import re
                 third_parts = third_cat.split(' ', 1)
@@ -6915,6 +7400,9 @@ class ManualCodingDialog(QDialog):
 
             self.coding_tree.expandAll()
 
+            # 恢复高阶编码（4-6阶）
+            self._restore_higher_level_items(higher_items)
+
         except Exception as e:
             logger.error(f"更新编码结构树时出错: {e}")
             QMessageBox.critical(self, "错误", f"更新编码结构树时出错: {e}")
@@ -6936,6 +7424,30 @@ class ManualCodingDialog(QDialog):
 
         clean_name = name.strip()
         return True, clean_name.strip(), ""
+
+    def validate_first_level_quality(self, content):
+        import re
+        modal_particles = ["啊", "呀", "呢", "吧", "嘛", "哦", "哟", "哈", "哇", "喽",
+                          "哎", "唉", "呵", "嘻", "嘿", "喂", "嗯", "呃", "噢", "咧",
+                          "咯", "呗", "啦", "嘞", "哩", "呐", "么", "罢", "哉", "矣",
+                          "乎", "焉", "耳", "兮"]
+        pronouns = ["你", "我", "他", "她", "它", "您", "你们", "我们", "他们", "她们", "它们"]
+        question_word = "吗"
+
+        found_modal = [m for m in modal_particles if m in content]
+        found_pronouns = [p for p in pronouns if p in content]
+        found_question = question_word in content
+
+        if found_modal or found_pronouns or found_question:
+            reasons = []
+            if found_modal:
+                reasons.append(f"含有语气词: {', '.join(found_modal)}")
+            if found_pronouns:
+                reasons.append(f"含有代词(你我他): {', '.join(found_pronouns)}")
+            if found_question:
+                reasons.append("含有疑问词: 吗")
+            return False, "; ".join(reasons)
+        return True, ""
 
     def generate_second_code_id(self, third_letter="B", parent_node=None):
         """生成二阶编码ID：B01, B02...（修复：独立二阶只在未分类中计数）"""
@@ -7011,6 +7523,81 @@ class ManualCodingDialog(QDialog):
 
         return f"C{next_number:02d}"
 
+    def generate_fourth_code_id(self):
+        """生成四阶编码ID：D01, D02, D03...（D开头，数字递增）"""
+        existing_numbers = []
+        for i in range(self.coding_tree.topLevelItemCount()):
+            top_item = self.coding_tree.topLevelItem(i)
+            top_data = top_item.data(0, Qt.UserRole)
+            if top_data and top_data.get("level") == 4:
+                top_text = top_item.text(0)
+                if top_text and len(top_text) > 0:
+                    import re
+                    parts = top_text.split(' ', 1)
+                    if len(parts) > 0:
+                        code_part = parts[0]
+                        match = re.match(r'^([A-Z])(\d{2})$', code_part)
+                        if match:
+                            letter_part = match.group(1)
+                            number_part = match.group(2)
+                            if letter_part == 'D':
+                                existing_numbers.append(int(number_part))
+        if existing_numbers:
+            next_number = max(existing_numbers) + 1
+        else:
+            next_number = 1
+        return f"D{next_number:02d}"
+
+    def generate_fifth_code_id(self):
+        """生成五阶编码ID：E01, E02, E03...（E开头，数字递增）"""
+        existing_numbers = []
+        for i in range(self.coding_tree.topLevelItemCount()):
+            top_item = self.coding_tree.topLevelItem(i)
+            top_data = top_item.data(0, Qt.UserRole)
+            if top_data and top_data.get("level") == 5:
+                top_text = top_item.text(0)
+                if top_text and len(top_text) > 0:
+                    import re
+                    parts = top_text.split(' ', 1)
+                    if len(parts) > 0:
+                        code_part = parts[0]
+                        match = re.match(r'^([A-Z])(\d{2})$', code_part)
+                        if match:
+                            letter_part = match.group(1)
+                            number_part = match.group(2)
+                            if letter_part == 'E':
+                                existing_numbers.append(int(number_part))
+        if existing_numbers:
+            next_number = max(existing_numbers) + 1
+        else:
+            next_number = 1
+        return f"E{next_number:02d}"
+
+    def generate_sixth_code_id(self):
+        """生成六阶编码ID：F01, F02, F03...（F开头，数字递增）"""
+        existing_numbers = []
+        for i in range(self.coding_tree.topLevelItemCount()):
+            top_item = self.coding_tree.topLevelItem(i)
+            top_data = top_item.data(0, Qt.UserRole)
+            if top_data and top_data.get("level") == 6:
+                top_text = top_item.text(0)
+                if top_text and len(top_text) > 0:
+                    import re
+                    parts = top_text.split(' ', 1)
+                    if len(parts) > 0:
+                        code_part = parts[0]
+                        match = re.match(r'^([A-Z])(\d{2})$', code_part)
+                        if match:
+                            letter_part = match.group(1)
+                            number_part = match.group(2)
+                            if letter_part == 'F':
+                                existing_numbers.append(int(number_part))
+        if existing_numbers:
+            next_number = max(existing_numbers) + 1
+        else:
+            next_number = 1
+        return f"F{next_number:02d}"
+
     def save_coding(self):
         """保存编码并记录编码进度，同时保存编码树"""
         try:
@@ -7036,6 +7623,7 @@ class ManualCodingDialog(QDialog):
                 "coding_data": self.build_tree_data(),
                 "current_codes": self.current_codes,
                 "unclassified_first_codes": self.unclassified_first_codes,
+                "higher_level_data": self.higher_level_data,
                 "files_with_marks": self.get_files_with_coding_marks()  # 保存所有文件的编码标记状态
             }
 
@@ -7061,7 +7649,8 @@ class ManualCodingDialog(QDialog):
                 "tree_data": tree_data,
                 "files_with_marks": self.get_files_with_coding_marks(),  # 保存文件编码标记状态
                 "current_codes": self.current_codes,
-                "unclassified_first_codes": self.unclassified_first_codes
+                "unclassified_first_codes": self.unclassified_first_codes,
+                "higher_level_data": self.higher_level_data
             }
 
             # 保存完整的编码结构和文件状态
@@ -7273,13 +7862,13 @@ class ManualCodingDialog(QDialog):
             logger.error(f"高亮显示最后编码失败: {e}")
 
     def export_to_standard(self):
-        """导出为标准答案 - 修复版"""
+        """导出为标准答案 - 修复版（支持多阶编码）"""
         try:
             # 确保数据是最新的
             self.update_structured_codes_from_tree()
 
             # 更严格的检查条件
-            if not self.current_codes and not self.unclassified_first_codes:
+            if not self.current_codes and not self.unclassified_first_codes and not self.higher_level_data:
                 QMessageBox.warning(self, "警告", "没有编码数据可导出\n\n请先添加至少一个编码")
                 return
 
@@ -7306,33 +7895,27 @@ class ManualCodingDialog(QDialog):
                 export_data = {"未分类编码": {"未分类": unclassified_data}}
 
             # 检查导出数据是否有效
-            if not export_data:
+            if not export_data and not self.higher_level_data:
                 QMessageBox.warning(self, "警告", "没有有效的编码数据可导出")
                 return
 
             description, ok = QInputDialog.getText(self, "标准答案描述", "请输入本次标准答案的描述:")
             if ok:
-                # 通过父窗口保存为标准答案
                 parent = self.parent()
                 if hasattr(parent, 'standard_answer_manager'):
                     try:
                         version_id = parent.standard_answer_manager.create_from_structured_codes(
-                            export_data, description
+                            export_data, description, self.higher_level_data
                         )
                         if version_id:
-                            # 重新加载刚创建的标准答案，确保编码树与标准答案完全一致
                             success = parent.standard_answer_manager.load_answers(f"{version_id}.json")
                             if success:
-                                # 从标准答案管理器获取最新的编码数据
                                 current_answers = parent.standard_answer_manager.get_current_answers()
                                 if current_answers and "structured_codes" in current_answers:
-                                    # 更新当前编码数据为标准答案中的数据
                                     self.current_codes = current_answers["structured_codes"]
-                                    # 清空未分类编码，因为标准答案中不包含未分类编码
+                                    self.higher_level_data = current_answers.get("higher_level_data", [])
                                     self.unclassified_first_codes = []
-                                    # 更新编码树显示，确保与标准答案完全一致
                                     self.update_coding_tree()
-                                    # 显示成功消息
                                     QMessageBox.information(self, "成功", f"标准答案已导出: {version_id}\n编码树已更新为标准答案内容")
                                 else:
                                     QMessageBox.warning(self, "警告", "标准答案数据格式不完整")
@@ -7342,6 +7925,8 @@ class ManualCodingDialog(QDialog):
                             QMessageBox.critical(self, "错误", "导出失败")
                     except Exception as e:
                         logger.error(f"导出标准答案时出错: {e}")
+                        import traceback
+                        traceback.print_exc()
                         QMessageBox.critical(self, "错误", f"导出失败: {str(e)}")
                 else:
                     QMessageBox.critical(self, "错误", "父窗口缺少 standard_answer_manager\n\n请通过主界面启动手动编码功能")
@@ -7427,6 +8012,12 @@ class ManualCodingDialog(QDialog):
             is_valid_target, clean_target, error_msg_target = self.validate_category_name(target_abstract, "first")
             if not is_valid_target:
                 QMessageBox.warning(self, "验证错误", error_msg_target)
+                return
+
+            # 验证一阶编码质量（语气词、你我他、吗）
+            is_quality_ok, quality_msg = self.validate_first_level_quality(clean_target)
+            if not is_quality_ok:
+                QMessageBox.warning(self, "不合格一阶编码", f'一阶编码不合格:\n{quality_msg}\n\n一阶编码评判标准：没有语气词，没有【你我他】，没有【吗】疑问词，注意动词，形容词，名词。')
                 return
 
             # 检查是否已存在
@@ -8728,6 +9319,9 @@ class ManualCodingDialog(QDialog):
             if 'unclassified_first_codes' in coding_data:
                 self.unclassified_first_codes = coding_data['unclassified_first_codes']
 
+            if 'higher_level_data' in coding_data:
+                self.higher_level_data = coding_data['higher_level_data']
+
             # 恢复文件的编码标记状态
             if 'files_with_marks' in coding_data:
                 self.restore_files_with_coding_marks(coding_data['files_with_marks'])
@@ -8754,6 +9348,7 @@ class ManualCodingDialog(QDialog):
                 'action': action_name,
                 'current_codes': copy.deepcopy(self.current_codes),
                 'unclassified_first_codes': copy.deepcopy(self.unclassified_first_codes),
+                'higher_level_data': copy.deepcopy(self.higher_level_data),
                 'loaded_files': copy.deepcopy(self.loaded_files),
                 'tree_data': self.extract_tree_data(),
                 'text_content': self.text_display.toPlainText(),
@@ -8778,6 +9373,7 @@ class ManualCodingDialog(QDialog):
 
             self.current_codes = state['current_codes']
             self.unclassified_first_codes = state['unclassified_first_codes']
+            self.higher_level_data = state.get('higher_level_data', [])
             self.loaded_files = state['loaded_files']
 
             self.rebuild_tree_from_data(state['tree_data'])

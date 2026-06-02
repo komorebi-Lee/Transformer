@@ -850,43 +850,54 @@ class DataProcessor:
         cleaned = re.sub(r'^[A-Z]\d+\s*', '', content.strip())
         return cleaned
 
-    def export_structured_codes_to_table(self, file_path: str, structured_codes: Dict[str, Any]) -> bool:
-        """导出编码结构为表格格式"""
+    def export_structured_codes_to_table(self, file_path: str, structured_codes: Dict[str, Any],
+                                          higher_level_data: list = None) -> bool:
+        """导出编码结构为表格格式（支持多阶编码）"""
+        if higher_level_data is None:
+            higher_level_data = []
         try:
             table_data = []
+            covered = set()
+
+            has_higher = len(higher_level_data) > 0
+
+            if has_higher:
+                self._extract_table_rows_from_higher(higher_level_data, [], table_data, covered)
 
             for third_category, second_categories in structured_codes.items():
+                clean_third = self.clean_category_name(third_category)
                 for second_category, first_contents in second_categories.items():
+                    clean_second = self.clean_category_name(second_category)
                     for content_data in first_contents:
-                        # 提取一阶编码内容
                         if isinstance(content_data, dict):
                             first_level_content = content_data.get('content', '')
-                            # 如果是简化后的内容，去掉编号前缀
                             first_level_content = re.sub(r'^[A-Z]\d+\s*', '', first_level_content).strip()
+                            code_id = content_data.get('code_id', '')
+                            key = (clean_third, clean_second, code_id)
                         else:
                             first_level_content = str(content_data)
+                            key = (clean_third, clean_second, first_level_content)
 
-                        # 清理类别名称
-                        clean_third = self.clean_category_name(third_category)
-                        clean_second = self.clean_category_name(second_category)
+                        if key not in covered:
+                            row = {
+                                "六阶编码": "",
+                                "五阶编码": "",
+                                "四阶编码": "",
+                                "三阶编码": clean_third,
+                                "二阶编码": clean_second,
+                                "一阶编码": first_level_content
+                            }
+                            table_data.append(row)
 
-                        # 添加到表格数据
-                        table_data.append({
-                            "三阶编码": clean_third,
-                            "二阶编码": clean_second,
-                            "一阶编码": first_level_content
-                        })
+            headers = ["六阶编码", "五阶编码", "四阶编码", "三阶编码", "二阶编码", "一阶编码"] if has_higher else ["三阶编码", "二阶编码", "一阶编码"]
 
-            # 创建DataFrame
-            df = pd.DataFrame(table_data)
+            df = pd.DataFrame(table_data, columns=headers) if table_data else pd.DataFrame(columns=headers)
 
-            # 根据文件扩展名选择导出格式
             if file_path.endswith('.xlsx'):
                 df.to_excel(file_path, index=False, engine='openpyxl')
             elif file_path.endswith('.csv'):
                 df.to_csv(file_path, index=False, encoding='utf-8-sig')
             else:
-                # 默认导出为Excel
                 file_path = file_path.replace('.json', '.xlsx')
                 df.to_excel(file_path, index=False, engine='openpyxl')
 
@@ -896,6 +907,58 @@ class DataProcessor:
         except Exception as e:
             logger.error(f"导出表格格式失败: {e}")
             return False
+
+    def _extract_table_rows_from_higher(self, items: list, parent_path: list,
+                                         table_data: list, covered: set):
+        """从高阶编码数据递归提取表格行"""
+        for item_data in items:
+            text = item_data.get('text', '')
+            data = item_data.get('data', {}) or {}
+            level = data.get('level', 3) if isinstance(data, dict) else 3
+
+            current_path = parent_path + [text]
+            children = item_data.get('children', [])
+
+            if level in (4, 5, 6):
+                if children:
+                    self._extract_table_rows_from_higher(children, current_path, table_data, covered)
+            elif level == 3:
+                for child in children:
+                    child_data = child.get('data', {}) or {}
+                    child_level = child_data.get('level', 2) if isinstance(child_data, dict) else 2
+                    if child_level == 2:
+                        second_text = child.get('text', '')
+                        grand_children = child.get('children', [])
+                        for gc in grand_children:
+                            gc_data = gc.get('data', {}) or {}
+                            gc_level = gc_data.get('level', 1) if isinstance(gc_data, dict) else 1
+                            if gc_level == 1:
+                                code_id = gc_data.get('code_id', '') if isinstance(gc_data, dict) else ''
+                                content = gc_data.get('content', '') if isinstance(gc_data, dict) else ''
+                                content = re.sub(r'^[A-Z]\d+\s*', '', content).strip() if content else gc.get('text', '')
+                                clean_third = self.clean_category_name(text)
+                                clean_second = self.clean_category_name(second_text)
+                                key = (clean_third, clean_second, code_id)
+                                covered.add(key)
+
+                                row = {
+                                    "六阶编码": "",
+                                    "五阶编码": "",
+                                    "四阶编码": "",
+                                    "三阶编码": text,
+                                    "二阶编码": second_text,
+                                    "一阶编码": content
+                                }
+                                self._fill_higher_columns(row, current_path)
+                                table_data.append(row)
+
+    def _fill_higher_columns(self, row: dict, parent_path: list):
+        """填充高阶列"""
+        col_names = ["六阶编码", "五阶编码", "四阶编码"]
+        start_idx = 3 - len(parent_path)
+        for i, name in enumerate(parent_path):
+            if start_idx + i < 3:
+                row[col_names[start_idx + i]] = name
 
     def export_for_training_format(self, file_path: str, structured_codes: Dict[str, Any]) -> bool:
         """导出为训练数据格式"""

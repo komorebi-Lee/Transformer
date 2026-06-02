@@ -28,9 +28,13 @@ class StandardAnswerManager:
         self.version_history = []
         self.load_latest_answers()
 
-    def create_from_structured_codes(self, structured_codes: Dict[str, Any], description: str = "") -> str:
-        """从结构化编码创建标准答案"""
+    def create_from_structured_codes(self, structured_codes: Dict[str, Any],
+                                       description: str = "",
+                                       higher_level_data: list = None) -> str:
+        """从结构化编码创建标准答案（支持1-6阶完整编码）"""
         try:
+            if higher_level_data is None:
+                higher_level_data = []
             # 生成版本号
             version = f"v{len(os.listdir(self.standard_answers_dir)) + 1}"
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -49,6 +53,7 @@ class StandardAnswerManager:
                     "total_codes": self._count_total_codes(standard_codes)
                 },
                 "structured_codes": standard_codes,
+                "higher_level_data": higher_level_data,
                 "training_data": self._extract_training_data(standard_codes),
                 "export_formats": {
                     "json": True,
@@ -92,6 +97,7 @@ class StandardAnswerManager:
                 return None
 
             merged_codes: Dict[str, Any] = {}
+            merged_higher: list = []
             source_files: List[str] = []
 
             for file_path in file_paths:
@@ -107,19 +113,21 @@ class StandardAnswerManager:
                     continue
 
                 structured_codes = answer_data.get("structured_codes", {})
-                if not isinstance(structured_codes, dict):
-                    continue
+                if isinstance(structured_codes, dict):
+                    for third_cat, second_cats in structured_codes.items():
+                        if third_cat not in merged_codes:
+                            merged_codes[third_cat] = {}
+                        for second_cat, first_contents in second_cats.items():
+                            if second_cat not in merged_codes[third_cat]:
+                                merged_codes[third_cat][second_cat] = []
+                            if isinstance(first_contents, list):
+                                merged_codes[third_cat][second_cat].extend(copy.deepcopy(first_contents))
+                            else:
+                                merged_codes[third_cat][second_cat].append(copy.deepcopy(first_contents))
 
-                for third_cat, second_cats in structured_codes.items():
-                    if third_cat not in merged_codes:
-                        merged_codes[third_cat] = {}
-                    for second_cat, first_contents in second_cats.items():
-                        if second_cat not in merged_codes[third_cat]:
-                            merged_codes[third_cat][second_cat] = []
-                        if isinstance(first_contents, list):
-                            merged_codes[third_cat][second_cat].extend(copy.deepcopy(first_contents))
-                        else:
-                            merged_codes[third_cat][second_cat].append(copy.deepcopy(first_contents))
+                hld = answer_data.get("higher_level_data", [])
+                if isinstance(hld, list):
+                    merged_higher.extend(copy.deepcopy(hld))
 
             if not merged_codes:
                 logger.warning("没有可合并的标准答案内容")
@@ -142,6 +150,7 @@ class StandardAnswerManager:
                     "total_codes": self._count_total_codes(merged_codes)
                 },
                 "structured_codes": merged_codes,
+                "higher_level_data": merged_higher,
                 "training_data": self._extract_training_data(merged_codes),
                 "export_formats": {
                     "json": True,
@@ -174,14 +183,27 @@ class StandardAnswerManager:
             logger.error(f"合并标准答案失败: {e}")
             return None
 
-    def save_modifications_only(self, modified_codes: Dict[str, Any], description: str = "") -> str:
-        """只保存修改和新增的编码（增量保存）"""
+    def save_modifications_only(self, modified_codes: Dict[str, Any], description: str = "",
+                                  higher_level_data: list = None) -> str:
+        """只保存修改和新增的编码（增量保存，支持1-6阶完整编码）"""
         try:
+            if higher_level_data is None:
+                higher_level_data = []
+
             if not self.current_answers:
-                return self.create_from_structured_codes(modified_codes, description)
+                return self.create_from_structured_codes(modified_codes, description, higher_level_data)
 
             # 获取当前标准答案
             current_codes = self.current_answers.get("structured_codes", {})
+            current_higher = self.current_answers.get("higher_level_data", []) or []
+
+            # 合并高阶编码（覆盖 + 新增）
+            merged_higher = list(copy.deepcopy(current_higher))
+            existing_texts = {item.get('text', '') for item in merged_higher}
+            for hld in (higher_level_data or []):
+                if hld.get('text', '') not in existing_texts:
+                    merged_higher.append(copy.deepcopy(hld))
+                    existing_texts.add(hld.get('text', ''))
 
             # 分析修改内容
             modifications = self._analyze_modifications(current_codes, modified_codes)
@@ -216,6 +238,7 @@ class StandardAnswerManager:
                     "modification_summary": modifications["summary"]
                 },
                 "structured_codes": merged_codes,
+                "higher_level_data": merged_higher,
                 "training_data": self._extract_training_data(merged_codes),
                 "modification_details": modifications,
                 "export_formats": {

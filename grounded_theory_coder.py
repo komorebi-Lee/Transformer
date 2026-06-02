@@ -149,6 +149,20 @@ class GroundedTheoryCoder:
                                         logger.info(f"过滤低质量一阶编码: {content_str}")
                                         continue
 
+                                    # 检查一阶编码是否有关联句子编号，无关联编号则跳过
+                                    sentence_details = contents[4] if len(contents) >= 5 else []
+                                    has_associated_number = False
+                                    if isinstance(sentence_details, list) and sentence_details:
+                                        for sd in sentence_details:
+                                            if isinstance(sd, dict):
+                                                tn = sd.get('text_number', '') or sd.get('sentence_id', '')
+                                                if tn and str(tn).strip().isdigit():
+                                                    has_associated_number = True
+                                                    break
+                                    if not has_associated_number:
+                                        logger.info(f"过滤无关联编号的一阶编码: {content_str[:50]}...")
+                                        continue
+
                                     # 检查一阶编码是否重复
                                     if content_str not in self.used_first_contents:
                                         self.used_first_contents.add(content_str)
