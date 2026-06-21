@@ -56,6 +56,8 @@ class SpeakerRoleExtractor:
             r'^您是',
             r'^您了解',
             r'^那您',
+            r'^那你',
+            r'^那你们',
             r'^从您',
             r'^你们',
             r'^公司',
@@ -63,8 +65,9 @@ class SpeakerRoleExtractor:
             
             # 疑问句特征
             r'[？?]$',
-            r'吗[？?]?$',
-            r'呢[？?]?$',
+            r'吗',
+            r'嘛',
+            r'呢',
             r'如何',
             r'怎么',
             r'怎样',
@@ -72,7 +75,22 @@ class SpeakerRoleExtractor:
             r'什么',
             r'哪',
             r'能不能',
+            r'是不是',
+            r'会不会',
+            r'可不可以',
             r'是否可以',
+            
+            # 选择问句
+            r'还是',
+            r'到底是',
+
+            # 追问/确认
+            r'会有[那这]种',
+            r'是吧',
+            r'对吗',
+            r'对不',
+            r'是不是这样',
+            r'意思是',
             
             # 访谈常见问法
             r'负责什么',
@@ -103,7 +121,7 @@ class SpeakerRoleExtractor:
             # 第一人称开头
             r'^(是的|对|嗯|哦|好的|没错|确实)',
             r'我(觉得|认为|感觉|看|想|做|是|在|有|会|能)',
-            r'我们(这|在|有|做|能|会|觉得|的|来)',
+            r'我们',
             r'我的',
             
             # 工作内容相关
@@ -455,7 +473,7 @@ class SpeakerRoleExtractor:
             return 'interviewee', interviewee_score
         else:
             # 无法可靠判断时不默认为受访者，避免误编码采访者续行
-            if len(text) < 30 and text.endswith(('？', '?', '吗', '呢')):
+            if len(text) < 30 and text.endswith(('？', '?', '吗', '嘛', '呢')):
                 return 'interviewer', 0.6
             return 'unknown', 0.3
     
@@ -476,6 +494,22 @@ class SpeakerRoleExtractor:
         if text.endswith(('？', '?')):
             score += 0.3
         
+        # 吗/嘛 疑问词加权（强信号）
+        if re.search(r'[吗嘛]', text):
+            score += 0.35
+
+        # 句尾"呢"加权（即使句号结尾，且不限于句尾）
+        if re.search(r'呢', text):
+            score += 0.25
+
+        # 选择问句加权（"还是"、"到底是"）
+        if re.search(r'还是|到底是', text):
+            score += 0.25
+
+        # "你们"开头强烈加权（访谈员直呼受访者）
+        if re.match(r'^(那)?你(们)?', text):
+            score += 0.2
+
         # 短句问句加权
         if len(text) < 50 and any(q in text for q in ['什么', '如何', '怎么', '为什么', '哪']):
             score += 0.2
@@ -501,13 +535,14 @@ class SpeakerRoleExtractor:
         
         # 长句加权（受访者通常回答较长）
         if len(text) > 50:
-            score += 0.2
+            score += 0.15
         elif len(text) > 100:
-            score += 0.3
+            score += 0.25
         
-        # 包含工作内容关键词加权
+        # 包含工作内容关键词加权（仅当也存在第一人称时，避免采访者问句中误加）
+        has_personal = bool(re.search(r'我|我们|我的', text))
         work_keywords = ['团队', '工作', '项目', '负责', '管理', '开发', '设计', '经验', '成果']
-        if any(kw in text for kw in work_keywords):
+        if has_personal and any(kw in text for kw in work_keywords):
             score += 0.15
         
         # 过滤掉明显的时间标记

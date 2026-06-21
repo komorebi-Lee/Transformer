@@ -533,7 +533,10 @@ class DataProcessor:
                 
                 content = content.strip()
                 
-                sentences = self.split_into_sentences(content)
+                # 【改进】不按句号将段落拆碎——整个受访者段落作为一个编码句子
+                # 原逻辑：sentences = self.split_into_sentences(content) → 按。！？分句
+                # 新逻辑：段落即句子，保持说话人完整表达的上下文
+                sentences = [content]
 
                 for sentence in sentences:
                     if self.is_meaningful_sentence(sentence):
