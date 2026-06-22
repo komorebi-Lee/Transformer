@@ -306,6 +306,85 @@ class GroundingChecker:
             "is_well_grounded": gs >= 0.60 and not is_violation,
         }
 
+    # ── Drift Audit (L1 Grounding Gate) ───────────────────────────────
+
+    def compute_drift_score(self, sentence: str, anchor: str) -> dict:
+        """Compute semantic drift across 5 dimensions (0–1, lower = less drift).
+
+        Dimensions: subject_drift, polarity_drift, keyword_loss,
+                    jump_distance, semantic_divergence
+        """
+        # 1. Subject drift: invert of subject_consistency
+        subj_consistency = self._subject_consistency(sentence, anchor)
+        subject_drift = round(1.0 - subj_consistency, 4)
+
+        # 2. Polarity drift: 0 if no violation, 0.8 if violation
+        is_violation, pol_reason = self.check_polarity(sentence, anchor)
+        polarity_drift = 0.80 if is_violation else 0.0
+
+        # 3. Keyword loss: invert of keyword_preservation
+        kw_preservation = self._keyword_preservation(sentence, anchor)
+        keyword_loss = round(1.0 - kw_preservation, 4)
+
+        # 4. Jump distance (abstraction gap)
+        jump = self.jump_distance(sentence, anchor)
+
+        # 5. Semantic divergence: embedding distance
+        self._load_default_model()
+        semantic_divergence = 0.5
+        if self._model:
+            try:
+                import numpy as np
+                emb_s = self._model.encode([sentence], normalize_embeddings=True,
+                                           show_progress_bar=False)[0]
+                emb_a = self._model.encode([anchor], normalize_embeddings=True,
+                                           show_progress_bar=False)[0]
+                sim = float(np.dot(emb_s, emb_a))
+                semantic_divergence = round(max(0.0, min(1.0, (0.50 - sim) / 0.35)), 4)
+            except Exception:
+                pass
+
+        # Composite drift_score: weighted average
+        drift_score = round(
+            subject_drift * 0.20 +
+            polarity_drift * 0.20 +
+            keyword_loss * 0.20 +
+            jump * 0.25 +
+            semantic_divergence * 0.15,
+            4
+        )
+
+        return {
+            "drift_score": drift_score,
+            "subject_drift": subject_drift,
+            "polarity_drift": polarity_drift,
+            "polarity_violation": is_violation,
+            "keyword_loss": keyword_loss,
+            "jump_distance": jump,
+            "semantic_divergence": semantic_divergence,
+        }
+
+    def drift_audit(self, sentence: str, anchor: str) -> dict:
+        """Full drift audit with verdict classification.
+
+        Verdict: none (0–0.25), minor (0.25–0.40),
+                 moderate (0.40–0.60), severe (> 0.60).
+        """
+        drift = self.compute_drift_score(sentence, anchor)
+        ds = drift["drift_score"]
+
+        if ds <= 0.25:
+            verdict = "none"
+        elif ds <= 0.40:
+            verdict = "minor"
+        elif ds <= 0.60:
+            verdict = "moderate"
+        else:
+            verdict = "severe"
+
+        drift["drift_verdict"] = verdict
+        return drift
+
     # ── Provenance Chain (Priority 1.4) ──────────────────────────────
 
     def provenance_chain(self, sentence: str, anchor: str,
@@ -400,6 +479,17 @@ class GroundingChecker:
     def batch_assess(self, pairs: List[Tuple[str, str]]) -> List[dict]:
         """Assess grounding for multiple sentence-anchor pairs."""
         return [self.grounding_verdict(s, a) for s, a in pairs]
+
+    def grounding_score_cached(self, sentence: str, anchor: str,
+                                sent_emb=None, anchor_emb=None) -> float:
+        """Cached grounding score — delegates to grounding_score, accepting
+        pre-computed embeddings to save redundant recomputation upstream."""
+        return self.grounding_score(sentence, anchor)
+
+    def drift_audit_cached(self, sentence: str, anchor: str,
+                            sent_emb=None, anchor_emb=None) -> dict:
+        """Cached drift audit — delegates to drift_audit."""
+        return self.drift_audit(sentence, anchor)
 
     def summary_stats(self, verdicts: List[dict]) -> dict:
         """Aggregate grounding statistics from a list of verdicts."""

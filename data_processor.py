@@ -9,6 +9,8 @@ from docx import Document
 import copy
 from collections import defaultdict
 
+from config import Config
+
 logger = logging.getLogger(__name__)
 
 # 尝试导入可选依赖
@@ -272,30 +274,34 @@ class DataProcessor:
             'total_sentences': sum(len(data['sentences']) for data in file_sentence_mapping.values())
         }
 
-    def identify_interview_paragraphs(self, content: str, filename: str) -> List[Dict[str, Any]]:
+    def identify_interview_paragraphs(self, content: str, filename: str, clean: bool = True) -> List[Dict[str, Any]]:
         """智能识别采访段落，区分采访人和受访人（支持精准提取）"""
-        
+
         # 如果启用了精准提取，使用 SpeakerRoleExtractor
         if self.use_advanced_extraction and self.speaker_extractor:
-            return self._identify_paragraphs_advanced(content, filename)
-        
+            return self._identify_paragraphs_advanced(content, filename, clean)
+
         return self._identify_paragraphs_simple(content, filename)
 
 
-    def _identify_paragraphs_advanced(self, content: str, filename: str) -> List[Dict[str, Any]]:
-        """使用 SpeakerRoleExtractor 进行精准提取"""
+    def _identify_paragraphs_advanced(self, content: str, filename: str, clean: bool = True) -> List[Dict[str, Any]]:
+        """使用 SpeakerRoleExtractor 进行精准提取——保留采访者段落作为边界。"""
         try:
-            # 使用 SpeakerRoleExtractor 提取受访者语句
-            interviewee_segments = self.speaker_extractor.extract_interviewee_sentences(
-                content,
-                return_metadata=True
-            )
-            
-            # 转换为 data_processor 的格式
+            all_segments = self.speaker_extractor.extract_all_segments(content, clean=clean)
+
             paragraphs = []
-            for i, seg in enumerate(interviewee_segments):
+            for i, seg in enumerate(all_segments):
+                role = seg.get('role', 'unknown')
+                speaker_label = seg.get('speaker_label', '')
+                if speaker_label:
+                    speaker = speaker_label
+                elif role == 'interviewer':
+                    speaker = 'interviewer'
+                else:
+                    speaker = 'respondent'
+
                 paragraphs.append({
-                    'speaker': 'respondent',  # 只返回受访者
+                    'speaker': speaker,
                     'content': seg['text'],
                     'start_line': i,
                     'end_line': i + 1,
@@ -303,10 +309,10 @@ class DataProcessor:
                     'confidence': seg.get('confidence', 1.0),
                     'method': seg.get('method', 'advanced')
                 })
-            
-            logger.info(f"精准提取: {filename} - {len(paragraphs)} 个受访者段落")
+
+            logger.info(f"精准提取: {filename} - {len(paragraphs)} 个段落")
             return paragraphs
-            
+
         except Exception as e:
             logger.error(f"精准提取失败，降级到原有逻辑: {e}")
             # 降级到原有逻辑
@@ -489,6 +495,129 @@ class DataProcessor:
                     return str(number)
         return ''
 
+    def _merge_consecutive_same_speaker(self, paragraphs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Merge consecutive paragraphs with identical speaker labels.
+
+        Content is joined by '。'. Metadata is taken from the first paragraph
+        in each merged run; end_line is updated from the last paragraph.
+        """
+        if not paragraphs:
+            return []
+
+        merged = []
+        current = dict(paragraphs[0])  # shallow copy
+
+        for para in paragraphs[1:]:
+            if para['speaker'] == current['speaker']:
+                # Merge content
+                current['content'] = current['content'].rstrip('。') + '。' + para['content']
+                current['end_line'] = para.get('end_line', current.get('end_line', 0))
+            else:
+                merged.append(current)
+                current = dict(para)
+
+        merged.append(current)
+        return merged
+
+    def _split_by_length(self, text: str, max_len: int = 500) -> List[str]:
+        """Split text into chunks not exceeding max_len characters.
+
+        Prefers splitting at sentence-ending punctuation (。！？!?),
+        falls back to clause breaks (，,；;), then hard-splits at max_len.
+        """
+        if len(text) <= max_len:
+            return [text]
+
+        chunks = []
+        remaining = text
+
+        while len(remaining) > max_len:
+            # Search for the last natural break within max_len
+            window = remaining[:max_len]
+            split_at = None
+
+            # Priority 1: last sentence-ending punctuation before max_len
+            for m in re.finditer(r'[。！？!?]', window):
+                split_at = m.end()
+
+            # Priority 2: last clause break before max_len
+            if split_at is None:
+                for m in re.finditer(r'[，,；;]', window):
+                    split_at = m.end()
+
+            # Priority 3: hard split at max_len
+            if split_at is None or split_at == 0:
+                split_at = max_len
+
+            chunks.append(remaining[:split_at])
+            remaining = remaining[split_at:]
+
+        if remaining:
+            chunks.append(remaining)
+
+        return chunks
+
+    def _clean_paragraph_content(self, content: str) -> str:
+        """清理段落内容：去除说话人标记、时间戳、特殊符号等。"""
+        if not content:
+            return ""
+        # 1. 清理标准标记
+        content = content.replace("受访者：", "").replace("采访者：", "")
+        content = content.replace("受访者:", "").replace("采访者:", "")
+        # 2. 清理所有类型的说话人标记（行首，使用MULTILINE匹配多行文本）
+        content = re.sub(r'^[一-龥]+\d+[：:]\s*', '', content, flags=re.MULTILINE)
+        content = re.sub(r'^[一-龥]+\d+\s*', '', content, flags=re.MULTILINE)
+        # 3. 清理简写标记（问：、答：、Q:、A:等）
+        content = re.sub(r'^(问|答|Q|A)[：:]\s*', '', content, flags=re.MULTILINE)
+        content = content.strip()
+        # 4. 清理特殊符号
+        content = content.replace('●', '').replace('○', '').replace('◆', '').replace('◇', '')
+        content = content.replace('■', '').replace('□', '').replace('▲', '').replace('△', '')
+        # 5. 清理时间戳
+        content = re.sub(r'\d{2}:\d{2}(?::\d{2})?', '', content)
+        # 6. 清理多余的空白
+        content = re.sub(r'\s+', ' ', content)
+        return content.strip()
+
+    def get_speaker_block_sentences(self, content: str, filename: str, clean: bool = True) -> List[Dict[str, Any]]:
+        """返回所有说话人块句子（含采访者+受访者），使用与extract_respondent_sentences相同的合并和切分逻辑。
+
+        Args:
+            content: 原始文本
+            filename: 文件名
+            clean: 是否清洗说话人标签/时间戳等。False 时保留原文，仅加编号。
+
+        Returns:
+            List[Dict]: [{'speaker': ..., 'content': ...}, ...]
+        """
+        paragraphs = self.identify_interview_paragraphs(content, filename, clean=clean)
+        if not paragraphs:
+            return []
+
+        split_mode = getattr(Config, 'SENTENCE_SPLIT_MODE', 'punctuation')
+        max_len = getattr(Config, 'SENTENCE_MAX_LENGTH', 500)
+
+        if split_mode == 'speaker_block':
+            paragraphs = self._merge_consecutive_same_speaker(paragraphs)
+
+        result = []
+        for para in paragraphs:
+            text = self._clean_paragraph_content(para['content']) if clean else para['content']
+            if not text:
+                continue
+
+            if split_mode == 'speaker_block':
+                chunks = self._split_by_length(text, max_len)
+            else:
+                chunks = self.split_into_sentences(text)
+
+            for chunk in chunks:
+                chunk = chunk.strip()
+                if chunk:
+                    result.append({'speaker': para['speaker'], 'content': chunk})
+
+        return result
+
     def extract_respondent_sentences(
         self,
         paragraphs: List[Dict[str, Any]],
@@ -500,8 +629,15 @@ class DataProcessor:
         """从受访人段落中提取有意义的句子"""
         respondent_sentences = []
 
+        # ── speaker_block 模式：合并连续同说话人段落 ──
+        split_mode = getattr(Config, 'SENTENCE_SPLIT_MODE', 'punctuation')
+        sentence_max_len = getattr(Config, 'SENTENCE_MAX_LENGTH', 500)
+
+        if split_mode == 'speaker_block':
+            paragraphs = self._merge_consecutive_same_speaker(paragraphs)
+
         for paragraph in paragraphs:
-            if paragraph['speaker'] == 'respondent':
+            if paragraph['speaker'] != 'interviewer':
                 content = paragraph['content']
                 
                 # 清理角色标记（关键！）
@@ -533,10 +669,10 @@ class DataProcessor:
                 
                 content = content.strip()
                 
-                # 【改进】不按句号将段落拆碎——整个受访者段落作为一个编码句子
-                # 原逻辑：sentences = self.split_into_sentences(content) → 按。！？分句
-                # 新逻辑：段落即句子，保持说话人完整表达的上下文
-                sentences = [content]
+                if split_mode == 'speaker_block':
+                    sentences = self._split_by_length(content, sentence_max_len)
+                else:
+                    sentences = self.split_into_sentences(content)
 
                 for sentence in sentences:
                     if self.is_meaningful_sentence(sentence):
@@ -549,7 +685,16 @@ class DataProcessor:
                             # 查找对应的 TextNumbering 编号
                             text_number = None
                             numbered_sentence = clean_sentence
-                            if text_number_mapping:
+                            
+                            # 策略1：优先从 original_sentence 中提取编号（如果文本已包含[数字]标记）
+                            if text_number is None:
+                                marker_match = re.search(r'\[(\d+)\]', original_sentence)
+                                if marker_match:
+                                    text_number = int(marker_match.group(1))
+                                    numbered_sentence = f"{clean_sentence} [{text_number}]"
+                            
+                            # 策略2：通过 text_number_mapping 查找编号
+                            if text_number is None and text_number_mapping:
                                 text_number = self._find_text_number(original_sentence, text_number_mapping)
                                 if text_number:
                                     numbered_sentence = f"{clean_sentence} [{text_number}]"
@@ -563,8 +708,10 @@ class DataProcessor:
                                 if lookup_sentence_id:
                                     stable_sentence_id = lookup_sentence_id
                             
+                            # 关键修复：content字段使用带编号的文本，确保编码生成器能从中提取编号
+                            # 当text_number查找失败时，仍能通过content字段提取编号
                             sentence_info = {
-                                'content': clean_sentence,
+                                'content': numbered_sentence,  # 使用带编号的文本
                                 'original_content': original_sentence,  # 保存清理后的内容
                                 'paragraph_content': content[:100] + '...' if len(content) > 100 else content,
                                 'filename': filename,
@@ -583,10 +730,18 @@ class DataProcessor:
 
         return respondent_sentences
     def split_into_sentences(self, text: str) -> List[str]:
-        """将文本分割成句子"""
-        # 使用中文句号、问号、感叹号分割
-        sentences = re.split(r'[。！？!?]', text)
-        return [s.strip() for s in sentences if s.strip() and len(s.strip()) >= 5]
+        """将文本分割成句子，保留句末标点"""
+        parts = re.split(r'([。！？!?])', text)
+        sentences = []
+        for i in range(0, len(parts) - 1, 2):
+            sentence = (parts[i] + (parts[i + 1] if i + 1 < len(parts) else '')).strip()
+            if sentence and len(sentence) >= 5:
+                sentences.append(sentence)
+        if len(parts) % 2 == 1:
+            last = parts[-1].strip()
+            if last and len(last) >= 5:
+                sentences.append(last)
+        return sentences
 
     def is_meaningful_sentence(self, sentence: str) -> bool:
         """判断句子是否有意义"""

@@ -60,15 +60,15 @@ class ModelPreDownloader:
     def download_sentence_transformer(self):
         """下载句子Transformer模型"""
         try:
-            model_name = Config.SENTENCE_MODEL_NAME
-            model_path = os.path.join(self.local_models_dir, Config.SENTENCE_MODEL_NAME.replace('/', '_') if '/' in Config.SENTENCE_MODEL_NAME else Config.SENTENCE_MODEL_NAME)
+            model_name = "paraphrase-multilingual-MiniLM-L12-v2"
+            model_path = os.path.join(self.local_models_dir, "sentence-transformer")
 
             if os.path.exists(model_path):
-                logger.info("句子Transformer模型已存在，跳过下载")
+                logger.info("✅ 句子Transformer模型已存在，跳过下载")
                 return True
 
-            logger.info(f"开始下载句子Transformer模型: {model_name}")
-            print(f"正在下载句子Transformer模型 ({model_name})，这可能需要几分钟时间...")
+            logger.info("📥 开始下载句子Transformer模型...")
+            print("正在下载句子Transformer模型，这可能需要几分钟时间...")
 
             model = SentenceTransformer(model_name)
             model.save(model_path)

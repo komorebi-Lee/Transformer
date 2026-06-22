@@ -229,15 +229,10 @@ class QAClassifier:
                 confidence = 0.7
                 scores = {'question': 0.1, 'answer': 0.7, 'other': 0.2}
             else:
-                # 默认：短句=问句，长句=回答
-                if len(text_clean) < 20:
-                    label = 'question'
-                    confidence = 0.6
-                    scores = {'question': 0.6, 'answer': 0.2, 'other': 0.2}
-                else:
-                    label = 'answer'
-                    confidence = 0.6
-                    scores = {'question': 0.2, 'answer': 0.6, 'other': 0.2}
+                # 既不是明确问句也不是明确回答 → other，不强行归类
+                label = 'other'
+                confidence = 0.5
+                scores = {'question': 0.33, 'answer': 0.33, 'other': 0.34}
             
             results.append({
                 'text': text,

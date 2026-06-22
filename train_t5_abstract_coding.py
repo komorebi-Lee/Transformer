@@ -115,27 +115,27 @@ def train_epoch(model, dataloader, optimizer, device) -> float:
     total_loss = 0.0
     total_tokens = 0
     loss_fn = nn.CrossEntropyLoss(ignore_index=0)
+    scaler = torch.cuda.amp.GradScaler()
 
     for batch_idx, batch in enumerate(dataloader):
         src_ids = batch["src_ids"].to(device)
         tgt_ids = batch["tgt_ids"].to(device)
 
-        # Teacher forcing: decoder input = target[:-1], labels = target[1:]
         dec_input_ids = tgt_ids[:, :-1]
         labels = tgt_ids[:, 1:]
 
         optimizer.zero_grad()
 
-        # encoder output: [hidden_states, attention_bias]
-        enc_out = model.encoder(src_ids)
+        with torch.cuda.amp.autocast():
+            enc_out = model.encoder(src_ids)
+            logits = model.decoder(dec_input_ids, enc_out)
+            loss = loss_fn(logits.reshape(-1, logits.size(-1)), labels.reshape(-1))
 
-        # decoder output is already logits: [B, T, vocab_size]
-        logits = model.decoder(dec_input_ids, enc_out)
-
-        loss = loss_fn(logits.reshape(-1, logits.size(-1)), labels.reshape(-1))
-        loss.backward()
+        scaler.scale(loss).backward()
+        scaler.unscale_(optimizer)
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-        optimizer.step()
+        scaler.step(optimizer)
+        scaler.update()
 
         total_loss += loss.item() * labels.numel()
         total_tokens += (labels != 0).sum().item()
@@ -163,7 +163,7 @@ def validate(model, dataloader, device) -> Dict[str, float]:
         enc_out = model.encoder(src_ids)
         logits = model.decoder(dec_input_ids, enc_out)
 
-        loss = loss_fn(logits.reshape(-1, logits.size(-1)), labels.reshape(-1))
+        loss = loss_fn(logits.float().reshape(-1, logits.size(-1)), labels.reshape(-1))
         total_loss += loss.item() * labels.numel()
         total_tokens += (labels != 0).sum().item()
 
@@ -273,6 +273,7 @@ def main():
         model="mt5.1.1",
     )
     model.to(device)
+    model.half()  # float16 to fit 4GB GPU
     n_params = sum(p.numel() for p in model.parameters())
     logger.info("Model loaded: %.1fM params", n_params / 1e6)
 

@@ -28,12 +28,20 @@ class SemanticMatcher:
         import os
         from config import Config
         
-        # 使用配置中定义的模型名称
+        # 优先用微调后的 concept_anchor_v6（与 FAISS 锚点共享模型，512-dim）
         if model_name is None:
-            model_name = Config.SENTENCE_MODEL_NAME
-        
+            _v6 = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                               "trained_models", "concept_anchor_v6")
+            if os.path.exists(_v6):
+                model_name = _v6
+            else:
+                model_name = os.path.join(Config.LOCAL_MODELS_DIR, Config.SENTENCE_MODEL_NAME)
+
         # 使用本地模型路径
-        self.model_name = os.path.join(Config.LOCAL_MODELS_DIR, model_name)
+        if os.path.isabs(model_name) or model_name.startswith("trained_models"):
+            self.model_name = model_name
+        else:
+            self.model_name = os.path.join(Config.LOCAL_MODELS_DIR, model_name)
         self.model = None
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.embeddings_cache: Dict[str, np.ndarray] = {}

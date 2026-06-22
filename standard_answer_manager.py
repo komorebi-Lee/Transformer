@@ -5,7 +5,6 @@ from typing import Dict, List, Any, Optional, Set
 from datetime import datetime
 import shutil
 import re
-import copy
 from config import Config
 from path_manager import PathManager
 
@@ -40,21 +39,18 @@ class StandardAnswerManager:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             version_id = f"{version}_{timestamp}"
 
-            # 转换为标准格式
-            standard_codes = self._convert_to_standard_format(structured_codes)
-
             standard_answer = {
                 "metadata": {
                     "version": version_id,
                     "description": description,
                     "created_time": self.get_timestamp(),
                     "source": "manual_coding",
-                    "code_statistics": self._calculate_statistics(standard_codes),
-                    "total_codes": self._count_total_codes(standard_codes)
+                    "code_statistics": self._calculate_statistics(structured_codes),
+                    "total_codes": self._count_total_codes(structured_codes)
                 },
-                "structured_codes": standard_codes,
+                "structured_codes": self._convert_to_standard_format(structured_codes),
                 "higher_level_data": higher_level_data,
-                "training_data": self._extract_training_data(standard_codes),
+                "training_data": self._extract_training_data(structured_codes),
                 "export_formats": {
                     "json": True,
                     "excel": True,
@@ -219,9 +215,6 @@ class StandardAnswerManager:
             # 合并修改到当前标准答案
             merged_codes = self._merge_modifications(current_codes, modifications)
 
-            # 确保合并后的编码格式与手动编码新增的标准答案格式一致
-            merged_codes = self._convert_to_standard_format(merged_codes)
-
             # 创建新版本
             version = f"v{len(os.listdir(self.standard_answers_dir)) + 1}"
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -294,52 +287,42 @@ class StandardAnswerManager:
             "has_changes": False
         }
 
-        try:
-            original_standard = self._convert_to_standard_format(original)
-            modified_standard = self._convert_to_standard_format(modified)
-        except Exception as e:
-            logger.error(f"转换标准格式失败: {e}")
-            return modifications
+        # 转换为标准格式进行比较
+        original_standard = self._convert_to_standard_format(original)
+        modified_standard = self._convert_to_standard_format(modified)
 
-        # 分析三阶编码的变化
+        # 分析新增的三阶编码
         for third_cat in modified_standard:
             if third_cat not in original_standard:
-                # 新增三阶编码
-                modifications["added"][third_cat] = copy.deepcopy(modified_standard[third_cat])
+                modifications["added"][third_cat] = modified_standard[third_cat]
                 modifications["summary"]["added_codes"] += self._count_codes_in_category(modified_standard[third_cat])
 
+        # 分析删除的三阶编码
         for third_cat in original_standard:
             if third_cat not in modified_standard:
-                # 删除三阶编码
-                modifications["deleted"][third_cat] = copy.deepcopy(original_standard[third_cat])
+                modifications["deleted"][third_cat] = original_standard[third_cat]
                 modifications["summary"]["deleted_codes"] += self._count_codes_in_category(original_standard[third_cat])
 
-        # 分析现有三阶编码内的变化
+        # 分析修改的三阶编码
         for third_cat in modified_standard:
             if third_cat in original_standard:
-                try:
-                    third_modifications = self._analyze_second_level_modifications(
-                        original_standard[third_cat],
-                        modified_standard[third_cat],
-                        third_cat
-                    )
+                third_modifications = self._analyze_second_level_modifications(
+                    original_standard[third_cat],
+                    modified_standard[third_cat],
+                    third_cat
+                )
 
-                    if third_modifications["has_changes"]:
-                        modifications["modified"][third_cat] = third_modifications
-                        modifications["summary"]["added_codes"] += third_modifications["summary"]["added_codes"]
-                        modifications["summary"]["modified_codes"] += third_modifications["summary"]["modified_codes"]
-                        modifications["summary"]["deleted_codes"] += third_modifications["summary"]["deleted_codes"]
-                except Exception as e:
-                    logger.error(f"分析三阶编码修改失败 {third_cat}: {e}")
+                if third_modifications["has_changes"]:
+                    modifications["modified"][third_cat] = third_modifications
+                    modifications["summary"]["added_codes"] += third_modifications["summary"]["added_codes"]
+                    modifications["summary"]["modified_codes"] += third_modifications["summary"]["modified_codes"]
+                    modifications["summary"]["deleted_codes"] += third_modifications["summary"]["deleted_codes"]
 
+        # 检查是否有变化
         total_changes = (modifications["summary"]["added_codes"] +
                          modifications["summary"]["modified_codes"] +
                          modifications["summary"]["deleted_codes"])
         modifications["has_changes"] = total_changes > 0
-
-        # 记录详细的修改信息，便于调试和验证
-        if modifications["has_changes"]:
-            logger.info(f"修改分析完成: 新增={modifications['summary']['added_codes']}, 修改={modifications['summary']['modified_codes']}, 删除={modifications['summary']['deleted_codes']}")
 
         return modifications
 
@@ -362,18 +345,19 @@ class StandardAnswerManager:
         # 分析新增的二阶编码
         for second_cat in modified_second:
             if second_cat not in original_second:
-                modifications["added"][second_cat] = copy.deepcopy(modified_second[second_cat])
+                modifications["added"][second_cat] = modified_second[second_cat]
                 modifications["summary"]["added_codes"] += len(modified_second[second_cat])
 
         # 分析删除的二阶编码
         for second_cat in original_second:
             if second_cat not in modified_second:
-                modifications["deleted"][second_cat] = copy.deepcopy(original_second[second_cat])
+                modifications["deleted"][second_cat] = original_second[second_cat]
                 modifications["summary"]["deleted_codes"] += len(original_second[second_cat])
 
-        # 分析现有二阶编码内的一阶编码变化
+        # 分析修改的二阶编码
         for second_cat in modified_second:
             if second_cat in original_second:
+                # 分析一阶编码的变化
                 first_modifications = self._analyze_first_level_modifications(
                     original_second[second_cat],
                     modified_second[second_cat],
@@ -386,6 +370,7 @@ class StandardAnswerManager:
                     modifications["summary"]["modified_codes"] += first_modifications["summary"]["modified_codes"]
                     modifications["summary"]["deleted_codes"] += first_modifications["summary"]["deleted_codes"]
 
+        # 检查是否有变化
         total_changes = (modifications["summary"]["added_codes"] +
                          modifications["summary"]["modified_codes"] +
                          modifications["summary"]["deleted_codes"])
@@ -393,8 +378,8 @@ class StandardAnswerManager:
 
         return modifications
 
-    def _analyze_first_level_modifications(self, original_first: List[Any],
-                                           modified_first: List[Any],
+    def _analyze_first_level_modifications(self, original_first: List[str],
+                                           modified_first: List[str],
                                            category_path: str) -> Dict[str, Any]:
         """分析一阶编码的修改"""
         modifications = {
@@ -409,188 +394,66 @@ class StandardAnswerManager:
             "has_changes": False
         }
 
-        try:
-            from collections import defaultdict
+        # 转换为集合进行比较
+        original_set = set(original_first)
+        modified_set = set(modified_first)
 
-            def get_content_key(item):
-                """用于比较的一阶编码键值
+        # 分析新增的一阶编码
+        added_codes = modified_set - original_set
+        if added_codes:
+            modifications["added"] = list(added_codes)
+            modifications["summary"]["added_codes"] = len(added_codes)
 
-                优先使用 code_id + content 组合，保证像 A21/A22 这种
-                内容相似但编号不同的编码可以被单独识别和统计。
-                没有 code_id 的情况（手动新增的自由编码）退化为只用内容。
-                """
-                if isinstance(item, dict):
-                    content = item.get('content', item.get('name', str(item)))
-                    code_id = item.get('code_id')
-                    if code_id:
-                        return f"{code_id}||{content}"
-                    return content
-                return str(item)
+        # 分析删除的一阶编码
+        deleted_codes = original_set - modified_set
+        if deleted_codes:
+            modifications["deleted"] = list(deleted_codes)
+            modifications["summary"]["deleted_codes"] = len(deleted_codes)
 
-            def get_content_dict(item):
-                if isinstance(item, dict):
-                    return copy.deepcopy(item)
-                return {'content': str(item)}
-
-            def get_code_id(item):
-                if isinstance(item, dict):
-                    return item.get("code_id")
-                return None
-
-            def get_content_text(item):
-                if isinstance(item, dict):
-                    return str(item.get("content", item.get("name", "")))
-                return str(item)
-
-            # 使用列表映射处理重复项
-            original_map = defaultdict(list)
-            for item in original_first:
-                try:
-                    key = get_content_key(item)
-                    original_map[key].append(get_content_dict(item))
-                except Exception as e:
-                    logger.warning(f"处理原始一阶编码时出错: {e}")
-
-            modified_map = defaultdict(list)
-            for item in modified_first:
-                try:
-                    key = get_content_key(item)
-                    modified_map[key].append(get_content_dict(item))
-                except Exception as e:
-                    logger.warning(f"处理修改后一阶编码时出错: {e}")
-
-            # 分析新增和删除的编码
-            all_keys = set(original_map.keys()) | set(modified_map.keys())
-
-            for key in all_keys:
-                orig_items = original_map[key]
-                mod_items = modified_map[key]
-
-                # 计算数量差异（用于新增/删除统计）
-                diff = len(mod_items) - len(orig_items)
-
-                if diff > 0:
-                    # 新增了 diff 个项目
-                    modifications["added"].extend(mod_items[-diff:])
-                    modifications["summary"]["added_codes"] += diff
-                elif diff < 0:
-                    # 删除了 abs(diff) 个项目
-                    count = abs(diff)
-                    modifications["deleted"].extend(orig_items[:count])
-                    modifications["summary"]["deleted_codes"] += count
-
-            # 检测基于 code_id 的一阶编码修改
-            original_by_id = {}
-            for item in original_first:
-                cid = get_code_id(item)
-                if cid:
-                    original_by_id[cid] = item
-
-            modified_by_id = {}
-            for item in modified_first:
-                cid = get_code_id(item)
-                if cid:
-                    modified_by_id[cid] = item
-
-            common_ids = set(original_by_id.keys()) & set(modified_by_id.keys())
-
-            for cid in common_ids:
-                o_item = original_by_id[cid]
-                m_item = modified_by_id[cid]
-                if get_content_text(o_item) != get_content_text(m_item):
-                    modifications["summary"]["modified_codes"] += 1
-                    # 记录修改的编码详情
-                    modifications["modified"].append({
-                        "original": get_content_dict(o_item),
-                        "modified": get_content_dict(m_item)
-                    })
-
-            total_changes = (modifications["summary"]["added_codes"] +
-                             modifications["summary"]["deleted_codes"] +
-                             modifications["summary"]["modified_codes"])
-            modifications["has_changes"] = total_changes > 0
-
-            # 添加详细日志，方便调试
-            if modifications["has_changes"]:
-                logger.debug(
-                    f"Detected changes in {category_path}: Added={modifications['summary']['added_codes']}, Modified={modifications['summary']['modified_codes']}, Deleted={modifications['summary']['deleted_codes']}"
-                )
-
-        except Exception as e:
-            logger.error(f"分析一阶编码修改失败 {category_path}: {e}")
+        # 检查是否有变化
+        total_changes = len(added_codes) + len(deleted_codes)
+        modifications["has_changes"] = total_changes > 0
 
         return modifications
 
     def _merge_modifications(self, original: Dict[str, Any], modifications: Dict[str, Any]) -> Dict[str, Any]:
         """合并修改到原始标准答案"""
-        merged = copy.deepcopy(original)
+        merged = original.copy()
 
-        # 处理新增的三阶类别（整块新增）
+        # 处理新增的三阶编码
         for third_cat, second_cats in modifications["added"].items():
-            merged[third_cat] = copy.deepcopy(second_cats)
+            merged[third_cat] = second_cats
 
-        # 处理被整体删除的三阶类别
+        # 处理删除的三阶编码
         for third_cat in modifications["deleted"]:
             if third_cat in merged:
                 del merged[third_cat]
 
-        # 工具函数：用于一阶编码匹配，保证删除时更稳健
-        def _first_level_key(item: Any) -> str:
-            if isinstance(item, dict):
-                content = item.get("content", item.get("name", str(item)))
-                code_id = item.get("code_id")
-                if code_id:
-                    return f"{code_id}||{content}"
-                return str(content)
-            return str(item)
-
-        # 处理在现有三阶类别下的二阶/一阶修改
+        # 处理修改的三阶编码
         for third_cat, third_modifications in modifications["modified"].items():
             if third_cat in merged:
-                # 新增完整的二阶类别
+                # 处理新增的二阶编码
                 for second_cat, first_codes in third_modifications["added"].items():
-                    if second_cat not in merged[third_cat]:
-                        merged[third_cat][second_cat] = copy.deepcopy(first_codes)
-                    else:
-                        # 同一二阶下新增的一阶编码，追加到原列表
-                        merged[third_cat][second_cat].extend(copy.deepcopy(first_codes))
+                    merged[third_cat][second_cat] = first_codes
 
-                # 删除整个二阶类别
+                # 处理删除的二阶编码
                 for second_cat in third_modifications["deleted"]:
                     if second_cat in merged[third_cat]:
                         del merged[third_cat][second_cat]
 
-                # 处理现有二阶类别内的一阶编码修改
+                # 处理修改的二阶编码
                 for second_cat, second_modifications in third_modifications["modified"].items():
                     if second_cat in merged[third_cat]:
-                        # 处理一阶新增：基于 key 去重后追加
-                        existing_list = merged[third_cat][second_cat]
-                        existing_keys = {_first_level_key(item) for item in existing_list}
-
+                        # 处理新增的一阶编码
                         for first_code in second_modifications["added"]:
-                            key = _first_level_key(first_code)
-                            if key not in existing_keys:
-                                existing_list.append(copy.deepcopy(first_code))
-                                existing_keys.add(key)
+                            if first_code not in merged[third_cat][second_cat]:
+                                merged[third_cat][second_cat].append(first_code)
 
-                        # 处理一阶删除：按 key 过滤列表，确保真正移除
-                        if second_modifications["deleted"]:
-                            deleted_keys = {_first_level_key(item) for item in second_modifications["deleted"]}
-                            merged[third_cat][second_cat] = [
-                                item for item in existing_list
-                                if _first_level_key(item) not in deleted_keys
-                            ]
+                        # 处理删除的一阶编码
+                        for first_code in second_modifications["deleted"]:
+                            if first_code in merged[third_cat][second_cat]:
+                                merged[third_cat][second_cat].remove(first_code)
 
-                        # 处理一阶修改：更新现有编码的内容
-                        for modified_item in second_modifications["modified"]:
-                            original_item = modified_item.get("original")
-                            new_item = modified_item.get("modified")
-                            if original_item and new_item:
-                                original_key = _first_level_key(original_item)
-                                for i, item in enumerate(existing_list):
-                                    if _first_level_key(item) == original_key:
-                                        existing_list[i] = copy.deepcopy(new_item)
-                                        break
         return merged
 
     def _count_codes_in_category(self, category: Dict[str, Any]) -> int:
@@ -639,175 +502,32 @@ class StandardAnswerManager:
         return self.save_modifications_only(new_structured_codes, description)
 
     def _convert_to_standard_format(self, structured_codes: Dict[str, Any]) -> Dict[str, Any]:
-        """转换为标准格式"""
+        """转换为标准格式（保留B01/C01编号前缀）"""
         standard_format = {}
 
         for third_cat, second_cats in structured_codes.items():
-            clean_third = self._clean_category_name(third_cat)
-            standard_format[clean_third] = {}
+            # 保留三阶编码的原始名称（含C01等编号前缀）
+            standard_format[third_cat] = {}
 
             for second_cat, first_contents in second_cats.items():
-                clean_second = self._clean_category_name(second_cat)
-                standard_format[clean_third][clean_second] = []
+                # 保留二阶编码的原始名称（含B01等编号前缀）
+                standard_format[third_cat][second_cat] = []
 
                 for content in first_contents:
+                    # 保留完整的一阶编码数据结构，包括sentence_details
                     if isinstance(content, dict):
-                        # 将自动/手动编码统一为一阶编码标准结构
-                        normalized = self._normalize_first_level_code(content, clean_second)
-                        standard_format[clean_third][clean_second].append(normalized)
+                        # 确保content字段存在
+                        if 'content' not in content and 'name' in content:
+                            content['content'] = content['name']
+                        # 保留完整的字典结构，包括sentence_details
+                        standard_format[third_cat][second_cat].append(content)
                     else:
                         # 处理字符串内容
-                        normalized = self._normalize_first_level_code(
-                            {"content": str(content)},
-                            clean_second
-                        )
-                        if normalized.get("content"):
-                            standard_format[clean_third][clean_second].append(normalized)
+                        clean_content = self._clean_first_level_content(str(content))
+                        if clean_content:
+                            standard_format[third_cat][second_cat].append(clean_content)
 
         return standard_format
-
-    def _normalize_first_level_code(self, first_code: Dict[str, Any], second_category: str) -> Dict[str, Any]:
-        """归一化一阶编码结构，严格输出标准字段。"""
-        data = copy.deepcopy(first_code) if isinstance(first_code, dict) else {"content": str(first_code)}
-
-        content_text = str(
-            data.get("content")
-            or data.get("name")
-            or data.get("numbered_content")
-            or ""
-        ).strip()
-
-        if content_text:
-            content_text = self._clean_first_level_content(content_text)
-            content_text = self._clean_first_level_text(content_text)
-
-        code_id = str(data.get("code_id") or "").strip()
-        if not code_id:
-            # 兜底：尝试从编号内容中提取 Axx
-            numbered_text = str(data.get("numbered_content") or "")
-            match = re.match(r"^\s*(A\d+)", numbered_text)
-            if not match:
-                match = re.match(r"^\s*(A\d+)", content_text)
-            if match:
-                code_id = match.group(1)
-
-        # 始终根据清洗后的内容重建 numbered_content，避免残留前导标点/旧格式。
-        numbered_content = f"{code_id} {content_text}".strip() if code_id else content_text
-
-        raw_original = data.get("original_sentence", [])
-        original_sentence: List[Dict[str, Any]] = []
-
-        if isinstance(raw_original, list):
-            for item in raw_original:
-                if isinstance(item, dict):
-                    original_content = str(
-                        item.get("original_content")
-                        or item.get("content")
-                        or item.get("text")
-                        or ""
-                    ).strip()
-                    if original_content:
-                        original_sentence.append({"original_content": original_content})
-                elif isinstance(item, str) and item.strip():
-                    original_sentence.append({"original_content": item.strip()})
-        elif isinstance(raw_original, dict):
-            original_content = str(
-                raw_original.get("original_content")
-                or raw_original.get("content")
-                or raw_original.get("text")
-                or ""
-            ).strip()
-            if original_content:
-                original_sentence.append({"original_content": original_content})
-        elif isinstance(raw_original, str) and raw_original.strip():
-            original_sentence.append({"original_content": raw_original.strip()})
-
-        if not original_sentence:
-            for detail in data.get("sentence_details", []) if isinstance(data.get("sentence_details", []), list) else []:
-                if isinstance(detail, dict):
-                    original_content = str(
-                        detail.get("original_content")
-                        or detail.get("text")
-                        or detail.get("content")
-                        or ""
-                    ).strip()
-                    if original_content:
-                        original_sentence = [{"original_content": original_content}]
-                        break
-
-        if not original_sentence and content_text:
-            original_sentence = [{"original_content": content_text}]
-
-        raw_details = data.get("sentence_details", [])
-        sentence_details: List[Dict[str, Any]] = []
-
-        if isinstance(raw_details, list):
-            for detail in raw_details:
-                if isinstance(detail, dict):
-                    # 统一规则：sentence_details 的 code_id 对齐当前一阶编码 code_id。
-                    detail_code_id = str(code_id or detail.get("code_id") or "").strip()
-                    detail_filename = str(detail.get("filename") or "").strip()
-                    detail_sentence_id = str(detail.get("sentence_id") or "").strip()
-                    detail_text = str(
-                        detail.get("text")
-                        or detail.get("original_content")
-                        or detail.get("content")
-                        or ""
-                    ).strip()
-
-                    # 严格白名单：仅保留用户定义的四个字段
-                    sentence_details.append({
-                        "code_id": detail_code_id,
-                        "filename": detail_filename,
-                        "sentence_id": detail_sentence_id,
-                        "text": detail_text,
-                    })
-                elif isinstance(detail, str) and detail.strip():
-                    sentence_details.append({
-                        "code_id": code_id,
-                        "filename": "",
-                        "sentence_id": "",
-                        "text": detail.strip(),
-                    })
-
-        sentence_count = data.get("sentence_count")
-        if not isinstance(sentence_count, int) or sentence_count <= 0:
-            sentence_count = len(sentence_details) if sentence_details else len(original_sentence)
-            if sentence_count <= 0:
-                sentence_count = 1
-
-        parent_name = str(data.get("parent") or second_category).strip()
-        parent_name = self._clean_category_name(parent_name) if parent_name else second_category
-
-        # 严格白名单：仅保留用户要求的一阶字段。
-        normalized_first = {
-            "code_id": code_id,
-            "level": 1,
-            "name": content_text,
-            "numbered_content": numbered_content,
-            "parent": parent_name,
-            "original_sentence": original_sentence,
-            "sentence_count": sentence_count,
-            "sentence_details": sentence_details,
-            "content": content_text,
-        }
-
-        return normalized_first
-
-    def _clean_first_level_text(self, text: str) -> str:
-        """清洗一阶编码文本，去除前导说话人前缀和标点。"""
-        if not text:
-            return ""
-
-        cleaned = str(text).strip()
-
-        # 去掉常见说话人前缀，如 B：、A:、答：
-        cleaned = re.sub(r"^(?:[A-Za-z]|答|回答|受访者|采访者)\s*[：:]\s*", "", cleaned)
-
-        # 去掉前导标点，避免出现“，事情……”这类格式
-        cleaned = re.sub(r"^[\s，。！？；：、,.!?;:]+", "", cleaned)
-
-        return cleaned.strip()
 
     def _clean_category_name(self, name: str) -> str:
         """清理类别名称"""
@@ -835,108 +555,64 @@ class StandardAnswerManager:
         }
 
     def _extract_training_data(self, structured_codes: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """提取训练数据，生成面向模型训练的结构化样本
-
-         目标结构示例：
-         {
-             "input_sentences": {
-                 "original_content": "原语句",
-                 "related_statement": ["句子1", "句子2"]
-             },
-             "target_abstract": "抽象重点（一阶编码）",
-             "target_second_category": "二级分类",
-             "target_third_category": "三级分类"
-         }
-         """
-        training_data: List[Dict[str, Any]] = []
-
+        """提取训练数据，包括一阶编码文本和所有关联的拖拽文本"""
+        training_data = []
         for third_cat, second_cats in structured_codes.items():
             for second_cat, first_contents in second_cats.items():
                 for content in first_contents:
                     if isinstance(content, dict):
-                        if not isinstance(content, dict):
-                            # 兼容字符串等简单形式
-                            abstract_text = str(content).strip()
-                            if not abstract_text:
-                                continue
-
-                            training_data.append({
-                                "input_sentences": {
-                                    "original_content": abstract_text,
-                                    "related_statement": []
-                                },
-                                "target_abstract": abstract_text,
-                                "target_second_category": second_cat,
-                                "target_third_category": third_cat
-                            })
-                            continue
-
-                        # 一阶编码的抽象文本（目标摘要）
-                        if "content" in content:
-                            target_abstract = (content.get("content") or "").strip()
-                        elif "name" in content:
-                            target_abstract = (content.get("name") or "").strip()
+                        # 提取一阶编码本身的文本内容
+                        if 'content' in content:
+                            text_content = content.get('content', '')
+                        elif 'name' in content:
+                            text_content = content.get('name', '')
                         else:
-                            target_abstract = str(content).strip()
+                            text_content = str(content)
 
-                        # 原始语句：优先使用 original_sentence 列表中的 original_content
-                        original_content = ""
-                        original_sentences = content.get("original_sentence", [])
-                        if original_sentences and isinstance(original_sentences[0], dict):
-                            original_content = (
-                                    original_sentences[0].get("original_content")
-                                    or original_sentences[0].get("content", "")
-                            )
+                        # 添加一阶编码本身的文本到训练数据
+                        if text_content.strip():
+                            training_data.append({
+                                "text": text_content.strip(),
+                                "third_category": third_cat,
+                                "second_category": second_cat,
+                                "full_category": f"{third_cat} > {second_cat}",
+                                "source": "first_level_code"
+                            })
 
-                        if not original_content:
-                            # 回退到一阶编码的文本内容
-                            original_content = target_abstract
-
-                        original_content = (original_content or "").strip()
-
-                        # 关联句子：来自 sentence_details 中的拖拽文本
-                        related_statements: List[str] = []
-                        sentence_details = content.get("sentence_details", [])
+                        # 提取并添加所有关联的拖拽文本（sentence_details）
+                        sentence_details = content.get('sentence_details', [])
                         for sentence in sentence_details:
-                            if not isinstance(sentence, dict):
-                                continue
+                            if isinstance(sentence, dict):
+                                # 获取拖拽文本的原始内容
+                                dragged_text = sentence.get('original_content', '') or sentence.get('text', '')
+                                if dragged_text.strip():
+                                    # 清理拖拽文本，移除可能的编号标记
+                                    import re
+                                    clean_dragged_text = re.sub(r'\s*\[[A-Z]\d+\]', '', dragged_text)
+                                    clean_dragged_text = re.sub(r'\s*\[\d+\]', '', clean_dragged_text)
+                                    clean_dragged_text = re.sub(r'^[A-Z]\d+\s+', '', clean_dragged_text).strip()
 
-                            dragged_text = (
-                                    sentence.get("original_content", "")
-                                    or sentence.get("text", "")
-                                    or sentence.get("content", "")
-                            )
-                            dragged_text = (dragged_text or "").strip()
-                            if not dragged_text:
-                                continue
-
-                            # 清理尾部的 [A01] / [1] 等编号标记
-                            clean_dragged_text = re.sub(r"\s*\[[A-Z]\d+\]", "", dragged_text)
-                            clean_dragged_text = re.sub(r"\s*\[\d+\]", "", clean_dragged_text)
-                            # 清理开头的 A01 等编号
-                            clean_dragged_text = re.sub(r"^[A-Z]\d+\s+", "", clean_dragged_text).strip()
-                            # 清理中间的 A01 等编号
-                            clean_dragged_text = re.sub(r"\s*[A-Z]\d+\s+", " ", clean_dragged_text).strip()
-
-                            if clean_dragged_text:
-                                related_statements.append(clean_dragged_text)
-
-                        if not target_abstract and not original_content and not related_statements:
-                            # 完全没有可用文本则跳过
-                            continue
-
-                        sample: Dict[str, Any] = {
-                            "input_sentences": {
-                                "original_content": original_content,
-                                "related_statement": related_statements,
-                            },
-                            "target_abstract": target_abstract or original_content,
-                            "target_second_category": second_cat,
-                            "target_third_category": third_cat,
-                        }
-
-                        training_data.append(sample)
-
+                                    if clean_dragged_text:
+                                        training_data.append({
+                                            "text": clean_dragged_text,
+                                            "third_category": third_cat,
+                                            "second_category": second_cat,
+                                            "full_category": f"{third_cat} > {second_cat}",
+                                            "source": "dragged_text",
+                                            "sentence_id": sentence.get('sentence_id', ''),
+                                            "code_id": sentence.get('code_id', '')
+                                        })
+                    else:
+                        # 处理字符串内容
+                        text_content = str(content)
+                        if text_content.strip():
+                            training_data.append({
+                                "text": text_content.strip(),
+                                "third_category": third_cat,
+                                "second_category": second_cat,
+                                "full_category": f"{third_cat} > {second_cat}",
+                                "source": "first_level_code"
+                            })
         return training_data
 
     def _create_backup(self, version_id: str, data: Dict[str, Any]):
@@ -960,15 +636,8 @@ class StandardAnswerManager:
                 # 排除历史文件
                 answer_files = [f for f in answer_files if f not in ['version_history.json', 'merge_history.json']]
                 if answer_files:
-                    def _version_key(name: str):
-                        # 期望格式: v{num}_{yyyymmdd_hhmmss}.json
-                        m = re.match(r'^v(\d+)_([0-9]{8}_[0-9]{6})\.json$', name)
-                        if not m:
-                            return (-1, '')
-                        return (int(m.group(1)), m.group(2))
-
-                    answer_files.sort(key=_version_key, reverse=True)
-
+                    answer_files.sort(reverse=True)
+                    
                     # 尝试加载最新的文件，如果失败则尝试下一个
                     for file_name in answer_files:
                         if self.load_answers(file_name):
@@ -999,49 +668,49 @@ class StandardAnswerManager:
                 file_path_json = PathManager.join(self.standard_answers_dir, filename_json)
                 if PathManager.exists(file_path_json):
                     filename = filename_json
-
+            
             file_path = PathManager.join(self.standard_answers_dir, filename)
-
+            
             # 打印路径信息用于调试
             print(f"StandardAnswerManager 检查文件路径: {file_path}")
             print(f"文件是否存在: {PathManager.exists(file_path)}")
-
+            
             # 检查文件是否存在
             if not PathManager.exists(file_path):
                 logger.error(f"标准答案文件不存在: {file_path}")
                 return False
-
+            
             # 检查文件大小
             if os.path.getsize(file_path) == 0:
                 logger.error(f"标准答案文件为空: {file_path}")
                 return False
-
+            
             # 尝试打开和解析文件
             try:
                 with PathManager.safe_open(file_path, 'r', encoding='utf-8') as f:
                     content = f.read()
-
+                    
                 # 检查文件内容是否为空
                 if not content.strip():
                     logger.error(f"标准答案文件内容为空: {file_path}")
                     return False
-
+                
                 # 解析JSON
                 self.current_answers = json.loads(content)
-
+                
                 # 验证数据结构
                 if not isinstance(self.current_answers, dict):
                     logger.error(f"标准答案文件格式错误: 不是有效的JSON对象")
                     return False
-
+                
                 # 验证必要的字段
                 if "structured_codes" not in self.current_answers:
                     logger.warning(f"标准答案文件缺少 structured_codes 字段")
                     # 不返回False，因为可能是旧版本的文件
-
+                
                 logger.info(f"标准答案已加载: {filename}")
                 return True
-
+                
             except UnicodeDecodeError:
                 logger.error(f"标准答案文件编码错误: 不是UTF-8编码")
                 return False
@@ -1051,7 +720,7 @@ class StandardAnswerManager:
             except Exception as e:
                 logger.error(f"加载标准答案文件失败: {e}")
                 return False
-
+                
         except Exception as e:
             logger.error(f"加载标准答案失败: {e}")
             return False
@@ -1078,25 +747,19 @@ class StandardAnswerManager:
                 count += len(first_contents)
 
         return count
-
+    
     def export_for_training(self) -> Dict[str, Any]:
         """导出用于训练的数据"""
         if not self.current_answers:
             return {}
-
-        # 获取 training_data，确保是列表格式
-        raw_training_data = self.current_answers.get("training_data", [])
-        # 如果是字典，转换为空列表（后续会从 structured_codes 提取）
-        if isinstance(raw_training_data, dict):
-            raw_training_data = []
-
+        
         # 返回当前标准答案中的训练相关数据
         training_data = {
             "structured_codes": self.current_answers.get("structured_codes", {}),
             "metadata": self.current_answers.get("metadata", {}),
-            "training_data": raw_training_data
+            "training_data": self.current_answers.get("training_data", {})
         }
-
+        
         return training_data
 
     def get_timestamp(self):

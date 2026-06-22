@@ -31,7 +31,9 @@ class PathManager:
             return cls._BASE_DIR
 
         if cls.is_frozen():
-            base_dir = os.path.dirname(os.path.abspath(sys.executable))
+            # onedir: _MEIPASS = _internal/（持久目录）
+            # 模型、数据、缓存均在 _internal/ 内，__file__ 和 PathManager 路径均正确
+            base_dir = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(sys.executable)))
         else:
             # 单元测试会 chdir 到临时目录并期望 base_dir 随之变化
             base_dir = os.path.abspath(os.getcwd())
@@ -46,6 +48,21 @@ class PathManager:
         return base_dir
 
     @classmethod
+    def get_writable_base_dir(cls) -> str:
+        """用户数据持久存储基路径。
+
+        开发模式：与 get_base_dir() 相同（当前工作目录）。
+        打包模式：exe 所在目录（onefile 下与 _MEIPASS 不同，_MEIPASS 是临时目录）。
+
+        用途：保存、导出、备份、标准答案等用户生成的需要持久化的数据。
+        不应用于：模型、配置、FAISS 索引等打包资源（这些走 get_base_dir()）。
+        """
+        if cls.is_frozen():
+            return os.path.normpath(os.path.dirname(os.path.abspath(sys.executable)))
+        else:
+            return cls.get_base_dir()
+
+    @classmethod
     def join(cls, *paths: str) -> str:
         """拼接路径。
 
@@ -53,6 +70,24 @@ class PathManager:
         - 否则：以 BASE_DIR 为前缀
         """
         base_dir = cls.get_base_dir()
+        if not paths:
+            return base_dir
+
+        first = paths[0]
+        if os.path.isabs(first):
+            joined = os.path.join(first, *paths[1:])
+        else:
+            joined = os.path.join(base_dir, *paths)
+        return os.path.normpath(joined)
+
+    @classmethod
+    def join_writable(cls, *paths: str) -> str:
+        """拼接路径（用户数据基路径）。
+
+        与 join() 相同，但使用 get_writable_base_dir() 作为前缀。
+        用于用户生成的需要持久化的数据（保存、导出、备份等）。
+        """
+        base_dir = cls.get_writable_base_dir()
         if not paths:
             return base_dir
 
@@ -99,7 +134,7 @@ class PathManager:
 
     @classmethod
     def get_projects_dir(cls) -> str:
-        return cls.join("projects")
+        return cls.join_writable("projects")
 
     @classmethod
     def get_data_dir(cls) -> str:
@@ -115,11 +150,11 @@ class PathManager:
 
     @classmethod
     def get_standard_answers_dir(cls) -> str:
-        return cls.join("standard_answers")
+        return cls.join_writable("standard_answers")
 
     @classmethod
     def get_output_dir(cls) -> str:
-        return cls.join("output")
+        return cls.join_writable("output")
 
     @classmethod
     def get_cache_dir(cls) -> str:
@@ -127,44 +162,41 @@ class PathManager:
 
     @classmethod
     def get_logs_dir(cls) -> str:
-        return cls.join("logs")
+        return cls.join_writable("logs")
 
     @classmethod
     def get_backup_dir(cls, base_dir: Optional[str] = None) -> str:
-        # 若调用方传入 base_dir（可能包含 Unix 风格的 /custom/base），
-        # 这里不要强制 normpath，否则 Windows 下会把 '/' 变成 '\\'，
-        # 导致上层用字符串包含判断时失败。
         if base_dir is None:
-            base = cls.get_base_dir()
+            base = cls.get_writable_base_dir()
             return os.path.normpath(os.path.join(base, "backups"))
         return os.path.join(base_dir, "backups")
 
     @classmethod
     def get_modifications_dir(cls, base_dir: Optional[str] = None) -> str:
         if base_dir is None:
-            base = cls.get_base_dir()
+            base = cls.get_writable_base_dir()
             return os.path.normpath(os.path.join(base, "modifications"))
         return os.path.join(base_dir, "modifications")
 
     @classmethod
     def get_manual_coding_save_dir(cls) -> str:
-        return cls.join("手动编码保存编码")
+        return cls.join_writable("手动编码保存编码")
 
     @classmethod
     def get_manual_coding_tree_save_dir(cls) -> str:
-        return cls.join("手动编码编码树保存")
+        return cls.join_writable("手动编码编码树保存")
 
     @classmethod
     def get_auto_coding_save_dir(cls) -> str:
-        return cls.join("自动编码保存编码")
+        return cls.join_writable("自动编码保存编码")
 
     @classmethod
     def get_last_position_file(cls) -> str:
-        return cls.join("last_coding_position.json")
+        return cls.join_writable("last_coding_position.json")
 
     @classmethod
     def get_version_history_file(cls) -> str:
-        return cls.join("version_history.json")
+        return cls.join_writable("version_history.json")
 
     @classmethod
     def normalize_path(cls, path: str) -> str:

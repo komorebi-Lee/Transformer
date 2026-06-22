@@ -61,6 +61,12 @@ class Config:
     MIN_SENTENCE_LENGTH = 5
     # 一阶编码最大长度：默认30；设为0表示不限制长度（便于对比是否仍出现断句）
     FIRST_LEVEL_CODE_MAX_LENGTH = 36
+    # ── 句子切分模式 ──
+    # "punctuation": 按句号/叹号/问号切分（原行为）
+    # "speaker_block": 按说话人块切分，合并同说话人连续段落
+    SENTENCE_SPLIT_MODE = "speaker_block"
+    # speaker_block 模式下最大句子字符数，超过则兜底切分
+    SENTENCE_MAX_LENGTH = 500
     # RAG 自动编码配置
     ENABLE_RAG_CODING = True
     RAG_INDEX_DIR = os.path.join(BASE_DIR, "cache", "rag_index")
@@ -84,6 +90,31 @@ class Config:
     RAG_LIGHT_BATCH_SIZE = 8
     RAG_LIGHT_TOKEN_TOP_K = 30
     RAG_LIGHT_VECTOR_TOP_K = 5
+
+    # ── 一阶编码自动归类合并 ──
+    # 基于景漂/游客真实数据集校准（~5%减少率，保守优先）
+    ENABLE_AUTO_MERGE = True                          # 总开关：False 时完全跳过合并
+    AUTO_MERGE_BGE_CONCEPT_MIN = 0.58                 # 编码 content ↔ content bge 余弦相似度阈值（第一层门控）
+    AUTO_MERGE_BGE_SENT_MIN = 0.63                    # 句子 ↔ 句子 bge 余弦相似度阈值（第二层）
+    AUTO_MERGE_CONCEPT_SIM_MIN = 0.40                 # 句子 ↔ 编码 content 的 concept_anchor_v6 余弦相似度阈值（第三层）
+    AUTO_MERGE_KEYWORD_OVERLAP_MIN = 0.045            # 字符 bigram Jaccard 重叠比例阈值（第四层）
+
+    # ── 一阶编码后端选择 ──
+    # "bert": 使用当前BERT管线（默认）
+    # "llm":  使用LLM管线（需先训练模型）
+    FIRST_LEVEL_CODING_BACKEND = "bert"
+
+    # LLM 一阶编码模型路径（GGUF格式）
+    LLM_FIRST_LEVEL_MODEL_NAME = "qwen2.5-0.5b-coding-Q4_K_M.gguf"
+    LLM_FIRST_LEVEL_MODEL_DIRNAME = "llm_first_level_coder"
+
+    # LLM推理参数
+    LLM_TEMPERATURE = 0.1
+    LLM_TOP_P = 0.9
+    LLM_MAX_TOKENS = 48
+    LLM_REPEAT_PENALTY = 1.3  # >1 抑制小模型退化式复读
+    LLM_N_GPU_LAYERS = -1  # -1=全部GPU, 0=仅CPU
+
     # 一阶抽象（抽取式）重排序模型配置
     # 该模型用于在“候选子句片段”中选择最接近人工抽象的一段（不负责改写）
     ENABLE_ABSTRACT_RERANKER = True
@@ -107,6 +138,10 @@ class Config:
     FIRST_LEVEL_RULE_SCORE_WEIGHT = 0.18
     FIRST_LEVEL_GLOBAL_RERANK_TOP_N = 24
     FIRST_LEVEL_SHORT_LABEL_BONUS = 2.5
+    # ── 一阶锚点检索门控（F2 抬阈值 / F3 接地门）──
+    # 默认值=当前行为；抬高 MIN_SCORE 让弱锚点回退抽取式，GROUNDING_MIN>0 拒绝抽象/零重叠锚点
+    FIRST_LEVEL_ANCHOR_MIN_SCORE = 0.50       # 锚点直接当一阶码的最低 FAISS 相似度
+    FIRST_LEVEL_ANCHOR_GROUNDING_MIN = 0.30   # 锚点字符在句子中的占比下限（接地门）
     # 抽象重排序训练策略：默认仅在模型缺失时训练（可大幅减少重复训练耗时）
     ABSTRACT_RERANKER_ALWAYS_RETRAIN = True
 
@@ -144,3 +179,8 @@ class Config:
     def init_directories(cls):
         """初始化必要的目录"""
         PathManager.init_all_directories()
+
+# DeepSeek API 配置
+DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
+DEEPSEEK_MODEL = "deepseek-chat"
+DEEPSEEK_BASE_URL = "https://api.deepseek.com"

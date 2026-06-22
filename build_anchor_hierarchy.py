@@ -95,11 +95,12 @@ def build_v11_mapping(v11_path, alias_map):
     return v11_mapping
 
 
-def build_mappings(canonical_anchors, sources, v11_mapping, model, threshold=0.55):
+def build_mappings(canonical_anchors, sources, v11_mapping, model, threshold=0.70,
+                   min_confidence=0.30):
     """Build anchor -> (second, third) mappings for all governed anchors.
 
     For each canonical anchor:
-    1. If exact match in v11_mapping, use directly
+    1. If exact match in v11_mapping, use directly (confidence >= min_confidence)
     2. Otherwise, find most similar v11 abstract via embedding, inherit if sim >= threshold
     3. Otherwise, mark as unmapped
     """
@@ -144,17 +145,25 @@ def build_mappings(canonical_anchors, sources, v11_mapping, model, threshold=0.5
         v11_info = v11_mapping[best_v11_name]
 
         if anchor in v11_mapping:
-            # Direct match
+            # Direct match — only if confidence is sufficient
             info = v11_mapping[anchor]
-            source = "v11_direct"
-            stats["v11_direct"] += 1
-        elif sim >= threshold:
-            # Semantic inheritance
+            if info.get("second_conf", 0) >= min_confidence:
+                source = "v11_direct"
+                stats["v11_direct"] += 1
+            else:
+                # Low-confidence match — try semantic inheritance instead
+                source = None
+        else:
+            source = None
+
+        if source is None and sim >= threshold:
+            # Semantic inheritance from nearest v11 abstract
             info = v11_info
             source = "semantic_inherited"
             stats["semantic_inherited"] += 1
-        else:
-            # Unmapped
+        elif source is None:
+            # Truly unmapped — no v11 match and no close neighbor
+            source = "unmapped"
             stats["unmapped"] += 1
             mappings[anchor] = {
                 "second_category": None,
@@ -194,13 +203,25 @@ def build_mappings(canonical_anchors, sources, v11_mapping, model, threshold=0.5
 
 
 def main():
+    import argparse
+    ap = argparse.ArgumentParser(description="Build Anchor→二阶→三阶 hierarchy")
+    ap.add_argument("--threshold", type=float, default=0.70,
+                    help="Semantic inheritance similarity threshold (default: 0.70)")
+    ap.add_argument("--min-confidence", type=float, default=0.30,
+                    help="Minimum v11 mapping confidence (default: 0.30)")
+    ap.add_argument("--model", type=str, default=None,
+                    help="Embedding model path (default: local_models/bge-small-zh-v1.5)")
+    ap.add_argument("--output", type=str, default=None,
+                    help="Output path (default: data/anchor_hierarchy.json)")
+    args = ap.parse_args()
+
     base = os.path.dirname(os.path.abspath(__file__))
 
     concepts_path = os.path.join(base, "cache", "anchor_index", "concepts.json")
     alias_path = os.path.join(base, "cache", "anchor_index", "alias_map.json")
     v11_path = os.path.join(base, "standard_answers", "v11_20260428_164754.json")
-    output_path = os.path.join(base, "data", "anchor_hierarchy.json")
-    model_path = os.path.join(base, "local_models", "bge-small-zh-v1.5")
+    output_path = args.output or os.path.join(base, "data", "anchor_hierarchy.json")
+    model_path = args.model or os.path.join(base, "local_models", "bge-small-zh-v1.5")
 
     # Load data
     canonical_anchors, sources, alias_map = load_governed_concepts(concepts_path, alias_path)
@@ -208,7 +229,8 @@ def main():
 
     # Build mappings
     mappings, hierarchy, stats = build_mappings(
-        canonical_anchors, sources, v11_mapping, model_path, threshold=0.55)
+        canonical_anchors, sources, v11_mapping, model_path,
+        threshold=args.threshold, min_confidence=args.min_confidence)
 
     # Save
     os.makedirs(os.path.dirname(output_path), exist_ok=True)

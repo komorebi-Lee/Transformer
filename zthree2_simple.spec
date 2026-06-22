@@ -1,40 +1,63 @@
 # -*- mode: python ; coding: utf-8 -*-
 import sys
 import os
+import glob
 
 # 项目根目录
 project_root = os.path.abspath(SPECPATH)
 
-# 收集模型文件
-model_files = []
-models_dir = os.path.join(project_root, 'local_models')
-if os.path.exists(models_dir):
-    for root, dirs, files in os.walk(models_dir):
-        for file in files:
-            full_path = os.path.join(root, file)
-            rel_path = os.path.relpath(full_path, project_root)
-            model_files.append((full_path, rel_path))
+# ============================================================================
+# 模型文件 — 仅包含运行时实际需要的最小集合
+# ============================================================================
+REQUIRED_MODELS = [
+    "local_models/custom_bert_4layer",
+    "trained_models/abstract_reranker_latest",
+    "trained_models/concept_anchor_v6",
+    "local_models/chinese_t5_pegasus_base",  # FAISS 弱匹配时 T5 补充生成
+    "trained_models/t5_lora_coding",         # T5 LoRA 权重
+]
 
-# 数据文件列表
+model_files = []
+for model_rel in REQUIRED_MODELS:
+    model_abs = os.path.join(project_root, model_rel)
+    if os.path.exists(model_abs):
+        for root, dirs, files in os.walk(model_abs):
+            for file in files:
+                full_path = os.path.join(root, file)
+                rel_path = os.path.relpath(full_path, project_root)
+                model_files.append((full_path, rel_path))
+
+# ============================================================================
+# 数据文件（全部进入 _internal/，onedir 持久不丢失）
+# ============================================================================
 datas = []
 
-# 添加模型文件
 for full_path, rel_path in model_files:
     target_dir = os.path.dirname(rel_path)
-    if target_dir:
-        datas.append((full_path, target_dir))
-    else:
-        datas.append((full_path, '.'))
+    datas.append((full_path, target_dir) if target_dir else (full_path, '.'))
 
-# 添加编码库文件
-coding_library_path = os.path.join(project_root, 'coding_library.json')
-if os.path.exists(coding_library_path):
-    datas.append((coding_library_path, '.'))
+coding_library = os.path.join(project_root, 'coding_library.json')
+if os.path.exists(coding_library):
+    datas.append((coding_library, '.'))
+
+data_dir = os.path.join(project_root, 'data')
+if os.path.exists(data_dir):
+    for fname in os.listdir(data_dir):
+        if fname.endswith('.json'):
+            full = os.path.join(data_dir, fname)
+            if os.path.isfile(full):
+                datas.append((full, 'data'))
+
+cache_anchor_dir = os.path.join(project_root, 'cache', 'anchor_index')
+if os.path.exists(cache_anchor_dir):
+    for fname in os.listdir(cache_anchor_dir):
+        if fname.endswith(('.faiss', '.json')):
+            full = os.path.join(cache_anchor_dir, fname)
+            if os.path.isfile(full):
+                datas.append((full, 'cache/anchor_index'))
 
 # 添加 regex 包的元数据文件
 import regex
-import os
-import glob
 regex_path = os.path.dirname(regex.__file__)
 regex_metadata = os.path.join(regex_path, '..', 'regex-*.dist-info')
 regex_metadata_files = glob.glob(regex_metadata)
@@ -53,7 +76,11 @@ for metadata_file in transformers_metadata_files:
         target_dir = os.path.basename(metadata_file)
         datas.append((metadata_file, target_dir))
 
+excludes = []
+
+# ============================================================================
 # 隐藏导入
+# ============================================================================
 hiddenimports = [
     # PyQt5
     'PyQt5',
@@ -61,7 +88,7 @@ hiddenimports = [
     'PyQt5.QtGui',
     'PyQt5.QtWidgets',
     'PyQt5.sip',
-    
+
     # 数据处理
     'pandas',
     'pandas._libs.tslibs',
@@ -76,7 +103,7 @@ hiddenimports = [
     'numpy.core._dtype_ctypes',
     'numpy.core._multiarray_umath',
     'numpy.linalg.lapack_lite',
-    
+
     # Excel 处理
     'openpyxl',
     'openpyxl.cell',
@@ -97,7 +124,7 @@ hiddenimports = [
     'openpyxl.writer',
     'openpyxl.xml',
     'et_xmlfile',
-    
+
     # Word 处理
     'docx',
     'docx.api',
@@ -114,7 +141,7 @@ hiddenimports = [
     'lxml',
     'lxml.etree',
     'lxml._elementpath',
-    
+
     # 深度学习
     'torch',
     'torch.nn',
@@ -124,10 +151,7 @@ hiddenimports = [
     'torch.utils.data',
     'torch.serialization',
     'torch.jit',
-    'torchvision',
-    'torchvision.transforms',
-    'torchaudio',
-    
+
     # Transformers
     'transformers',
     'transformers.models',
@@ -147,7 +171,7 @@ hiddenimports = [
     'transformers.trainer',
     'transformers.training_args',
     'transformers.integrations',
-    
+
     # Sentence Transformers
     'sentence_transformers',
     'sentence_transformers.models',
@@ -155,7 +179,7 @@ hiddenimports = [
     'sentence_transformers.evaluation',
     'sentence_transformers.datasets',
     'sentence_transformers.util',
-    
+
     # 其他依赖
     'jieba',
     'requests',
@@ -191,7 +215,7 @@ hiddenimports = [
     'tqdm.notebook',
     'psutil',
     'psutil._psutil_windows',
-    
+
     # 机器学习
     'sklearn',
     'sklearn.base',
@@ -253,63 +277,10 @@ hiddenimports = [
     'scipy.cluster',
     'joblib',
     'threadpoolctl',
-    
+
     # 其他工具
     'typing_extensions',
     'annotated_types',
-    'sympy',
-    'sympy.core',
-    'sympy.logic',
-    'sympy.polys',
-    'sympy.polys.domains',
-    'sympy.polys.rings',
-    'sympy.polys.fields',
-    'sympy.polys.solvers',
-    'sympy.polys.polytools',
-    'sympy.polys.polyfuncs',
-    'sympy.polys.numberfields',
-    'sympy.polys.matrices',
-    'sympy.polys.agca',
-    'sympy.polys.partfrac',
-    'sympy.ntheory',
-    'sympy.combinatorics',
-    'sympy.functions',
-    'sympy.functions.elementary',
-    'sympy.functions.special',
-    'sympy.functions.combinatorial',
-    'sympy.integrals',
-    'sympy.series',
-    'sympy.sets',
-    'sympy.simplify',
-    'sympy.solvers',
-    'sympy.matrices',
-    'sympy.tensor',
-    'sympy.utilities',
-    'sympy.parsing',
-    'sympy.physics',
-    'sympy.stats',
-    'sympy.plotting',
-    'sympy.printing',
-    'sympy.codegen',
-    'sympy.concrete',
-    'sympy.categories',
-    'sympy.diffgeom',
-    'sympy.geometry',
-    'sympy.holonomic',
-    'sympy.liealgebras',
-    'sympy.polys',
-    'sympy.crypto',
-    'mpmath',
-    'networkx',
-    'networkx.algorithms',
-    'networkx.classes',
-    'networkx.generators',
-    'networkx.readwrite',
-    'networkx.drawing',
-    'networkx.linalg',
-    'networkx.convert',
-    'networkx.relabel',
-    'networkx.utils',
     'PIL',
     'PIL.Image',
     'PIL.ImageDraw',
@@ -341,78 +312,7 @@ hiddenimports = [
     'dateutil.relativedelta',
     'pytz',
     'six',
-    
-    # matplotlib
-    'matplotlib',
-    'matplotlib.pyplot',
-    'matplotlib.backends',
-    'matplotlib.backends.backend_agg',
-    'matplotlib.figure',
-    'matplotlib.axes',
-    'matplotlib.lines',
-    'matplotlib.patches',
-    'matplotlib.text',
-    'matplotlib.collections',
-    'matplotlib.colors',
-    'matplotlib.cm',
-    'matplotlib.ticker',
-    'matplotlib.gridspec',
-    'matplotlib.font_manager',
-    'matplotlib.style',
-    'matplotlib.rcsetup',
-    'matplotlib.dates',
-    'matplotlib.tri',
-    'matplotlib.path',
-    'matplotlib.spines',
-    'matplotlib.transforms',
-    'matplotlib.artist',
-    'matplotlib.container',
-    'matplotlib.image',
-    'matplotlib.legend',
-    'matplotlib.colorbar',
-    'matplotlib.animation',
-    'matplotlib.table',
-    'matplotlib.widgets',
-    'matplotlib._pylab_helpers',
-    'matplotlib._png',
-    'matplotlib._agg',
-    'matplotlib._cm',
-    'matplotlib._color_data',
-    'matplotlib._constrained_layout',
-    'matplotlib._docstring',
-    'matplotlib._event',
-    'matplotlib._fontconfig_pattern',
-    'matplotlib._get_data_path',
-    'matplotlib._image',
-    'matplotlib._locator',
-    'matplotlib._mathtext_data',
-    'matplotlib._path',
-    'matplotlib._png',
-    'matplotlib._qhull',
-    'matplotlib._tri',
-    'matplotlib._version',
-    'matplotlib._win32',
-    'matplotlib.compat',
-    'matplotlib.decorators',
-    'matplotlib.exceptions',
-    'matplotlib.rcsetup',
-    'matplotlib.tests',
-    'matplotlib.type1font',
-    'matplotlib.units',
-    'matplotlib.verbose',
-    'matplotlib.widgets',
-    'cycler',
-    'kiwisolver',
-    'contourpy',
-    'fonttools'
-    
-    # 超参数优化
-    'optuna',
-    'optuna.samplers',
-    'optuna.pruners',
-    'optuna.storages',
-    'optuna.trial',
-    
+
     # 项目内部模块
     'path_manager',
     'config',
@@ -435,13 +335,7 @@ hiddenimports = [
     'model_downloader',
     'enhanced_word_exporter',
     'download_models',
-    'bert_finetuner',
-    'bert_dataset',
-    'hyperparameter_optimizer',
-    'semantic_matcher',
-    'coding_library_manager',
-    'enhanced_manual_coding',
-    
+
     # 额外的依赖
     'importlib_metadata',
     'importlib_resources',
@@ -479,7 +373,9 @@ hiddenimports = [
     'regex.regex',
 ]
 
+# ============================================================================
 # 分析配置
+# ============================================================================
 a = Analysis(
     ['main.py'],
     pathex=[project_root],
@@ -489,7 +385,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=['runtime_hook.py'],
-    excludes=[],
+    excludes=excludes,
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=None,
@@ -499,14 +395,12 @@ a = Analysis(
 # 创建 PYZ
 pyz = PYZ(a.pure, a.zipped_data, cipher=None)
 
-# 创建 EXE
+# 创建 EXE（onedir 多文件模式，启动快、数据持久化）
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
     [],
+    exclude_binaries=True,
     name='zthree2',
     debug=False,
     bootloader_ignore_signals=False,
@@ -514,11 +408,21 @@ exe = EXE(
     upx=False,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=True,
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
     icon=None,
+)
+
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    strip=False,
+    upx=False,
+    name='zthree2',
 )

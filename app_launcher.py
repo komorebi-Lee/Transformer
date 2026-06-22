@@ -1,10 +1,16 @@
 import sys
 import os
 import logging
-from pathlib import Path
+from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
+from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QPixmap, QFont
+import traceback
+from path_manager import PathManager
 
-# 先配置日志，确保在任何模块导入之前完成
-log_file = str(Path(__file__).parent / "grounded_coding.log")
+
+
+# 配置日志 - 修复level参数
+log_file = PathManager.join("grounded_coding.log")
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -13,12 +19,6 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
-
-from PyQt5.QtWidgets import QApplication, QMessageBox, QSplashScreen
-from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtGui import QPixmap, QFont
-import traceback
-from path_manager import PathManager
 
 logger = logging.getLogger(__name__)
 

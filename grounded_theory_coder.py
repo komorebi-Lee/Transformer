@@ -16,7 +16,10 @@ class GroundedTheoryCoder:
         return bool(re.search(
             r'(引入|建立|调整|获得|降低|提高|推动|解决|分析|反馈|合作|转变|优化|对接|支持|审批|流程|'
             r'受影响|受限|不足|短板|导向|循环|机会|需求|资源|服务|监督|指引|开发|探索|'
-            r'协调|整合|压力|风险|价值|增长|转型|评价|约束|冲突|规范|机制|平台|系统|品牌|团队|客户|治理|场景)',
+            r'协调|整合|压力|风险|价值|增长|转型|评价|约束|冲突|规范|机制|平台|系统|品牌|团队|客户|治理|场景|'
+            r'检测|医学|化学|分子|检验|报告|科室|批评|惩罚|框架|组织|集体|行为|方向|能力|'
+            r'采用|具备|创新|成果|实施|管理|运营|维护|保障|推进|开展|'
+            r'技术|业务|领域|行业|市场|模式|策略|方法|路径|方案|项目)',
             t,
         ))
 
@@ -57,38 +60,53 @@ class GroundedTheoryCoder:
         verb_like = any(flag.startswith('v') for flag in flags)
         adj_like = any(flag.startswith('a') for flag in flags)
         has_info = self._has_information_cue(t)
-        # Anchor codes are often pure noun compounds; accept if the text
-        # has content markers: noun-like tokens, info-bearing cues, or
-        # verb/adjective. Only reject truly content-free strings.
-        if not (noun_like or has_info):
+        # Accept if the text has content markers: nouns, verbs, adjectives,
+        # or info-bearing cues. Only reject truly content-free strings.
+        if not (noun_like or verb_like or has_info):
             return False
         if not (noun_like or verb_like or adj_like or has_info):
             return False
         return True
 
-    def _is_good_first_level_content(self, text: str) -> bool:
+    def _check_first_level_quality(self, text: str) -> tuple:
+        """Check code quality and return (pass: bool, reason: str)."""
         t = re.sub(r'^[A-Z]\d+\s*', '', str(text or '').strip())
         if not t or len(t) < 2:
-            return False
+            return False, "too_short"
         if self._is_question_like(t):
-            return False
+            return False, "question_like"
         if self._contains_colloquial_residue(t):
-            return False
-        if any(pronoun in t for pronoun in self.pronouns):
-            return False
+            return False, "colloquial_residue"
+        # Multi-char pronoun check
+        if any(p in t for p in self.pronouns if len(p) >= 2):
+            return False, "multi_char_pronoun"
+        # Single-char pronoun token check
+        scp = {p for p in self.pronouns if len(p) == 1}
+        if scp:
+            try:
+                tokens = [w.strip() for w, _ in pseg.cut(t) if w.strip()]
+                if any(w in scp for w in tokens):
+                    return False, "single_char_pronoun_token"
+            except Exception:
+                if any(p in t for p in scp):
+                    return False, "single_char_pronoun_substring"
         if any(particle in t for particle in self.modal_particles):
-            return False
+            return False, "modal_particle"
         if re.search(r'^(因为|所以|但是|不过|然后|如果|就是|其实|那个|这个|后来|当时)$', t):
-            return False
+            return False, "bare_conjunction"
         if re.search(r'^(因为|所以|但是|不过|然后|如果|就是|其实|那个|这个|后来|当时)', t) and not self._has_information_cue(t):
-            return False
+            return False, "conjunction_no_info"
         if re.search(r'(这个|那个|这块|这一块|那种|这种|这样|那样)$', t):
-            return False
+            return False, "trailing_demonstrative"
         if re.search(r'(什么的|之类的)$', t):
-            return False
+            return False, "trailing_vague"
         if not self._has_valid_pos_pattern(t):
-            return False
-        return True
+            return False, "no_valid_pos_pattern"
+        return True, "ok"
+
+    def _is_good_first_level_content(self, text: str) -> bool:
+        ok, _ = self._check_first_level_quality(text)
+        return ok
 
     def __init__(self):
         self.used_second_categories = set()
@@ -145,8 +163,9 @@ class GroundedTheoryCoder:
                                     content_str = contents[0]
 
                                     # 主程序最终展示前的一阶编码内容总闸
-                                    if not self._is_good_first_level_content(content_str):
-                                        logger.info(f"过滤低质量一阶编码: {content_str}")
+                                    _qc_result, _qc_reason = self._check_first_level_quality(content_str)
+                                    if not _qc_result:
+                                        logger.info("过滤低质量L1编码 [%s]: %s", _qc_reason, content_str)
                                         continue
 
                                     # 检查一阶编码是否有关联句子编号，无关联编号则跳过
@@ -167,13 +186,22 @@ class GroundedTheoryCoder:
                                     if content_str not in self.used_first_contents:
                                         self.used_first_contents.add(content_str)
 
+                                        # Extract text_number from sentence details
+                                        tn = None
+                                        sd_list = contents[4] if len(contents) > 4 else []
+                                        if isinstance(sd_list, list) and sd_list:
+                                            first_sd = sd_list[0]
+                                            if isinstance(first_sd, dict):
+                                                tn = first_sd.get('text_number') or first_sd.get('sentence_id')
+
                                         first_level_contents.append({
                                             "content": content_str,
                                             "original_sentence": contents[1],
                                             "original_key": key,
                                             "file_count": contents[2],
                                             "sentence_count": contents[3],
-                                            "sentence_details": contents[4]
+                                            "sentence_details": contents[4],
+                                            "text_number": tn,
                                         })
 
                         if first_level_contents:
@@ -249,7 +277,8 @@ class GroundedTheoryCoder:
                             "code_id": code_id,
                             "file_count": first_content.get('file_count', 1),
                             "sentence_count": first_content.get('sentence_count', 1),
-                            "sentence_details": updated_sentence_details
+                            "sentence_details": updated_sentence_details,
+                            "text_number": first_content.get('text_number')
                         })
 
             third_index += 1

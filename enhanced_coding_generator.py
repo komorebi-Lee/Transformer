@@ -79,7 +79,9 @@ class EnhancedCodingGenerator:
         self.coding_library = None
         try:
             if CodingLibraryManager:
-                self.coding_library = CodingLibraryManager()
+                from path_manager import PathManager
+                _lib_path = PathManager.join("coding_library.json")
+                self.coding_library = CodingLibraryManager(library_path=_lib_path)
                 logger.info("编码库加载成功")
         except Exception as e:
             logger.error("编码库加载失败: " + str(e))
@@ -114,6 +116,9 @@ class EnhancedCodingGenerator:
         self.rag_doc_retriever = None
         self.knn_abstract_generator = None
         self.t5_generative_coder = None
+        self.t5_model_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            'trained_models', 't5_lora_coding')
 
         # Trace/decision metadata
         self._first_level_trace_meta = {}
@@ -166,6 +171,11 @@ class EnhancedCodingGenerator:
 
         # Try to init RAG components
         self._init_rag_components()
+
+        # LLM 一阶编码后端
+        self.llm_coder = None
+        if getattr(Config, 'FIRST_LEVEL_CODING_BACKEND', 'bert') == 'llm':
+            self._init_llm_coder()
 
     # ── Static utility ──────────────────────────────────────────────────
 
@@ -224,14 +234,15 @@ class EnhancedCodingGenerator:
         if not hasattr(self, 'rag_cluster_similarity_threshold') or self.rag_cluster_similarity_threshold is None:
             self.rag_cluster_similarity_threshold = self._default_cluster_threshold()
 
-    def configure_similarity_thresholds(self, second_threshold=None, third_threshold=None,
+    def configure_similarity_thresholds(self, second_level_threshold=None,
+                                         third_level_threshold=None,
                                          cluster_threshold=None):
         """Configure manual auto-coding thresholds without changing result schema."""
         self._ensure_rag_threshold_defaults()
         self.rag_second_level_threshold = self._clamp_threshold(
-            second_threshold, self._default_second_threshold())
+            second_level_threshold, self._default_second_threshold())
         self.rag_third_level_threshold = self._clamp_threshold(
-            third_threshold, self._default_third_threshold())
+            third_level_threshold, self._default_third_threshold())
         self.rag_cluster_similarity_threshold = self._clamp_threshold(
             cluster_threshold, self._default_cluster_threshold())
         if hasattr(self, 'first_level_clusterer') and self.first_level_clusterer:
@@ -389,8 +400,29 @@ class EnhancedCodingGenerator:
 
             is_knn = bool(row.get('knn_source') or row.get('anchor_source'))
             is_anchor = bool(row.get('anchor_source'))
+            is_t5 = row.get('anchor_source') == 't5_generated'
 
-            if not is_knn:
+            if is_anchor or is_t5:
+                # Relaxed quality check for anchor codes (pre-validated concepts).
+                if len(label) < 2 or len(label) > 30:
+                    continue
+                if self._looks_semantically_incomplete(label):
+                    continue
+                # Reject anchors ending with function words / particles
+                if re.search(r'(的|了|着|过|呢|吧|啊|吗)$', label):
+                    continue
+                # Reject anchors starting with conjunctions / fillers
+                if re.match(r'^(因为|所以|但是|不过|然后|如果|就是说|主要是)', label):
+                    continue
+                # Must contain at least one noun (anchors are nominal concepts)
+                words = list(pseg.cut(label))
+                has_noun = any(
+                    'n' in (getattr(w, 'flag', '') if hasattr(w, 'flag') else '')
+                    for w in words
+                )
+                if not has_noun:
+                    continue
+            elif not is_knn:
                 if self._is_low_quality_first_level_code(label, source_text, is_knn=False):
                     continue
                 if self._looks_semantically_incomplete(label):
@@ -406,6 +438,256 @@ class EnhancedCodingGenerator:
         """Split text into candidate segments."""
         parts = re.split(r'[，,。；;：:\n\r]+', text)
         return [p.strip() for p in parts if len(p.strip()) >= 2]
+
+    def _extract_noun_verb_phrases(self, text: str) -> List[str]:
+        """Extract complete noun/verb phrases as coding candidates.
+
+        Uses jieba POS tagging to find semantically complete phrases instead
+        of blindly splitting on punctuation. Merges adjacent content words
+        (n/v/a/vn/an/d) into compound phrases, breaking at function words
+        (prepositions, conjunctions, particles, pronouns).
+
+        Falls back to _split_first_level_candidate_segments if jieba produces
+        no valid phrases.
+        """
+        text = text.strip()
+        if not text or len(text) < 3:
+            return []
+
+        phrases = []
+        try:
+            words = list(pseg.cut(text))
+            current = []
+            for w in words:
+                flag = getattr(w, 'flag', '') if hasattr(w, 'flag') else ''
+                word = getattr(w, 'word', '') if hasattr(w, 'word') else str(w)
+                # Content-bearing POS: nouns, verbs, adjectives, adverbs,
+                # verb-noun compounds, adjective-noun compounds
+                is_content = bool(flag and any(t in flag for t in ('n', 'v', 'a', 'd', 'vn', 'an')))
+                # Function words that break phrases: prepositions, conjunctions,
+                # particles, pronouns, numbers, classifier/measure words
+                is_breaker = bool(flag and any(t in flag for t in ('p', 'c', 'u', 'r', 'm', 'q', 'f')))
+                if is_content and len(word) >= 1:
+                    current.append(word)
+                    # Emit shorter sub-phrases for cross-sentence frequency
+                    # matching (e.g. "资源配置需要" → also yield "资源配置")
+                    if len(current) >= 2:
+                        # Always emit first token if it's a standalone concept
+                        first_token = current[0]
+                        if len(first_token) >= 4 and first_token not in phrases:
+                            if not re.search(r'(的|了|着|过|到|在|中|是|会|要|能|可|都|很|太|也|就|才|还|又)$',
+                                            first_token):
+                                phrases.append(first_token)
+                        # Also emit prefix of >=3 word sequences
+                        merged = ''.join(current)
+                        if len(merged) >= 6 and len(current) >= 3:
+                            prefix = ''.join(current[:-1])
+                            if 4 <= len(prefix) <= 8 and prefix not in phrases:
+                                if not re.search(r'(的|了|着|过|到|在|中)$', prefix):
+                                    phrases.append(prefix)
+                else:
+                    if len(current) >= 2:
+                        phrase = ''.join(current)
+                        if 4 <= len(phrase) <= 12 and phrase not in phrases:
+                            phrases.append(phrase)
+                    # Include single-char breakers in phrase if very short,
+                    # e.g. "资源配置与协调" where 与 is a conjunction
+                    if is_breaker and len(word) == 1 and len(current) >= 1:
+                        current.append(word)
+                    else:
+                        current = []
+            # Flush remaining — also emit meaningful sub-phrases
+            if len(current) >= 2:
+                phrase = ''.join(current)
+                if 4 <= len(phrase) <= 12 and phrase not in phrases:
+                    phrases.append(phrase)
+                # Emit first token if standalone concept (>=4 chars)
+                first_token = current[0]
+                if len(first_token) >= 4 and first_token not in phrases:
+                    if not re.search(r'(的|了|着|过|到|在|中|是|会|要|能|可|都|很|太|也|就|才|还|又)$',
+                                    first_token):
+                        phrases.append(first_token)
+                # Also emit prefix for longer sequences
+                if len(phrase) >= 6 and len(current) >= 3:
+                    prefix = ''.join(current[:-1])
+                    if 4 <= len(prefix) <= 8 and prefix not in phrases:
+                        if not re.search(r'(的|了|着|过|到|在|中)$', prefix):
+                            phrases.append(prefix)
+        except Exception:
+            pass
+
+        if not phrases:
+            return []
+
+        # Post-filter: require at least one noun/verb-noun, reject
+        # codes that start or end with low-quality tokens
+        filtered = []
+        for p in phrases:
+            if self._looks_semantically_incomplete(p):
+                continue
+            if not self._has_valid_first_level_pos_pattern(p):
+                continue
+            # Reject codes ending with dangling function words/particles
+            if re.search(r'(的|了|着|过|吗|呢|吧|啊|呀|啦|哦|哈|嘛|么|到|在|中|和|与|或|又|还|也|只|不|没|就|才|都|很|太|更|最|较|越|被|把|将|从|对)$', p):
+                continue
+            # Reject codes that start with conjunctions/fillers (prefix check,
+            # not exact match) to catch "就是那种", "可能是因为" etc.
+            # Whitelist: legitimate words that happen to start with 说/就 etc.
+            _conj_prefix = r'^(因为|所以|但是|不过|然后|如果|就是|就是说|其实|那个|这个|'
+            _conj_prefix += r'主要是|特别是|尤其是|而且|而|但|什么|怎么|哪|那|这|可能|应该|觉得|好像|还是)'
+            if re.match(_conj_prefix, p):
+                # Whitelist: 说话, 说服, 说明书 etc. are legitimate
+                if re.match(r'^(说话|说服|说明|说法|说道|说出|说是|说了|说好|说清)', p):
+                    pass  # legit, keep
+                elif re.match(r'^说', p) and len(p) <= 5:
+                    continue  # bare "说X" is likely transcript artifact
+                elif len(p) <= 6:
+                    continue  # short conjunction-prefixed fragment
+            if re.match(r'^说\s*$', p):
+                continue  # bare 说
+            filtered.append(p)
+
+        return filtered
+
+    def _precompute_phrase_frequency(self, normalized_texts: List[str]) -> dict:
+        """Precompute cross-sentence phrase frequency and anchor affinity.
+
+        Runs once before the per-sentence coding loop. Extracts noun/verb
+        phrases from all normalized texts, counts distinct-sentence frequency,
+        and batch-computes anchor affinity for phrases appearing in >= 3 sentences.
+
+        Returns: {phrase: [sentence_count, anchor_affinity | None]}
+        """
+        if not normalized_texts:
+            return {}
+
+        freq = {}  # phrase -> set of sentence indices
+        for i, text in enumerate(normalized_texts):
+            if not text:
+                continue
+            phrases = self._extract_noun_verb_phrases(text)
+            for p in phrases:
+                if p not in freq:
+                    freq[p] = set()
+                freq[p].add(i)
+
+        result = {}
+        high_freq_phrases = []
+
+        for phrase, sent_indices in freq.items():
+            cnt = len(sent_indices)
+            if cnt >= 2:
+                result[phrase] = [cnt, None]
+                if cnt >= 3:
+                    high_freq_phrases.append(phrase)
+
+        # Batch compute anchor affinity for high-frequency phrases
+        if high_freq_phrases:
+            try:
+                if self._ensure_anchor_index() and self.concept_anchor_index is not None:
+                    batch_results = self.concept_anchor_index.search_batch(
+                        high_freq_phrases, top_k=1)
+                    for phrase, matches in zip(high_freq_phrases, batch_results):
+                        if matches:
+                            max_cos = float(matches[0][1])
+                            result[phrase][1] = max_cos
+            except Exception:
+                logger.debug("Anchor affinity precompute skipped",
+                             exc_info=True)
+
+        n_total = len(normalized_texts)
+        logger.debug("Phrase freq precomputed: %d phrases (>=2), %d high-freq (>=3) across %d sentences",
+                     len(result), len(high_freq_phrases), n_total)
+        return result
+
+    def _compute_quality_bonus(self, phrase: str,
+                               freq_map: dict,
+                               n_total: int) -> float:
+        """Compute quality bonus for an extractive candidate phrase.
+
+        Two signals contribute (no penalty for absence):
+        1. Cross-sentence frequency bonus (freq >= 2): up to +0.15
+        2. Anchor affinity bonus (max cosine >= 0.35): up to +0.10
+
+        Returns a bonus in [0, 0.25] to be added to extractive_rule.
+        """
+        if not freq_map or n_total <= 0:
+            return 0.0
+
+        info = freq_map.get(phrase)
+        if info is None:
+            return 0.0
+
+        cnt, anchor_affinity = info
+        bonus = 0.0
+
+        # Signal 1: cross-sentence frequency bonus
+        if cnt >= 2 and n_total > 0:
+            freq_ratio = cnt / n_total
+            freq_bonus = min(freq_ratio * 0.30, 0.15)
+            bonus += freq_bonus
+
+        # Signal 2: anchor affinity (precomputed for freq >= 3)
+        if anchor_affinity is not None and anchor_affinity >= 0.35:
+            anchor_bonus = min(anchor_affinity * 0.15, 0.10)
+            bonus += anchor_bonus
+
+        return bonus
+
+    def _is_fallback_segment_junk(self, text: str) -> bool:
+        """Quick POS-based quality check for fallback punctuation-split segments.
+
+        Fallback segments bypass _extract_noun_verb_phrases so they lack the
+        POS-informed filtering. This checks whether a segment is likely a
+        colloquial fragment, pronoun residue, or conjunction stub.
+        """
+        t = text.strip()
+        if not t or len(t) < 3:
+            return True
+
+        # Reject segments that look like speaker labels (说话人 N: etc.)
+        if re.match(r'^(说话人|讲话人|受访者|采访者|访谈员|主持人|Speaker)\s*\d*[：:]*$', t):
+            return True
+        if re.match(r'^[A-Za-z]+\s*\d*[：:]$', t):
+            return True
+
+        # Quick POS check: if segment is short and jieba tags first
+        # token as pronoun/conjunction, it's likely junk
+        try:
+            words = list(pseg.cut(t))
+            if not words:
+                return True
+            first_flag = getattr(words[0], 'flag', '') if hasattr(words[0], 'flag') else ''
+            # Pronoun-prefixed: 我/你/他/她/它/我们/大家 + content word
+            if first_flag == 'r' and len(t) <= 6:
+                return True
+            # Pure conjunction start: 因为/所以/但是/然后/如果/就是/其实
+            if first_flag == 'c' and len(t) <= 6:
+                return True
+            # Modal/particle dominated: 吗/呢/吧/啊/呀/哦/哈/嘛
+            if first_flag in ('u', 'e', 'y') and len(t) <= 4:
+                return True
+            # Number-only fragment: 58, 07:58 etc.
+            if first_flag == 'm' and len(t) <= 5:
+                return True
+        except Exception:
+            pass
+
+        # Pattern-based junk detection
+        # Trailing particles (expanded set)
+        if re.search(r'(的|了|着|过|吗|呢|吧|啊|呀|啦|哦|哈|嘛|么)$', t):
+            return True
+        # Leading colloquial markers
+        if re.match(r'^(就是|就是说|然后|而且|但是|不过|因为|所以|如果|其实|那个|这个|可能|应该|觉得|好像|还是|或者)', t) and len(t) <= 6:
+            return True
+        # Pure pronoun or question fragments
+        if re.match(r'^(我|你|他|她|它|我们|你们|他们|大家|人家|自己|这|那|哪|怎么|什么)$', t):
+            return True
+        # Short colloquial residue
+        if len(t) <= 4 and re.search(r'(我|你|他|她|就|都|还|也|不|没|很|太)', t):
+            return True
+
+        return False
 
     def _extract_semantic_chunks(self, text: str) -> List[str]:
         """Extract semantic chunk units from text."""
@@ -448,6 +730,266 @@ class EnhancedCodingGenerator:
             score -= 2.0
 
         return score
+
+    # ── Four-layer extractive code formalization ───────────────────────
+    # Layers: 1) disfluency repair  2) filler removal
+    #         3) information compression  4) concept abstraction
+    # All layers are subtractive/normalizing — no external vocabulary injection.
+
+    def _formalize_extractive_code(self, text: str) -> str:
+        """Convert a spoken-style extractive fragment into a concise written code.
+
+        Four-layer subtractive pipeline — never introduces external words:
+          1. Disfluency repair — fix repetitions, restarts, false starts
+          2. Filler removal — strip spoken filler heads, tails, particles
+          3. Information compression — remove redundant descriptive clauses
+          4. Concept abstraction — normalize actions/states to concept form
+        """
+        if not text or len(text.strip()) < 2:
+            return text.strip() if text else text
+
+        # ═══════════════════════════════════════════════════════════
+        # LAYER 1: Disfluency repair
+        # ═══════════════════════════════════════════════════════════
+        clean = text.strip()
+
+        # 1a. Repeated word with comma separator: "应，应该" → "应该"
+        clean = re.sub(r'(\S{1,6})[，,]\s*\1', r'\1', clean)
+
+        # 1b. Character-level stutter: "具需需要" → "需要" (partial char before full word)
+        clean = re.sub(
+            r'([一-鿿]){1,3}(?:\1){1,3}',  # collapse repeated chars
+            lambda m: m.group(1), clean)
+
+        # 1c. False-start repair fragments:
+        #     "自己肯定是具需要具备" → strip orphan chars before known word
+        #     Pattern: single/two orphan chars before a complete 2+ char word
+        clean = re.sub(r'(?:具|应|而|且|并|就)\s*(?=[一-鿿]{2,})', '', clean)
+
+        # ═══════════════════════════════════════════════════════════
+        # LAYER 2: Filler removal — spoken heads, tails, particles
+        # ═══════════════════════════════════════════════════════════
+
+        # 2a. Leading conjunctions / fillers / discourse markers
+        clean = re.sub(
+            r'^(?:然后|但是|不过|而且|因为|所以|如果|虽然|尽管|即使|'
+            r'主要是|比如说|就是说|就是|这个|那个|这些|那些|'
+            r'基本上是|大概是|可能是|应该是|'
+            r'一般情况下|一般来说|通常来说|'
+            r'我觉得|我认为|个人觉得|个人认为|'
+            r'怎么讲|怎么说呢|就是说|换句话说|'
+            r'其实|实际上|事实上|'
+            r'那么|那|'
+            r'可以这么说|从某种角度来说|'
+            r'相对而言|相对来说|'
+            r'大体上|大体来说|整体而言|'
+            r'总体来看|总体而言)\s*',
+            '', clean)
+
+        # 2b. Leading personal pronouns + optional conjunction/modifier
+        clean = re.sub(
+            r'^(?:我|我们|你|你们|他|他们|她|她们|它|它们|'
+            r'大家|别人|人家|自己|自个|自身|本人)\s*'
+            r'(?:也|还是|都|就|会|要|能|可能|'
+            r'应该|必须|需要|可以|肯定|确实|真的|'
+            r'还是|比较|挺|很|非常|特别)?\s*'
+            r'(?:是|就是|还是|也是|都是)?\s*',
+            '', clean)
+
+        # 2c. Trailing colloquial particles / fillers
+        clean = re.sub(
+            r'\s*(?:什么的|之类的|那种|这种|那种感觉|这个样子|'
+            r'这方面|这一块|这些东西|这些事情|这些东西|'
+            r'等等这些|等等|什么的这些|'
+            r'差不多|左右|这样|那样|'
+            r'的了|的了呢|吧|呢|啊|哦|哈|嘛|呗|啦|呀)+$',
+            '', clean)
+
+        # 2d. Trailing "的" — strip when preceded by at least 3 chars
+        if len(clean) > 3 and clean.endswith('的'):
+            clean = clean[:-1]
+
+        # 2e. Remove standalone filler words from middle of text
+        clean = re.sub(r'[，,]\s*(?:就是说|就是|其实|实际上|事实上|'
+                       r'说白了|讲真的|说真的|老实说|说实话|'
+                       r'怎么说呢|怎么讲|'
+                       r'这个|那个)\s*[，,]?', '，', clean)
+
+        # ═══════════════════════════════════════════════════════════
+        # LAYER 3: Information compression — remove redundancy
+        # ═══════════════════════════════════════════════════════════
+
+        # 3a. Collapse listing patterns: "采个血或者什么送检科" → "采血送检"
+        #     "X或者什么Y" → "XY" (strip "或者什么" and "个")
+        clean = re.sub(r'或者什么', '', clean)
+        clean = re.sub(r'([一-鿿])(?:个|种|些|点|下)(?=[一-鿿])', r'\1', clean)
+
+        # 3b. Remove redundant explanatory clauses:
+        #     "主要就是这个，因为..." → keep the because clause, drop the redundancy
+        clean = re.sub(r'[，,]?\s*主要就是(?:这个|那个|这些|那些)\s*[，,]?', '', clean)
+
+        # 3c. Remove "比如说/比如/像是/像" introductory phrases (keep the described content)
+        clean = re.sub(r'[，,]?\s*(?:比如说|比如|像是|像|好比|好比说)\s*', '', clean)
+
+        # 3d. Compress "跟/和/与...差不多/类似/一样" → concise form
+        clean = re.sub(r'跟(.{2,12})(?:差不多|类似|一样|似的)',
+                       r'与\1类似', clean)
+
+        # 3e. Strip trailing "...的话" conditional suffix
+        clean = re.sub(r'的话$', '', clean)
+
+        # ═══════════════════════════════════════════════════════════
+        # LAYER 4: Concept abstraction — normalize to concept form
+        # ═══════════════════════════════════════════════════════════
+
+        # 4a. Normalize action patterns: "给你出一份报告" → "出具报告"
+        clean = re.sub(r'(?:给你|给他们|给我们|给客户|给用户)(.{2,10})',
+                       lambda m: re.sub(r'^(?:一[份个张条项]|几[份个张条项])\s*',
+                                        '', m.group(1)),
+                       clean)
+        clean = re.sub(r'去(?:那边|那里|这儿|这边)?\s*', '', clean)
+
+        # 4b. Normalize "分很多不同X" → "X分工" / "多个X"
+        clean = re.sub(r'分(?:很|非常|特别|比较)?多(?:不?同)?(.{2,6})',
+                       r'\1分工', clean)
+
+        # 4c. Remove measure words before nouns in concept form
+        clean = re.sub(r'[一二两三四五六七八九十百千万亿\d]+[个张条项份种件次回]',
+                       '', clean)
+
+        # 4d. Clean up: merge multiple consecutive punctuation
+        clean = re.sub(r'[，,]{2,}', '，', clean)
+        clean = re.sub(r'[。！？；;：:、]{2,}', '', clean)
+
+        # 4e. Final trim
+        clean = clean.strip('，,。！？；;：:、　 \t\n\r')
+
+        # ═══════════════════════════════════════════════════════════
+        # Post-check
+        # ═══════════════════════════════════════════════════════════
+        if not clean or len(clean) < 2:
+            return text.strip()
+        # If formalization made it too short (lost info), keep original
+        if len(clean) < len(text.strip()) * 0.3:
+            return text.strip()
+
+        return clean
+
+    def _deep_extraction_fallback(self, source_text: str,
+                                   existing_candidates: List[str],
+                                   grounding_checker) -> Optional[str]:
+        """Multi-strategy phrase mining from source text — improved.
+
+        Only called when the selected L1 code has grounding_score < 0.45.
+        Three extraction tiers, tried from most to least meaningful:
+        1. jieba posseg noun-phrase compounds (concept-like chunks)
+        2. Clause-level segments (punctuation-delimited sub-clauses)
+        3. Mid-length character n-grams (4-6 chars, more meaningful than 2-3)
+
+        Returns None if no candidate achieves grounding >= 0.45.
+        """
+        if not source_text or len(source_text) < 4:
+            return None
+
+        candidates = []
+        seen = set()
+
+        # ── Tier 1: jieba posseg noun-phrase compounds ──
+        # Extract noun/verb/adjective sequences and merge adjacent
+        # content words into concept-like compound phrases.
+        try:
+            words = list(pseg.cut(source_text))
+            noun_chunks = []
+            current = []
+            for w in words:
+                flag = getattr(w, 'flag', '') if hasattr(w, 'flag') else ''
+                word = getattr(w, 'word', '') if hasattr(w, 'word') else str(w)
+                is_content = any(t in flag for t in ('n', 'v', 'a', 'd', 'vn', 'an')) if flag else False
+                if is_content and len(word) >= 1:
+                    current.append(word)
+                else:
+                    if len(current) >= 2:
+                        chunk_text = ''.join(current)
+                        if 3 <= len(chunk_text) <= 12 and chunk_text not in seen:
+                            seen.add(chunk_text)
+                            noun_chunks.append(chunk_text)
+                    current = []
+            if len(current) >= 2:
+                chunk_text = ''.join(current)
+                if 3 <= len(chunk_text) <= 12 and chunk_text not in seen:
+                    seen.add(chunk_text)
+                    noun_chunks.append(chunk_text)
+            # Prefer mid-length concepts (4-8 chars)
+            noun_chunks.sort(key=lambda x: (abs(len(x) - 6), len(x)))
+            candidates.extend(noun_chunks[:10])
+        except Exception:
+            pass
+
+        # ── Tier 2: Clause-level segments ──
+        parts = self._split_first_level_candidate_segments(source_text)
+        for part in parts:
+            if 4 <= len(part) <= 12 and part not in seen:
+                if not self._contains_colloquial_residue(part):
+                    seen.add(part)
+                    candidates.append(part)
+
+        # ── Tier 3: Mid-length character n-grams (4-6 chars) ──
+        # Longer n-grams are more semantically complete than 2-3 char fragments.
+        # CRITICAL: reject n-grams that cross clause boundaries (contain
+        # internal punctuation) — these produce garbage like "会涉及到，但".
+        _clause_boundary = re.compile(r'[，,。！？；;：:、　\n\r]')
+        for i in range(len(source_text) - 3):
+            for length in (4, 5, 6):
+                if i + length <= len(source_text):
+                    chunk = source_text[i:i + length].strip()
+                    if len(chunk) >= 4 and chunk not in seen:
+                        if not re.search(r'[一-鿿]', chunk):
+                            continue
+                        if re.search(r'^[\d\s，,。！？；;：:、　]+$', chunk):
+                            continue
+                        # Reject n-grams with internal punctuation
+                        # (e.g., "会涉及到，但" crossing comma boundary)
+                        if _clause_boundary.search(chunk):
+                            continue
+                        if re.search(r'[：:]\s*\d+', chunk):
+                            continue
+                        seen.add(chunk)
+                        candidates.append(chunk)
+
+        # ── Filter and formalize ──
+        filtered = []
+        for c in candidates:
+            if len(c) < 3 or len(c) > 15:
+                continue
+            if self._looks_semantically_incomplete(c):
+                continue
+            formalized = self._formalize_extractive_code(c)
+            if formalized and len(formalized) >= 2:
+                filtered.append(formalized)
+            elif len(c) >= 3:
+                filtered.append(c)
+
+        # Deduplicate while preserving order
+        unique = list(dict.fromkeys(filtered))
+        if len(unique) > 25:
+            unique = unique[:25]
+
+        if not unique:
+            return None
+
+        # Score every candidate with grounding_checker
+        best_phrase = None
+        best_score = 0.0
+        for phrase in unique:
+            gs = grounding_checker.grounding_score(source_text, phrase)
+            if gs > best_score:
+                best_score = gs
+                best_phrase = phrase
+
+        if best_phrase is None or best_score < 0.45:
+            return None
+
+        return best_phrase
 
     def _finalize_first_level_candidate(self, text: str, source_text: str = '',
                                          is_knn: bool = False) -> Optional[str]:
@@ -635,12 +1177,32 @@ class EnhancedCodingGenerator:
 
         is_anchor = bool(row.get('anchor_source'))
         anchor_score = row.get('anchor_score')
+        anchor_source = row.get('anchor_source')
+
+        # --- T5 generated weak anchors: lighter weight (8.0 vs 13.0) ---
+        if anchor_source == 't5_generated' and anchor_score is not None and anchor_score > 0:
+            score = 4.0 + anchor_score * 8.0
+            L = len(text)
+            if 4 <= L <= 12:
+                score += 1.5
+            elif 13 <= L <= 20:
+                score += 0.5
+            if source_text and text:
+                self._ensure_grounding_checker()
+                if self.grounding_checker is not None:
+                    is_pol_violation, _ = self.grounding_checker.check_polarity(
+                        source_text, text)
+                    if is_pol_violation:
+                        score *= 0.40
+            return round(score, 4)
 
         # ── Anchor candidates: FAISS concept-model similarity is primary ──
-        if is_anchor and anchor_score is not None and anchor_score > 0:
-            # Steeper slope: weak anchors (0.35) compete fairly with extractive
-            # candidates (~6.5); strong anchors (0.70+) still dominate (11.7+).
-            score = 4.0 + anchor_score * 11.0
+        elif is_anchor and anchor_score is not None and anchor_score > 0:
+            # Anchors represent stable concepts — they SHOULD be preferred over
+            # extractive fragments when the FAISS model (trained contrastively)
+            # considers them a good match. Multiplier raised to 13.0 to ensure
+            # anchors win against mediocre extractive candidates.
+            score = 4.0 + anchor_score * 13.0
             L = len(text)
             if 4 <= L <= 12:
                 score += 1.5
@@ -650,29 +1212,28 @@ class EnhancedCodingGenerator:
             idf_penalty = self._get_anchor_idf_penalty(text)
             if idf_penalty < 1.0:
                 score = score * idf_penalty
-            # Phase 4: Grounding & polarity checks
+            # Phase 4: Lightweight quality checks (no model.encode needed).
+            # Full grounding assessment is done in the grounding gate post-hoc.
             if source_text and text:
+                # Polarity check (lightweight: regex-only, no model.encode)
                 self._ensure_grounding_checker()
                 if self.grounding_checker is not None:
-                    gs = self.grounding_checker.grounding_score(source_text, text)
-                    is_pol_violation, _ = self.grounding_checker.check_polarity(source_text, text)
-                    # Grounding penalty: poorly grounded anchors lose up to 30% score
-                    if gs < 0.40:
-                        score *= 0.70
-                    elif gs < 0.55:
-                        score *= 0.85
-                    elif gs < 0.70:
-                        score *= 0.95
-                    # Polarity violation: severe penalty
+                    is_pol_violation, _ = self.grounding_checker.check_polarity(
+                        source_text, text)
                     if is_pol_violation:
                         score *= 0.40
-                # Proportional penalty for anchors below gating threshold (0.55).
-                # Anchors near 0.40 get heavy penalty → extractive candidates win.
-                # Anchors near 0.55 get light penalty → still competitive.
-                if anchor_score is not None and anchor_score < 0.55:
-                    # 0.40 → 0.45x,  0.475 → 0.725x,  0.55 → 1.0x
-                    penalty = 0.45 + (anchor_score - 0.40) / 0.15 * 0.55
-                    score *= max(0.45, min(1.0, penalty))
+
+                # Proportional penalty for anchors below gating threshold (0.42).
+                # Milder slope than before: weaker anchors still compete, but
+                # very weak ones (near 0.40) face meaningful penalty.
+                if anchor_score is not None and anchor_score < 0.42:
+                    # 0.35 → 0.70x,  0.40 → 0.85x,  0.42 → 1.0x
+                    penalty = 0.70 + (anchor_score - 0.35) / 0.07 * 0.30
+                    score *= max(0.60, min(1.0, penalty))
+            # concept_sim bonus (auxiliary for anchors, lighter weight)
+            _cs = row.get('concept_sim')
+            if _cs is not None and _cs > 0:
+                score += _cs * 1.0
             return round(score, 4)
 
         # ── Extractive / recall candidates ──
@@ -682,27 +1243,41 @@ class EnhancedCodingGenerator:
 
         if rerank is not None and rerank > 0:
             score = base * 0.35 + float(rerank) * 0.65
+            # Abstract_reranker quality gate: BERT model trained on 13K pairs.
+            # Low rerank_score (< 2.5, i.e., sim < 0.25) means the code is
+            # likely a semantic fragment with poor concept-level alignment.
+            # These candidates should not compete with anchors or good extractive.
+            _rr = float(rerank)
+            if _rr < 1.5:
+                score *= 0.40   # garbage fragment (sim < 0.15)
+            elif _rr < 2.5:
+                score *= 0.65   # poor fragment (sim < 0.25)
+            elif _rr < 3.5:
+                score *= 0.85   # mediocre (sim < 0.35)
         else:
             score = base * 0.5
 
-        # Concept-model semantic similarity: penalizes fragments, rewards concepts
+        # Concept-model semantic similarity: penalizes fragments, rewards concepts.
+        # Reduced weight (was *3.0) so extractive fragments don't outscore anchors.
         if concept_sim is not None and concept_sim > 0:
-            score += concept_sim * 5.0
+            score += concept_sim * 1.5
 
-        # Length bonus: prefer compact codes
+        # Length bonus: prefer compact codes, penalize long sentence-like fragments
         L = len(text)
         if 4 <= L <= 12:
             score += 1.5
         elif 13 <= L <= 20:
             score += 0.5
+        elif 21 <= L <= 30:
+            score -= 3.0
         elif L > 30:
-            score -= 2.0
+            score -= 6.0
 
-        # Anchor ratio bonus (reduced weight — concept codes naturally
-        # have lower n-gram overlap with source text)
+        # Anchor ratio bonus: rewards text-source overlap.
+        # Reduced (was *2.0) — concept codes naturally have lower overlap.
         if source_text:
             anchor_ratio = self._first_level_anchor_ratio(text, source_text)
-            score += anchor_ratio * 2.0
+            score += anchor_ratio * 1.0
 
         # KNN / recall-label bonus
         is_knn = bool(row.get('knn_source') or row.get('anchor_source'))
@@ -903,7 +1478,11 @@ class EnhancedCodingGenerator:
         compact = {}
         for key in ('selected_candidate', 'interpretive_code', 'best_rule_candidate',
                      'used_rerank', 'anchor_selected', 'anchor_source', 'candidates',
-                     'grounding', 'provenance', 'hierarchy'):
+                     'grounding', 'provenance', 'hierarchy',
+                     'grounding_score', 'drift_score', 'drift_verdict',
+                     'drift_details', 'fallback_triggered', 'fallback_candidates',
+                     'severe_drift', 'phrase_overlap', 'keyword_coverage',
+                     'source_sentence_index'):
             if key in trace:
                 v = trace[key]
                 if key == 'candidates':
@@ -939,17 +1518,31 @@ class EnhancedCodingGenerator:
             return None, original
 
         normalized = original
-        # Strip speaker labels
-        normalized = re.sub(
-            r'^(?:[A-Za-z]|受访者|采访者|访谈员|说话人\s*\d+|弄管家\s*\d*|游客\s*\d*|'
-            r'非遗手艺人\s*\d*|非遗人\s*\d*|管理层\s*\d*|景漂\s*\d*|老师\s*\d*|'
-            r'主持人|记者|受访者|嘉宾|专家|居民\s*\d*|商户\s*\d*|'
-            r'手艺人\s*\d*|学徒\s*\d*|传承人\s*\d*|问|答|Q|A)\s*[：:]?\s*',
-            '', normalized)
+        # Strip speaker labels — aggressive multi-pass to catch nested formats
+        _speaker_patterns = [
+            # Chinese role labels: 说话人N:, 说话人：, 说话人 N：, etc.
+            r'说话人\s*\d*\s*[：:]',
+            r'讲话人\s*\d*\s*[：:]',
+            # Role labels with optional numbering
+            r'(?:受访者|采访者|访谈员|主持人|记者|嘉宾|专家)\s*[：:]?',
+            r'(?:弄管家|游客|非遗手艺人|非遗人|管理层|景漂|老师|居民|商户|手艺人|学徒|传承人)\s*\d*\s*[：:]',
+            # English Q&A format: Q:, A:, Q1:, A1:, etc.
+            r'[QA]\s*\d*\s*[：:]',
+            # Chinese Q&A format
+            r'[问|答]\s*[：:]',
+            # Standalone role names (no colon)
+            r'^(?:受访者|采访者|访谈员|说话人|讲话人)\s*$',
+        ]
+        for sp in _speaker_patterns:
+            normalized = re.sub(r'^\s*' + sp + r'\s*', '', normalized)
 
         # Clean artifact markers and character repetitions
         normalized = re.sub(r'\[[A-Z]?\d+\]', '', normalized)
         normalized = re.sub(r'(\w)\1{2,}', r'\1', normalized)
+        # Clean timestamp artifacts: (00:15:17), (:17), 17) etc.
+        normalized = re.sub(r'[（(]\s*\d{0,2}\s*[：:]\s*\d{0,2}\s*[：:]\s*\d{0,2}\s*[）)]', '', normalized)
+        normalized = re.sub(r'[（(]\s*\d{0,2}\s*[：:]\s*\d{0,2}\s*[）)]', '', normalized)
+        normalized = re.sub(r'^\s*\d{1,2}\s*[）)]\s*', '', normalized)
         normalized = self._normalize_source_sentence(normalized)
 
         if not normalized or len(normalized) < 3:
@@ -962,7 +1555,9 @@ class EnhancedCodingGenerator:
                                            defer_rerank: bool = False,
                                            cached_embedding=None,
                                            cached_anchor_results=None,
-                                           cached_knn_results=None) -> Dict:
+                                           cached_knn_results=None,
+                                           cached_t5_result=None,
+                                           freq_map: Optional[dict] = None) -> Dict:
         """Return a compact candidate trace for first-level abstraction.
 
         Implements concept anchor gating (改进7):
@@ -1116,7 +1711,6 @@ class EnhancedCodingGenerator:
         # If we get a strong anchor match (>= 0.35), skip extractive.
         # ═══════════════════════════════════════════════════════════════
 
-        anchor_gated = False
         anchor_max_score = 0.0
         _anchor_candidates: List[Tuple[str, float, str]] = []
 
@@ -1125,18 +1719,21 @@ class EnhancedCodingGenerator:
             _anchor_candidates = cached_anchor_results
             if _anchor_candidates:
                 anchor_max_score = _anchor_candidates[0][1]
-                anchor_gated = anchor_max_score >= 0.42
         elif self._ensure_anchor_index() and self.concept_anchor_index is not None:
             try:
                 _anchor_candidates = self.concept_anchor_index.search(normalized, top_k=50)
                 if _anchor_candidates:
                     anchor_max_score = _anchor_candidates[0][1]
-                    # Only gate when anchors are genuinely strong (0.55+).
-                    # Medium anchors (0.40-0.55) compete fairly with
-                    # extractive candidates from the source text.
-                    anchor_gated = anchor_max_score >= 0.55
+                    # Anchor candidates now compete via top-3 average threshold (0.55)
+                    # in the KNN trigger gate below, not via a binary gating check.
             except Exception:
                 pass
+
+        # Compute FAISS top-3 average for KNN trigger decision
+        _faiss_top3_scores = []
+        for concept_name, anchor_score, anchor_source in _anchor_candidates[:3]:
+            _faiss_top3_scores.append(anchor_score)
+        faiss_top3_avg = sum(_faiss_top3_scores) / len(_faiss_top3_scores) if _faiss_top3_scores else 0.0
 
         # ── Split into sentence parts ──
         sentence_parts = [p.strip() for p in re.split(r'[。！？;；]', normalized) if len(p.strip()) >= 3]
@@ -1148,8 +1745,10 @@ class EnhancedCodingGenerator:
 
         # ── Phase 1: Inject anchor candidates ──
         _anchors_injected = 0
+        _anchor_min_score = getattr(Config, 'FIRST_LEVEL_ANCHOR_MIN_SCORE', 0.40) if Config else 0.40
+        _anchor_grounding_min = getattr(Config, 'FIRST_LEVEL_ANCHOR_GROUNDING_MIN', 0.0) if Config else 0.0
         for concept_name, anchor_score, anchor_source in _anchor_candidates:
-            if anchor_score < 0.40:
+            if anchor_score < _anchor_min_score:
                 continue
             label = self._normalize_candidate_for_first_level(concept_name)
             if not label or len(label) < 2:
@@ -1160,6 +1759,10 @@ class EnhancedCodingGenerator:
                 label = self._normalize_candidate_for_first_level(canonical)
                 if not label or len(label) < 2:
                     continue
+            # F3 接地门：锚点与句子表面词重叠过低（抽象锚点）则拒绝注入
+            if _anchor_grounding_min > 0.0 and \
+                    self._first_level_anchor_ratio(label, normalized) < _anchor_grounding_min:
+                continue
             _anchors_injected += 1
 
             anchor_rule = round(6.5 + anchor_score * 4.5, 4)
@@ -1185,16 +1788,11 @@ class EnhancedCodingGenerator:
             elif row['rule_score'] > candidate_rows[existing]['rule_score']:
                 candidate_rows[existing] = row
 
-        # If too few anchors survived filtering, un-gate to allow extractive backup.
-        # With top_k=50, insufficient quality anchors means concepts are weak for this sentence.
-        if anchor_gated and _anchors_injected < 5:
-            anchor_gated = False
-
         # ── Phase 2: Concept-aware KNN expansion (complements extractive n-grams) ──
         # When FAISS anchors are weak, find similar training sentences via embedding
         # KNN and retrieve their anchor codes as concept candidates.
         # Extractive candidates are now generated in Phase 2b below (not replaced).
-        if not anchor_gated:
+        if faiss_top3_avg < 0.55:
             if self._ensure_knn_train_index() and self.knn_train_index is not None:
                 try:
                     # Use cached embedding / KNN results from batch pre-encoding
@@ -1226,6 +1824,11 @@ class EnhancedCodingGenerator:
 
                         label = self._normalize_candidate_for_first_level(anchor)
                         if not label or len(label) < 2:
+                            continue
+
+                        # F3 接地门：KNN 召回的抽象锚点码（与句子零/低重叠）拒绝
+                        if _anchor_grounding_min > 0.0 and \
+                                self._first_level_anchor_ratio(label, normalized) < _anchor_grounding_min:
                             continue
 
                         knn_rule = round(6.0 + float(score) * 4.0, 4)
@@ -1264,17 +1867,60 @@ class EnhancedCodingGenerator:
         for sentence_part in sentence_parts:
             if _extractive_added >= _extractive_max:
                 break
-            segments = self._split_first_level_candidate_segments(sentence_part)
+            # Try POS-based noun/verb phrase extraction first (Plan A:
+            # produces semantically complete phrases); fall back to raw
+            # punctuation split when jieba yields nothing useful.
+            segments = self._extract_noun_verb_phrases(sentence_part)
+            _fallback_used = False
+            if not segments:
+                segments = self._split_first_level_candidate_segments(sentence_part)
+                _fallback_used = True
             for seg in segments:
                 if _extractive_added >= _extractive_max:
                     break
                 if seg in seen or len(seg) < 2:
                     continue
+                # Fallback segments bypass POS-based extraction — apply extra
+                # quality screening to filter colloquial fragments, pronouns,
+                # and conjunction-started segments that jieba would have caught.
+                if _fallback_used:
+                    if self._is_fallback_segment_junk(seg):
+                        continue
                 label = self._normalize_candidate_for_first_level(seg)
                 if not label or len(label) < 2 or label in seen:
                     continue
                 if self._contains_colloquial_residue(label):
                     continue
+
+                # Formalize spoken-style fragment into concise written code
+                label = self._formalize_extractive_code(label)
+                if not label or len(label) < 2:
+                    continue
+
+                # Pre-filter: reject extractive fragments that are too short,
+                # too long (sentence-like), semantically incomplete, lack
+                # valid POS pattern, or contain clause-internal punctuation.
+                # Anchors don't face these checks — they're pre-validated concepts.
+                if len(label) < 4 or len(label) > 30:
+                    continue
+                if self._looks_semantically_incomplete(label):
+                    continue
+                if not self._has_valid_first_level_pos_pattern(label):
+                    continue
+                # Reject codes ending with dangling function words/particles
+                if re.search(r'(的|了|着|过|吗|呢|吧|啊|呀|啦|哦|哈|嘛|么|到|在|中|和|与|或|又|还|也|只|不|没|就|才|都|很|太|更|最|较|越|被|把|将|从|对)$', label):
+                    continue
+                # Reject codes that start with conjunctions/fillers (prefix check).
+                # Whitelist: legitimate words starting with 说/就 etc.
+                _conj_pfx = r'^(因为|所以|但是|不过|然后|如果|就是|就是说|其实|那个|这个|'
+                _conj_pfx += r'主要是|特别是|尤其是|而且|而|但|什么|怎么|哪|那|这|可能|应该|觉得|好像|还是)'
+                if re.match(_conj_pfx, label):
+                    if re.match(r'^(说话|说服|说明|说法|说道|说出|说是|说了|说好|说清)', label):
+                        pass
+                    elif re.match(r'^说', label) and len(label) <= 5:
+                        continue
+                    elif len(label) <= 6:
+                        continue
 
                 frag_score = self._score_first_level_fragment(label, normalized)
                 if frag_score <= 0:
@@ -1288,6 +1934,11 @@ class EnhancedCodingGenerator:
                 # match known concepts while keeping text-derived phrasing.
                 proto_hits = sum(1 for kw in prototype_keywords if kw in label)
                 extractive_rule += min(proto_hits * 0.6, 2.0)
+                # Plan B: cross-sentence frequency + anchor affinity quality bonus
+                if freq_map:
+                    _n_total = freq_map.get('_n_total', 0)
+                    _qb = self._compute_quality_bonus(label, freq_map, _n_total)
+                    extractive_rule += min(_qb * 6.0, 1.5)
                 extractive_cons = round(min(extractive_rule, 12.0) * 0.55, 4)
 
                 row = {
@@ -1310,6 +1961,27 @@ class EnhancedCodingGenerator:
         if _extractive_added > 0:
             logger.debug("Extractive recall: %d candidates from source text", _extractive_added)
 
+        # --- Phase 2c: T5 generated weak anchors ---
+        if cached_t5_result is not None and cached_t5_result not in seen:
+            t5_label = self._normalize_candidate_for_first_level(cached_t5_result)
+            if t5_label and len(t5_label) >= 2:
+                t5_rule = round(5.0 + 0.5 * 6.0, 4)
+                t5_cons = round(min(t5_rule, 12.0) * 0.5 + 0.5 * 1.5, 4)
+                row = {
+                    'text': t5_label,
+                    'raw_text': normalized,
+                    'rule_score': t5_rule,
+                    'rerank_score': None,
+                    'conservative_score': t5_cons,
+                    'selected': False,
+                    'best_rule': False,
+                    'anchor_source': 't5_generated',
+                    'anchor_score': 0.5,
+                    'prototype_hits': prototype_hits,
+                }
+                seen[t5_label] = len(candidate_rows)
+                candidate_rows.append(row)
+
         # ── Canonicalize ──
         candidate_rows = self._canonicalize_first_level_candidate_rows(
             candidate_rows, normalized)
@@ -1317,25 +1989,21 @@ class EnhancedCodingGenerator:
         if not candidate_rows:
             return {}
 
-        # ── Batch concept-model similarity for extractive candidates ──
-        # Use the fine-tuned concept_anchor model to score every candidate
-        # against the source sentence. This penalizes sentence fragments
-        # ("主要是", "获得3张") that have low semantic relevance and rewards
-        # concept-like candidates even if they come from extractive n-grams.
-        _non_anchor_indices = [
-            i for i, r in enumerate(candidate_rows)
-            if not r.get('anchor_source') and not r.get('anchor_score')
-        ]
-        if _non_anchor_indices and hasattr(self, 'concept_anchor_index') and self.concept_anchor_index is not None:
+        # ── Batch concept-model similarity for ALL candidates (bidirectional) ──
+        # Compute concept_sim for every candidate (anchors + extractive) so
+        # the anchor branch in _conservative_first_level_rank_score can also
+        # benefit from a lightweight concept_sim bonus.
+        _all_indices = list(range(len(candidate_rows)))
+        if _all_indices and hasattr(self, 'concept_anchor_index') and self.concept_anchor_index is not None:
             try:
-                _non_anchor_texts = [candidate_rows[i]['text'] for i in _non_anchor_indices]
-                _all_encode = [normalized] + _non_anchor_texts
+                _all_texts = [candidate_rows[i]['text'] for i in _all_indices]
+                _all_encode = [normalized] + _all_texts
                 _embs = self.concept_anchor_index.model.encode(
                     _all_encode, normalize_embeddings=True,
                     show_progress_bar=False, batch_size=len(_all_encode))
                 _source_emb = _embs[0]
                 _cand_embs = _embs[1:]
-                for j, i in enumerate(_non_anchor_indices):
+                for j, i in enumerate(_all_indices):
                     sim = float(np.dot(_source_emb, _cand_embs[j]))
                     candidate_rows[i]['concept_sim'] = round(sim, 4)
             except Exception:
@@ -1826,6 +2494,10 @@ class EnhancedCodingGenerator:
             '', clean)
         clean = re.sub(r'^\s*(?:\d+|[一二三四五六七八九十]+)[、\.．\)]\s*', '', clean)
 
+        # Remove standalone leading Arabic numerals (codes shouldn't start with digits)
+        clean = re.sub(r'^\d+\s*', '', clean)
+        clean = clean.strip()
+
         # Remove speaker marks
         clean = re.sub(r'^[（(]\d+[）)]', '', clean)
         clean = re.sub(r'^[A-Za-z]\s*[：:]\s*', '', clean)
@@ -2130,6 +2802,9 @@ class EnhancedCodingGenerator:
         # Phase 4: Run contrastive validation post-coding
         cv_result = self._run_contrastive_validation(first_level_codes)
 
+        # Clear caches and release GPU memory after coding completes
+        self.clear_caches()
+
         result = {
             'first_level_codes': first_level_codes,
             'second_level_codes': second_level_codes,
@@ -2137,6 +2812,658 @@ class EnhancedCodingGenerator:
             'contrastive_validation': cv_result if cv_result else None,
         }
         return result
+
+    def _validate_anchor_codes(self, first_level_codes: Dict[str, List],
+                                traces: Dict[str, Dict],
+                                all_sentences: List[Dict]) -> Dict[str, List]:
+        """Validate FAISS anchor codes — diagnostic only, no fallback.
+
+        Computes grounding_score and drift_audit for observability/logging
+        purposes. Anchors are NOT subject to the grounding gate fallback
+        because they represent concept-level abstractions that naturally
+        have lower literal text overlap with source sentences.
+        """
+        self._ensure_grounding_checker()
+        if self.grounding_checker is None:
+            return first_level_codes
+
+        gc = self.grounding_checker
+        gc._load_default_model()
+
+        # Identify anchor codes only
+        anchor_items = []
+        all_texts = []
+        text_to_idx = {}
+
+        for code_key, code_data in first_level_codes.items():
+            trace = self._first_level_trace_meta.get(code_key, {})
+            candidates = trace.get('candidates', [])
+            selected_code = code_data[0]
+            is_anchor = any(
+                c.get('anchor_source') in ('library', 't5_generated') and c.get('text') == selected_code
+                for c in candidates
+            )
+            if not is_anchor:
+                continue
+
+            source_detail = code_data[4][0] if len(code_data) > 4 and code_data[4] else {}
+            source_text = source_detail.get('content', '') if isinstance(source_detail, dict) else str(source_detail)
+            if not source_text or not selected_code:
+                continue
+
+            normalized, _ = self._normalize_sentence_for_coding(source_detail)
+            if normalized is None:
+                normalized = source_text
+
+            anchor_items.append((code_key, code_data, normalized, selected_code))
+            for t in (normalized, selected_code):
+                if t not in text_to_idx:
+                    text_to_idx[t] = len(all_texts)
+                    all_texts.append(t)
+
+        if not anchor_items:
+            return first_level_codes
+
+        # Batch encode
+        embeddings = {}
+        if all_texts and gc._model is not None:
+            try:
+                import numpy as np
+                all_embs = gc._model.encode(
+                    all_texts, normalize_embeddings=True,
+                    show_progress_bar=False, batch_size=64
+                ).astype(np.float32)
+                for i, t in enumerate(all_texts):
+                    embeddings[t] = all_embs[i]
+            except Exception as e:
+                logger.debug("Anchor validation batch encode failed: %s", e)
+
+        # Compute diagnostic metrics, update trace
+        anchor_gs_list = []
+        for code_key, code_data, normalized, selected_code in anchor_items:
+            sent_emb = embeddings.get(normalized)
+            anchor_emb = embeddings.get(selected_code)
+
+            grounding_score = gc.grounding_score_cached(
+                normalized, selected_code, sent_emb, anchor_emb)
+            drift = gc.drift_audit_cached(
+                normalized, selected_code, sent_emb, anchor_emb)
+            anchor_gs_list.append(grounding_score)
+
+            trace = self._first_level_trace_meta.get(code_key, {})
+            if trace:
+                source_keywords = re.findall(r'[一-鿿]{2,}', normalized)
+                anchor_keywords = re.findall(r'[一-鿿]{2,}', selected_code)
+                shared_keywords = [w for w in source_keywords if w in anchor_keywords]
+
+                trace['grounding_score'] = grounding_score
+                trace['drift_score'] = drift.get('drift_score', 0)
+                trace['drift_verdict'] = drift.get('drift_verdict', 'none')
+                trace['drift_details'] = {
+                    'subject_drift': drift.get('subject_drift', 0),
+                    'polarity_drift': drift.get('polarity_drift', 0),
+                    'polarity_violation': drift.get('polarity_violation', False),
+                    'keyword_loss': drift.get('keyword_loss', 0),
+                    'jump_distance': drift.get('jump_distance', 0),
+                    'semantic_divergence': drift.get('semantic_divergence', 0),
+                    'zeta_score': 0.0,
+                }
+                trace['fallback_triggered'] = False
+                trace['severe_drift'] = drift.get('drift_verdict') == 'severe'
+                trace['phrase_overlap'] = round(
+                    len(set(shared_keywords)) / max(len(set(anchor_keywords)), 1), 4
+                ) if anchor_keywords else 0.0
+                trace['keyword_coverage'] = shared_keywords[:10]
+                self._store_first_level_trace(code_key, trace)
+
+        if anchor_gs_list:
+            import numpy as np
+            ags = np.array(anchor_gs_list)
+            logger.info(
+                "Anchor validation: %d anchors, grounding mean=%.3f median=%.3f",
+                len(anchor_gs_list), float(np.mean(ags)), float(np.median(ags)))
+
+        return first_level_codes
+
+    def _gate_extractive_codes(self, first_level_codes: Dict[str, List],
+                               traces: Dict[str, Dict],
+                               all_sentences: List[Dict]) -> Dict[str, List]:
+        """Post-coding grounding quality checkpoint — batch-optimized.
+
+        Pre-encodes all sentence + anchor texts in one batch call, then
+        reuses cached embeddings for grounding_score and drift_audit.
+        """
+        self._ensure_grounding_checker()
+        if self.grounding_checker is None:
+            return first_level_codes
+
+        gc = self.grounding_checker
+
+        # Ensure model is loaded for batch encoding
+        gc._load_default_model()
+
+        # ═══════════════════════════════════════════════════════════
+        # Phase 0: Pre-encode all (sentence, anchor) texts in batch
+        # ═══════════════════════════════════════════════════════════
+        items = []  # (code_key, code_data, normalized, selected_code)
+        all_texts = []
+        text_to_idx = {}
+
+        for code_key, code_data in first_level_codes.items():
+            # Skip anchor codes — validated by _validate_anchor_codes()
+            trace = self._first_level_trace_meta.get(code_key, {})
+            candidates = trace.get('candidates', [])
+            selected_code = code_data[0]
+            is_anchor = any(
+                c.get('anchor_source') in ('library', 't5_generated') and c.get('text') == selected_code
+                for c in candidates
+            )
+            if is_anchor:
+                continue
+
+            source_detail = code_data[4][0] if len(code_data) > 4 and code_data[4] else {}
+            source_text = source_detail.get('content', '') if isinstance(source_detail, dict) else str(source_detail)
+
+            if not source_text or not selected_code:
+                continue
+
+            normalized, _ = self._normalize_sentence_for_coding(source_detail)
+            if normalized is None:
+                normalized = source_text
+
+            items.append((code_key, code_data, normalized, selected_code))
+            for t in (normalized, selected_code):
+                if t not in text_to_idx:
+                    text_to_idx[t] = len(all_texts)
+                    all_texts.append(t)
+
+        # Batch encode all unique texts
+        embeddings = {}
+        if all_texts and gc._model is not None:
+            try:
+                import numpy as np
+                all_embs = gc._model.encode(
+                    all_texts, normalize_embeddings=True,
+                    show_progress_bar=False, batch_size=64
+                ).astype(np.float32)
+                for i, t in enumerate(all_texts):
+                    embeddings[t] = all_embs[i]
+            except Exception as e:
+                logger.debug("Grounding gate batch encode failed: %s", e)
+
+        # ═══════════════════════════════════════════════════════════
+        # Phase 0.5: Compute ζ-scores — detect unusually large
+        # semantic jumps from source sentence to code vs. global norm.
+        # ═══════════════════════════════════════════════════════════
+        zeta_scores = {}
+        if embeddings:
+            import numpy as np
+            delta_norms = []
+            valid_items = []
+            for code_key, code_data, normalized, selected_code in items:
+                se = embeddings.get(normalized)
+                ae = embeddings.get(selected_code)
+                if se is not None and ae is not None:
+                    dn = float(np.linalg.norm(ae - se))
+                    delta_norms.append(dn)
+                    valid_items.append((code_key, dn))
+            if len(delta_norms) >= 10:
+                mu_d = np.mean(delta_norms)
+                sigma_d = np.std(delta_norms)
+                if sigma_d > 1e-8:
+                    for code_key, dn in valid_items:
+                        zeta_scores[code_key] = round((dn - mu_d) / sigma_d, 4)
+
+        # ═══════════════════════════════════════════════════════════
+        # Phase 1: Compute grounding + drift with cached embeddings
+        # ═══════════════════════════════════════════════════════════
+        fallback_count = 0
+        severe_count = 0
+        zeta_warn_count = 0
+
+        for code_key, code_data, normalized, selected_code in items:
+            sent_emb = embeddings.get(normalized)
+            anchor_emb = embeddings.get(selected_code)
+
+            grounding_score = gc.grounding_score_cached(
+                normalized, selected_code, sent_emb, anchor_emb)
+            drift = gc.drift_audit_cached(
+                normalized, selected_code, sent_emb, anchor_emb)
+
+            fallback_triggered = False
+            fallback_candidates = []
+            severe_drift = False
+
+            if grounding_score < 0.45:
+                trace = self._first_level_trace_meta.get(code_key, {})
+                existing = [c.get('text', '') for c in trace.get('candidates', [])[:5]]
+
+                fallback_code = self._deep_extraction_fallback(
+                    normalized, existing, gc)
+
+                if fallback_code is not None:
+                    fallback_triggered = True
+                    fallback_candidates = [fallback_code]
+                    selected_code = fallback_code
+                    code_data[0] = fallback_code
+                    fallback_count += 1
+
+                    # Recompute with fallback code (single encode is OK here)
+                    grounding_score = gc.grounding_score(normalized, selected_code)
+                    drift = gc.drift_audit(normalized, selected_code)
+                else:
+                    # Fallback failed — remove this low-quality extractive code
+                    del first_level_codes[code_key]
+                    continue
+
+            if drift.get('drift_verdict') == 'severe':
+                severe_drift = True
+                severe_count += 1
+
+            # ── Enhance trace provenance ──
+            trace = self._first_level_trace_meta.get(code_key, {})
+            if trace:
+                source_keywords = re.findall(r'[一-鿿]{2,}', normalized)
+                anchor_keywords = re.findall(r'[一-鿿]{2,}', selected_code)
+                shared_keywords = [w for w in source_keywords if w in anchor_keywords]
+
+                trace['grounding_score'] = grounding_score
+                trace['drift_score'] = drift.get('drift_score', 0)
+                trace['drift_verdict'] = drift.get('drift_verdict', 'none')
+                trace['drift_details'] = {
+                    'subject_drift': drift.get('subject_drift', 0),
+                    'polarity_drift': drift.get('polarity_drift', 0),
+                    'polarity_violation': drift.get('polarity_violation', False),
+                    'keyword_loss': drift.get('keyword_loss', 0),
+                    'jump_distance': drift.get('jump_distance', 0),
+                    'semantic_divergence': drift.get('semantic_divergence', 0),
+                    'zeta_score': zeta_scores.get(code_key, 0.0),
+                }
+                # ζ > 2.5: unusually large semantic jump → escalate to severe drift
+                zeta = zeta_scores.get(code_key, 0.0)
+                if zeta > 2.5 and not severe_drift:
+                    severe_drift = True
+                    severe_count += 1
+                    zeta_warn_count += 1
+                    trace['drift_verdict'] = 'severe'
+                    trace['severe_drift'] = True
+                trace['fallback_triggered'] = fallback_triggered
+                trace['fallback_candidates'] = fallback_candidates
+                trace['severe_drift'] = severe_drift
+                trace['phrase_overlap'] = round(
+                    len(set(shared_keywords)) / max(len(set(anchor_keywords)), 1), 4
+                ) if anchor_keywords else 0.0
+                trace['keyword_coverage'] = shared_keywords[:10]
+                self._store_first_level_trace(code_key, trace)
+
+        if fallback_count > 0:
+            logger.info("Grounding gate: %d codes fell back to deep extraction",
+                         fallback_count)
+        if severe_count > 0:
+            logger.warning("Grounding gate: %d codes have severe drift after fallback",
+                           severe_count)
+        if zeta_warn_count > 0:
+            logger.warning("Grounding gate: %d codes flagged by high ζ-score (>2.5)",
+                           zeta_warn_count)
+
+        # ── Diagnostic: grounding quality statistics ──
+        if len(items) >= 10:
+            import numpy as np
+            all_gs = []
+            all_phrase_overlap = []
+            anchor_gs = []
+            extractive_gs = []
+            for code_key, code_data, normalized, selected_code in items:
+                trace = self._first_level_trace_meta.get(code_key, {})
+                gs = trace.get('grounding_score', 0)
+                po = trace.get('phrase_overlap', 0)
+                all_gs.append(gs)
+                all_phrase_overlap.append(po)
+                # Determine if anchor or extractive by checking trace candidates
+                candidates = trace.get('candidates', [])
+                is_anchor = any(c.get('anchor_source') in ('library', 't5_generated') and c.get('text') == selected_code
+                               for c in candidates) if candidates else False
+                if is_anchor:
+                    anchor_gs.append(gs)
+                else:
+                    extractive_gs.append(gs)
+
+            gs_arr = np.array(all_gs)
+            gs_mean = float(np.mean(gs_arr))
+            gs_median = float(np.median(gs_arr))
+            gs_q25 = float(np.percentile(gs_arr, 25))
+            gs_q75 = float(np.percentile(gs_arr, 75))
+
+            # Distribution buckets
+            gs_strong = int(np.sum(gs_arr >= 0.70))
+            gs_moderate = int(np.sum((gs_arr >= 0.55) & (gs_arr < 0.70)))
+            gs_weak = int(np.sum((gs_arr >= 0.40) & (gs_arr < 0.55)))
+            gs_poor = int(np.sum(gs_arr < 0.40))
+
+            # Anchor vs extractive breakdown
+            anchor_mean = round(float(np.mean(anchor_gs)), 4) if anchor_gs else 0
+            anchor_cnt = len(anchor_gs)
+            extr_mean = round(float(np.mean(extractive_gs)), 4) if extractive_gs else 0
+            extr_cnt = len(extractive_gs)
+
+            # Phrase overlap (keyword bridge strength)
+            po_arr = np.array(all_phrase_overlap)
+            po_nonzero = int(np.sum(po_arr > 0))
+            po_zero = len(po_arr) - po_nonzero
+
+            logger.info(
+                "Grounding quality: mean=%.3f median=%.3f q25=%.3f q75=%.3f | "
+                "strong(≥0.70)=%d moderate(0.55-0.70)=%d weak(0.40-0.55)=%d poor(<0.40)=%d",
+                gs_mean, gs_median, gs_q25, gs_q75,
+                gs_strong, gs_moderate, gs_weak, gs_poor)
+            logger.info(
+                "Grounding by source: anchor=%d(mean=%.3f) extractive=%d(mean=%.3f) | "
+                "keyword-bridge: nonzero=%d zero=%d",
+                anchor_cnt, anchor_mean, extr_cnt, extr_mean,
+                po_nonzero, po_zero)
+
+        # ── Coverage check: for each source sentence, find nearest code ──
+        if embeddings and items:
+            import numpy as np
+            # Collect unique code embeddings
+            code_keys_uniq = {}
+            for code_key, code_data in first_level_codes.items():
+                t = code_data[0]
+                if t not in code_keys_uniq:
+                    code_keys_uniq[t] = code_key
+            code_emb_list = []
+            for t, ck in code_keys_uniq.items():
+                ae = embeddings.get(t)
+                if ae is not None:
+                    code_emb_list.append(ae)
+            if code_emb_list:
+                code_matrix = np.stack(code_emb_list, axis=0)  # (n_codes, dim)
+                # For each source sentence, compute max cosine similarity to any code
+                per_sentence_max = []
+                for code_key, code_data, normalized, selected_code in items:
+                    se = embeddings.get(normalized)
+                    if se is not None:
+                        sims = np.dot(code_matrix, se)  # cos_sim since both normalized
+                        per_sentence_max.append(float(np.max(sims)))
+                if per_sentence_max:
+                    cov_arr = np.array(per_sentence_max)
+                    coverage_ratio = float(np.mean(cov_arr >= 0.30))
+                    gap_count = int(np.sum(cov_arr < 0.30))
+                    if coverage_ratio < 0.70:
+                        logger.warning(
+                            "Coverage: %.1f%% of sentences have a code within "
+                            "cosine_sim 0.30 (%d gap sentences). Codebook may "
+                            "have semantic gaps.", coverage_ratio * 100, gap_count)
+                    else:
+                        logger.info("Coverage: %.1f%% (%.3f mean max-sim, %d gaps)",
+                                     coverage_ratio * 100, float(np.mean(cov_arr)), gap_count)
+
+        return first_level_codes
+
+    def _apply_parsimony_check(self, first_level_codes: Dict[str, List]) -> Dict[str, List]:
+        """Post-coding parsimony deduplication — batch-optimized.
+
+        Batch-encodes all L1 code texts, computes pairwise cosine similarity,
+        and merges near-duplicate codes (cosine_sim > 0.95). For each pair,
+        the code with higher grounding_score is retained.
+
+        Returns deduplicated first_level_codes.
+        """
+        code_keys = list(first_level_codes.keys())
+        if len(code_keys) < 2:
+            logger.info("Parsimony: %d codes, no dedup needed", len(code_keys))
+            return first_level_codes
+
+        code_texts = [first_level_codes[k][0] for k in code_keys]
+
+        # Batch-encode all code texts
+        try:
+            import numpy as np
+            gc = getattr(self, 'grounding_checker', None)
+            if gc is not None:
+                gc._load_default_model()
+            if gc is None or gc._model is None:
+                # Fallback: use concept_anchor_index model
+                if hasattr(self, 'concept_anchor_index') and self.concept_anchor_index is not None:
+                    model = self.concept_anchor_index.model
+                else:
+                    logger.debug("Parsimony: no embedding model available, skipping")
+                    return first_level_codes
+            else:
+                model = gc._model
+
+            emb = model.encode(
+                code_texts, normalize_embeddings=True,
+                show_progress_bar=False, batch_size=64
+            ).astype(np.float32)
+
+            # Compute pairwise cosine similarity matrix (upper triangle only)
+            sim_matrix = np.dot(emb, emb.T)
+            n = len(code_keys)
+
+            # Find near-duplicate pairs
+            merge_pairs = []
+            for i in range(n):
+                for j in range(i + 1, n):
+                    if sim_matrix[i, j] > 0.95:
+                        merge_pairs.append((i, j, float(sim_matrix[i, j])))
+
+            if not merge_pairs:
+                parsimony = 1.0 - float(np.mean(sim_matrix[np.triu_indices(n, k=1)]))
+                logger.info("Parsimony: %.4f, %d codes, no near-duplicates found",
+                             parsimony, n)
+                return first_level_codes
+
+            # Build merge groups (connected components of high-similarity pairs)
+            parent = list(range(n))
+
+            def find(x):
+                while parent[x] != x:
+                    parent[x] = parent[parent[x]]
+                    x = parent[x]
+                return x
+
+            def union(x, y):
+                rx, ry = find(x), find(y)
+                if rx != ry:
+                    parent[rx] = ry
+
+            for i, j, _ in merge_pairs:
+                union(i, j)
+
+            # Group indices by root
+            groups = {}
+            for i in range(n):
+                root = find(i)
+                groups.setdefault(root, []).append(i)
+
+            # For each group, keep the code with highest grounding_score
+            removed_keys = set()
+            for root, indices in groups.items():
+                if len(indices) < 2:
+                    continue
+                best_idx = None
+                best_score = -1.0
+                for idx in indices:
+                    key = code_keys[idx]
+                    meta = self._first_level_trace_meta.get(key, {})
+                    gs = meta.get('grounding_score', 0.5)
+                    if gs > best_score:
+                        best_score = gs
+                        best_idx = idx
+                for idx in indices:
+                    if idx != best_idx:
+                        removed_keys.add(code_keys[idx])
+
+            parsimony = 1.0 - float(np.mean(sim_matrix[np.triu_indices(n, k=1)]))
+            logger.info("Parsimony: %.4f, merged %d near-duplicate codes → %d remaining",
+                         parsimony, len(removed_keys), n - len(removed_keys))
+
+            for key in removed_keys:
+                del first_level_codes[key]
+
+        except Exception as e:
+            logger.debug("Parsimony check failed: %s", e)
+
+        return first_level_codes
+
+    def _check_consistency(self, first_level_codes: Dict[str, List]):
+        """Post-coding consistency monitor — no code modification.
+
+        Compares code embedding distributions across two random data splits
+        using Maximum Mean Discrepancy (MMD). Significance is determined by
+        comparing against the null expectation E[MMD] ≈ sqrt(2/n).
+        """
+        code_keys = list(first_level_codes.keys())
+        if len(code_keys) < 40:
+            return
+
+        try:
+            import numpy as np
+
+            rng = np.random.RandomState(42)
+            indices = rng.permutation(len(code_keys))
+
+            # Subsample for efficiency (500 per group is sufficient)
+            max_per_group = 500
+            n_a = min(len(code_keys) // 2, max_per_group)
+            n_b = min(len(code_keys) - n_a, max_per_group)
+
+            group_a_keys = [code_keys[i] for i in indices[:n_a]]
+            group_b_keys = [code_keys[i] for i in indices[n_a:n_a + n_b]]
+
+            texts_a = [first_level_codes[k][0] for k in group_a_keys]
+            texts_b = [first_level_codes[k][0] for k in group_b_keys]
+
+            # Batch-encode
+            gc = getattr(self, 'grounding_checker', None)
+            if gc is not None:
+                gc._load_default_model()
+            if gc is None or gc._model is None:
+                return
+            model = gc._model
+
+            all_texts = texts_a + texts_b
+            emb = model.encode(
+                all_texts, normalize_embeddings=True,
+                show_progress_bar=False, batch_size=64
+            ).astype(np.float32)
+
+            emb_a = emb[:n_a]
+            emb_b = emb[n_a:]
+
+            # Linear-time MMD estimate (unbiased, no full kernel matrix)
+            # MMD² = mean(K(x,x')) + mean(K(y,y')) - 2*mean(K(x,y))
+            # Use RBF kernel with median heuristic bandwidth
+            def linear_mmd2(X, Y, sigma):
+                n, m = X.shape[0], Y.shape[0]
+                # Cross-term
+                sq_xy = np.sum(X**2, 1).reshape(-1, 1) + np.sum(Y**2, 1) - 2 * np.dot(X, Y.T)
+                sq_xy = np.maximum(sq_xy, 0)
+                K_xy = np.mean(np.exp(-sq_xy / (2 * sigma * sigma)))
+                # X self-term (excluding diagonal)
+                sq_xx = np.sum(X**2, 1).reshape(-1, 1) + np.sum(X**2, 1) - 2 * np.dot(X, X.T)
+                sq_xx = np.maximum(sq_xx, 0)
+                np.fill_diagonal(sq_xx, 0)
+                K_xx_off = np.exp(-sq_xx / (2 * sigma * sigma))
+                K_xx = (np.sum(K_xx_off) - n) / (n * (n - 1)) if n > 1 else 0.0
+                # Y self-term
+                sq_yy = np.sum(Y**2, 1).reshape(-1, 1) + np.sum(Y**2, 1) - 2 * np.dot(Y, Y.T)
+                sq_yy = np.maximum(sq_yy, 0)
+                np.fill_diagonal(sq_yy, 0)
+                K_yy_off = np.exp(-sq_yy / (2 * sigma * sigma))
+                K_yy = (np.sum(K_yy_off) - m) / (m * (m - 1)) if m > 1 else 0.0
+                return max(K_xx + K_yy - 2 * K_xy, 0.0)
+
+            # Median heuristic for sigma (subsample to avoid full matrix)
+            sample_for_sigma = min(n_a + n_b, 200)
+            idx_s = rng.choice(n_a + n_b, sample_for_sigma, replace=False)
+            emb_sample = np.vstack([emb_a, emb_b])[idx_s]
+            sq_d = np.sum(emb_sample**2, 1).reshape(-1, 1) + np.sum(emb_sample**2, 1) - 2 * np.dot(emb_sample, emb_sample.T)
+            sq_d = np.maximum(sq_d, 0)
+            np.fill_diagonal(sq_d, 0)
+            non_zero = sq_d[sq_d > 0]
+            sigma = float(np.median(np.sqrt(non_zero))) if len(non_zero) > 0 else 1.0
+
+            mmd2 = linear_mmd2(emb_a, emb_b, sigma)
+            mmd = float(np.sqrt(mmd2))
+
+            # Null expectation: E[MMD²] ≈ 1/n_a + 1/n_b for normalized embeddings
+            null_mmd = float(np.sqrt(1.0 / n_a + 1.0 / n_b))
+            ratio = mmd / null_mmd if null_mmd > 0 else 0.0
+
+            if ratio > 3.0:
+                logger.warning(
+                    "Consistency: MMD=%.5f, null=%.5f, ratio=%.2f — "
+                    "code embedding distribution differs significantly "
+                    "across data splits (p<0.01).", mmd, null_mmd, ratio)
+            else:
+                logger.info("Consistency: MMD=%.5f, null=%.5f, ratio=%.2f — stable",
+                             mmd, null_mmd, ratio)
+
+        except Exception as e:
+            logger.debug("Consistency check failed: %s", e)
+
+    def _first_level_code_via_llm(self, sentences: List[Dict]) -> Dict[str, List]:
+        """使用LLM后端生成一阶编码。
+
+        Args:
+            sentences: 句子字典列表，每项包含 content 等字段
+
+        Returns:
+            与 generate_first_level_codes 相同格式的一阶编码字典
+        """
+        logger.info(f"LLM后端: 编码 {len(sentences)} 条句子")
+
+        # 提取纯文本内容
+        texts = []
+        for sentence in sentences:
+            detail = self._repair_first_level_sentence_detail(sentence)
+            content = detail.get('content', '')
+            texts.append(content if content else sentence.get('content', ''))
+
+        # 批量LLM编码
+        results = self.llm_coder.code(texts)
+
+        # 构建与BERT后端相同格式的返回
+        first_level_codes = {}
+        for i, sentence in enumerate(sentences):
+            code_key = f"FL_{i + 1:04d}"
+            detail = self._repair_first_level_sentence_detail(sentence)
+            content = detail.get('content', '')
+
+            if not content or len(content.strip()) < 4:
+                first_level_codes[code_key] = [
+                    content.strip()[:20] if content else '',
+                    [sentence],
+                    1, 1,
+                    [detail]
+                ]
+                continue
+
+            code_text = results[i]["code"] if i < len(results) else content.strip()[:30]
+
+            # 质量检查: 截断过长编码
+            if len(code_text) > self.max_first_level_length:
+                code_text = code_text[:self.max_first_level_length]
+
+            first_level_codes[code_key] = [
+                code_text,
+                [sentence],
+                1, 1,
+                [detail]
+            ]
+
+            # Store trace metadata
+            trace = {
+                'candidates': [{'text': code_text, 'source': 'llm', 'score': 1.0}],
+                'selected_candidate': code_text,
+                'source': 'llm',
+            }
+            self._store_first_level_trace(code_key, trace)
+
+        logger.info(f"LLM后端: 完成 {len(first_level_codes)} 条编码")
+        return first_level_codes
 
     def generate_first_level_codes(self, sentences: List[Dict],
                                     model_manager=None,
@@ -2146,6 +3473,11 @@ class EnhancedCodingGenerator:
         Phase 0: 预标准化所有句子 → 批量编码 → 批量FAISS检索
         Phase 1: 逐句处理（使用缓存的embedding/检索结果，跳过重复编码）
         """
+
+        # LLM 后端分支
+        if self.llm_coder is not None:
+            return self._first_level_code_via_llm(sentences)
+
         self._ensure_first_level_defaults()
 
         # Phase 3: Reset anchor frequency for anti-collapse IDF penalty
@@ -2199,9 +3531,67 @@ class EnhancedCodingGenerator:
                 all_anchor_results = None
                 all_knn_results = None
 
+        # Collect sentences where FAISS anchors are weak -> need T5 supplement
+        t5_results = {}  # batch_idx -> generated anchor text
+        t5_sentences = []  # (batch_idx, normalized_text)
+
+        if has_anchor and all_anchor_results is not None:
+            for bi, (i, ck, sent, detail, norm) in enumerate(batch_items):
+                if bi >= len(all_anchor_results):
+                    continue
+                anchor_candidates = all_anchor_results[bi]
+                top3 = [s for _, s, _ in anchor_candidates[:3]]
+                faiss_avg = sum(top3) / len(top3) if top3 else 0.0
+                if faiss_avg < 0.60:
+                    t5_sentences.append((bi, norm))
+
+        # ============================================================
+        # Phase 0.5: T5 batch generation (supplement weak FAISS anchors)
+        # ============================================================
+        if t5_sentences:
+            t5_model, t5_tokenizer = self._load_t5_model()
+            if t5_model is not None and t5_tokenizer is not None:
+                try:
+                    import torch as _torch
+                    device = t5_model.device if hasattr(t5_model, 'device') else (
+                        _torch.device('cuda') if _torch.cuda.is_available() else _torch.device('cpu'))
+
+                    for bi, norm_text in t5_sentences:
+                        try:
+                            src_ids, _ = t5_tokenizer.encode(norm_text, maxlen=128)
+                            src_tensor = _torch.tensor([src_ids], dtype=_torch.long, device=device)
+                            with _torch.no_grad():
+                                outputs = t5_model.generate(
+                                    src_tensor,
+                                    max_new_tokens=16,
+                                    num_beams=3,
+                                    eos_token_id=t5_tokenizer._token_end_id,
+                                    pad_token_id=t5_tokenizer._token_pad_id,
+                                    bos_token_id=t5_tokenizer._token_start_id,
+                                )
+                            code = t5_tokenizer.decode(outputs[0].tolist())
+                            code = code.replace(' ', '').strip()
+                            if code and 2 <= len(code) <= 12:
+                                t5_results[bi] = code
+                        except Exception:
+                            pass
+
+                    logger.info("T5 generated %d anchors for %d weak-FAISS sentences",
+                                 len(t5_results), len(t5_sentences))
+                except Exception as e:
+                    logger.warning("T5 batch generation failed: %s", e)
+                finally:
+                    self._unload_t5_model(t5_model)
+
         # ═══════════════════════════════════════════════════════════════
         # Phase 1: Per-sentence processing
         # ═══════════════════════════════════════════════════════════════
+
+        # Precompute phrase frequency for Plan B quality bonus
+        # (single pass over normalized texts, no per-sentence overhead)
+        _norm_texts = [bi[4] for bi in batch_items]
+        _freq_map = self._precompute_phrase_frequency(_norm_texts) if _norm_texts else {}
+        _freq_map['_n_total'] = len(batch_items)
 
         first_level_codes = {}
         traces = {}
@@ -2239,12 +3629,17 @@ class EnhancedCodingGenerator:
                         )
                     batch_idx += 1
 
+            # Look up T5 result for this sentence
+            _t5 = t5_results.get(batch_idx) if batch_idx < len(batch_items) else None
+
             # Build candidate trace (pass cached data to skip model.encode)
             trace = self.build_first_level_candidate_trace(
                 detail, model_manager, top_n=8, defer_rerank=use_global_batch_rerank,
                 cached_embedding=cached_emb,
                 cached_anchor_results=cached_anchor,
-                cached_knn_results=cached_knn)
+                cached_knn_results=cached_knn,
+                cached_t5_result=_t5,
+                freq_map=_freq_map)
 
             if trace:
                 traces[code_key] = trace
@@ -2283,6 +3678,20 @@ class EnhancedCodingGenerator:
         # Store traces
         for code_key, trace in traces.items():
             self._store_first_level_trace(code_key, trace)
+
+        # ── Anchor Validation: diagnostic only, no fallback ──
+        first_level_codes = self._validate_anchor_codes(
+            first_level_codes, traces, sentences)
+
+        # ── Extractive Grounding Gate: grounding + deep extraction fallback ──
+        first_level_codes = self._gate_extractive_codes(
+            first_level_codes, traces, sentences)
+
+        # ── Parsimony Check: deduplicate near-identical codes ──
+        first_level_codes = self._apply_parsimony_check(first_level_codes)
+
+        # ── Consistency Check: monitor code distribution stability ──
+        self._check_consistency(first_level_codes)
 
         return first_level_codes
 
@@ -2335,6 +3744,120 @@ class EnhancedCodingGenerator:
             self.rag_enabled = False
             self.runtime_strategy = 'legacy'
             logger.warning("RAG组件初始化失败: %s，退回到传统匹配路径", e)
+
+    def _init_llm_coder(self):
+        """初始化LLM一阶编码后端。"""
+        import os
+        from path_manager import PathManager
+
+        model_dir = os.path.join(
+            PathManager.get_local_models_dir(),
+            Config.LLM_FIRST_LEVEL_MODEL_DIRNAME
+        )
+        model_path = os.path.join(model_dir, Config.LLM_FIRST_LEVEL_MODEL_NAME)
+
+        if not os.path.exists(model_path):
+            logger.warning(f"LLM模型未找到: {model_path}, 回退到BERT")
+            return
+
+        try:
+            from llm_first_level_coder import LLMFirstLevelCoder
+            self.llm_coder = LLMFirstLevelCoder(
+                model_path=model_path,
+                n_gpu_layers=Config.LLM_N_GPU_LAYERS,
+                temperature=Config.LLM_TEMPERATURE,
+                top_p=Config.LLM_TOP_P,
+                max_tokens=Config.LLM_MAX_TOKENS,
+                repeat_penalty=getattr(Config, 'LLM_REPEAT_PENALTY', 1.3),
+            )
+            logger.info("LLM一阶编码后端已加载")
+        except Exception as e:
+            logger.error(f"LLM后端加载失败: {e}, 回退到BERT")
+            self.llm_coder = None
+
+    def clear_caches(self):
+        """Clear in-memory caches and release GPU memory after coding completes.
+
+        Called automatically at the end of generate_codes_with_rules().
+        Clears: similarity/abstract caches, grounding_checker model, trace metadata,
+        and releases torch CUDA memory if available.
+        """
+        # Clear internal caches
+        self.similarity_cache.clear()
+        self.abstract_cache.clear()
+        self._first_level_trace_meta.clear()
+        self._anchor_frequency.clear()
+
+        # Release grounding checker model
+        if hasattr(self, 'grounding_checker') and self.grounding_checker is not None:
+            if hasattr(self.grounding_checker, '_model') and self.grounding_checker._model is not None:
+                try:
+                    del self.grounding_checker._model
+                    self.grounding_checker._model = None
+                    self.grounding_checker._model_loaded = False
+                except Exception:
+                    pass
+
+        # Release GPU memory if torch is available
+        try:
+            import torch
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+                logger.info("GPU cache cleared (torch.cuda.empty_cache())")
+        except Exception:
+            pass
+
+        logger.info("Caches cleared after auto coding")
+
+    def _load_t5_model(self):
+        """Load T5 model (LoRA fine-tuned) for batch generation. bert4torch, float16."""
+        import torch as _torch
+        try:
+            import jieba
+            from bert4torch.models import build_transformer_model
+            from bert4torch.tokenizers import Tokenizer
+
+            base_dir = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                'local_models', 'chinese_t5_pegasus_base')
+            tokenizer = Tokenizer(
+                os.path.join(base_dir, "vocab.txt"),
+                do_lower_case=True,
+                pre_tokenize=lambda s: list(jieba.cut(s, HMM=False)),
+            )
+            model = build_transformer_model(
+                config_path=os.path.join(base_dir, "bert4torch_config.json"),
+                checkpoint_path=os.path.join(base_dir, "pytorch_model.bin"),
+                model="mt5.1.1",
+            )
+            # Apply LoRA and load trained weights
+            from train_t5_lora import apply_lora_to_t5
+            apply_lora_to_t5(model, r=8, alpha=16.0, dropout=0.05)
+            ckpt_path = os.path.join(self.t5_model_path, "checkpoint.pt")
+            if os.path.exists(ckpt_path):
+                ckpt = _torch.load(ckpt_path, map_location='cpu')
+                # LoRA checkpoint stores weights in 'lora_state'
+                state = ckpt.get('model_state_dict', ckpt.get('lora_state', ckpt))
+                model.load_state_dict(state, strict=False)
+            if _torch.cuda.is_available():
+                model = model.cuda()
+            model = model.half()
+            model.eval()
+            return model, tokenizer
+        except Exception as e:
+            logger.warning("T5 model load failed: %s", e)
+            return None, None
+
+    def _unload_t5_model(self, model):
+        """Unload T5 model, free GPU memory."""
+        if model is not None:
+            try:
+                import torch as _torch
+                del model
+                if _torch.cuda.is_available():
+                    _torch.cuda.empty_cache()
+            except Exception:
+                pass
 
     def _ensure_anchor_index(self) -> bool:
         """加载概念锚点FAISS索引（改进7——微调bge-small-zh-v1.5模型 + FAISS检索）。
@@ -2623,13 +4146,17 @@ class EnhancedCodingGenerator:
             try:
                 import numpy as np
 
-                # Lazy-load bge-small-zh-v1.5 for hierarchy fallback encoding
+                # Lazy-load concept_anchor_v6 for hierarchy fallback encoding
                 if not hasattr(self, '_hierarchy_model') or self._hierarchy_model is None:
                     from sentence_transformers import SentenceTransformer
                     import os as _os
                     _model_path = _os.path.join(
                         _os.path.dirname(_os.path.abspath(__file__)),
-                        "local_models", "bge-small-zh-v1.5")
+                        "trained_models", "concept_anchor_v6")
+                    if not _os.path.exists(_model_path):
+                        _model_path = _os.path.join(
+                            _os.path.dirname(_os.path.abspath(__file__)),
+                            "local_models", "bge-small-zh-v1.5")
                     self._hierarchy_model = SentenceTransformer(_model_path)
 
                 # Lazy-build FAISS index over hierarchy anchor embeddings

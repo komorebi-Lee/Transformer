@@ -71,7 +71,7 @@ class EnhancedWordExporter:
             self.document.add_page_break()
 
             # 第二部分：合并文本与引用
-            self.add_combined_text_with_numbered_references(combined_text, structured_codes, code_display_map)
+            self.add_combined_text_with_numbered_references(combined_text, structured_codes)
 
             # 保存文档
             self.document.save(file_path)
@@ -84,8 +84,6 @@ class EnhancedWordExporter:
 
     def add_coding_table_with_new_format(self, structured_codes: Dict[str, Any], code_display_map: Dict[str, str] = None):
         """添加编码表格 - 新编号格式"""
-        if code_display_map is None:
-            code_display_map = {}
         # 添加标题
         heading = self.document.add_heading('一、三级编码结构', level=1)
 
@@ -108,7 +106,13 @@ class EnhancedWordExporter:
 
         # 填充数据
         for third_category, second_categories in structured_codes.items():
+            # 提取三阶编码字母（A, B, C等）
+            third_letter = third_category.split(' ')[0] if ' ' in third_category else third_category[0]
+
             for second_category, first_contents in second_categories.items():
+                # 提取二阶编码编号（A1, A2等）
+                second_number = second_category.split(' ')[0] if ' ' in second_category else second_category
+
                 for content_data in first_contents:
                     # 添加新行
                     row_cells = table.add_row().cells
@@ -119,38 +123,23 @@ class EnhancedWordExporter:
                     # 二阶编码（只显示一次，避免重复）
                     row_cells[1].text = second_category
 
-                    display_text = ""
-                    code_id = ""
-
-                    # 一阶编码显示内容：使用新的 Ax-xx 格式 + 纯文本内容
+                    # 一阶编码
                     if isinstance(content_data, dict):
+                        numbered_content = content_data.get('numbered_content', '')
                         code_id = content_data.get('code_id', '')
-                        base_content = content_data.get('content', '') or content_data.get('numbered_content', '')
-                        clean_content = self.clean_first_level_content(base_content) if base_content else ''
-
-                        display_id = code_display_map.get(code_id, code_id)
-
-                        if display_id and clean_content:
-                            display_text = f"{display_id} {clean_content}"
-                        elif base_content:
-                            display_text = base_content
-                        else:
-                            display_text = content_data.get('numbered_content', '') or ''
                     else:
-                        display_text = str(content_data)
+                        numbered_content = str(content_data)
+                        code_id = ""
 
-                    row_cells[2].text = display_text
+                    row_cells[2].text = numbered_content
 
-                    # 如果有编码ID，添加书签（仍然使用原始 code_id 作为锚点）
+                    # 如果有编码ID，添加书签
                     if code_id:
                         self.add_bookmark_to_paragraph(row_cells[2].paragraphs[0], f"code_{code_id}")
 
     def add_combined_text_with_numbered_references(self, combined_text: str,
-                                                   structured_codes: Dict[str, Any],
-                                                   code_display_map: Dict[str, str] = None):
+                                                   structured_codes: Dict[str, Any]):
         """添加合并文本和编号引用"""
-        if code_display_map is None:
-            code_display_map = {}
         # 添加标题
         heading = self.document.add_heading('二、原始文本与编码引用', level=1)
 
@@ -159,7 +148,7 @@ class EnhancedWordExporter:
         self.document.add_paragraph("编号说明：")
         self.document.add_paragraph("  - A, B, C...: 三阶编码")
         self.document.add_paragraph("  - A1, A2, B1, B2...: 二阶编码")
-        self.document.add_paragraph("  - A1-01, A1-02, A2-01...: 一阶编码（按访谈文件顺序和文件内顺序编号）")
+        self.document.add_paragraph("  - A11, A12, B21, B22...: 一阶编码")
 
         # 处理文本，添加引用标记
         text_paragraph = self.document.add_paragraph()
